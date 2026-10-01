@@ -23,10 +23,14 @@ receiptVerifyRoutes.get("/api/verify-receipt", (c) => {
     what:
       "POST any receipt or signed artifact (JSON body, this store's or any issuer's) and receive a SIGNED verdict: valid | invalid | expired | insufficient_evidence | unsupported | indeterminate. Every check is named with its outcome; everything NOT checked is stated rather than implied.",
     how: `POST ${base}/api/verify-receipt with the receipt as the JSON body. Free, no account. Max ${MAX_RECEIPT_BYTES} bytes.`,
+    envelopes: {
+      hex: "A JSON document carrying `signature` and `public_key` as ed25519 hex beside its content (this store's own shape, and anyone's that signs the same way): the signature is tried over every derivable served form.",
+      dsse: `A DSSE envelope — payloadType, base64 payload, signatures[{keyid, sig}] — verified over its pre-authentication encoding exactly as served. The envelope names a key and does not carry one, so supply the issuer's Ed25519 public key as a sibling \`public_key\` field or as ?public_key= (64 hex, ed25519:<base64url>, or base64). Without it the verdict is insufficient_evidence, never invalid.`,
+    },
     what_it_checks:
-      "Structure: signature material, ed25519 key shapes, the signature over every derivable served form, a claimed RFC 8785 twin, expiry by the document's own fields, and key attribution when the key is this store's.",
+      "Structure: signature material, ed25519 key shapes, the signature over every derivable served form (or the DSSE pre-authentication encoding), a claimed RFC 8785 twin, expiry by the document's own fields, and key attribution when the key is this store's.",
     what_it_never_checks:
-      "On-chain settlement (that is the paid settlement_attestation), delivery quality, revocation, and — for keys that are not ours — who holds the key. 'Unknown' and 'bad' are kept apart deliberately: they drive different automated actions.",
+      "On-chain settlement (that is the paid settlement_attestation), delivery quality, revocation, and — for keys that are not ours — who holds the key. For a DSSE envelope, also: the actor named inside (the signer's own label), the parent link and any checkpoint, and whether the payload is true. 'Unknown' and 'bad' are kept apart deliberately: they drive different automated actions.",
     stateless:
       "Submitted documents are verified and forgotten; the verdict binds to your document only by sha256. Nothing is stored, republished, or logged beyond the store's ordinary request counters.",
     verdicts: {
@@ -58,6 +62,13 @@ receiptVerifyRoutes.post("/api/verify-receipt", async (c) => {
       413,
     );
   }
-  const reading = await readReceipt(c.env, raw);
+  /**
+   * The key beside the envelope, for formats that name a key and do not
+   * carry one. A query parameter so a DSSE envelope can be POSTed as
+   * the bytes its issuer wrote, untouched; a sibling field in the body
+   * works too and the service reads either.
+   */
+  const publicKey = c.req.query("public_key");
+  const reading = await readReceipt(c.env, raw, new Date(), publicKey ? { publicKey } : {});
   return c.json(await signReading(c.env, reading));
 });

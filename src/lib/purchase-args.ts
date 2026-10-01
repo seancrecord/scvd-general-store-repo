@@ -10,7 +10,7 @@ import { target as a2aTarget } from "@/lib/a2a-instrument";
 import { a2aAdmission } from "@/lib/a2a-admission";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
-import { buyInputExample, buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
+import { buyInputExample, buyInputSchema, CITED_ARTIFACT_PATTERN, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
 import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
@@ -213,6 +213,20 @@ export async function checkPurchaseInputSafety(env: Env, item: MenuItem, rawArgs
     return refuse(400, "bad_request",
       `${args.field("purpose")} exceeds ${PURCHASE_PURPOSE_MAX_LENGTH} Unicode characters. Shorten it before purchasing; we do not truncate signed statements. Nothing charged.`,
       { input_field: "purpose", max_length: PURCHASE_PURPOSE_MAX_LENGTH });
+  }
+  /**
+   * THE CITED ARTIFACT (2026-10-01): shape only, before quoting. The
+   * store does not fetch it, verify it, or know its issuer; it checks
+   * that the line is a line — format token, colon, printable reference
+   * — because a certificate field is forever and a malformed one would
+   * be signed forever. The length cap was already refused by the
+   * schema loop above; this is the pattern.
+   */
+  const citedArtifact = args.get("cited_artifact");
+  if (citedArtifact !== undefined && citedArtifact !== "" && !CITED_ARTIFACT_PATTERN.test(citedArtifact)) {
+    return refuse(400, "bad_request",
+      `${args.field("cited_artifact")} wants <format>:<reference> — a short lowercase token naming the envelope kind (dsse, jws, …), a colon, then the artifact's own id or digest as its issuer spells it, printable and without spaces, e.g. dsse:art_e415901189dc1613. Recorded verbatim and signed; never fetched or verified here. Nothing charged.`,
+      { input_field: "cited_artifact" });
   }
   const passId = args.get("pass_id");
   if (item.id === "recurring_patronage" && (passId !== undefined || args.has?.("pass_id"))) {
@@ -1115,6 +1129,12 @@ export function purchaseInputFrom(
   const mandateId = read("mandate_id");
   if (mandateId) {
     input.mandateId = mandateId;
+  }
+  // The outside link, any item: shape-checked by checkPurchaseArgs,
+  // carried verbatim, never resolved.
+  const citedArtifact = read("cited_artifact");
+  if (citedArtifact) {
+    input.citedArtifact = citedArtifact;
   }
   if (item.id === "the_mandate") {
     input.mandateText = read("mandate") ?? "";

@@ -25,6 +25,33 @@ import { inputAliasTable, resolveInputRecord } from "@/lib/input-aliases";
 /** JSON Schema maxLength counts Unicode code points. */
 export const PURCHASE_PURPOSE_MAX_LENGTH = 280;
 
+/**
+ * THE CITED ARTIFACT (2026-10-01): `<format>:<reference>`, one line.
+ * The format is a short lowercase token for the envelope kind, the
+ * reference is printable ASCII with no whitespace — an id or digest as
+ * its issuer spells it. Printable so the receipt page can show it; no
+ * whitespace so a line is a line. The pattern is the whole validation:
+ * the store never fetches or verifies what it names.
+ */
+export const CITED_ARTIFACT_FIELD = "cited_artifact";
+export const CITED_ARTIFACT_MAX_LENGTH = 160;
+export const CITED_ARTIFACT_PATTERN = /^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$/;
+/**
+ * The one schema object, exported so openapi.json can write it ONCE
+ * as a component and point every paid door at it: inlined, it costs
+ * its bytes twice per door (parameter and request schema) across
+ * thirty-five doors, and the September 12 thinning left no room for
+ * that. The MCP shelves and the Bazaar entry still inline it, because
+ * a tool's inputSchema has no components to point at.
+ */
+export const CITED_ARTIFACT_SCHEMA = {
+  type: "string",
+  maxLength: CITED_ARTIFACT_MAX_LENGTH,
+  pattern: CITED_ARTIFACT_PATTERN.source,
+  description:
+    "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
+} as const;
+
 const AGENT_NAME_SCHEMA = {
   type: "string",
   maxLength: NAME_CAP,
@@ -89,6 +116,11 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       description:
         "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
     },
+    /*
+     * One short line, inlined into every paid door's contract like
+     * purpose: the budget is per byte times thirty-five.
+     */
+    [CITED_ARTIFACT_FIELD]: { ...CITED_ARTIFACT_SCHEMA },
     /**
      * THE DISCLOSURE BLOCK (2026-09-18, lib/disclosure). Six flat
      * optional strings a buyer may fill — model, client, operator,

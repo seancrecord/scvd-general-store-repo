@@ -170,6 +170,17 @@ export const CERT_FIELDS = [
    * under our signature, which is the maker's-mark lesson again.
    */
   "issuer",
+  /**
+   * THE CITED ARTIFACT, added 2026-10-01. Appended, never inserted,
+   * and OUT of LEGACY_FIELDS_ADDED_SINCE by the same law as the
+   * mandate link: no legacy certificate can honestly cite an outside
+   * artifact (the field did not exist), so stapling one onto an old
+   * certificate must break BOTH forms. It is a buyer's claim about a
+   * document the store never saw, and unsigned it would be the
+   * easiest forgery on the receipt: "my runtime's approval art_… was
+   * behind this purchase", written by anyone, under our signature.
+   */
+  "cited_artifact",
 ] as const;
 
 /**
@@ -346,6 +357,27 @@ export async function verifyMessageSignature(
       (publicKeyHex.match(/.{2}/g) ?? []).map((byte) => parseInt(byte, 16)),
     );
     return await ed25519.verifyAsync(signature, bytes, publicKey);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The same check over BYTES rather than a UTF-8 string, for envelopes
+ * whose signed message is not text we produced: a DSSE envelope signs
+ * its pre-authentication encoding, which carries the raw payload
+ * bytes, and re-decoding those as a string and back would be a second
+ * canonical form nobody signed. Same primitive, same fail-closed
+ * catch; the caller does the decoding and hands over exactly what the
+ * signer saw.
+ */
+export async function verifyBytesSignature(
+  message: Uint8Array,
+  signature: Uint8Array,
+  publicKey: Uint8Array,
+): Promise<boolean> {
+  try {
+    return await ed25519.verifyAsync(signature, message, publicKey);
   } catch {
     return false;
   }

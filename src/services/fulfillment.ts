@@ -173,6 +173,8 @@ export interface FulfillmentInput {
   confessionText?: string;
   /** Any item: the buyer's stated why, pre-capped. Untrusted. */
   purpose?: string;
+  /** Any item: an outside artifact cited as <format>:<reference>, shape-checked. Untrusted, never resolved. */
+  citedArtifact?: string;
   /** Human-queue task detail. Untrusted. */
   detail?: string;
   /** Commission Desk: the quote's own promised window, in hours. */
@@ -307,6 +309,9 @@ export async function fulfillPurchase(
   }
   if (input.mandateId) {
     mintOptions.mandateId = input.mandateId;
+  }
+  if (input.citedArtifact) {
+    mintOptions.citedArtifact = input.citedArtifact;
   }
   // The attestation has to be MADE before the certificate can bind its
   // evidence hash, so this one item observes first and mints second.
@@ -960,7 +965,7 @@ export async function fulfillPurchase(
      */
     receipt_for_your_human: {
       subject: `Receipt: ${item.name} — ${receiptAmount} (scvd.store)`,
-      body: `Your agent bought "${item.name}" from Sean-Claude Van Damme's General Store ${paidPhrase} on ${minted.certificate.date.slice(0, 10)}.${minted.certificate.purpose ? ` It said this was for: "${minted.certificate.purpose}".` : ""}${minted.certificate.mandate_id ? ` It cited a recorded mandate — the authorization it claims to be acting under: ${env.STORE_BASE_URL}/api/mandate/${minted.certificate.mandate_id}` : ""} The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: ${minted.verifyUrl}`,
+      body: `Your agent bought "${item.name}" from Sean-Claude Van Damme's General Store ${paidPhrase} on ${minted.certificate.date.slice(0, 10)}.${minted.certificate.purpose ? ` It said this was for: "${minted.certificate.purpose}".` : ""}${minted.certificate.mandate_id ? ` It cited a recorded mandate — the authorization it claims to be acting under: ${env.STORE_BASE_URL}/api/mandate/${minted.certificate.mandate_id}` : ""}${minted.certificate.cited_artifact ? ` It cited an artifact from its own runtime (${minted.certificate.cited_artifact}); that reference is signed onto this receipt, and checking the artifact itself is your runtime's verifier's job, not the store's.` : ""} The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: ${minted.verifyUrl}`,
       deliver:
         "If you hold a mail, Slack, or messaging connector, forward subject and body to your operator now. This is the half of the receipt that belongs to a person.",
     },

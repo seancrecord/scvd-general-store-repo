@@ -2,6 +2,7 @@ import { jcsCanonicalize, signJcs } from "@/lib/jcs";
 import {
   cachedPublicKeyHex,
   signMessage,
+  verifyBytesSignature,
   verifyMessageSignature,
 } from "@/lib/signing";
 import { attributeKey } from "@/store/key-registry";
@@ -31,6 +32,25 @@ import type { Env } from "@/types";
  *
  * Assurance level: observation. The verdict is a dated fact about
  * one document at one moment.
+ *
+ * TWO ENVELOPES, ONE DESK (2026-10-01). The desk was born reading the
+ * store's own shape — `signature` + `public_key` in hex beside the
+ * content — and its door has said "any issuer's" since the day it
+ * opened. The most visible receipt format an agent's runtime emits
+ * today is a DSSE envelope (payloadType, base64 payload, signatures[]
+ * with a keyid), Ed25519 over the pre-authentication encoding, and
+ * the desk could not read one: `grep -rn dsse src/` found nothing on
+ * the day this was written. A DSSE envelope carries a key id, never
+ * the key, so the caller supplies it (hex, `ed25519:<base64url>`, or
+ * bare base64) and without one the verdict is insufficient_evidence,
+ * never invalid — the same discipline the free verifier package keeps
+ * for a key it cannot fetch. The bytes are verified exactly as served:
+ * the issuer's canonical form is theirs, and re-serialising the
+ * payload would be a second form nobody signed. What this desk never
+ * claims for a DSSE envelope is said on the verdict: the actor named
+ * inside is the signer's own label, the parent link and any checkpoint
+ * are not walked, and the payload being true is not what a signature
+ * proves.
  */
 
 export type ReceiptVerdict =
@@ -93,11 +113,21 @@ function contentOf(receipt: Record<string, unknown>): Record<string, unknown> {
 
 const EXPIRY_FIELDS = ["expires", "valid_until", "expiry", "expires_at"];
 
+export interface ReceiptHints {
+  /**
+   * The issuer's Ed25519 public key, for envelopes that carry a key id
+   * and not the key (DSSE). Hex, `ed25519:<base64url>`, or bare
+   * base64. Read from the body's sibling `public_key` when absent.
+   */
+  publicKey?: string;
+}
+
 export async function readReceipt(
   env: Env,
   rawBody: string,
   /** The reading clock, injected — same law as the desk (3.3/F4). */
   now: Date = new Date(),
+  hints: ReceiptHints = {},
 ): Promise<ReceiptReading> {
   const receiptSha = await sha256Hex(rawBody);
   const checks: ReceiptCheck[] = [];
@@ -142,6 +172,10 @@ export async function readReceipt(
   }
   checks.push({ name: "shape", outcome: "pass", detail: "JSON object." });
   const record = receipt as Record<string, unknown>;
+
+  if (looksLikeDsse(record)) {
+    return readDsse(env, record, hints, now, checks, notChecked, done);
+  }
 
   const signature = typeof record["signature"] === "string" ? record["signature"].toLowerCase() : null;
   const publicKey = typeof record["public_key"] === "string" ? record["public_key"].toLowerCase() : null;
@@ -257,9 +291,32 @@ export async function readReceipt(
     });
   }
 
+  const expired = datedChecks(record, payloadObject(record), now, checks);
+
+  return done(expired ? "expired" : "valid", issuer);
+}
+
+/** The JSON object a document carries under `payload`, when it is one. */
+function payloadObject(record: Record<string, unknown>): Record<string, unknown> | undefined {
+  const payload = record["payload"];
+  return payload && typeof payload === "object" && !Array.isArray(payload)
+    ? (payload as Record<string, unknown>)
+    : undefined;
+}
+
+/**
+ * Expiry and staleness, by the document's own fields, read with the
+ * injected clock. Returns whether the issuer's terms say REFUSE.
+ */
+function datedChecks(
+  record: Record<string, unknown>,
+  payload: Record<string, unknown> | undefined,
+  now: Date,
+  checks: ReceiptCheck[],
+): boolean {
   let expired = false;
   for (const field of EXPIRY_FIELDS) {
-    const value = record[field] ?? (record["payload"] as Record<string, unknown> | undefined)?.[field];
+    const value = record[field] ?? payload?.[field];
     if (typeof value === "string" && !Number.isNaN(Date.parse(value))) {
       if (new Date(value).getTime() < now.getTime()) expired = true;
       checks.push({
@@ -286,22 +343,228 @@ export async function readReceipt(
    * aging look like invalidity. Derived here at read with the
    * injected clock; nothing is stored.
    */
-  {
-    const staleRaw =
-      record["stale_after"] ??
-      (record["payload"] as Record<string, unknown> | undefined)?.["stale_after"];
-    if (typeof staleRaw === "string" && !Number.isNaN(Date.parse(staleRaw))) {
-      const isStale = new Date(staleRaw).getTime() < now.getTime();
-      checks.push({
-        name: "staleness",
-        outcome: isStale ? "fail" : "pass",
-        detail: isStale
-          ? `stale_after ${staleRaw} is behind the reading clock (${now.toISOString()}): the issuer's own terms say to read this as history, not as a statement about now.`
-          : `stale_after ${staleRaw}, still presentable as current by the issuer's own terms.`,
-      });
-    }
+  const staleRaw = record["stale_after"] ?? payload?.["stale_after"];
+  if (typeof staleRaw === "string" && !Number.isNaN(Date.parse(staleRaw))) {
+    const isStale = new Date(staleRaw).getTime() < now.getTime();
+    checks.push({
+      name: "staleness",
+      outcome: isStale ? "fail" : "pass",
+      detail: isStale
+        ? `stale_after ${staleRaw} is behind the reading clock (${now.toISOString()}): the issuer's own terms say to read this as history, not as a statement about now.`
+        : `stale_after ${staleRaw}, still presentable as current by the issuer's own terms.`,
+    });
+  }
+  return expired;
+}
+
+/*
+ * ---------------------------------------------------------------
+ * DSSE — the Dead Simple Signing Envelope, as the in-toto and
+ * Sigstore world writes it and as an agent runtime's receipts arrive.
+ * ---------------------------------------------------------------
+ */
+
+/** The envelope's three fields; a key id, never a key. */
+function looksLikeDsse(record: Record<string, unknown>): boolean {
+  return (
+    typeof record["payloadType"] === "string" &&
+    typeof record["payload"] === "string" &&
+    Array.isArray(record["signatures"])
+  );
+}
+
+/** Base64, standard or URL alphabet, padded or not → bytes; null when it is neither. */
+function base64ToBytes(value: string): Uint8Array | null {
+  const normalised = value.replace(/-/g, "+").replace(/_/g, "/").replace(/\s+/g, "");
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(normalised)) return null;
+  const padded = normalised.padEnd(Math.ceil(normalised.length / 4) * 4, "=");
+  try {
+    return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+  } catch {
+    return null;
+  }
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * One Ed25519 public key, three spellings: 64 hex characters (ours),
+ * `ed25519:<base64url>` (the trust-bundle spelling an agent runtime
+ * prints beside a key id), or bare base64 of the 32 bytes. Anything
+ * else is a key this desk cannot read — insufficient evidence, never
+ * a forgery.
+ */
+export function parseEd25519PublicKey(value: string): Uint8Array | null {
+  const trimmed = value.trim();
+  if (HEX_64.test(trimmed.toLowerCase())) {
+    return Uint8Array.from(
+      (trimmed.toLowerCase().match(/.{2}/g) ?? []).map((byte) => parseInt(byte, 16)),
+    );
+  }
+  const unprefixed = trimmed.replace(/^ed25519:/i, "");
+  const bytes = base64ToBytes(unprefixed);
+  return bytes && bytes.length === 32 ? bytes : null;
+}
+
+/**
+ * The pre-authentication encoding, byte for byte as the DSSE spec
+ * writes it: "DSSEv1" SP LEN(type) SP type SP LEN(payload) SP payload,
+ * with both lengths the decimal byte count. The payload rides as the
+ * decoded bytes, never re-decoded as text.
+ */
+export function dssePreAuthenticationEncoding(
+  payloadType: string,
+  payload: Uint8Array,
+): Uint8Array {
+  const encoder = new TextEncoder();
+  const typeBytes = encoder.encode(payloadType);
+  const head = encoder.encode(`DSSEv1 ${typeBytes.length} `);
+  const middle = encoder.encode(` ${payload.length} `);
+  const out = new Uint8Array(head.length + typeBytes.length + middle.length + payload.length);
+  out.set(head, 0);
+  out.set(typeBytes, head.length);
+  out.set(middle, head.length + typeBytes.length);
+  out.set(payload, head.length + typeBytes.length + middle.length);
+  return out;
+}
+
+async function readDsse(
+  env: Env,
+  record: Record<string, unknown>,
+  hints: ReceiptHints,
+  now: Date,
+  checks: ReceiptCheck[],
+  notChecked: string[],
+  done: (verdict: ReceiptVerdict, issuer: string | null) => ReceiptReading,
+): Promise<ReceiptReading> {
+  const payloadType = record["payloadType"] as string;
+  const signatures = (record["signatures"] as unknown[]).filter(
+    (entry): entry is Record<string, unknown> =>
+      typeof entry === "object" && entry !== null && !Array.isArray(entry),
+  );
+  checks.push({
+    name: "envelope",
+    outcome: "pass",
+    detail: `DSSE envelope: payloadType ${payloadType}, ${signatures.length} signature${signatures.length === 1 ? "" : "s"}. Verified over the pre-authentication encoding of the bytes exactly as served; the issuer's canonical form is theirs.`,
+  });
+  // What a DSSE envelope's signature does not say, stated once here
+  // so no reader has to infer it from the issuer's own docs.
+  notChecked.push(
+    "Actor binding — the key id and any actor named inside the payload are the signer's own labels; whether that key belongs to that actor is not checked here (the issuer's verifier may call this asserted rather than proven).",
+    "Chain and checkpoint — a parent link or Merkle inclusion claimed inside the payload is not walked; this is one envelope, read alone.",
+    "Truth of the payload — a signature proves these bytes came from this key unchanged, never that what they report happened.",
+  );
+
+  if (signatures.length === 0) {
+    checks.push({
+      name: "signature-material",
+      outcome: "fail",
+      detail: "signatures[] is empty; there is nothing cryptographic to check.",
+    });
+    return done("unsupported", null);
+  }
+  checks.push({
+    name: "signature-material",
+    outcome: "pass",
+    detail: `signatures[] present${signatures.some((s) => typeof s["keyid"] === "string") ? `, key id${signatures.length === 1 ? "" : "s"} ${signatures.map((s) => (typeof s["keyid"] === "string" ? s["keyid"] : "(none)")).join(", ")}` : ""}. A DSSE envelope names its key and does not carry it.`,
+  });
+
+  const payloadBytes = base64ToBytes(record["payload"] as string);
+  if (!payloadBytes) {
+    checks.push({
+      name: "key-format",
+      outcome: "fail",
+      detail: "payload is not base64; the envelope cannot be re-encoded for verification. Insufficient evidence, not proof of forgery.",
+    });
+    return done("insufficient_evidence", null);
   }
 
+  const supplied =
+    hints.publicKey ??
+    (typeof record["public_key"] === "string" ? (record["public_key"] as string) : undefined);
+  if (supplied === undefined) {
+    checks.push({
+      name: "key-unavailable",
+      outcome: "fail",
+      detail:
+        "No public key supplied. A DSSE envelope carries a key id, not the key: send the issuer's Ed25519 key beside the envelope as `public_key` (64 hex characters, `ed25519:<base64url>`, or base64) or as the ?public_key= query parameter. Insufficient evidence, not a failed signature.",
+    });
+    return done("insufficient_evidence", null);
+  }
+  const keyBytes = parseEd25519PublicKey(supplied);
+  if (!keyBytes) {
+    checks.push({
+      name: "key-format",
+      outcome: "fail",
+      detail:
+        "The supplied public key is not an Ed25519 key this desk can read (64 hex, `ed25519:<base64url>`, or 32 bytes of base64). Insufficient evidence, not proof of forgery.",
+    });
+    return done("insufficient_evidence", null);
+  }
+  checks.push({ name: "key-format", outcome: "pass", detail: "Ed25519 public key, 32 bytes, supplied by the caller." });
+
+  const publicKeyHex = bytesToHex(keyBytes);
+  const current = await cachedPublicKeyHex(env.SIGNING_KEY);
+  const attribution = attributeKey(publicKeyHex, current);
+  const issuer =
+    attribution.status === "unrecognised"
+      ? "unknown issuer — the signature may verify, but WHO holds this key is not checked"
+      : `scvd.store (${attribution.status} key)`;
+  if (attribution.status === "unrecognised") {
+    notChecked.push(
+      "Issuer identity — the key was supplied by the caller, is not in this store's history, and no outside key directory is consulted; a verifying signature proves consistency with THAT key, never authorship.",
+    );
+  }
+
+  const pae = dssePreAuthenticationEncoding(payloadType, payloadBytes);
+  let verifiedIndex = -1;
+  let readable = 0;
+  for (const [index, entry] of signatures.entries()) {
+    const sig = typeof entry["sig"] === "string" ? base64ToBytes(entry["sig"]) : null;
+    if (!sig || sig.length !== 64) continue;
+    readable += 1;
+    if (await verifyBytesSignature(pae, sig, keyBytes)) {
+      verifiedIndex = index;
+      break;
+    }
+  }
+  if (readable === 0) {
+    checks.push({
+      name: "primary-signature",
+      outcome: "fail",
+      detail: "No entry in signatures[] carries a 64-byte base64 `sig`; the material exists but this desk cannot read it. Insufficient evidence, not proof of forgery.",
+    });
+    return done("insufficient_evidence", issuer);
+  }
+  if (verifiedIndex < 0) {
+    checks.push({
+      name: "primary-signature",
+      outcome: "fail",
+      detail: `None of the ${readable} readable signature${readable === 1 ? "" : "s"} verifies over the pre-authentication encoding with the supplied key. Either the envelope was altered after signing, or this is not the key that signed it.`,
+    });
+    return done("invalid", issuer);
+  }
+  const keyid = signatures[verifiedIndex]?.["keyid"];
+  checks.push({
+    name: "primary-signature",
+    outcome: "pass",
+    detail: `signatures[${verifiedIndex}]${typeof keyid === "string" ? ` (keyid ${keyid})` : ""} verifies over the DSSE pre-authentication encoding with the supplied key.`,
+  });
+
+  // The payload is the issuer's document; when it is JSON, its own
+  // dated fields are honoured the way every other receipt's are.
+  let payloadJson: Record<string, unknown> | undefined;
+  try {
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(payloadBytes));
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      payloadJson = parsed as Record<string, unknown>;
+    }
+  } catch {
+    payloadJson = undefined;
+  }
+  const expired = datedChecks({}, payloadJson, now, checks);
   return done(expired ? "expired" : "valid", issuer);
 }
 

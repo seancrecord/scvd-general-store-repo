@@ -71,6 +71,31 @@ export const TRUST_MODELS: Record<
   },
 };
 
+/**
+ * WHOSE EYES (2026-10-01). Three kinds of signed record can describe
+ * the same purchase, and a reader who holds one is apt to read it as
+ * the others: the receipt an agent's OWN runtime signs about what the
+ * agent did; this store's certificate, signed by a party to the sale;
+ * and a third-party observation, signed by someone who was party to
+ * nothing. Said once here, derived from the trust models above so the
+ * three sentences cannot drift from the register they summarise, and
+ * rendered on /attestation and on every receipt page. Seats, not
+ * occupants: no runtime, vendor or tool is named — the sentence is
+ * about the kind of signature, whoever made it.
+ */
+export const WHOSE_EYES = {
+  heading: "Whose eyes saw it",
+  runtime:
+    "A receipt your agent's own runtime signs is the agent's side of the counter: that key signed those bytes, in that order, and nothing in them has changed since. It is the agent's word about what the agent did.",
+  party: `A certificate from this store is ${TRUST_MODELS.self_signed.name.toLowerCase()} by a party to the sale. ${TRUST_MODELS.self_signed.means}`,
+  observer: `${TRUST_MODELS.third_party_observation.name} is the third kind. ${TRUST_MODELS.third_party_observation.means}`,
+  none:
+    "None of the three proves the report inside it was true. A runtime receipt and a certificate for the same purchase, side by side, are both parties' signed word (cited_artifact on the certificate is the shared link); only the third kind is a disinterested look, and it is labelled as such per artifact class below.",
+  /** The one line a receipt page carries; the rest is a click away. */
+  receipt_line:
+    "Whose eyes: this receipt is signed by a party to the sale, so it proves the store issued it with these fields on this date — not that the goods were good. A receipt your agent's own runtime signed is the other party's word about the same purchase. Neither is a disinterested observation; that is a third kind of artifact, and /attestation says which is which.",
+} as const;
+
 export interface ArtifactClass {
   /** What it is called on the artifact and in the URL. */
   id: string;
@@ -109,7 +134,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     name: "Certificates of purchase",
     trust_model: "self_signed",
     signs:
-      `The canonical JSON of the certificate's own fields, in a fixed declared order: ${CERT_FIELDS.join(", ")} — every one of those that is present. DERIVED FROM THE SIGNING CODE, NOT TYPED BESIDE IT: this sentence was hand-written and had fallen a day behind by 2026-07-31, omitting made_by and then the five payment fields, on the page whose entire job is stating exactly what bytes a signature covers. paid_usdc is the TOTAL settled rather than the tip, payer is the paying wallet (chain-verifiable, unlike a chosen name), settlement_tx is the on-chain transaction, and quote is sha256 over the RFC 8785 form of the five accepted x402 terms (scheme, network, asset, payTo, amount; EVM asset and payTo lowercased first) the buyer's payment signature was bound to — the same five the store's signed offer in the 402 commits to, so a held offer and a receipt can be matched without asking us. The exact string is served as signed_payload on the verify response, so nothing has to be reconstructed.`,
+      `The canonical JSON of the certificate's own fields, in a fixed declared order: ${CERT_FIELDS.join(", ")} — every one of those that is present. DERIVED FROM THE SIGNING CODE, NOT TYPED BESIDE IT: this sentence was hand-written and had fallen a day behind by 2026-07-31, omitting made_by and then the five payment fields, on the page whose entire job is stating exactly what bytes a signature covers. paid_usdc is the TOTAL settled rather than the tip, payer is the paying wallet (chain-verifiable, unlike a chosen name), settlement_tx is the on-chain transaction, and quote is sha256 over the RFC 8785 form of the five accepted x402 terms (scheme, network, asset, payTo, amount; EVM asset and payTo lowercased first) the buyer's payment signature was bound to — the same five the store's signed offer in the 402 commits to, so a held offer and a receipt can be matched without asking us. cited_artifact is a buyer-supplied <format>:<reference> naming an artifact outside this store — recorded verbatim and signed, never fetched or verified here. The exact string is served as signed_payload on the verify response, so nothing has to be reconstructed.`,
     does_not_prove:
       "That the goods were delivered, that they were any good, or that the buyer was who they said. It proves this store issued this certificate, with these fields, on this date.",
     verify_url: "/api/verify/{cert_id}",

@@ -53,6 +53,11 @@ export const UNIVERSAL_INPUTS: ReadonlySet<string> = new Set([
   "agent_name",
   "callback_url",
   "purpose",
+  // The cited artifact (2026-10-01): one more stateless optional
+  // string every item carries, signed like purpose. Left off this set
+  // it would have emptied the front counter on the day it shipped,
+  // because every item would suddenly have "an input".
+  "cited_artifact",
   // The disclosure block (lib/disclosure, 2026-09-18): six more
   // stateless optional strings every item carries. Same test as the
   // three above: a caller that sends none of them gets the same goods.
