@@ -715,3 +715,60 @@ test('source directory setup cannot reuse qualification from an unprepared works
   assert.equal(fs.existsSync(path.join(d,'buyers')),false);
  }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
 });
+
+
+function boundedReviewPlan(){const p=directoryPlan();p.package_review_flow='bounded-fetch-v1';return p;}
+function boundedReviewFixture(){
+ const d=root(),p=boundedReviewPlan();fs.mkdirSync(path.join(d,'evidence/source'),{recursive:true});
+ const files=Object.fromEntries(packageReviewSources(p).map(r=>[r.url,fs.readFileSync(new URL('../verifier/'+path.posix.basename(r.file),import.meta.url),'utf8')]));
+ const fake=path.join(d,'fetch.mjs');
+ const configure=(mode='ok')=>fs.writeFileSync(fake,`import fs from 'node:fs';const files=${JSON.stringify(files)};globalThis.fetch=async(url,options)=>{if(!(url in files)||options.redirect!=='error')throw Error('unexpected fetch');fs.appendFileSync('fetches.jsonl',JSON.stringify({url,redirect:options.redirect})+'\\n');return new Response(${JSON.stringify(mode)}==='bad-hash'?'tampered':${JSON.stringify(mode)}==='oversize'?'x'.repeat(5000000):files[url],{status:${mode==='http-error'?503:200}});};`);
+ configure();
+ const inspect=()=>spawnSync('/bin/sh',['-c',packageInspectionCommand(p)],{cwd:d,env:{...process.env,NODE_OPTIONS:'--import='+fake},encoding:'utf8',maxBuffer:p.budgets.output_bytes});
+ return {d,p,files,configure,inspect,cleanup:()=>fs.rmSync(d,{recursive:true,force:true})};
+}
+test('bounded source review requires its explicit version and prepared review directories',()=>{
+ for(const value of [true,false,null,'bounded-fetch',{},1]){const p=boundedReviewPlan();p.package_review_flow=value;assert.throws(()=>validatePlan(p),/review flow/i);}
+ const p=boundedReviewPlan();delete p.package_source_directories;assert.throws(()=>validatePlan(p),/review flow/i);
+});
+test('bounded source review fetches exact pinned files and prints accountable previews within its declared bound',()=>{
+ const f=boundedReviewFixture();try{
+  const result=f.inspect();assert.equal(result.status,0,result.stderr);
+  const rows=result.stdout.trim().split('\n').map(JSON.parse);assert.equal(rows.length,packageReviewSources(f.p).length);
+  const prompt=buildCapabilityPrompt(f.p,'claude',capabilityVectors(),packageReportFixture());
+  const budget=Number(prompt.match(/at most (\d+) UTF-8 output bytes/)[1]);assert.ok(Buffer.byteLength(result.stdout)<=budget);
+  assert.match(prompt,/saved workspace files/);assert.match(prompt,/host-managed/);assert.match(prompt,/remaining review gaps/);
+  for(const row of rows){const bytes=fs.readFileSync(path.join(f.d,row.file));assert.equal(hash(bytes),f.p.recipient.verifier.files[path.posix.basename(row.file)]);assert.equal(row.sha256,hash(bytes));assert.equal(row.source_bytes,bytes.length);assert.equal(row.displayed_utf8_bytes,Buffer.byteLength(row.untrusted_source_prefix));assert.equal(row.omitted_bytes,bytes.length-row.displayed_utf8_bytes);assert.ok(row.omitted_bytes>0);assert.ok(bytes.toString().startsWith(row.untrusted_source_prefix));}
+  const requests=fs.readFileSync(path.join(f.d,'fetches.jsonl'),'utf8').trim().split('\n').map(JSON.parse);assert.deepEqual(requests.map(r=>r.url),packageReviewSources(f.p).map(r=>r.url));
+  const second=f.inspect();assert.notEqual(second.status,0);assert.match(second.stderr,/already exists/);assert.equal(fs.readFileSync(path.join(f.d,'fetches.jsonl'),'utf8').trim().split('\n').length,requests.length);
+ }finally{f.cleanup();}
+});
+for(const mode of ['bad-hash','oversize','http-error'])test(`bounded source review refuses ${mode} without a successful inspection display`,()=>{
+ const f=boundedReviewFixture();try{f.configure(mode);const result=f.inspect();assert.notEqual(result.status,0);assert.equal(result.stdout,'');assert.match(result.stderr,mode==='bad-hash'?/hash mismatch/:mode==='oversize'?/read bound/:/HTTP 503/);}finally{f.cleanup();}
+});
+test('bounded source review refuses a symlinked parent before fetching anything',()=>{
+ const f=boundedReviewFixture(),outside=root();try{
+  fs.rmdirSync(path.join(f.d,'evidence/source'));fs.symlinkSync(outside,path.join(f.d,'evidence/source'),'dir');
+  const result=f.inspect();assert.notEqual(result.status,0);assert.match(result.stderr,/escaped workspace/);assert.equal(fs.existsSync(path.join(f.d,'fetches.jsonl')),false);assert.deepEqual(fs.readdirSync(outside),[]);
+ }finally{f.cleanup();fs.rmSync(outside,{recursive:true,force:true});}
+});
+test('bounded source review changes no adapter permissions or offline recipient and needs fresh qualification',async()=>{
+ const p=boundedReviewPlan(),old=structuredClone(p);delete old.package_review_flow;const context={codex:{disabled_skills:[]}};
+ for(const cell of p.cells)assert.deepEqual(adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,p),adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,old));
+ assert.deepEqual(recipientLaunch(p,'/tmp/w','/tmp/o',context),recipientLaunch(old,'/tmp/w','/tmp/o',context));
+ const d=root(),savedPath=process.env.PATH;try{process.env.PATH='';const probe=path.join(d,'probe');await runCapabilityProbe(old,probe);await assert.rejects(runCohort(p,path.join(d,'buyers'),{capability:probe}),/different plan/);assert.equal(fs.existsSync(path.join(d,'buyers')),false);}finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('bounded source review preserves hostile Unicode source as data and enforces a cumulative download cap',()=>{
+ const f=boundedReviewFixture();try{
+  const row=packageReviewSources(f.p).find(r=>r.file.endsWith('payment-identity.js'));
+  const source='\ufeff'+`require("node:fs").writeFileSync("executed-marker","bad");`+'😀\t'.repeat(1000);
+  f.files[row.url]=source;f.p.recipient.verifier.files['payment-identity.js']=hash(Buffer.from(source));f.configure();
+  const result=f.inspect();assert.equal(result.status,0,result.stderr);assert.equal(fs.existsSync(path.join(f.d,'executed-marker')),false);
+  const display=result.stdout.trim().split('\n').map(JSON.parse).find(r=>r.file===row.file);
+  assert.ok(source.startsWith(display.untrusted_source_prefix));assert.equal(display.displayed_utf8_bytes,Buffer.byteLength(display.untrusted_source_prefix));assert.deepEqual(fs.readFileSync(path.join(f.d,row.file)),Buffer.from(source));
+ }finally{f.cleanup();}
+ const limited=boundedReviewFixture();try{
+  limited.p.budgets.artifact_bytes=50000;const result=limited.inspect();assert.notEqual(result.status,0);assert.match(result.stderr,/read bound/);assert.equal(result.stdout,'');
+ }finally{limited.cleanup();}
+});
