@@ -73,7 +73,7 @@ export interface FreshSetRow {
    * nothing about delivery will be read as promising it.
    */
   battery: string;
-  observed_at: string;
+  observed_at: string | null;
   conditions: string[];
   not_checked: string[];
   /**
@@ -200,14 +200,8 @@ export function freshRows(round: WardRound, base: string): FreshSetRow[] {
         : {}),
       history_url: `${base}/corpus/host/${host.host}.json`,
       battery: host.battery ?? "unstated",
-      /*
-       * Per-row where the row knows it, the round's timestamp
-       * otherwise — stated either way rather than left to a reader
-       * to infer from the document it arrived in. The row knows it
-       * since 2026-09-05 (the probe stamps its knock); this line said
-       * "per-row" for two weeks while reading the seal.
-       */
-      observed_at: host.observed_at ?? round.at,
+      // The round's seal cannot establish request-age freshness.
+      observed_at: host.observed_at ?? null,
       conditions: [...(host.advisories ?? [])],
       not_checked: [...FRESH_SET_NOT_CHECKED],
     });

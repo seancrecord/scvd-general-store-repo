@@ -635,7 +635,7 @@ const FRESH_SET_SCHEMA: OpenApiObject = {
     observed_at: {
       type: "string",
       description:
-        "When the walk took its readings. Absent until the first census round has completed.",
+        "The round timestamp, not an individual request time. Each row carries its own observed_at, null when unknown. Absent before the first census.",
     },
     what_this_is: {
       type: "string",
@@ -4802,7 +4802,7 @@ const PASSPORT_HOST_SCHEMA: OpenApiObject = {
   properties: {
     payload: {
       type: "object",
-      description: "What was observed about that host, and when.",
+      description: "Dated unpaid challenge checks. summary.observation names the exact URL, recorded method and retained evidence links; settlement and successful delivery are not tested by that request. An undated latest reading cannot issue a passport.",
     },
     signed_payload: { type: "string" },
     signature: { type: "string" },
@@ -8092,7 +8092,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 observation_coverage_pct:{type:["number","null"],description:"Our coverage of this host, never the host's uptime"},
                 gaps_by_reason:{type:"object",additionalProperties:{type:"integer"}},
                 timeline:{type:"array",items:{type:"object",properties:{sequence:{type:"integer"},week:{type:"string"},taken_at:{type:"string",format:"date-time"},digest:{type:"string"},entry_url:{type:"string",format:"uri"},listed:{type:"boolean"},probed:{type:"boolean"},coverage_suspect:{type:"boolean"},note:{type:"string"},verdict:{type:"string"},gap:{type:"string"},url:{type:"string",format:"uri"},observed_at:{type:"string",format:"date-time"}}}},
-                verdict_changes:{type:"array",items:{type:"object",properties:{at:{type:"string",format:"date-time"},week:{type:"string"},from:{type:"string"},to:{type:"string"}}}},
+                verdict_changes:{type:"array",items:{type:"object",properties:{at:{type:["string","null"],format:"date-time"},week:{type:"string"},from:{type:"string"},to:{type:"string"}}}},
                 tier:{type:"object",properties:{tier:{type:"string"},line:{type:"string"},criteria_url:{type:"string",format:"uri"},coverage_suspect:{type:"boolean"},fraction:{type:"object",properties:{ready:{type:"integer"},rounds:{type:"integer"},weeks:{type:"string"}}}}},
                 pay_to:{type:"object",description:"Where the door asks to be paid, week by week, as salted digests (never verbatim); absent when no probed round captured an address. unchanged_since is the earliest round of the unbroken run carrying this same set.",properties:{digests:{type:"array",items:{type:"string"}},observed:{type:"object"},unchanged_since:{type:"object"},rounds_captured:{type:"integer"},rounds_probed:{type:"integer"},changes:{type:"array",items:{type:"object"}},how_to_match:{type:"string"}}},
                 corrections:{type:"string"}, what_this_cannot_see:{type:"array",items:{type:"string"}},

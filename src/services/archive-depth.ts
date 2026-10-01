@@ -258,5 +258,5 @@ export function depthLine(depth: ArchiveDepth): string {
   }
   return depth.never_observed
     ? `The census has never probed this host. What you would buy is not_observed, signed — an answer about our books, not about the door.`
-    : `${depth.rounds_probed} signed round${depth.rounds_probed === 1 ? "" : "s"} probed this host out of ${depth.rounds_since_first_sighting} since we first met it, ${depth.first_observed?.slice(0, 10)} to ${depth.last_observed?.slice(0, 10)}, with ${depth.verdict_changes} verdict change${depth.verdict_changes === 1 ? "" : "s"}.`;
+    : `${depth.rounds_probed} signed round${depth.rounds_probed === 1 ? "" : "s"} probed this host out of ${depth.rounds_since_first_sighting} since we first met it, ${depth.first_observed?.slice(0, 10) ?? "request time unknown"} to ${depth.last_observed?.slice(0, 10) ?? "request time unknown"}, with ${depth.verdict_changes} verdict change${depth.verdict_changes === 1 ? "" : "s"}.`;
 }

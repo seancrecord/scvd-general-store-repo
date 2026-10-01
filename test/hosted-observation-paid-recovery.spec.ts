@@ -91,7 +91,7 @@ async function purchase(id: string, door: LaborDoor, rail: number, host?: string
   const args = { url: `https://${host}/paid?subject=${canary}`, purpose: canary };
   const corpusKey = `${KV_KEYS.corpusPrefix}000000001`;
   const corpus = object(await sourceEnv.COUNTERS.get(corpusKey, "json"));
-  object(object(corpus.snapshot).round).hosts = [{ host, url: args.url, verdict: "ready", failed: [], advisories: [] }];
+  object(object(corpus.snapshot).round).hosts = [{ host, url: args.url, observed_at: NOW.toISOString(), verdict: "ready", failed: [], advisories: [] }];
   await sourceEnv.COUNTERS.put(corpusKey, JSON.stringify(corpus));
   const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(o => o.network === network)!;
   expect(offer).toBeDefined();

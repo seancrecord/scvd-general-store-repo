@@ -151,7 +151,7 @@ export async function clean(): Promise<void> {
   await sourceEnv.COUNTERS.put(`${KV_KEYS.corpusPrefix}000000001`, JSON.stringify({
     snapshot: { version: 1, sequence: 1, taken_at: NOW.toISOString(), previous_digest: null, source: "ward_round", week: "2026-W36",
       round: { week: "2026-W36", at: NOW.toISOString(), listed_resources: 1, coverage_suspect: false, capped: false, our_search_presence: true,
-        hosts: [{ host: "buyer-fixture.example", url: values.url, verdict: "ready", failed: [], advisories: [] }] } },
+        hosts: [{ host: "buyer-fixture.example", url: values.url, observed_at: NOW.toISOString(), verdict: "ready", failed: [], advisories: [] }] } },
     digest: "0".repeat(64), signature: "0".repeat(128), public_key: "0".repeat(64),
   }));
   await setOutTheWindow(sourceEnv, 3, NOW);

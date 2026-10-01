@@ -60,6 +60,15 @@ Implementation, starting prices, evidence boundaries and validation:
 [experiment record](docs/SPOT_CHECK_FOLLOW_THROUGH_2026-09.md).
 Release through the protected PR after CI; production demand remains unmeasured.
 
+## October 1 — unpaid observation scope
+
+Keeper-authorized repair following DELX's evidence request:
+[scope and validation record](docs/OBSERVATION_SCOPE_2026-10.md).
+Outreach and passports distinguish unpaid challenge checks from settlement
+and delivery; missing request dates remain unknown rather than inheriting
+snapshot dates. The linked record tracks validation; the keeper authorized
+the PR merge. Existing signed historical artifacts retain their original bytes.
+
 ## September 28 — AEO readability, release approved
 
 - [x] Update the [hand-check protocol](docs/AEO_HAND_CHECK.md) and [run template](docs/AEO_HAND_CHECK_RUN_TEMPLATE.md): preserve legacy prompts; cover the portfolio; freeze modes and eligibility; retain failures, source provenance and repeat waves. Documentation update only; no new observations or automation.

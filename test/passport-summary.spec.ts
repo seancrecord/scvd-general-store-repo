@@ -46,7 +46,7 @@ async function seedChain(): Promise<void> {
         host: "alpha.example",
         url: "https://alpha.example/x402",
         verdict: "ready",
-        checked_at: OBSERVED_AT,
+        observed_at: OBSERVED_AT,
         failed: [],
         advisories: [],
         offer: {
@@ -60,8 +60,7 @@ async function seedChain(): Promise<void> {
     ],
   };
   await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
-  // Pin the snapshot's taken_at: last_observed derives from it, and
-  // the age assertion below counts days from this exact instant.
+  // Pin the seal separately; freshness derives from the row stamp.
   const pass = await takeCorpusSnapshot(testEnv, {
     ...okCalendar,
     now: new Date(OBSERVED_AT),
