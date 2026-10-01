@@ -19,6 +19,11 @@ GET-only probing, plus a heartbeat label that called all host rows probed.
 The follow-up source changes correct the descriptions, link the public corpus
 and preserve the existing arithmetic and stored observations. Twenty focused
 ward tests, type checking and six Agent Finder descriptor checks passed.
+[PR #963](https://github.com/seancrecord/scvd-general-store-repo/pull/963)
+merged at `fe5fddf0` on October 1 at 16:59:32 UTC after all four test shards
+and the required check passed. Both merged-commit Worker builds succeeded.
+The authenticated post-deployment visual read remains pending: the next
+attempt again stopped when Brave reported user interaction.
 
 ## Publications
 
@@ -43,6 +48,16 @@ checks current source versions, registry integrity, every packed file, and
 provenance payload bindings to this repository/workflow/source commit. It does
 not independently verify the attestation signatures. A later reading is new
 evidence, not a rewrite of the initial 404s.
+
+### Later npm readback — October 1, 20:32–20:33 UTC
+
+All four submitted versions are now publicly available and tagged latest.
+[The retained readback](package-readback-verified.json) verifies each tarball
+against registry SHA-512 integrity and every packed file against source,
+including the publication commit named in the provenance payload. All four
+passed. Attestation signatures were not independently verified by this script.
+The earlier 404s remain evidence of the observed processing delay; no repeat
+publication was needed.
 
 Before publication, both live MCP doors passed SSE content type, trailing-slash
 308, CORS OPTIONS and tools/list checks. The three shared verifier handlers had

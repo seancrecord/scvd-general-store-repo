@@ -1323,9 +1323,9 @@ what you ruled and what is still yours to look at.
 
 - **October 1 publication follow-through — no repeat publication press.**
   CLI 0.4.0, preflight 0.3.1, MCP starter 0.2.0 and defects 0.21.0
-  publication workflows succeeded after the reviewed source release. The store
-  MCP registry 0.2.4 is independently verified active/latest. npm processing
-  and public tarball readback are distinct from a green publisher;
+  are verified public/latest, with tarball integrity and every packed file
+  checked against source on October 1 at 20:32–20:33 UTC. The store MCP
+  registry 0.2.4 is independently verified active/latest;
   [dated status and evidence](research/reporting-publication-2026-10-01/README.md).
   GitHub About/topics were corrected and read back. No buyer qualification.
 

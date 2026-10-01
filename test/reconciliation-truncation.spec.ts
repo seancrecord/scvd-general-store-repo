@@ -1,7 +1,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { reconcileSettles } from "@/lib/metrics";
+import { metricsMonth, reconcileSettles } from "@/lib/metrics";
 import { readBuyers } from "@/services/buyers";
 import { certificatesAgainstSettles } from "@/services/settle-sources";
 import type { Env } from "@/types";
@@ -45,8 +45,8 @@ describe("the books say which walk hit its cap", () => {
     }
   });
 
-  it("names every capped walk, in the order the reconciliation reads them", async () => {
-    fault.prefixes.add("metric:");
+  it.each(["paid", "paidh", "nopayer"])("names a capped %s scan beside other capped walks", async (kind) => {
+    fault.prefixes.add(KV_KEYS.metric(metricsMonth(), kind, ""));
     fault.prefixes.add(KV_KEYS.payerSettlePrefix());
     const capped = await reconcileSettles(testEnv);
     expect(capped.truncated).toEqual(["metric counters", "per-settle records"]);

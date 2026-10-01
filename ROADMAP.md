@@ -44,9 +44,12 @@ already produce. Do not grow by becoming a score.
 Keeper-requested wording correction: distinguish certificate purchases from
 legacy x402 payer tallies, explain the raise's scope, and label a capped
 reconciliation INCOMPLETE rather than PASS. Counter and repair logic unchanged.
-Follow-up remains: make the metric-counter comparison complete with a narrowly
-scoped or paged read, then investigate any remaining transaction-level difference.
-The wording correction alone does not close that coverage gap.
+The follow-up now reads only paid, house-paid and unattributed counters for
+every month since opening, so unrelated traffic metrics cannot consume the
+sales scan cap. Regression demonstrated before the fix; 25 focused tests and
+type checking pass. [Implementation and remaining live acceptance](docs/ACCOUNTING_COMPARISON_2026-10-01.md).
+Release and an authenticated read are still required before investigating any
+remaining transaction-level difference; no records or counters were repaired.
 
 ## September 30 — Spot Check product and handoff experiment
 
@@ -438,8 +441,8 @@ Buyer/model qualification remains deferred.
 
 | # | Review | Completion gate |
 | --- | --- | --- |
-| PR1 | **Reporting fixes released in #947 and #958; ward wording follow-through prepared.** [Changes and checks](docs/ADMIN_REPORTING_FIXES_2026-09-29.md). | Full CI and merged-commit builds passed for both releases. [Public readback](research/protocol-reporting-release-2026-10-01/README.md) verifies shared reporting scopes and unchanged old signed history. [Authenticated review](research/admin-reporting-live-2026-10-01/README.md) covers twelve report pages at the stated depth. Growth house corrections, desk event links, instrument month navigation and funnel wording are released. The final ward wording correction preserves counts and records; its release and post-deployment admin readback remain separate. Phone-width production layout and latency remain unmeasured. [Release evidence](research/reporting-publication-2026-10-01/README.md). |
-| PR4 | **Source corrections released; publication workflows and GitHub metadata update completed October 1.** [Audit](research/listing-review-2026-09-30/README.md), [follow-through and remaining hands](research/reporting-publication-2026-10-01/README.md). | Store MCP 0.2.4 is verified active/latest with exact source-manifest parity. Four npm publication jobs succeeded; registry processing and independent package readback are recorded separately, not inferred from workflow success. GitHub About/topics are updated and verified. Agent Finder #34 has a validated refresh patch but needs the owning cv-scvd account; the connected account cannot push to its fork. Existing MCPpedia/mcp.so corrections await maintainers. No duplicate outreach or new admission claim; unreadable venues remain unverified. |
+| PR1 | **Reporting fixes released in #947, #958 and #963.** [Changes and checks](docs/ADMIN_REPORTING_FIXES_2026-09-29.md). | Full CI and merged-commit builds passed for both releases. [Public readback](research/protocol-reporting-release-2026-10-01/README.md) verifies shared reporting scopes and unchanged old signed history. [Authenticated review](research/admin-reporting-live-2026-10-01/README.md) covers twelve report pages at the stated depth. Growth house corrections, desk event links, instrument month navigation and funnel wording are released. The final ward wording correction merged in #963 with all required checks and merged-commit builds passing. Post-deployment admin readback remains pending. Phone-width production layout and latency remain unmeasured. [Release evidence](research/reporting-publication-2026-10-01/README.md). |
+| PR4 | **Source corrections released; publication workflows and GitHub metadata update completed October 1.** [Audit](research/listing-review-2026-09-30/README.md), [follow-through and remaining hands](research/reporting-publication-2026-10-01/README.md). | Store MCP 0.2.4 is verified active/latest with exact source-manifest parity. All four npm releases are independently verified public/latest; tarball integrity and every packed file match source. Initial processing-delay reads are retained separately. GitHub About/topics are updated and verified. Agent Finder #34 has a validated refresh patch but needs the owning cv-scvd account; the connected account cannot push to its fork. Existing MCPpedia/mcp.so corrections await maintainers. No duplicate outreach or new admission claim; unreadable venues remain unverified. |
 
 ## LATER — option value, demand-tagged
 
