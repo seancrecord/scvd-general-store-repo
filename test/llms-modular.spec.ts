@@ -1182,8 +1182,14 @@ const BASE = "https://scvd.store";
 // 2026-10-01: the Spot Check additions, their free alternatives and refusal
 // vocabulary change the derived guide. Stashing this release reproduced
 // both main pins (14/14); restoring it reproduced the new pins below.
+// 2026-10-01: verifier source 1.10.0 changes only its derived package label.
+// Restoring only package.json version 1.9.0 reproduced both prior pins
+// (14/14); source 1.10.0 produces these two digests. No prose was edited.
+// Same-day draft-check source 1.11.0 changes that label once more.
+// The 1.9.0 reversal reproduced the old pins (14/14); 1.10.0 reproduced
+// the intermediate digests above, and these pins cover 1.11.0 only.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "12644a0666e972a387aee2a532f332d66e2dd4d7071ae10d658640c1d438c0e1";
+  "80e13fa33bae523f62871e4ba1c78fb8163c0f4dcfe9908441180b4f58eb3f4b";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1285,7 +1291,7 @@ describe("nothing was rewritten", () => {
       // restored to main, 21a941ef reproduced. Then across the merge with
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
-      "8e7ab1475ff68d6e5078d7a90d2825bc094b2d93252e5876e43715fbb297a0ff",
+      "ac6fbc5e731c73fb61c4ff5beeb0d4c895f5a11430c6b5ea5aca36e5d9697d73",
     );
   });
 

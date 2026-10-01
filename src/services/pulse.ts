@@ -346,6 +346,8 @@ export async function computePulse(env: Env, options: {
   now?: Date;
   /** A caller already reading these months can share those reads, not scan twice. */
   readMonth?: (month: string) => Promise<MonthLedger>;
+  /** Share the certificate correction walk with an enclosing report. */
+  readReclassification?: () => ReturnType<typeof monthReclassAdjustments>;
 } = {}): Promise<Pulse> {
   const now = options.now ?? new Date();
   // All-time includes every retained month; only the displayed window is capped.
@@ -375,7 +377,7 @@ export async function computePulse(env: Env, options: {
   const [corrections, reclassSplit, reclassTotal, latency, ledgers] =
     await Promise.all([
       readCorrections(env).catch(() => null),
-      monthReclassAdjustments(env).catch(() => null),
+      (options.readReclassification ? options.readReclassification() : monthReclassAdjustments(env)).catch(() => null),
       totalReclassified(env).catch(() => null),
       computeLatency(env),
       Promise.all(months.map((month) => options.readMonth ? options.readMonth(month) : readCommerceMonthLedger(env, month))),

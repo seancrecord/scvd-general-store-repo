@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { negotiate, prefersMarkdown } from "@/lib/accept";
+import { STORE_SERVICE_NAME } from "@/store/metadata";
 
 /**
  * WHAT A CRAWLER SEES WHEN IT DOES THE ORDINARY THING.
@@ -222,6 +223,13 @@ describe("the store's name, legible to a machine", () => {
     expect(html).toContain('<span class="flicker">O</span>');
     expect(html).toContain('class="neon-sub"');
     expect(html).toContain('<span class="flicker-slow">\'</span>');
+  });
+
+  it("shows the short store name on the signfront without relying on hidden text", async () => {
+    const page = await SELF.fetch("https://scvd.store/");
+    const visible = withoutHiddenSubtrees(await page.text());
+    const signfront = /<header class="signfront">([\s\S]*?)<\/header>/.exec(visible)?.[1] ?? "";
+    expect(stripTags(signfront)).toContain(STORE_SERVICE_NAME);
   });
 
   /**

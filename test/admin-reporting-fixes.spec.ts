@@ -193,3 +193,34 @@ it("keeps all-time native sales after their month leaves the displayed pulse win
   expect(pulse.months.some(row => row.month === month)).toBe(false);
   expect(pulse.all_time).toMatchObject({ total_organic_settled: 1, mpp_organic_settled: 1 });
 });
+
+it("growth applies the same house correction to sales, money and ratios, sharing the read with pulse", async () => {
+  const metrics = await import("@/lib/metrics");
+  const reclassify = await import("@/services/reclassify");
+  const correction = vi.spyOn(reclassify, "monthReclassAdjustments").mockResolvedValue({
+    months: { [month]: { settles: 3, usdc: 3 } }, truncated: false,
+  });
+  vi.spyOn(metrics, "readMonthLedger").mockImplementation(async (_env, requested) => {
+    const row = metrics.emptyMonthLedger(requested);
+    if (requested === month) {
+      row.revenueUsdc = 8;
+      row.items.hello = { challenges: 10, challengesHouse: 0, challengesInfra: 0,
+        settled: 5, settledHouse: 0, verifies: 0, verifiesHouse: 0, verifiesInfra: 0,
+        declines: 0, declinesHouse: 0, tiers: {} };
+    }
+    return row;
+  });
+  await ledger().recordMppSale({ id: "6".repeat(64), month, payer: `0x${"7e".repeat(20)}`,
+    transaction: `0x${"a7".repeat(32)}`, amount: "2500000", house: false, item: "hello" });
+  const growth = await computeGrowth(bindings, { now, months: [month] });
+  expect(growth.months[0]!.store).toMatchObject({ organic_settles: 3, revenue_usdc: 7.5, settles_per_hundred_402s: 20 });
+  expect(growth.months[0]!.free_instruments.funnel.organic_settles).toBe(3);
+  expect(growth.months[0]!.hypothesis.now.settles).toBe(3);
+  expect(correction).toHaveBeenCalledTimes(1);
+});
+
+it("growth refuses an incomplete house correction instead of reporting raw sales as organic", async () => {
+  const reclassify = await import("@/services/reclassify");
+  vi.spyOn(reclassify, "monthReclassAdjustments").mockResolvedValue({ months: {}, truncated: true });
+  await expect(computeGrowth(bindings, { now, months: [month] })).rejects.toThrow("Growth house correction is incomplete");
+});

@@ -72,7 +72,7 @@ Release through the protected PR after CI; production demand remains unmeasured.
 - [x] Reuse the existing item evidence summary in markdown and single-item JSON; move the HTML summary before the long description. Regression demonstrated red, then 35 focused tests, typecheck and bundle checks passed.
 - [x] Validate the combined patch: 837 full-suite files passed, 15,610 tests passed / one skipped; corpus publisher checks, typecheck, bundle and claims checks passed.
 - [x] Release `codex/aeo-answer-readability` (keeper approved September 28): PR #926 merged. No production visibility improvement claimed before the next hand check.
-- [ ] Complete ChatGPT with a working searched-answer session; retain the October 15 checkpoint and existing question-page decision gate.
+- [ ] Complete ChatGPT with a working searched-answer session; retain the October 15 checkpoint (scheduled at 09:00 America/New_York) and existing question-page decision gate.
 - [ ] Repeat the expanded job-specific questions across the other engines with fixed modes; separate UCP merchant integration from third-party profile validation. Existing weekly brief and partner evidence remain the distribution work, not new duplicate programs.
 
 ## September 28 — competitive choice and corpus reuse
@@ -254,6 +254,25 @@ decision, permission or budget increase. Old prompts and offline recipients are
 unchanged. This reduces prescribed oversized output; it does not claim new
 filesystem enforcement. The [separate acquisition](research/bounded-source-review-buyer-2026-10-01/REPORT.md) passed all three capability gates, then scored **0 complete / 4, 3 reporting failures, 1 incomplete**. Three eligible recipients completed without host drift. Ten verbatim reports and all originals are archived; no retry or earlier rescore. Native setup and reporting errors remain distinct from the passing source workflow.
 
+**TR3 draft identifiers, October 1 (source implementation):**
+[An optional saved-draft check](docs/BUYER_DRAFT_IDENTIFIERS_2026-10-01.md)
+compares long hexadecimal tokens against identifiers from fresh verification,
+retaining unknown values, omitted display counts and the draft hash. Controller
+replay catches the recorded shortened digest while the original signature stays
+valid. It does not check prose, identifier roles, short/split values or a later
+final answer. Source 1.11.0 is not publication or native acceptance; no frozen
+prompt, budget, original or score changes. Interpretation gaps remain open.
+
+**TR3 candidate originals, October 1 (source implementation):**
+[The offline source-link command](docs/BUYER_SOURCE_LINKS_2026-10-01.md)
+extracts candidate originals from a saved snapshot index or exact-URL host-history
+hints, retaining unsigned status, unknown subject presence, pagination gaps and
+omitted-link counts. It neither fetches nor verifies anything. Four controls
+failed before implementation; archived-input replay finds the original links
+without changing old results. Version 1.10.0 is source preparation, not npm
+publication or buyer acceptance. Recipient identifier rewriting remains a
+separate gap; no new native cohort is claimed.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The
@@ -419,9 +438,8 @@ Buyer/model qualification remains deferred.
 
 | # | Review | Completion gate |
 | --- | --- | --- |
-| PR1 | **Released in #947; authenticated admin readback remains open.** [Changes and checks](docs/ADMIN_REPORTING_FIXES_2026-09-29.md). | Full CI and merged-commit builds passed. [October 1 public readback](research/protocol-reporting-release-2026-10-01/README.md) verifies the shared reporting scopes and old signed history. Monthly totals, effective house classification, unavailable readings and shared navigation are released; authenticated production admin screens remain unverified. |
-| PR3 | **Discovery fixes released and publicly verified; guide cleanup committed locally.** [Release readback](research/protocol-reporting-release-2026-10-01/README.md), [guide cleanup](research/guide-readability-2026-09-30/README.md). | Native checkout guidance, discovery aliases and visible inspection scope passed live readback. The separate guide repair preserves every section, moves capability limits into the linked accountability guide and gives alternate developer URLs the same payment configuration. Production-shaped budgets, full-guide byte pins and navigation checks pass. Guide CI/release and live slim-guide readback remain; no new AEO or buyer qualification claimed. |
-| PR4 | **Source corrections released in #947; external follow-through remains open.** [Audit](research/listing-review-2026-09-30/README.md), [prepared corrections](research/listing-review-2026-09-30/CORRECTIONS.md). | Full CI passed and [live MCP discovery aliases](research/protocol-reporting-release-2026-10-01/README.md) include configured native MPP. Package publication, repository settings/external corrections and unreadable venues remain separate actions. No external submission, publication or admission is implied by this release. |
+| PR1 | **Reporting fixes released in #947 and #958; ward wording follow-through prepared.** [Changes and checks](docs/ADMIN_REPORTING_FIXES_2026-09-29.md). | Full CI and merged-commit builds passed for both releases. [Public readback](research/protocol-reporting-release-2026-10-01/README.md) verifies shared reporting scopes and unchanged old signed history. [Authenticated review](research/admin-reporting-live-2026-10-01/README.md) covers twelve report pages at the stated depth. Growth house corrections, desk event links, instrument month navigation and funnel wording are released. The final ward wording correction preserves counts and records; its release and post-deployment admin readback remain separate. Phone-width production layout and latency remain unmeasured. [Release evidence](research/reporting-publication-2026-10-01/README.md). |
+| PR4 | **Source corrections released; publication workflows and GitHub metadata update completed October 1.** [Audit](research/listing-review-2026-09-30/README.md), [follow-through and remaining hands](research/reporting-publication-2026-10-01/README.md). | Store MCP 0.2.4 is verified active/latest with exact source-manifest parity. Four npm publication jobs succeeded; registry processing and independent package readback are recorded separately, not inferred from workflow success. GitHub About/topics are updated and verified. Agent Finder #34 has a validated refresh patch but needs the owning cv-scvd account; the connected account cannot push to its fork. Existing MCPpedia/mcp.so corrections await maintainers. No duplicate outreach or new admission claim; unreadable venues remain unverified. |
 
 ## LATER — option value, demand-tagged
 
@@ -456,6 +474,7 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L9 | Solana parity gaps 3 to 5; scoped Tab follow-through | Gap 1 and the observatory shipped September 2; gap 2 (Solana bounty claims, Base payout) shipped September 5. Gap 3 is the Solana Launch Check; gaps 4 and 5 remain blocked under the recorded payout/screening constraints in SOLANA_PARITY.md. Recheck those constraints before any build. Tab work needs a named remaining workflow, reconciled with the package maintenance lane; the old "leftovers" label is not a build specification. |
 | L10 | Card family, cheap `/check/{host}`, D5 patronage sell-up | Demand / ink. |
 | L12 | Sponsored bounties: an operator pays to post their door on the board | Demand tag: an operator asks. Honest only if loud — public bounty, disclosed finder wallets, corpus flags the settles bounty-driven never organic. The quiet version is the wash trading we called out. Do it that way or not at all. |
+| L13 | **Inflow census carries the settlement mechanism.** The census reads USDC Transfer logs to every advertised payTo and cannot tell an EIP-3009 authorized transfer (the x402 exact scheme on an EVM rail: `AuthorizationUsed` paired with its Transfer, the pairing the settlement attestation already reads per transaction) from a plain `transfer()`. Add the one read and two counts beside the existing ones — transfers paired with an authorization, and USDC in them, over the same window and the same addresses — so the reading can say what share of inflow settled through the protocol the door advertises. Counts only, under the 2026-08-28 T1 ruling: no addresses, no hosts, never on a named door's page. | Research tag, not demand: the Agent Almanac's 2026-08-03 report (one ~22-hour Base-only window; its own correction says Base held 37% of the dollars it tracked) found 78% of active listed wallets settling on-protocol and roughly 80% of the dollars not. Secondhand and stale under rule 61; the row exists because the fingerprint is the first chain-only fact that separates a protocol payment from treasury movement, a shared wallet or an operator funding itself, which the census header already names as the three things an inflow can be. No claim until the store's own first live reading. Solana stays out: no EIP-3009 there, and a forced verdict would be a false plain-transfer. |
 
 ---
 
@@ -493,6 +512,7 @@ Closed rows, kept for the record. Nothing here is a queue.
 
 | # | Task | Why it was built | Acceptance, as met |
 | --- | --- | --- | --- |
+| PR3 | **Site discovery and slimmer guides released and verified October 1.** [Discovery release](research/protocol-reporting-release-2026-10-01/README.md), [guide release](research/guide-release-2026-10-01/README.md). | Make implemented protocol capabilities discoverable with exact scope, and keep payment instructions readable across canonical and alternate developer URLs. | #947 and #951 merged after required CI. Live discovery guidance agrees; developer guide is 24,499 characters, all three aliases match, all 52 sections survive intact and the full guide preserves the immediately preceding deployment’s bytes. Merged-source guide checks passed. New AEO visibility and buyer qualification are separate observations, not implied by this closeout. |
 | PR2 | **Public reporting repaired, released and verified October 1.** [Source review](research/public-reporting-2026-09-30/README.md), [release/readback](research/protocol-reporting-release-2026-10-01/README.md). | Separate x402 funnel scope from combined x402/native MPP sales and preserve signed history. | #947 merged after all required CI passed; live rail/stats/pulse scopes agree. July and August signed bytes, digests, signatures and keys match the pre-release baseline and verify independently. Dated JSON links and historical scope notes work. Future combined-month fields are covered by tests; no new sealed month was present or forced during readback. |
 | PS10 | **Shared-code review complete, September 29: no new extraction.** [Decision and concrete consumers](docs/PROTOCOL_REPORTING_REVIEW_2026-09-29.md#ps10--no-additional-extraction-now). | Close the conditional decision after PS6/PS7 without inventing a public core or merging different protocol semantics. | Shared engine, schema and catalog already exist; the standalone reader copy is byte-guarded. All 12 reader tests pass. No runtime source changed. |
 | PS9 | **UCP experiment closed, September 29, keeper decision.** Superseded by the shipped business profile, catalog, checkout and order capabilities. | The September 19 implementation and paid Base purchase already answered the store-support question; do not rebuild an experiment. | [Existing qualification](research/ucp-launch-2026-09-19/) retained. This closes the proposed experiment, not a claim of third-party UCP inspection or qualification on every rail/product. Follow-through is an audit of reporting, site discovery and listings. |

@@ -16,7 +16,7 @@ import { VALUE_PROPOSITION } from "@/store/copy/position";
  * the other is the category, which is what gets typed. The identity
  * stays on every storefront sentence (roadmap N2 retired "trust layer"
  * and "verification layer" as LEADS, and that stands). These ride in
- * the machine fields — alternateName, knowsAbout, the guides' vocabulary
+ * the machine fields — knowsAbout, the guides' vocabulary
  * block, the OpenAPI and MCP descriptions — so a question asked in
  * anyone's words still lands here.
  *
@@ -54,8 +54,8 @@ export const STORE_NAMES: readonly string[] = [
   STORE_SERVICE_NAME,
 ];
 
-/** alternateName for the Organization and WebSite nodes: names, then the category phrases. */
-export const ALTERNATE_NAMES: readonly string[] = [...STORE_NAMES, ...ASKED_FOR_NOUNS];
+/** Site and organization aliases are names; category phrases belong in knowsAbout. */
+export const ALTERNATE_NAMES: readonly string[] = STORE_NAMES;
 
 /**
  * THE ASKED-FOR NOUN PER INSTRUMENT. The house names (the Once-Over,

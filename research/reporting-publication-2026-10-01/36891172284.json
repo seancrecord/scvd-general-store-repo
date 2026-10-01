@@ -1,0 +1,131 @@
+{
+  "conclusion": "success",
+  "headSha": "bbb93e315127da5c912ac92e082c50d6e20fa3df",
+  "jobs": [
+    {
+      "completedAt": "2026-10-01T16:22:45Z",
+      "conclusion": "success",
+      "databaseId": 110466889794,
+      "name": "publish",
+      "startedAt": "2026-10-01T16:22:33Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-10-01T16:22:34Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-10-01T16:22:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:37Z",
+          "conclusion": "success",
+          "name": "Checkout",
+          "number": 2,
+          "startedAt": "2026-10-01T16:22:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:37Z",
+          "conclusion": "success",
+          "name": "Set up Node",
+          "number": 3,
+          "startedAt": "2026-10-01T16:22:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:37Z",
+          "conclusion": "success",
+          "name": "Resolve the package directory",
+          "number": 4,
+          "startedAt": "2026-10-01T16:22:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:38Z",
+          "conclusion": "success",
+          "name": "Check the package against what you typed",
+          "number": 5,
+          "startedAt": "2026-10-01T16:22:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:39Z",
+          "conclusion": "success",
+          "name": "Run the package's own tests",
+          "number": 6,
+          "startedAt": "2026-10-01T16:22:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:39Z",
+          "conclusion": "skipped",
+          "name": "Reproduce independent verifier vectors",
+          "number": 7,
+          "startedAt": "2026-10-01T16:22:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:39Z",
+          "conclusion": "skipped",
+          "name": "Verify the installed quickstart",
+          "number": 8,
+          "startedAt": "2026-10-01T16:22:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:40Z",
+          "conclusion": "success",
+          "name": "Show exactly what would be published",
+          "number": 9,
+          "startedAt": "2026-10-01T16:22:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:43Z",
+          "conclusion": "success",
+          "name": "Publish",
+          "number": 10,
+          "startedAt": "2026-10-01T16:22:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:43Z",
+          "conclusion": "success",
+          "name": "Say what happened",
+          "number": 11,
+          "startedAt": "2026-10-01T16:22:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:43Z",
+          "conclusion": "success",
+          "name": "Post Set up Node",
+          "number": 21,
+          "startedAt": "2026-10-01T16:22:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:43Z",
+          "conclusion": "success",
+          "name": "Post Checkout",
+          "number": 22,
+          "startedAt": "2026-10-01T16:22:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-10-01T16:22:43Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 23,
+          "startedAt": "2026-10-01T16:22:43Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36891172284/job/110466889794"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36891172284"
+}

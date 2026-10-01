@@ -1,15 +1,16 @@
+import { organizationRef } from "@/lib/jsonld";
+
 /**
- * THE CORPUS DATASET'S SHARED IDENTITY — one copy, two surfaces.
+ * THE CORPUS DATASET'S SHARED IDENTITY — one copy, every declaration.
  *
  * The Dataset is declared twice on purpose: at /corpus.json, where the
  * data lives, and as a top-level node in the storefront's JSON-LD,
  * where a crawler actually looks. The two declarations drifted the
  * first time they were written separately — the storefront's node
  * shipped with NO description at all, which Search Console reports as
- * an invalid Dataset ("Missing field description", 2026-08-16), and an
- * invalid item is one that cannot be cited. Name, description and
- * licence now live here and both surfaces import them, so the next
- * edit lands on both or on neither.
+ * an invalid Dataset ("Missing field description", 2026-08-16).
+ * Name, description and licence live here; the top-level declarations
+ * and nested parent references use them so an edit reaches each one.
  */
 
 export const CORPUS_DATASET_NAME =
@@ -72,15 +73,19 @@ export const CORPUS_DATASET_HUGGINGFACE_URL =
  */
 /**
  * A reference to the corpus as a whole, for the per-host and per-week
- * Dataset nodes' isPartOf: the live index as @id, the name, and the
- * concept DOI, so a round resolves to the dataset it belongs to and
- * that dataset resolves to its citation.
+ * Dataset nodes' isPartOf. Google validates this nested node as a
+ * dataset of its own (Search Console, 2026-10-01), so an @id and name
+ * alone still leave an invalid item. Carry the same description,
+ * licence and creator as the parent, alongside its citation identity.
  */
 export function corpusDatasetRef(base: string): Record<string, unknown> {
   return {
     "@type": "Dataset",
     "@id": `${base}/corpus.json`,
     name: CORPUS_DATASET_NAME,
+    description: CORPUS_DATASET_DESCRIPTION,
+    license: CORPUS_DATASET_LICENSE,
+    creator: organizationRef(base),
     ...corpusDatasetIdentityFields(),
   };
 }

@@ -15,7 +15,7 @@ Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.9.0.tgz
+npm install ./x402-verify-1.11.0.tgz
 ```
 
 Structured status fields require 1.4.0 or newer; older versions may not expose
@@ -606,13 +606,13 @@ all signed claims. Read the subject, observation date and gaps from the
 original and check them separately. A valid signature is not a freshness test.
 
 An exact endpoint reading was introduced in 1.6.0. The example below installs
-the report-capable source version 1.9.0 in a separate tooling directory;
+the report-capable source version 1.11.0 in a separate tooling directory;
 check its `--help` for the options you intend to use. If this version is not
 on the registry yet, use a locally qualified source checkout or tarball.
 Older published versions retain their documented JSON verification behavior.
 
 ```sh
-npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.9.0
+npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.11.0
 node tooling/node_modules/x402-verify/evidence-cli.mjs --help
 node tooling/node_modules/x402-verify/evidence-cli.mjs verify-source evidence/original.json \
   --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \
@@ -724,6 +724,79 @@ The dependency-free API is exported at `x402-verify/bundle`;
 copy both evidence-bundle.js and x402-verify.js when vendoring it.
 The API needs WebCrypto in its runtime; the Node CLI supplies Node's built-in
 WebCrypto when the global is unavailable.
+
+### Check identifiers before sharing a draft (source 1.11.0)
+
+A generated report can be correct while a later hand-written summary mistypes
+its digest. Save the draft, then compare its long hexadecimal tokens with a
+fresh local verification of the same original:
+
+```sh
+node verifier/evidence-cli.mjs verify-source evidence/original.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \
+  --subject EXACT_ENDPOINT_URL --check-identifiers evidence/draft.md
+```
+
+This optional check reads UTF-8 text, changes no files and fetches nothing.
+It recognizes whole ASCII hex tokens of at least 48 digits, with an optional
+`0x` prefix. The reference set includes the computed original and signed-message
+hashes, the supplied public key and the verified signature. With
+`--challenge-headers`, it also includes computed header and address hashes;
+those unsigned inputs do not become authenticated by matching them.
+
+`identifier_check` binds the check to the saved draft hash. It counts every
+candidate, including those omitted from the bounded display. At most 32 token
+readings and four reference-field names per reading are displayed, with omitted
+counts. Tokens longer than 128 hex digits are counted without printing their
+value. Draft input is limited to 128 KiB or the smaller `--max-bytes`.
+
+Exit 4 means unrecognized values need review or no candidates were found.
+Verification failures retain exit 1, incomplete evidence exit 3, and command
+errors exit 2. `all_candidates_recognized` is a lexical result, not approval of
+the report: swapped labels, omitted claims, negation, dates, shorter or split
+identifiers, addresses and prose are not checked. An unfamiliar value may be
+valid evidence outside this reference set. A later final answer can still
+change the checked draft. Cite the unchanged generated report instead of
+retyping its identifiers. `--report-out` cannot accompany this check.
+
+The option is prepared source; check installed `--help` and release readback
+before assuming npm availability. It changes no frozen recipient prompt or
+historical score and does not demonstrate native adoption.
+
+### Candidate originals from saved discovery responses (source 1.10.0)
+
+A corpus index lists **snapshots**, not merchants. Searching its text for an
+endpoint cannot establish whether a linked snapshot observes that endpoint.
+The unsigned host-history response has endpoint hints, but those are not
+verified observations either.
+
+After saving either response, inspect candidate links locally:
+
+```sh
+node verifier/evidence-cli.mjs sources evidence/corpus-index.json
+node verifier/evidence-cli.mjs sources evidence/host-history.json \
+  --subject 'https://merchant.example/paid?kind=one'
+```
+
+Check installed `--help` for `sources`; this source version does not establish
+registry publication. Index input may also receive `--subject`, but its entries
+are not filtered by merchant name. Host history requires it and matches the
+exact URL, including the query string. Only HTTPS links without credentials,
+fragments or whitespace are emitted. Links remain untrusted suggestions: the
+command does not fetch them or certify their destination.
+
+The JSON result keeps `authenticated: false` and `subject_presence: not_checked`,
+even for zero candidates. It counts invalid, duplicate, unselected and omitted
+rows and retains pagination status. `page_end_claimed` is the supplied page's
+claim, not proof of archive completeness. The original-file hash binds the
+reading to the saved response; it does not authenticate that response. Output
+contains whole links within 32 KiB (or the smaller explicit `--max-bytes`).
+
+Choose and retain an original, establish its issuer key separately, then use
+`verify-source --subject`. Only that verification can locate authenticated
+rows in the chosen snapshot. Keep missing dates unknown and assess the caller's
+freshness policy separately. The existing generated-report command preserves
+computed identifiers; source selection does not repair later prose errors.
 
 ### Large corpus snapshots (1.3.0)
 

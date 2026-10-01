@@ -1,5 +1,70 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-01 — document discovery and reader compatibility
+
+Follow-up read for the keeper-approved HTML and browser changes:
+[Workers HTMLRewriter](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/)
+documents streaming element handling and `onEndTag`, allowing missing links
+to be inserted after existing head links have been inspected without buffering
+the page. [Fetch §§4.8–4.10](https://fetch.spec.whatwg.org/#cors-preflight-fetch)
+separates permission for requested methods/headers from the actual response's
+CORS check. A read-only conditional preflight can therefore be answered
+without fetching a route merely to classify it; the existing machine-document
+response boundary still controls body exposure. The added allowance is limited
+to GET/HEAD and cache-validation headers, without credentials or payment headers.
+
+Read [RFC 9727 §§2–4](https://www.rfc-editor.org/rfc/rfc9727),
+[RFC 8288 §3](https://www.rfc-editor.org/rfc/rfc8288), and the
+[Fetch standard's exposed response headers](https://fetch.spec.whatwg.org/#http-access-control-expose-headers).
+The API catalog relation can be advertised from a publisher's pages; the
+well-known catalog must also answer HEAD with the discovery Link header.
+Existing links must survive additions and conditional responses. Browser
+script readers need Link exposed by CORS; the store already does that for
+published machine-readable documents.
+
+Live reads confirmed the HTML homepage's four discovery relations, but its
+JSON/Markdown variants had only canonical links. `/what` served both HTML
+and Markdown without Link headers. HEAD on `/.well-known/api-catalog`
+answered 200 without a Link header. The user-supplied isitagentready scanner
+passed homepage Link discovery and Markdown negotiation, plus robots,
+sitemap, DNS-AID, MCP, ARD and WebMCP checks. Those are scanner observations,
+not independent end-to-end qualifications of every protocol.
+
+Also read [A2A 1.0 §3.6](https://a2a-protocol.org/latest/specification/#36-versioning):
+an absent version header means 0.3, while 1.0 clients must request their
+version. The scanner reported missing `supportedInterfaces` on the default
+0.3 card; that is not evidence that the store lacks its negotiated 1.0 card.
+An explicit live `A2A-Version: 1.0` request returned both supported interfaces;
+the card and bounded audit are retained in
+[`research/document-discovery-2026-10-01/`](../research/document-discovery-2026-10-01/README.md).
+OAuth authorization-server metadata is not a missing login feature for an
+accountless store. No protocol or authentication change is justified by
+those two scanner grades alone.
+
+Limits: bounded public HTTP reads and source review; no paid calls, new
+directory submissions, or changes to crawler admission. A failed web-reader
+fetch of RFC 9110 was not used to justify negotiation changes.
+
+## 2026-10-01 — external directory and package records
+
+Read all seven keeper-supplied public URLs directly; each returned HTTP 200
+and identified SCVD or its Python preflight package:
+
+- [AllthingsPM](https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store): MCP directory page naming SCVD General Store, its description, maintainer and source repository.
+- [piwheels](https://www.piwheels.org/project/scvd-preflight/): Python package page, with a wheel listing and PyPI link. Package indexing, not store identity or device/runtime qualification.
+- [UCP.tools](https://ucptools.dev/directory/scvd.store): existing merchant listing, REST transport and UCP profile link. Its listed/validated date remains September 20; October 1 is our re-read date. Scores remain the directory's own.
+- [APIs.io provider](https://apis.io/providers/scvd-store/): SCVD General Store and Record Creative Co. LLC profile, API and developer-resource indexing. Its scores and classifications are not adopted.
+- [APIs.io A2A](https://apis.io/a2a/scvd-store/): SCVD Evidence Agent, canonical card/endpoint links and evidence skills. The page dates its card capture September 19, displays protocol 0.3.0 and separately claims A2A 1.0.0 structural conformance. These are recorded as that page's observations, not reconciled into a fresh compatibility claim.
+- [Enterprise DNA](https://enterprisedna.co/directories/mcp/seancrecord-scvd-general-store-repo/): repository-specific MCP directory page describing the observatory and its free checks.
+- [AI Agent Board](https://aiagentboard.org/mcp/store.scvd/general-store): public JSON record with the hosted MCP endpoint, repository/registry links and the board's dated working verdict and tool count. The verdict is an outside instrument reading, not our own execution test.
+
+Limits: the web reader retrieved only the APIs.io A2A page; the other reads
+initially failed there. Direct public HTTP reads subsequently succeeded for
+all seven after network access was enabled. No installation, tool execution,
+payment, security audit or directory submission was performed. Added store
+records feed the trust and discovery surfaces; piwheels stays in package and
+distribution documentation because its subject is the Python client.
+
 ## 2026-09-30 — production guide size and alternate URLs
 
 Read the [llms.txt v2 proposal](https://llmstxt.org/) (page modified August 10,
