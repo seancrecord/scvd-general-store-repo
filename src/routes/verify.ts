@@ -85,7 +85,7 @@ import {
   rotationsPerformed,
 } from "@/store/key-registry";
 import type { KeyAttribution } from "@/store/key-registry";
-import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec";
+import { ARTIFACT_CLASSES, artifactClassForItem, WHOSE_EYES } from "@/store/attestation-spec";
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { Certificate, HonoEnv } from "@/types";
@@ -485,6 +485,7 @@ function receiptPageHtml(
           ? `Signature verified just now (${escapeHtml(form)} form) — this receipt is genuine.`
           : "SIGNATURE DID NOT VERIFY. Do not trust this page's contents; the machine record below is the authority."
       }</strong></p>
+      <p class="menu-meta">${escapeHtml(WHOSE_EYES.receipt_line)}</p>
       ${row("Item", getMenuItem(cert.item) ? `<a href="/menu/${escapeHtml(cert.item)}">${escapeHtml(itemName)}</a>` : escapeHtml(itemName))}
       ${row("Date", escapeHtml(cert.date.slice(0, 10)))}
       ${row("Paid", escapeHtml(money))}

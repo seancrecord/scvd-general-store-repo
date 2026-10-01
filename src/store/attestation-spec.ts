@@ -71,6 +71,31 @@ export const TRUST_MODELS: Record<
   },
 };
 
+/**
+ * WHOSE EYES (2026-10-01). Three kinds of signed record can describe
+ * the same purchase, and a reader who holds one is apt to read it as
+ * the others: the receipt an agent's OWN runtime signs about what the
+ * agent did; this store's certificate, signed by a party to the sale;
+ * and a third-party observation, signed by someone who was party to
+ * nothing. Said once here, derived from the trust models above so the
+ * three sentences cannot drift from the register they summarise, and
+ * rendered on /attestation and on every receipt page. Seats, not
+ * occupants: no runtime, vendor or tool is named — the sentence is
+ * about the kind of signature, whoever made it.
+ */
+export const WHOSE_EYES = {
+  heading: "Whose eyes saw it",
+  runtime:
+    "A receipt your agent's own runtime signs is the agent's side of the counter: that key signed those bytes, in that order, and nothing in them has changed since. It is the agent's word about what the agent did.",
+  party: `A certificate from this store is ${TRUST_MODELS.self_signed.name.toLowerCase()} by a party to the sale. ${TRUST_MODELS.self_signed.means}`,
+  observer: `${TRUST_MODELS.third_party_observation.name} is the third kind. ${TRUST_MODELS.third_party_observation.means}`,
+  none:
+    "None of the three proves the report inside it was true. A runtime receipt and a certificate for the same purchase, side by side, are both parties' signed word (cited_artifact on the certificate is the shared link); only the third kind is a disinterested look, and it is labelled as such per artifact class below.",
+  /** The one line a receipt page carries; the rest is a click away. */
+  receipt_line:
+    "Whose eyes: this receipt is signed by a party to the sale, so it proves the store issued it with these fields on this date — not that the goods were good. A receipt your agent's own runtime signed is the other party's word about the same purchase. Neither is a disinterested observation; that is a third kind of artifact, and /attestation says which is which.",
+} as const;
+
 export interface ArtifactClass {
   /** What it is called on the artifact and in the URL. */
   id: string;
