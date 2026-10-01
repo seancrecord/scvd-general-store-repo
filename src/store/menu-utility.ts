@@ -2,6 +2,7 @@ import { COMPARISON_MIN_URLS, COMPARISON_MAX_URLS, COMPARISON_INPUT_DESCRIPTION 
 import { A2A_PRICE_USDC, A2A_MONEY, A2A_PROPOSITION } from "@/store/a2a-repair";
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check-terms";
 import { CLIENT_CAP_READABLE, CLIENT_CAP_USD } from "@/lib/client-spend-cap";
+import { SPOT_UNIT_PRICE_USDC, SPOT_BATCH_PRICE_USDC, SPOT_BATCH_MAX, SPOT_HOSTS_DESCRIPTION, CHANGE_CHECK_PRICE_USDC } from "@/lib/spot-check-terms";
 import type { MenuItem } from "@/types";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 
@@ -34,6 +35,23 @@ const GOOD_BUYER_PRICE_USDC = CLIENT_CAP_READABLE
  * human queue.
  */
 export const UTILITY_ITEMS: readonly MenuItem[] = [
+  // Keeper-authorized demand experiment, 2026-09-30. Adjacent to paid
+  // Spot Check use; demand for these additions is not yet established.
+  {
+    id: "change_check", name: "Change Check", listed_week: "2026-W40",
+    price_usdc: CHANGE_CHECK_PRICE_USDC, pricing: "fixed", cadence: "one_off", reads: "our_books", fulfillment: "instant",
+    free_alternative: { path_template: "/corpus/host/{host}.json", paid_adds: "Assembly of a signed comparison binding a retained earlier Spot Check and the current recorded evidence. No new probe." },
+    description: "Give a host and the certificate ID of an earlier Spot Check with a retained original. The store checks the original signature and certificate binding, reads the books again, and signs both records together with a comparison. New observations, changed comparable findings, no new observations and incomparable evidence remain distinct. Both originals, observation dates and gaps travel with the result. The underlying history and freshness check stay free. Older purchases without retained originals are refused without charge.",
+    note_402: "Half a cent for the two readings together, with what changed and what we still cannot see.",
+    constraints: ["host is a bare hostname; baseline_cert_id must identify a retained Spot Check for that same host", "No live request to the host; an unchanged record does not establish an unchanged endpoint", "Changed findings require dated observations of the same exact endpoint under the same named battery", "No exact historical price comparison, continuous coverage or safety verdict"],
+  },
+  {
+    id: "batch_spot_check", name: "Batch Spot Check", listed_week: "2026-W40",
+    price_usdc: SPOT_BATCH_PRICE_USDC, pricing: "fixed", cadence: "one_off", reads: "our_books", fulfillment: "instant",
+    description: `The books on up to ${SPOT_BATCH_MAX} hosts in one purchase: a signed manifest containing each host's signed Spot Check, observation dates, coverage and gaps. Reads existing records only; no live probes, rankings or provider recommendation. Fixed price even for a smaller batch. Each host's underlying facts remain free at /corpus/host/{host}.json. The purchase adds assembly and certificate binding.`,
+    note_402: "A penny for the set, with a line for every host and every blank left visible.",
+    constraints: [SPOT_HOSTS_DESCRIPTION, "Every requested host appears in the signed manifest; an unknown host is not a failed instrument", "If an instrument fails, the batch refuses before settlement; no successful-looking partial package", "Submitted host sets are available at the returned artifact URL; share that link only by choice"],
+  },
   // Demand tag: keeper-approved reuse for Coinbase agent research, 2026-09-24.
   // Desk reasoning; production demand has not yet been observed.
   {
@@ -566,7 +584,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     free_alternative: { path_template: "/corpus/host/{host}.json", paid_adds: "A signed, certificate-bound copy of the recorded facts, with the observation dates and gaps; no new probe." },
     listed_week: "2026-W35",
     name: "Spot Check",
-    price_usdc: 0.001,
+    price_usdc: SPOT_UNIT_PRICE_USDC,
     pricing: "fixed",
     cadence: "one_off",
     reads: "our_books",
@@ -576,7 +594,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     note_402:
       "A tenth of a cent for whatever's already on the card. We don't go and look — this is what the shop already saw, dated, with the blanks left blank.",
     constraints: [
-      "Give the host in the host query parameter: a bare hostname, e.g. example.com",
+      "Give the host in the host query parameter: a bare hostname, e.g. example.com (a url is read for its hostname)",
       "Reads what we already recorded — no request is made to the subject",
       "A host we've never met returns not_observed, which is an answer",
       NEVER_A_RANKING_SENTENCE,

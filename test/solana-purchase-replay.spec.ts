@@ -59,10 +59,11 @@ for (const { id } of MENU_ITEMS) for (const door of ["http", "mcp", "mcp-standar
   for (const retry of ["same-payment", "fresh-payment", "already-processed"] as const) {
     it(`${id} ${door} ${retry}: returns the original Solana good without another settlement`, async () => {
       const item = items.find(i => i.id === id)!, tool = shelves(item)[0]!;
-      const purpose = `SCVD-E2E-Solana-replay-${crypto.randomUUID()}`, args = { ...baseline(item), purpose };
+      const purpose = `SCVD-E2E-Solana-replay-${crypto.randomUUID()}`, args = { ...await baseline(item), purpose };
       const offer = (await call(item, "mcp", args, tool)).offers.find(o => o.network === SOLANA_NETWORK)!;
       expect(offer).toBeTruthy();
       const payment = await solPayment(offer), key = crypto.randomUUID();
+      const certificatesBefore = (await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys.length;
       const original = await purchase(id, door, args, payment, key);
       expect(idOf(original), "initial purchase must deliver a certificate").toBeTruthy();
       expect(ledger.size).toBe(1);
@@ -73,7 +74,7 @@ for (const { id } of MENU_ITEMS) for (const door of ["http", "mcp", "mcp-standar
       expect(facilitator.settleCalls, "replay must not ask the processor to settle again").toBe(before);
       expect(idOf(replay)).toBe(idOf(original));
       expect(ledger.size).toBe(1);
-      expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toHaveLength(1);
+      expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toHaveLength(certificatesBefore + 1);
       const verified = object(await (await request(`/api/verify/${idOf(replay)}`)).json());
       expect(verified.valid).toBe(true);
       expect(object(verified.certificate).purpose).toBe(purpose);

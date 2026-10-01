@@ -29,7 +29,7 @@ import { canonicalizeCertificateLegacy, signCertificate, signMessage } from "@/l
 async function seed(id: string, door: "http" | "mcp" | "standard", network: string, completed: boolean) {
   const item = items.find(item => item.id === id)!, tool = shelves(item)[0]!;
   const canary = `SCVD-E2E-${crypto.randomUUID()}`;
-  const args: Obj & { detail: string } = { ...baseline(item), detail: `${canary} — original brief` };
+  const args: Obj & { detail: string } = { ...await baseline(item), detail: `${canary} — original brief` };
   const quote = await call(item, door === "http" ? "http" : "mcp", args, tool);
   const wire = await evmPayment(quote.offers.find(offer => offer.network === network)!);
   const auth = object(object(wire.payload).authorization);

@@ -294,6 +294,20 @@ export interface MetricEvent {
    */
   mismatch?: { field: string; we_offered: string; you_sent: string };
   /**
+   * WHAT THE REFUSED REQUEST BROUGHT (2026-09-30, off the decline
+   * desk). A missing-input decline kept the code — which input was
+   * absent — and nothing about what was present, so `node` refused
+   * three times at spot_check on 2026-09-30 could not be told apart as
+   * a stock client retrying the bare door or a caller that had learned
+   * ?url= on twelve doors and carried it to the one that says ?host=.
+   * Those are different fixes. The NAMES of the inputs that arrived,
+   * never the values: a value is the buyer's text and has no place in
+   * the books, and a name is enough to answer the question. Bounded in
+   * count and length. [] is a request that brought nothing; absent is
+   * a row older than this field.
+   */
+  inputs_present?: string[];
+  /**
    * THE QUOTE AND THE DECISION (lib/quote-stamp.ts, 2026-09-21). On a
    * challenge row, the instant this 402 was minted. On a settle or a
    * decline, the instant of the 402 the buyer's echoed terms name, and
@@ -313,6 +327,8 @@ export interface EventSignals extends ChannelSignals, HouseSignals {
   signatureAgent?: string;
   /** The first field disagreement; see MetricEvent.mismatch. */
   mismatch?: { field: string; we_offered: string; you_sent: string };
+  /** Names of the inputs a refused request carried; see MetricEvent.inputs_present. */
+  inputsPresent?: string[];
   /** The quote stamp; see MetricEvent.quoted_at. */
   quotedAt?: string;
 }
@@ -337,6 +353,10 @@ export function mismatchSignal(
     you_sent: show(first.you_sent),
   };
 }
+
+/** How many arrived-input names one row keeps, and how long each may be. */
+export const INPUTS_PRESENT_CAP = 8;
+export const INPUT_NAME_CAP = 40;
 
 function buildEvent(
   env: Env,
@@ -368,6 +388,11 @@ function buildEvent(
   }
   if (signals.payer) {
     event.payer = signals.payer.slice(0, 64);
+  }
+  if (signals.inputsPresent !== undefined) {
+    event.inputs_present = signals.inputsPresent
+      .slice(0, INPUTS_PRESENT_CAP)
+      .map((name) => name.slice(0, INPUT_NAME_CAP));
   }
   if (signals.mismatch) {
     event.mismatch = {

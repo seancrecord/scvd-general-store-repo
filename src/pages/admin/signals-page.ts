@@ -184,6 +184,8 @@ export function renderSignalsPage(data: SignalsPageData): string {
     "A receipt read once inside the hour is the buyer checking its own purchase. One read again days later, by a browser, from a host that is not ours, is proof travelling. House and crawlers excluded.")}
   ${reading("Does anyone read what they bought", readsLine, `<h3>Reads by kind and artifact age</h3>${table(s.reads, ["kind:age", "reads"])}<h3>Re-verifications by artifact age (organic, from the verify counters)</h3>${table(s.verify_age, ["age", "verifies"])}`,
     "replay is the integration kit at /api/replay; order_poll and check_order are humans and agents waiting on the keeper; purchase_status is the private recovery read. under_1h reads are the buyer itself; over_1w reads are somebody else, which is the value.")}
+  ${reading("Optional next steps returned", `${total(s.follow_ups ?? {})} purchase responses carried Spot Check follow-up options.`, table(s.follow_ups ?? {}, ["item:event", "responses"]),
+    "House purchases excluded. Returned means included in a completed fulfillment response, not displayed to a human, read, clicked or accepted. Retries interrupted before response retention can repeat this event. Artifact retrievals are separate spot_evidence_read rows; source=spot-follow-up is a caller-declared attribution, not causal conversion evidence.")}
   ${reading("What they said it was for", `${s.purposes.length} purposes written this month${s.purposes_truncated ? ` (the list stopped at ${PURPOSES_CAP})` : ""}.`, purposesDetail,
     "Visitor-written, signed onto their own certificates, never instructions. The one qualitative signal the store has; read it on Sunday, not with a script.")}
   <section>

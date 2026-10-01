@@ -1,0 +1,53 @@
+{
+  "scope": "Local follow-through after the reporting release candidate; no guide deployment claimed.",
+  "production_shaped_before": {
+    "developers": 32551
+  },
+  "production_shaped_after": {
+    "index": 26760,
+    "areas": {
+      "developers": 24499,
+      "conformance": 10947,
+      "corpus": 29767,
+      "menu": 80659,
+      "trust": 24422
+    }
+  },
+  "regressions_before_fix": {
+    "failed": [
+      "production-shaped developer guide exceeds 30000 characters",
+      "native-enabled /docs alias differs from canonical",
+      "native-disabled /docs alias differs from canonical"
+    ],
+    "passed": [
+      "every original section remains whole in exactly one guide"
+    ]
+  },
+  "validation": {
+    "modular_alias_links_orphans": {
+      "files": 4,
+      "passed": 23
+    },
+    "developer_portal_recovery_positioning": {
+      "files": 3,
+      "passed": 100
+    },
+    "typecheck": "passed",
+    "build_check": "passed",
+    "docs_check": "passed"
+  },
+  "limits": [
+    "The menu guide retains its pre-existing explicit size exemption.",
+    "Guide cleanup is local; full CI and publication belong to its next release.",
+    "Public baseline predates PR #947; fixture before/after uses its release candidate and identical production-shape configuration.",
+    "No buyer, wallet, browser or AEO qualification."
+  ],
+  "october_1_integration": {
+    "base": "9028b994",
+    "focused_tests_passed": 123,
+    "files": 7,
+    "typecheck": "passed",
+    "build_check": "passed",
+    "full_guide_pins": "unchanged from integrated main; passed"
+  }
+}

@@ -103,3 +103,17 @@ The document check completed with its existing age reminders, and
 PR4 external listings remain separate review stages; the shared pulse
 repair is carried forward into PR2. No commit, PR, deployment or authenticated
 production readback was performed in this implementation pass.
+
+## Release closeout — October 1, 2026
+
+[PR #947](https://github.com/seancrecord/scvd-general-store-repo/pull/947)
+merged September 30 after all four test shards and the required gate passed.
+Both merged-commit Worker builds passed. The [public readback](../research/protocol-reporting-release-2026-10-01/README.md)
+passed all retained checks, including independent verification that the older
+monthly signed records are unchanged. Authenticated production admin screens
+remain unverified; no package publication, external correction or buyer
+qualification was performed.
+
+The separate [guide cleanup](../research/guide-readability-2026-09-30/README.md)
+is committed locally with production-shaped size and alias regression checks.
+It remains subject to its own release and live guide readback.

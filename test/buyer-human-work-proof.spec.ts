@@ -27,7 +27,7 @@ for (const id of ["the_collab", "aura_walk"]) for (const door of ["http", "mcp",
   it(`${id} ${door} ${network}: acceptance and completion bind the exact brief, target, goods and certificate`, async () => {
     const item = items.find(i => i.id === id)!;
     const detail = "  SCVD-E2E vector<int> & 🧵\nRead the whole brief.  ";
-    const args: Obj = { ...baseline(item), detail, callback_url: "https://buyer.example/human-proof" };
+    const args: Obj = { ...await baseline(item), detail, callback_url: "https://buyer.example/human-proof" };
     const offer = (await call(item, "mcp", args, shelves(item)[0]!)).offers.find(o => o.network === network)!;
     const first = await sendLabor(id, door, args, await signLabor(offer), crypto.randomUUID());
     expect(first.refused).toBe(false);

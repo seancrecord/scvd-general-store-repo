@@ -15,7 +15,7 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) for (const network 
     for (const keyMode of itemId === "context_anchor" ? ["missing", "changed", "original"] : ["missing"]) {
       it(`${door} ${network} ${itemId}: expired spent payment recovers with ${keyMode} key`, async () => {
         const item = items.find(item => item.id === itemId)!;
-        const args = { ...baseline(item), purpose: `SCVD-E2E-${crypto.randomUUID()}` };
+        const args = { ...await baseline(item), purpose: `SCVD-E2E-${crypto.randomUUID()}` };
         const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(o => o.network === network)!;
         const wire = await signLabor(offer), key = crypto.randomUUID();
         const first = await sendLabor(item.id, door, args, wire, key);

@@ -32,6 +32,7 @@ import { storeWalletStatement } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
 import type { SignedTrustProfile } from "@/services/trust-profile";
+import type { SignedSpotAddition } from "@/services/spot-evidence";
 import type { SignedSpotCheck } from "@/services/spot-check";
 import { storeMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
@@ -140,6 +141,7 @@ export interface InstantGoodsInput {
   trustProfile?: SignedTrustProfile;
   /** spot_check only: the signed reading, already made and bound. */
   spotCheck?: SignedSpotCheck;
+  spotAddition?: SignedSpotAddition;
   researchComparison?: SignedResearchComparison;
   /** the_case_file only: the assembly, already made and signed, and what was asked. */
   caseFile?: SignedCaseFile;
@@ -560,6 +562,17 @@ async function deliverGoods(
           how_to_verify: "Verify observation.signed_payload with observation.signature and the store public key. SHA-256 of those exact bytes equals evidence_hash and certificate.attests. observation.signature_jcs verifies the RFC 8785 canonicalization of observation.record. The outer signatures cover the purchase certificate; /api/verify/{cert_id} verifies it separately.",
         },
       };
+    }
+    case "change_check":
+    case "batch_spot_check": {
+      const observation = input.spotAddition;
+      if (!observation || observation.record.kind !== item.id) throw new Error("Spot evidence missing");
+      const record = observation.record;
+      return { deliverable: record.kind === "change_check"
+          ? `${record.host}: ${record.comparison.state}. ${record.comparison.reason}`
+          : `${record.readings.length} host records assembled, with dates and gaps. No live probes.`,
+        extras: { [item.id]: record, observation, evidence_hash: observation.evidence_hash,
+          how_to_verify: "Verify observation.signed_payload against observation.signature and observation.public_key. SHA-256 of those exact bytes equals evidence_hash and certificate.attests. The outer signature covers the certificate separately. Original nested signatures remain independently verifiable." } };
     }
     case "spot_check": {
       const spot = input.spotCheck;

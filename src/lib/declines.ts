@@ -1,5 +1,6 @@
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
+import { declineWalkersAmong, NO_UA, WALK_MIN_ITEMS, WALK_WINDOW_MS } from "@/lib/walkers";
 import type { Env } from "@/types";
 import { kvList } from "@/lib/kv-retry";
 import { isInfrastructureUserAgent } from "@/lib/channel";
@@ -139,6 +140,20 @@ export interface DeclineRow {
   payer?: string;
   /** The first field disagreement, and both values. */
   mismatch?: { field: string; we_offered: string; you_sent: string };
+  /**
+   * The NAMES of the inputs that did arrive, booked since 2026-09-30
+   * (never the values). [] is a request that brought nothing; absent
+   * is a row older than the annotation. See MetricEvent.inputs_present.
+   */
+  inputs_present?: string[];
+  /**
+   * WALKED (2026-09-30): this client was refused at WALK_MIN_ITEMS or
+   * more distinct doors inside WALK_WINDOW_MS in this window, and the
+   * number is the widest such walk. Read as machinery by behaviour —
+   * isNoiseFloor honours it — so it cannot be the buyer the shared-
+   * reason escalation needs. See lib/walkers.ts, the 09-30 amendment.
+   */
+  walk?: number;
 }
 
 export interface DeclineReport {
@@ -168,6 +183,17 @@ export interface DeclineReport {
   infrastructure_count: number;
   /** Distinct infrastructure clients that ever hit a decline. */
   infrastructure_clients: string[];
+  /**
+   * THE WALKERS BY BEHAVIOUR (2026-09-30): outside clients whose
+   * DECLINES alone form a catalog walk in this window — refused at
+   * WALK_MIN_ITEMS or more distinct doors inside WALK_WINDOW_MS —
+   * with the widest walk beside each. Counted as the noise floor
+   * everywhere infrastructure is, named here so the reader can check
+   * the verdict. Taken over EVERY decline the scan touched, filtered
+   * or not: a desk narrowed to one door must not lose the walk that
+   * ran across the other nineteen.
+   */
+  walkers: Record<string, number>;
   /** Reason string -> how many times, intent-bearing declines only. */
   by_reason: Record<string, number>;
   /**
@@ -421,7 +447,7 @@ export function readReason(raw: string): {
     const param = raw.slice("local:input_missing:".length);
     return {
       fault: "buyer",
-      reading: `A SIGNED request arrived without \`${param}\`, the input this door cannot work without, and was refused before the gate — no money moved. THE CHALLENGE NAMES IT NOW: since 2026-09-15 the resource description opens with "REQUIRES ?${param}=" ahead of the pitch, and the required-inputs extension beside it carries the parameter and a retry_url_template — both inside the PAYMENT-REQUIRED header every client decodes, verified live on all twelve input-taking doors on 2026-09-21. The 400 this buyer received carried required_params, the free input contract and a next_action too. So "they did not read the schema" is no longer the whole story, and neither is publishing it harder. One client doing this is theirs. The same thing from DIFFERENT clients is still ours, and what was ours was never the publishing: a stock x402 client probes the bare door, signs the challenge it got back and retries THE SAME URL, and nothing in the protocol tells it to retry another one — so the store was handing out a \`buy_url\` that refuses the purchase it advertises. Since 2026-09-21 every catalog row, the compact contract and this refusal itself carry \`buy_url_template\`: the same door with \`?${param}=<${param}>\` already in it, the identical string the 402's retry_url_template names. Since 2026-09-28 so do the ladder rungs, the room footers, the markdown twin of every item page, /what and the buying steps in skill.md, agents.md and the guide — the 2026-09-21 claim that the template was in every document stopped one hop short, and the ledger says so. A row dated after 2026-09-28 is a client that had a buyable URL in every document it read; one that sent a sibling door's name for the same input (url for urls, wallet for address, tx_hash for tx_hashes) is read as having brought it since the same day.`,
+      reading: `A SIGNED request arrived without \`${param}\`, the input this door cannot work without, and was refused before the gate — no money moved. THE CHALLENGE NAMES IT NOW: since 2026-09-15 the resource description opens with "REQUIRES ?${param}=" ahead of the pitch, and the required-inputs extension beside it carries the parameter and a retry_url_template — both inside the PAYMENT-REQUIRED header every client decodes, verified live on all twelve input-taking doors on 2026-09-21. The 400 this buyer received carried required_params, the free input contract and a next_action too. So "they did not read the schema" is no longer the whole story, and neither is publishing it harder. One client doing this is theirs. The same thing from DIFFERENT clients is still ours, and what was ours was never the publishing: a stock x402 client probes the bare door, signs the challenge it got back and retries THE SAME URL, and nothing in the protocol tells it to retry another one — so the store was handing out a \`buy_url\` that refuses the purchase it advertises. Since 2026-09-21 every catalog row, the compact contract and this refusal itself carry \`buy_url_template\`: the same door with \`?${param}=<${param}>\` already in it, the identical string the 402's retry_url_template names. Since 2026-09-28 so do the ladder rungs, the room footers, the markdown twin of every item page, /what and the buying steps in skill.md, agents.md and the guide — the 2026-09-21 claim that the template was in every document stopped one hop short, and the ledger says so. A row dated after 2026-09-28 is a client that had a buyable URL in every document it read; one that sent a sibling door's name for the same input (url for urls, wallet for address, tx_hash for tx_hashes) is read as having brought it since the same day, and since 2026-09-30 spot_check takes the hostname out of a url sent in place of host.`,
     };
   }
   if (reason.startsWith("local:input_invalid:")) {
@@ -672,11 +698,17 @@ export function isNoiseFloor(row: {
   house: boolean;
   channel: string;
   user_agent?: string;
+  /** A DeclineRow's walk width; a raw MetricEvent carries none. */
+  walk?: number;
 }): boolean {
   return (
     row.house ||
     row.channel === "infrastructure" ||
-    isInfrastructureUserAgent(row.user_agent)
+    isInfrastructureUserAgent(row.user_agent) ||
+    // By behaviour, not by name: see DeclineRow.walk. A raw event has
+    // no walk width, so the alert path that reads one event at decline
+    // time is unchanged — a walk is only visible with the window in hand.
+    row.walk !== undefined
   );
 }
 
@@ -792,7 +824,7 @@ export function escalateSharedReasons(report: DeclineReport): SharedReason[] {
     const note = escalated
       ? ` ESCALATED BY THE DESK: ${clients.length} DIFFERENT clients hit this same code in this window (${who}), which is the condition the sentence above names. Two implementations do not independently forget the same parameter. WHAT THE FIX WAS: the header had carried this requirement since 2026-09-15, checked live on every input-taking door on 2026-09-21, so a fifth place to read it bought nothing — the fault was never that the rule was unpublished, it was that the URL the store handed out could not be bought at. Since 2026-09-21 \`buy_url_template\` ships the door with its inputs already in place, in the catalog, the compact contract and the refusal alike, and since 2026-09-28 in the rungs, the room footers, the markdown twin, /what and the onboarding steps too. Check the date on these rows against those before reading any of them as a careless buyer.`
       : machinery_only && escalatesWhenShared(reason)
-        ? ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — AND EVERY ONE OF THEM IS MACHINERY the store's own table already names. That is a real finding about the CHALLENGE: two independent implementations read it and could not find this input, which is the discoverability test passing its condition. It is NOT a lost sale, and the fault stays where it was: none of these was ever going to pay, so calling it OURS would borrow the word for money nobody was going to spend. If a client the store counts as a buyer joins them, this becomes ours in the same breath.`
+        ? ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — AND EVERY ONE OF THEM IS MACHINERY, named by the store's own table or caught by the walk rule (refused at ${WALK_MIN_ITEMS} or more distinct doors inside ${WALK_WINDOW_MS / 1000} seconds). That is a real finding about the CHALLENGE: two independent implementations read it and could not find this input, which is the discoverability test passing its condition. It is NOT a lost sale, and the fault stays where it was: none of these was ever going to pay, so calling it OURS would borrow the word for money nobody was going to spend. If a client the store counts as a buyer joins them, this becomes ours in the same breath.`
         : ` SEEN FROM ${clients.length} DIFFERENT CLIENTS in this window (${who}) — the condition the sentence above names. The fault is unchanged and correctly so; what changed is that this is now a pattern rather than one client, which is what the reading asked you to watch for.`;
 
     for (const row of report.declines) {
@@ -827,6 +859,7 @@ export async function readDeclines(
     outside_clients: [],
     infrastructure_count: 0,
     infrastructure_clients: [],
+    walkers: {},
     by_reason: {},
     clients_by_reason: {},
     outside_clients_by_reason: {},
@@ -835,9 +868,16 @@ export async function readDeclines(
     rails_asked_for: {},
     unspecified: 0,
   };
-  const clients = new Set<string>();
-  const machines = new Set<string>();
   const seen = new Set<string>();
+  /**
+   * Every outside decline the scan touched, BEFORE the filter narrows
+   * anything: the walk rule needs the whole shelf in view, and a desk
+   * filtered to one door would otherwise lose the walk that ran across
+   * the other nineteen and read the walker as that door's one buyer.
+   * The index and the raw stream both carry a row; a duplicate touch
+   * is harmless, the rule counts distinct doors.
+   */
+  const touched: Pick<MetricEvent, "kind" | "house" | "user_agent" | "item" | "at">[] = [];
 
   /** One decline row, folded into the report. Deduped: the index and the raw stream both carry it. */
   const take = (event: MetricEvent): void => {
@@ -848,6 +888,9 @@ export async function readDeclines(
       report.oldest_row_seen = event.at;
     }
     if (event.kind !== "decline") return;
+    if (!event.house) {
+      touched.push({ kind: event.kind, house: event.house, item: event.item, at: event.at, ...(event.user_agent ? { user_agent: event.user_agent } : {}) });
+    }
     if (active && !declineMatches(event, filter as DeclineFilter)) return;
     const raw = event.note ?? "unspecified";
     const identity = `${event.at}|${event.item}|${raw}`;
@@ -873,47 +916,8 @@ export async function readDeclines(
       house: event.house,
       ...(event.payer ? { payer: event.payer } : {}),
       ...(event.mismatch ? { mismatch: event.mismatch } : {}),
+      ...(event.inputs_present ? { inputs_present: [...event.inputs_present] } : {}),
     });
-
-    if (event.house) {
-      return;
-    }
-    const who = event.user_agent ?? "(no user-agent)";
-    // Counted across BOTH columns on purpose. A lost reason measures
-    // the instrument, not the client: the nonce join drops it just as
-    // easily on a prober's row, and scoping this to intent-bearing
-    // rows would let the desk look healthy while it was losing them.
-    if (bare === "unspecified") {
-      report.unspecified += 1;
-    }
-    // Before the noise-floor split on purpose: see clients_by_reason.
-    // A second implementation failing the same way is evidence about
-    // our challenge whether or not it was ever going to pay.
-    const forReason = (report.clients_by_reason[raw] ??= []);
-    if (!forReason.includes(who)) {
-      forReason.push(who);
-    }
-
-    if (isNoiseFloor(event)) {
-      report.infrastructure_count += 1;
-      machines.add(who);
-      return;
-    }
-
-    // Past the noise-floor split: these are the clients the store
-    // counts as buyers, and the only ones whose refusal can move the
-    // fault to OURS. See SharedReason.machinery_only.
-    const outsideForReason = (report.outside_clients_by_reason[raw] ??= []);
-    if (!outsideForReason.includes(who)) {
-      outsideForReason.push(who);
-    }
-    report.outside_count += 1;
-    report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
-    const wanted = railAskedFor(raw);
-    if (wanted) {
-      report.rails_asked_for[wanted] = (report.rails_asked_for[wanted] ?? 0) + 1;
-    }
-    clients.add(who);
   };
 
   /**
@@ -980,12 +984,104 @@ export async function readDeclines(
 
   // Two sources, one order: newest first, as the desk has always shown them.
   report.declines.sort((a, b) => b.at.localeCompare(a.at));
-  report.outside_clients = [...clients];
-  report.infrastructure_clients = [...machines];
-  // Last, with the whole window in hand: the one reading readReason
-  // cannot do for itself. See escalateSharedReasons.
+  // The counts, with the whole window in hand — they used to run per
+  // row inside take(), and a per-row count cannot see a walk.
+  tallyDeclines(report, touched);
+  // Last: the one reading readReason cannot do for itself. See
+  // escalateSharedReasons.
   escalateSharedReasons(report);
   return report;
+}
+
+/**
+ * THE COUNTS, TAKEN AFTER THE SCAN (2026-09-30). They ran inside
+ * take() from the day the desk opened, one row at a time, which is
+ * the same blindness readReason has by design: a per-row count can
+ * see a name and cannot see a walk. So `Mozilla/5.0 (research)` —
+ * refused at every input-taking door on the shelf inside a minute,
+ * six sweeps in two days, one required input missing per door — sat
+ * in the intent-bearing column and was the one buyer the shared-
+ * reason escalation needs, and the desk printed OURS beside eight
+ * codes on its word. Same finding as 2026-09-16 (two crawlers is not
+ * a lost sale) with a client that does not name itself: the table
+ * catches a machine that admits what it is, and the walk rule the
+ * census, the funnel and the reclassification already share catches
+ * one by what it does.
+ *
+ * Nothing about which rows are SHOWN changes; the walker's rows stay
+ * on the page and in clients_by_reason, where they still count toward
+ * whether the input is discoverable. What moves is the column: they
+ * join the noise floor, so they cannot be the buyer that turns a
+ * shared reason OURS, and each row says on its face how wide the walk
+ * was so the reader can check the verdict rather than trust it.
+ */
+function tallyDeclines(
+  report: DeclineReport,
+  touched: Iterable<Pick<MetricEvent, "kind" | "house" | "user_agent" | "item" | "at">>,
+): void {
+  const walkers = declineWalkersAmong(touched);
+  report.walkers = Object.fromEntries(walkers);
+  const clients = new Set<string>();
+  const machines = new Set<string>();
+
+  for (const row of report.declines) {
+    if (row.house) continue;
+    const who = row.user_agent ?? NO_UA;
+    const raw = row.reason;
+    const bare = raw.startsWith("settle:") ? raw.slice(7) : raw;
+    const walk = walkers.get(who);
+    if (walk !== undefined) {
+      row.walk = walk;
+      row.reading = `${row.reading} WALKED: this client was refused at ${walk} distinct doors inside ${WALK_WINDOW_MS / 1000} seconds in this window — a signature carried down the shelf, not a purchase — so the desk reads it as machinery by behaviour (lib/walkers, the 2026-09-30 amendment). It still counts toward whether this input is discoverable; it is not a sale the store turned away.`;
+    }
+    // What the request brought, on the rows that can say. Booked as
+    // names since 2026-09-30, so an older row says nothing rather than
+    // "nothing arrived".
+    if (row.stage === "input" && row.inputs_present) {
+      row.reading = `${row.reading} ${
+        row.inputs_present.length === 0
+          ? "THIS REQUEST ARRIVED WITH NO INPUTS AT ALL — the bare door, signed."
+          : `THIS REQUEST ARRIVED WITH: ${row.inputs_present.map((name) => `\`${name}\``).join(", ")} (names only; the values are the buyer's and are not kept).`
+      }`;
+    }
+    // Counted across BOTH columns on purpose. A lost reason measures
+    // the instrument, not the client: the nonce join drops it just as
+    // easily on a prober's row, and scoping this to intent-bearing
+    // rows would let the desk look healthy while it was losing them.
+    if (bare === "unspecified") {
+      report.unspecified += 1;
+    }
+    // Before the noise-floor split on purpose: see clients_by_reason.
+    // A second implementation failing the same way is evidence about
+    // our challenge whether or not it was ever going to pay.
+    const forReason = (report.clients_by_reason[raw] ??= []);
+    if (!forReason.includes(who)) {
+      forReason.push(who);
+    }
+
+    if (isNoiseFloor(row)) {
+      report.infrastructure_count += 1;
+      machines.add(who);
+      continue;
+    }
+
+    // Past the noise-floor split: these are the clients the store
+    // counts as buyers, and the only ones whose refusal can move the
+    // fault to OURS. See SharedReason.machinery_only.
+    const outsideForReason = (report.outside_clients_by_reason[raw] ??= []);
+    if (!outsideForReason.includes(who)) {
+      outsideForReason.push(who);
+    }
+    report.outside_count += 1;
+    report.by_reason[raw] = (report.by_reason[raw] ?? 0) + 1;
+    const wanted = railAskedFor(raw);
+    if (wanted) {
+      report.rails_asked_for[wanted] = (report.rails_asked_for[wanted] ?? 0) + 1;
+    }
+    clients.add(who);
+  }
+  report.outside_clients = [...clients];
+  report.infrastructure_clients = [...machines];
 }
 
 /**

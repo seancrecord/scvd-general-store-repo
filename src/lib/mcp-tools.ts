@@ -312,7 +312,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // the routine pre-transaction question this cluster exists to
       // answer.
       "spot_check",
-      "research_comparison",
+      "change_check", "batch_spot_check", "research_comparison",
     ],
   },
   {
@@ -417,6 +417,11 @@ function purchaseOutputSchema(item: MenuItem): Schema {
         deliverable: str("The goods themselves, as text."),
         ...(["small_blessing", "daily_fortune"].includes(item.id) ? { purchased_text: BUYER_PROOF_SCHEMA } : {}),
         ...common,
+        ...(["spot_check", "change_check", "batch_spot_check"].includes(item.id) ? {
+          view_url: str("The retained original and optional human note, free; HTML or JSON."),
+          counter_note: {type:"object", description:"Optional text and a bookmark for the human or a later session. No instruction to send or buy; outside the signed evidence."},
+          follow_up: {type:"object", description:"Free alternatives and conditional, separately priced next tasks, with tool names, arguments and missing inputs. Outside the signed evidence."},
+        } : {}),
       },
       required: ["deliverable", "cert_id", "patron_number"],
     };
