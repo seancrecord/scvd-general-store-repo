@@ -54,6 +54,11 @@ import type { HonoEnv } from "@/types";
  * MCP-relevant response headers are exposed so the client can read
  * them off the reply. test/cors-discovery.spec.ts pins the
  * representative set and both sides of the boundary.
+ *
+ * Conditional browser reads outside that list also preflight (2026-10-01).
+ * Only GET/HEAD with cache validators is admitted there. OPTIONS does not
+ * run a document handler, and its permission cannot expose a response that
+ * fails the document/cookie/private checks on the actual read.
  */
 
 const DISCOVERY_EXACT = new Set([
@@ -110,11 +115,42 @@ function servesPublishedDocument(c: {
   // cache that only works when it does not help.
   if (c.res.status !== 200 && c.res.status !== 304) return false;
   if (c.res.headers.has("Set-Cookie")) return false;
+  if (/\bprivate\b/i.test(c.res.headers.get("Cache-Control") ?? "")) return false;
   return READABLE_DOCUMENT.test(c.res.headers.get("Content-Type") ?? "");
+}
+
+const CONDITIONAL_HEADERS = new Set(["if-none-match", "if-modified-since"]);
+
+/**
+ * A preflight carries header NAMES, not Accept's value, so it cannot tell
+ * HTML from a machine copy. Allow only a conditional GET/HEAD here; the
+ * actual response still has to pass servesPublishedDocument. Never invoke
+ * a GET handler to classify OPTIONS: some reads count visits or sign data.
+ */
+function conditionalPreflight(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): Response | undefined {
+  if (c.req.method !== "OPTIONS" || !c.req.header("Origin")) return;
+  if (c.req.path.startsWith("/admin") || c.req.path.startsWith("/api/buy/")) return;
+  const method = c.req.header("Access-Control-Request-Method");
+  if (method !== "GET" && method !== "HEAD") return;
+  const headers = (c.req.header("Access-Control-Request-Headers") ?? "")
+    .split(",").map((header) => header.trim().toLowerCase()).filter(Boolean);
+  if (!headers.length || !headers.every((header) => CONDITIONAL_HEADERS.has(header))) return;
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, HEAD",
+      "Access-Control-Allow-Headers": [...new Set(headers)].join(", "),
+      "Access-Control-Max-Age": "86400",
+      Vary: "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+    },
+  });
 }
 
 export const discoveryCors: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!isDiscoveryPath(c.req.path)) {
+    const preflight = conditionalPreflight(c);
+    if (preflight) return preflight;
     await next();
     if (servesPublishedDocument(c)) {
       c.res.headers.set("Access-Control-Allow-Origin", "*");
