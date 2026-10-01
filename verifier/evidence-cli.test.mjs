@@ -347,3 +347,122 @@ test("buyer guide command selects signed endpoint evidence without authenticatin
     });
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+test("sources reads index links offline without treating a missing merchant name as absence", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-source-links-"));
+  const input = join(dir, "index.json"), block = join(dir, "offline.mjs");
+  const bytes = JSON.stringify({ format: "scvd-corpus-index/v1", entries: [
+    { sequence: 10, status: "metadata_available", url: "https://scvd.store/corpus/10.json" },
+    { sequence: 11, status: "unreadable", url: "https://scvd.store/corpus/11.json" },
+  ], has_more: false, next: null });
+  await writeFile(input, bytes);
+  await writeFile(block, 'globalThis.fetch = () => { throw new Error("network_forbidden"); };');
+  try {
+    const result = await run(["sources", input, "--subject", "https://merchant.example/paid?kind=one"], ["--import", block]);
+    assert.equal(result.code, 0, result.stderr);
+    const reading = JSON.parse(result.stdout);
+    assert.equal(reading.input_kind, "corpus_index");
+    assert.equal(reading.authenticated, false);
+    assert.equal(reading.subject_presence, "not_checked");
+    assert.equal(reading.source_sha256, createHash("sha256").update(bytes).digest("hex"));
+    assert.deepEqual(reading.candidates.map(x => x.url), ["https://scvd.store/corpus/10.json", "https://scvd.store/corpus/11.json"]);
+    assert.equal(reading.candidates[1].metadata_status, "unreadable");
+    assert.deepEqual(reading.pagination, { has_more: false, next_url: null, state: "page_end_claimed" });
+    assert.match(reading.scope, /not.*absence/i);
+    assert.equal(await readFile(input, "utf8"), bytes);
+    assert.deepEqual((await readdir(dir)).sort(), ["index.json", "offline.mjs"]);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test("sources uses exact host-history URL hints and never promotes them to signed observations", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-source-links-"));
+  const input = join(dir, "history.json"), subject = "https://merchant.example/paid?kind=one";
+  try {
+    await writeFile(input, JSON.stringify({ host: "merchant.example", evidence_scope: { signed: false }, timeline: [
+      { url: "https://merchant.example/paid", entry_url: "https://scvd.store/corpus/8.json", sequence: 8 },
+      { url: subject, entry_url: "https://scvd.store/corpus/10.json", sequence: 10, observed_at: "2030-01-01T00:00:00Z", verdict: "ready" },
+      { url: subject, entry_url: "https://scvd.store/corpus/10.json", sequence: 10 },
+      { entry_url: "https://scvd.store/corpus/9.json", sequence: 9 },
+    ] }));
+    const result = await run(["sources", input, "--subject", subject]);
+    assert.equal(result.code, 0, result.stderr);
+    const reading = JSON.parse(result.stdout);
+    assert.equal(reading.input_kind, "host_history");
+    assert.equal(reading.subject_presence, "not_checked");
+    assert.deepEqual(reading.candidates, [{ url: "https://scvd.store/corpus/10.json", sequence: 10, metadata_status: null }]);
+    assert.equal(reading.unselected_rows, 2);
+    assert.equal(reading.duplicate_links, 1);
+    assert.equal(result.stdout.includes("2030-01-01"), false);
+    const absent = await run(["sources", input, "--subject", "https://merchant.example/other"]);
+    assert.equal(JSON.parse(absent.stdout).subject_presence, "not_checked");
+    assert.deepEqual(JSON.parse(absent.stdout).candidates, []);
+    assert.equal((await run(["sources", input])).code, 2, "host history needs an exact subject");
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test("sources counts unsafe, malformed and omitted links without hiding pagination gaps", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-source-links-"));
+  const input = join(dir, "index.json");
+  try {
+    await writeFile(input, JSON.stringify({ format: "scvd-corpus-index/v1", entries: [null,
+      { url: "javascript:alert(1)" }, { url: "https://user:secret@example.test/a" },
+      { url: "https://example.test/a#part" }, { url: "file:///tmp/a" },
+      ...Array.from({ length: 200 }, (_, i) => ({ sequence: i + 1, url: "https://example.test/" + i + "x".repeat(400) }))
+    ], has_more: true, next: "https://user:secret@example.test/next" }));
+    const result = await run(["sources", input, "--max-bytes", "131072"]);
+    assert.equal(result.code, 0, result.stderr);
+    const reading = JSON.parse(result.stdout);
+    assert.equal(reading.invalid_links, 5);
+    assert.equal(reading.candidate_links, 200);
+    assert.equal(reading.candidates.length + reading.omitted_candidates, 200);
+    assert.ok(reading.omitted_candidates > 0);
+    assert.ok(Buffer.byteLength(result.stdout) <= 32768);
+    assert.deepEqual(reading.pagination, { has_more: true, next_url: null, state: "incomplete" });
+    assert.equal(result.stdout.includes("secret"), false);
+    assert.equal((await run(["sources", input, "--max-bytes", "32"])).code, 2);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test("sources rejects unsupported inputs and verification/write flags", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-source-links-"));
+  const input = join(dir, "input.json");
+  try {
+    for (const value of [null, {}, { format: "scvd-corpus-index/v1", entries: {} }, { snapshot: {}, signature: "fake" }]) {
+      await writeFile(input, JSON.stringify(value));
+      assert.equal((await run(["sources", input])).code, 2);
+    }
+    await writeFile(input, JSON.stringify({ format: "scvd-corpus-index/v1", entries: [] }));
+    assert.equal((await run(["sources", input])).code, 0);
+    assert.equal((await run(["sources", input, "--max-bytes", "900"])).code, 2, "output metadata also obeys the caller cap");
+    for (const [flag, value] of [["--public-key", "0".repeat(64)], ["--evidence", input], ["--out", join(dir, "output")], ["--format", "markdown"], ["--report-out", join(dir, "report.md")], ["--subject", "https://user:pass@example.test"]]) {
+      assert.equal((await run(["sources", input, flag, value])).code, 2, flag);
+    }
+    assert.deepEqual(await readdir(dir), ["input.json"]);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+
+test("sources preserves pagination uncertainty and rejects undecodable source bytes", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "scvd-source-pages-")), input = join(dir, "index.json");
+  try {
+    for (const [page, expected] of [
+      [{ has_more: true, next: "https://scvd.store/corpus/index.json?cursor=two" }, "next_page_available"],
+      [{ has_more: false, next: "https://scvd.store/corpus/index.json?cursor=two" }, "incomplete"],
+      [{ has_more: false }, "incomplete"],
+      [{ next: null }, "incomplete"],
+    ]) {
+      await writeFile(input, JSON.stringify({ format: "scvd-corpus-index/v1", entries: [
+        { url: "https://example.test/a\u00a0b" }, { url: "https://example.test/a\u2028b" },
+        { url: "https:example.test/a" }, { url: "https://example.test/a#" },
+      ], ...page }));
+      const result = await run(["sources", input]);
+      assert.equal(result.code, 0, result.stderr);
+      const reading = JSON.parse(result.stdout);
+      assert.equal(reading.pagination.state, expected);
+      assert.equal(reading.invalid_links, 4);
+      assert.equal(reading.subject_presence, "not_checked");
+    }
+    await writeFile(input, Buffer.concat([Buffer.from('{"format":"scvd-corpus-index/v1","entries":[],"ignored":"'), Buffer.from([0xff]), Buffer.from('"}')]));
+    assert.equal((await run(["sources", input])).code, 2);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});

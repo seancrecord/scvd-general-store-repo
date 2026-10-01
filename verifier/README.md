@@ -15,7 +15,7 @@ Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.9.0.tgz
+npm install ./x402-verify-1.10.0.tgz
 ```
 
 Structured status fields require 1.4.0 or newer; older versions may not expose
@@ -606,13 +606,13 @@ all signed claims. Read the subject, observation date and gaps from the
 original and check them separately. A valid signature is not a freshness test.
 
 An exact endpoint reading was introduced in 1.6.0. The example below installs
-the report-capable source version 1.9.0 in a separate tooling directory;
+the report-capable source version 1.10.0 in a separate tooling directory;
 check its `--help` for the options you intend to use. If this version is not
 on the registry yet, use a locally qualified source checkout or tarball.
 Older published versions retain their documented JSON verification behavior.
 
 ```sh
-npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.9.0
+npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.10.0
 node tooling/node_modules/x402-verify/evidence-cli.mjs --help
 node tooling/node_modules/x402-verify/evidence-cli.mjs verify-source evidence/original.json \
   --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \
@@ -724,6 +724,41 @@ The dependency-free API is exported at `x402-verify/bundle`;
 copy both evidence-bundle.js and x402-verify.js when vendoring it.
 The API needs WebCrypto in its runtime; the Node CLI supplies Node's built-in
 WebCrypto when the global is unavailable.
+
+### Candidate originals from saved discovery responses (source 1.10.0)
+
+A corpus index lists **snapshots**, not merchants. Searching its text for an
+endpoint cannot establish whether a linked snapshot observes that endpoint.
+The unsigned host-history response has endpoint hints, but those are not
+verified observations either.
+
+After saving either response, inspect candidate links locally:
+
+```sh
+node verifier/evidence-cli.mjs sources evidence/corpus-index.json
+node verifier/evidence-cli.mjs sources evidence/host-history.json \
+  --subject 'https://merchant.example/paid?kind=one'
+```
+
+Check installed `--help` for `sources`; this source version does not establish
+registry publication. Index input may also receive `--subject`, but its entries
+are not filtered by merchant name. Host history requires it and matches the
+exact URL, including the query string. Only HTTPS links without credentials,
+fragments or whitespace are emitted. Links remain untrusted suggestions: the
+command does not fetch them or certify their destination.
+
+The JSON result keeps `authenticated: false` and `subject_presence: not_checked`,
+even for zero candidates. It counts invalid, duplicate, unselected and omitted
+rows and retains pagination status. `page_end_claimed` is the supplied page's
+claim, not proof of archive completeness. The original-file hash binds the
+reading to the saved response; it does not authenticate that response. Output
+contains whole links within 32 KiB (or the smaller explicit `--max-bytes`).
+
+Choose and retain an original, establish its issuer key separately, then use
+`verify-source --subject`. Only that verification can locate authenticated
+rows in the chosen snapshot. Keep missing dates unknown and assess the caller's
+freshness policy separately. The existing generated-report command preserves
+computed identifiers; source selection does not repair later prose errors.
 
 ### Large corpus snapshots (1.3.0)
 

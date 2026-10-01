@@ -245,6 +245,16 @@ decision, permission or budget increase. Old prompts and offline recipients are
 unchanged. This reduces prescribed oversized output; it does not claim new
 filesystem enforcement. The [separate acquisition](research/bounded-source-review-buyer-2026-10-01/REPORT.md) passed all three capability gates, then scored **0 complete / 4, 3 reporting failures, 1 incomplete**. Three eligible recipients completed without host drift. Ten verbatim reports and all originals are archived; no retry or earlier rescore. Native setup and reporting errors remain distinct from the passing source workflow.
 
+**TR3 candidate originals, October 1 (source implementation):**
+[The offline source-link command](docs/BUYER_SOURCE_LINKS_2026-10-01.md)
+extracts candidate originals from a saved snapshot index or exact-URL host-history
+hints, retaining unsigned status, unknown subject presence, pagination gaps and
+omitted-link counts. It neither fetches nor verifies anything. Four controls
+failed before implementation; archived-input replay finds the original links
+without changing old results. Version 1.10.0 is source preparation, not npm
+publication or buyer acceptance. Recipient identifier rewriting remains a
+separate gap; no new native cohort is claimed.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The
