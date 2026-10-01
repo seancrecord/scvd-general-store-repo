@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import { createHmac, randomBytes } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join, relative, resolve } from "node:path";
+import { createInterface } from "node:readline";
 import { inspectionExitCodeFor, renderInspectionLines } from "./inspection.js";
 
 /**
@@ -58,6 +61,12 @@ const VERSION = JSON.parse(
 function usage() {
   return `scvd ${VERSION} — the command line for ${BASE}
 
+  scvd init [--dry-run] [--yes] [--verifier] [--dir <path>]
+                                Wire the store's MCP door into the agent
+                                hosts found on this machine (Claude Code,
+                                Cursor; Codex gets a snippet to paste).
+                                Shows the exact change and asks first.
+                                No network, no key, no account.
   scvd inspect <url>            Observed protocols, advertised terms and
                                 gaps; no payment or signature verification.
   scvd preflight <url>          Does that x402 door answer a well-formed
@@ -109,6 +118,10 @@ function usage() {
 
 Flags
   --json                        Print the server's response verbatim.
+  --dry-run, --yes, --verifier, --dir <path>
+                                init only: look without writing; consent
+                                up front; wire the free verifier door
+                                instead of the store; the project to wire.
   --since <week>, --week <week> A signed week as the corpus spells it,
                                 e.g. 2026-W34.
   --base <url>                  Point at another origin (or SCVD_BASE_URL).
@@ -294,7 +307,170 @@ async function signedTradeRequest(itemId, bodyArgument, door) {
   return { status: response.status, json, remaining: null, reset: null };
 }
 
+/**
+ * scvd init — THE ONE COMMAND THAT WRITES A FILE, and why it exists.
+ *
+ * Every other command here is a read. This one wires the store's MCP
+ * door into the agent hosts a developer already runs, because the
+ * route that used to do that — a marketplace listing per host — is
+ * fifteen submissions deep and mostly pending (DISTRIBUTION.md), while
+ * the thing a host actually reads is one small JSON file in the
+ * project. The developer can write that file themselves in ten
+ * seconds if they know its shape; this prints the shape and, with
+ * their yes, writes it.
+ *
+ * WHAT IT WILL NOT DO. It never touches a file outside the project it
+ * is pointed at: a host's user-level configuration is theirs, and a
+ * tool that edits ~/.claude.json or ~/.codex/config.toml on a guess
+ * is the kind of tool nobody should run. Codex keeps its servers in
+ * TOML at user level, so Codex gets a snippet printed, never a write.
+ * It never overwrites an entry that already exists under the same
+ * name with a different value: that is somebody's decision, and it
+ * says so and exits 1. It never writes without consent — --yes, or a
+ * y at a terminal; with neither it prints the plan and stops. It
+ * never asks for a credential, because there is none to ask for: the
+ * door is a public URL. And it makes no network call at all.
+ *
+ * WHICH DOOR. The store door (/mcp) by default, as this repository's
+ * own .mcp.json and plugin manifest wire it; --verifier wires the
+ * free-only door (/mcp/verifier) instead, for a host that must never
+ * list a paid tool. Not both: the free tools appear on both doors
+ * under different names, and two of each is noise for a model.
+ */
+const INIT_SERVER = { store: "scvd-store", verifier: "scvd-verifier" };
+
+function initHosts(home, project) {
+  const has = (...parts) => existsSync(join(...parts));
+  return [
+    {
+      id: "claude-code",
+      name: "Claude Code",
+      found: has(home, ".claude") || has(home, ".claude.json") || has(project, ".claude"),
+      file: join(project, ".mcp.json"),
+      note: "Claude Code reads this file from the project root; the same shape the agent-plugins format uses.",
+      entry: (url) => ({ type: "http", url }),
+    },
+    {
+      id: "cursor",
+      name: "Cursor",
+      found: has(home, ".cursor") || has(project, ".cursor"),
+      file: join(project, ".cursor", "mcp.json"),
+      note: "Cursor, project scope; the remote-server shape its documentation gives.",
+      entry: (url) => ({ url }),
+    },
+    {
+      id: "codex",
+      name: "Codex",
+      found: has(home, ".codex"),
+      file: null,
+      note: "Codex keeps servers in TOML at user level. Printed for you to paste; this tool writes nothing outside the project.",
+      snippet: (name, url) => `[mcp_servers.${name}]\nurl = "${url}"`,
+    },
+  ];
+}
+
+function readJsonFile(file) {
+  if (!existsSync(file)) return { exists: false, json: {} };
+  const text = readFileSync(file, "utf8");
+  try {
+    const json = JSON.parse(text);
+    if (!json || typeof json !== "object" || Array.isArray(json)) return { exists: true, json: null };
+    return { exists: true, json };
+  } catch {
+    return { exists: true, json: null };
+  }
+}
+
+function planInit(options) {
+  const home = homedir();
+  const project = resolve(options.dir ?? process.cwd());
+  const name = options.verifier ? INIT_SERVER.verifier : INIT_SERVER.store;
+  const url = `${BASE}${options.verifier ? "/mcp/verifier" : "/mcp"}`;
+  const hosts = initHosts(home, project);
+  const found = hosts.filter((host) => host.found);
+  const rows = [];
+  const targets = found.length > 0 ? found : [{ ...hosts[0], name: "no host detected — the portable file", found: false }];
+  for (const host of targets) {
+    if (!host.file) {
+      rows.push({ host: host.name, file: null, server: name, url, status: "print_only", note: host.note, snippet: host.snippet(name, url) });
+      continue;
+    }
+    const existing = readJsonFile(host.file);
+    const entry = host.entry(url);
+    let status = "add";
+    if (existing.exists && existing.json === null) status = "unreadable";
+    else {
+      const current = existing.json.mcpServers?.[name];
+      if (current !== undefined) status = JSON.stringify(current) === JSON.stringify(entry) ? "already" : "conflict";
+    }
+    rows.push({
+      host: host.name, file: host.file, shown: relative(process.cwd(), host.file) || host.file,
+      server: name, url, status, note: host.note, entry,
+      ...(status === "conflict" ? { current: existing.json.mcpServers[name] } : {}),
+    });
+  }
+  return { project, found: found.map((host) => host.name), server: name, url, rows };
+}
+
+function writeInitRow(row) {
+  const existing = readJsonFile(row.file);
+  const json = existing.json ?? {};
+  const next = { ...json, mcpServers: { ...(json.mcpServers ?? {}), [row.server]: row.entry } };
+  mkdirSync(dirname(row.file), { recursive: true });
+  writeFileSync(row.file, `${JSON.stringify(next, null, 2)}\n`);
+}
+
+async function askYes(question) {
+  if (!process.stdin.isTTY) return null;
+  const rl = createInterface({ input: process.stdin, output: process.stderr });
+  const answer = await new Promise((resolveAnswer) => rl.question(question, resolveAnswer));
+  rl.close();
+  return /^y(es)?$/i.test(answer.trim());
+}
+
 const COMMANDS = {
+  async init(args, options) {
+    if (args.length > 0) fail("scvd init takes flags only: --dry-run, --yes, --verifier, --dir <path>.");
+    const plan = planInit(options);
+    const writable = plan.rows.filter((row) => row.status === "add");
+    const conflicts = plan.rows.filter((row) => row.status === "conflict" || row.status === "unreadable");
+    const describe = (row) => {
+      if (row.status === "print_only") return `  ${row.host}: print only — paste this yourself:\n${row.snippet.split("\n").map((line) => `      ${line}`).join("\n")}\n    (${row.note})`;
+      const verb = { add: "add", already: "already there, unchanged", conflict: `KEPT AS IS — ${row.server} already names ${JSON.stringify(row.current)}; not overwriting a decision that is not mine`, unreadable: "KEPT AS IS — the file is not JSON this tool can read; not overwriting it" }[row.status];
+      return `  ${row.shown}: ${verb}${row.status === "add" ? ` ${row.server} → ${row.url}` : ""}\n    (${row.note})`;
+    };
+    const header = `scvd init — wire ${plan.url} into the agent hosts found here. No network, no key, no account.\n  project: ${plan.project}\n  found: ${plan.found.length > 0 ? plan.found.join(", ") : "none (the portable .mcp.json is offered anyway)"}\n`;
+    if (!options.json) process.stdout.write(`${header}${plan.rows.map(describe).join("\n")}\n`);
+    if (options.dryRun) {
+      if (options.json) process.stdout.write(`${JSON.stringify({ ...plan, written: [], dry_run: true }, null, 2)}\n`);
+      else process.stdout.write("\nDry run: nothing written.\n");
+      return conflicts.length > 0 ? EXIT.verdictNegative : EXIT.ok;
+    }
+    let written = [];
+    if (writable.length > 0) {
+      const consent = options.yes ? true : await askYes(`\nWrite ${writable.length} file${writable.length === 1 ? "" : "s"}? [y/N] `);
+      if (consent === null) {
+        if (options.json) process.stdout.write(`${JSON.stringify({ ...plan, written: [], refused: "no terminal to ask on" }, null, 2)}\n`);
+        else process.stdout.write("\nNothing written: no terminal to ask on. Re-run with --yes to consent, or --dry-run to look.\n");
+        return EXIT.usage;
+      }
+      if (!consent) {
+        if (!options.json) process.stdout.write("\nNothing written.\n");
+        else process.stdout.write(`${JSON.stringify({ ...plan, written: [], refused: "declined" }, null, 2)}\n`);
+        return EXIT.ok;
+      }
+      for (const row of writable) {
+        writeInitRow(row);
+        written.push(row.file);
+        if (!options.json) process.stdout.write(`wrote ${row.shown}\n`);
+      }
+    } else if (!options.json) {
+      process.stdout.write("\nNothing to write.\n");
+    }
+    if (options.json) process.stdout.write(`${JSON.stringify({ ...plan, written }, null, 2)}\n`);
+    return conflicts.length > 0 ? EXIT.verdictNegative : EXIT.ok;
+  },
+
   async inspect(args, options) {
     const url = args[0];
     if (!url || args.length !== 1) fail("scvd inspect <url> — one endpoint to observe without payment.");
@@ -822,6 +998,15 @@ async function main(argv) {
       options[argument.slice(2)] = next;
       continue;
     }
+    if (argument === "--dry-run") { options.dryRun = true; continue; }
+    if (argument === "--yes" || argument === "-y") { options.yes = true; continue; }
+    if (argument === "--verifier") { options.verifier = true; continue; }
+    if (argument === "--dir") {
+      const next = argv[(index += 1)];
+      if (!next || next.startsWith("--")) fail("--dir wants a project directory after it.");
+      options.dir = next;
+      continue;
+    }
     if (argument === "--cap") {
       const next = argv[(index += 1)];
       if (!next) fail("--cap wants a number of US dollars after it.");
@@ -841,6 +1026,9 @@ async function main(argv) {
   }
   if (command !== "corpus-index" && (options.limit !== undefined || options.cursor !== undefined)) {
     fail("--limit and --cursor belong to corpus-index.");
+  }
+  if (command !== "init" && (options.dryRun || options.yes || options.verifier || options.dir !== undefined)) {
+    fail("--dry-run, --yes, --verifier and --dir belong to init.");
   }
   const handler = COMMANDS[command];
   if (!handler) {

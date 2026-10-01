@@ -51,6 +51,7 @@ export const CLI_RUN_FROM_SOURCE = `node cli/${CLI_BIN}.mjs preflight <url>`;
 
 /** Every command, so no surface has to keep its own list. */
 export const CLI_COMMANDS: readonly string[] = [
+  "scvd init [--dry-run] [--yes] [--verifier] [--dir <path>]",
   "scvd preflight <url>",
   "scvd conformance <file|->",
   "scvd receipt <file|->",
