@@ -125,5 +125,38 @@
       "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
     }
   ],
-  "limits": "Local checks do not substitute for all four hosted test shards and aggregate check. No registry publication, native adoption or repaired historical score is claimed."
+  "limits": "Local checks do not substitute for all four hosted test shards and aggregate check. No registry publication, native adoption or repaired historical score is claimed.",
+  "ci_followup": {
+    "finding": "The source-version label derived into the public guide changed both pinned guide digests. The earlier source-link PR failed hosted CI; the 1.11.0 branch reproduces both stale pins locally.",
+    "baseline_witness": "Restoring only manifest version 1.9.0 reproduces both old pins: 14/14. Intermediate 1.10.0 pins also pass 14/14.",
+    "fix": "Merge the 1.10.0 pin correction, then retain separate 1.11.0 digests without changing or weakening the prose guard.",
+    "logs": [
+      {
+        "file": "scvd-959-shard3-failure.log",
+        "sha256": "9ecd2aab172ac6d3c18bf8789b152f35df055050481d84ff180128a1d1f62170"
+      },
+      {
+        "file": "scvd-draft-identifiers-guide-repro.log",
+        "sha256": "f905acdf69183de5f10752cf088e98aac1084318bc800278e2584ffc3bcdde0b"
+      },
+      {
+        "file": "scvd-guide-version-baseline.log",
+        "sha256": "3e6b96f38e722ff3dce194dcdb3289f2fb8552ce96c47b63947b8dc22b544d00"
+      },
+      {
+        "file": "scvd-guide-version-source-links.log",
+        "sha256": "88bd3ea8db41ab7d4e91a584d916b67b8a9be40fabe7959e67b6642b1355b065"
+      },
+      {
+        "file": "scvd-source-links-guide-green.log",
+        "sha256": "306f5b5dabcfe07286877abced7005152dd9e46d20d30992f97d6afc77fde9f8"
+      }
+    ],
+    "final_guide_check": {
+      "state": "pass",
+      "tests": 14,
+      "log": "scvd-draft-identifiers-guide-green.log",
+      "sha256": "bca98319c2fa02790dd1d93d821dd54d6383b8e1d863347c569c7691f02e663e"
+    }
+  }
 }
