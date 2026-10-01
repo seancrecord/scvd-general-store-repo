@@ -196,6 +196,20 @@ claimed. Signed-original selection remains a distinct observed gap, despite
 existing guidance being present in the retained response. Freeze changed
 conditions under a stable qualified host context before further acquisition.
 
+**TR3 buyer setup qualification, October 1 (closed; buyer gate not met):**
+[The separate record](research/buyer-setup-qualification-2026-10-01/REPORT.md)
+uses merged #950 (`2095e2d4`), fresh public/package checks and the same budgets.
+Codex online and offline capability pass; Claude reaches 21 observed calls
+against the 20-call cap after six missing-directory downloads and six repeated
+fetches. Installation succeeded, but no installed CLI report or completed
+final remains. No buyers launched. The new buyer-only prefix was not exercised;
+the qualification prompt was unchanged. All three traces and two native finals
+plus one last message are archived. External test overlap is disclosed; no
+native timing interruption. No retry, rescore or budget increase. Next candidate:
+explicitly prepare empty source-review parent directories, derived from existing
+paths, as a separately frozen condition. Not implemented here. Signed-original
+acquisition/interpretation stays separate; TR3 acceptance remains open.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The

@@ -1,0 +1,11 @@
+{
+  "samples": 72,
+  "battery_samples": 0,
+  "ac_samples": 72,
+  "max_vitest_processes": 2,
+  "max_workerd_processes": 4,
+  "sha256": "a34a79a760711b0275f8cc3c19812a21ea09e183e97ec59f7b1ffc471f8e6ec0",
+  "limits": "Sample observations, not continuous proof of host state. Battery operation explicitly permitted by keeper. No controller tests during native qualification. Existing timing guards unchanged.",
+  "overlap_samples": 26,
+  "first_overlap_at": "2026-10-01T14:00:44.136038+00:00"
+}

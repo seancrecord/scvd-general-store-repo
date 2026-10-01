@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-01",
+  "typecheck": "pass",
+  "focused_qualification_controls": {
+    "passed": 85,
+    "failed": 0
+  },
+  "documentation": "pass",
+  "record_integrity": "Public copies match archive manifest; every archived destination hash verified; no buyers launched.",
+  "full_suite": "Required on pull request before merge; not repeated locally for record-only changes."
+}
