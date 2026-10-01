@@ -236,6 +236,15 @@ the neutral workspace; its exact bytes are captured, and the boundary breach is
 disclosed. Review inspection output and host isolation before another changed
 experiment; no retry, relaxed gate or native buyer benefit claimed.
 
+**TR3 bounded source review, October 1 (new explicit condition):**
+[The reviewed fetch flow](docs/BUYER_BOUNDED_SOURCE_REVIEW_2026-10-01.md)
+combines only pinned public-source acquisition and hash checks into one bounded
+step, displays partial previews with omitted-byte counts, and directs further
+reads to saved workspace files. No source execution, preloaded answer, review
+decision, permission or budget increase. Old prompts and offline recipients are
+unchanged. This reduces prescribed oversized output; it does not claim new
+filesystem enforcement. Fresh qualification required; prior attempts unchanged.
+
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
 and the existing `--subject` selector across JSON, HTML and Markdown. The
