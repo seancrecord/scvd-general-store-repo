@@ -45,6 +45,26 @@ Limits: bounded public HTTP reads and source review; no paid calls, new
 directory submissions, or changes to crawler admission. A failed web-reader
 fetch of RFC 9110 was not used to justify negotiation changes.
 
+## 2026-10-01 — external directory and package records
+
+Read all seven keeper-supplied public URLs directly; each returned HTTP 200
+and identified SCVD or its Python preflight package:
+
+- [AllthingsPM](https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store): MCP directory page naming SCVD General Store, its description, maintainer and source repository.
+- [piwheels](https://www.piwheels.org/project/scvd-preflight/): Python package page, with a wheel listing and PyPI link. Package indexing, not store identity or device/runtime qualification.
+- [UCP.tools](https://ucptools.dev/directory/scvd.store): existing merchant listing, REST transport and UCP profile link. Its listed/validated date remains September 20; October 1 is our re-read date. Scores remain the directory's own.
+- [APIs.io provider](https://apis.io/providers/scvd-store/): SCVD General Store and Record Creative Co. LLC profile, API and developer-resource indexing. Its scores and classifications are not adopted.
+- [APIs.io A2A](https://apis.io/a2a/scvd-store/): SCVD Evidence Agent, canonical card/endpoint links and evidence skills. The page dates its card capture September 19, displays protocol 0.3.0 and separately claims A2A 1.0.0 structural conformance. These are recorded as that page's observations, not reconciled into a fresh compatibility claim.
+- [Enterprise DNA](https://enterprisedna.co/directories/mcp/seancrecord-scvd-general-store-repo/): repository-specific MCP directory page describing the observatory and its free checks.
+- [AI Agent Board](https://aiagentboard.org/mcp/store.scvd/general-store): public JSON record with the hosted MCP endpoint, repository/registry links and the board's dated working verdict and tool count. The verdict is an outside instrument reading, not our own execution test.
+
+Limits: the web reader retrieved only the APIs.io A2A page; the other reads
+initially failed there. Direct public HTTP reads subsequently succeeded for
+all seven after network access was enabled. No installation, tool execution,
+payment, security audit or directory submission was performed. Added store
+records feed the trust and discovery surfaces; piwheels stays in package and
+distribution documentation because its subject is the Python client.
+
 ## 2026-09-30 — production guide size and alternate URLs
 
 Read the [llms.txt v2 proposal](https://llmstxt.org/) (page modified August 10,

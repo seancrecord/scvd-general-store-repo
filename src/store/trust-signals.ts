@@ -106,6 +106,42 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store",
+    registry: "AllthingsPM — MCP server directory",
+    protocols: ["mcp"],
+    confirmed: "2026-10-01",
+    what_it_proves: "That AllthingsPM publishes a SCVD General Store MCP page naming seancrecord and linking to the source repository. This establishes directory presence, not successful tool execution. Not an endorsement and not an audit.",
+  },
+  {
+    url: "https://apis.io/providers/scvd-store/",
+    registry: "APIs.io — provider directory",
+    protocols: ["general"],
+    confirmed: "2026-10-01",
+    what_it_proves: "That APIs.io publishes a SCVD General Store provider profile identifying Record Creative Co. LLC and indexing the store's APIs and developer resources. Its scores and classifications remain its own. This establishes indexing, not independent verification of every catalogued claim. Not an endorsement and not an audit.",
+  },
+  {
+    url: "https://apis.io/a2a/scvd-store/",
+    registry: "APIs.io — A2A agent-card directory",
+    protocols: ["a2a"],
+    confirmed: "2026-10-01",
+    what_it_proves: "That APIs.io publishes an SCVD Evidence Agent record linking to the canonical Agent Card and A2A endpoint, with the card's evidence skills. The page attributes its captured card to September 19 and displays protocol 0.3.0 alongside an A2A 1.0.0 structural-conformance label; those are the directory's dated reading and claim, not a fresh protocol qualification by this store. Not an endorsement and not an audit of task execution or purchases.",
+  },
+  {
+    url: "https://enterprisedna.co/directories/mcp/seancrecord-scvd-general-store-repo/",
+    registry: "Enterprise DNA — MCP server directory",
+    protocols: ["mcp"],
+    confirmed: "2026-10-01",
+    what_it_proves: "That Enterprise DNA publishes a repository-specific MCP listing describing SCVD's evidence observatory and free endpoint and receipt checks. Directory descriptions and classifications are the publisher's account, not a fresh test of those capabilities. Not an endorsement and not an audit.",
+  },
+  {
+    url: "https://aiagentboard.org/mcp/store.scvd/general-store",
+    registry: "AI Agent Board — MCP directory and endpoint check",
+    kind: "instrument",
+    protocols: ["mcp"],
+    confirmed: "2026-10-01",
+    what_it_proves: "That AI Agent Board publishes a record for store.scvd/general-store with the hosted MCP endpoint, repository and registry links. Its public JSON reports a dated working verdict and tool count. That is the board's bounded endpoint reading, not proof that every tool works or a paid purchase succeeds. Not an endorsement and not an audit.",
+  },
+  {
     url: `https://agenterc.com/explore/base/${SCVD_AGENT_ID}`,
     registry: "AgentERC — ERC-8004 agent index",
     protocols: ["erc8004"],
@@ -123,8 +159,8 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     url: "https://ucptools.dev/directory/scvd.store",
     registry: "UCP.tools — community merchant directory",
     protocols: ["ucp"],
-    confirmed: "2026-09-20",
-    what_it_proves: "That UCP.tools published an operator-submitted SCVD General Store listing on September 20, 2026, displaying REST and linking to the store and its live UCP profile. The directory's score and grade remain its own and are not adopted here. This is discovery evidence, not an endorsement, an audit, paid checkout qualification or Google admission.",
+    confirmed: "2026-10-01",
+    what_it_proves: "That UCP.tools published an operator-submitted SCVD General Store listing on September 20, 2026, displaying REST and linking to the store and its live UCP profile; the listing was re-read October 1. The directory's score and grade remain its own and are not adopted here. This is discovery evidence, not an endorsement, an audit, paid checkout qualification or Google admission.",
   },
   {
     url: "https://ucpchecker.com/check/scvd.store",
