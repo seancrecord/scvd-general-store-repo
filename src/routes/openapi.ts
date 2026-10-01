@@ -41,7 +41,7 @@ import {
   PREFLIGHT_VERSIONS,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
-import { buyInputSchema, buyInputExample, itemsRequiring } from "@/lib/bazaar-discovery";
+import { buyInputSchema, buyInputExample, itemsRequiring, CITED_ARTIFACT_SCHEMA } from "@/lib/bazaar-discovery";
 import { DISCLOSURE_FIELDS, DISCLOSURE_LINE, DISCLOSURE_PROPERTIES, type DisclosureField } from "@/lib/disclosure";
 import {
   openForBusinessTiersUsdc,
@@ -371,6 +371,32 @@ const NOT_MODIFIED_RESPONSE: OpenApiObject = {
     "Not Modified: the ETag you sent still names these exact bytes. No body; every other header is as the 200 would carry it.",
 };
 
+/**
+ * THE NEGOTIATED ACCEPT PARAMETER, COMPONENTISED (2026-10-01). It was
+ * pushed inline onto every negotiating GET — thirty-odd copies of a
+ * 400-byte sentence that differs only by the offered list — on a
+ * document the headroom spec had measured to within 1.3 KB of its
+ * growth case. One component per distinct offer list, named by the
+ * subtypes it offers, derived from NEGOTIATED_REPRESENTATIONS so a
+ * reference can never name a list no door serves. The If-None-Match
+ * parameter beside it made the same move earlier.
+ */
+function acceptComponentName(offered: readonly string[]): string {
+  return `Accept_${offered.map((type) => type.split("/")[1] ?? type).join("_").replace(/[^A-Za-z0-9._-]/g, "_")}`;
+}
+export const NEGOTIATED_ACCEPT_PARAMETERS: Record<string, OpenApiObject> = Object.fromEntries(
+  Object.values(NEGOTIATED_REPRESENTATIONS).map((offered) => [
+    acceptComponentName(offered),
+    {
+      name: "Accept",
+      in: "header",
+      required: false,
+      schema: { type: "string", enum: [...offered] },
+      description: `This door negotiates: ${offered.join(", ")}, parsed with q-values (RFC 9110 §12.5.1). A bare wildcard or no header gets ${offered[0]}; a named AI reader that states no preference gets markdown where it is offered. The answer carries Vary.`,
+    },
+  ]),
+);
+
 function declareHeaderInputs(paths: Record<string, Record<string, unknown>>): void {
   for (const [path, item] of Object.entries(paths)) {
     if (path.includes("{")) continue;
@@ -378,16 +404,14 @@ function declareHeaderInputs(paths: Record<string, Record<string, unknown>>): vo
     if (!op || typeof op !== "object") continue;
     const parameters = Array.isArray(op["parameters"]) ? (op["parameters"] as OpenApiObject[]) : [];
     const has = (name: string): boolean =>
-      parameters.some((parameter) => String(parameter["name"]).toLowerCase() === name.toLowerCase());
+      parameters.some(
+        (parameter) =>
+          String(parameter["name"]).toLowerCase() === name.toLowerCase() ||
+          String(parameter["$ref"] ?? "").startsWith(`#/components/parameters/${name}_`),
+      );
     const offered = NEGOTIATED_REPRESENTATIONS[path];
     if (offered && !has("Accept")) {
-      parameters.push({
-        name: "Accept",
-        in: "header",
-        required: false,
-        schema: { type: "string", enum: [...offered] },
-        description: `This door negotiates: ${offered.join(", ")}, parsed with q-values (RFC 9110 §12.5.1). A bare wildcard or no header gets ${offered[0]}; a named AI reader that states no preference gets markdown where it is offered. The answer carries Vary.`,
-      });
+      parameters.push({ $ref: `#/components/parameters/${acceptComponentName(offered)}` });
     }
     const paid = Boolean(op["x-payment"]);
     const noStore = NO_STORE_PREFIXES.some((prefix) => path.startsWith(prefix));
@@ -4641,6 +4665,20 @@ const DISCLOSURE_BLOCK_SCHEMA: OpenApiObject = {
 };
 const DISCLOSURE_BLOCK_REF: OpenApiObject = { $ref: "#/components/schemas/DisclosureBlock" };
 
+/**
+ * THE CITED ARTIFACT, COMPONENTISED (2026-10-01), by the disclosure
+ * block's arithmetic: one optional string with a pattern and a
+ * sentence, inlined, is about three hundred bytes, and a paid door
+ * writes its input schema twice (parameters and x-payment-info.input)
+ * across thirty-five doors — twenty-odd kilobytes against a budget
+ * the headroom spec had already measured to the byte. Written once
+ * under components.schemas; every door points at it. The MCP shelves
+ * keep the inline copy (a tool's inputSchema has no components), and
+ * the headroom spec's $ref expansion reads the same object either way.
+ */
+const CITED_ARTIFACT_REF: OpenApiObject = { $ref: "#/components/schemas/CitedArtifact" };
+const CITED_ARTIFACT_FIELD = "cited_artifact";
+
 const IDEMPOTENCY_PARAMETER: OpenApiObject = {
   name: "Idempotency-Key",
   in: "header",
@@ -4677,6 +4715,26 @@ const DELIVERY_ENVELOPE_REF: OpenApiObject = {
 };
 const ORDER_RECEIPT_REF: OpenApiObject = {
   $ref: "#/components/schemas/OrderReceipt",
+};
+
+/**
+ * THE PAID DOORS' 200, written once (2026-10-01). `returns` composed
+ * `{ description: "OK", content: { … { $ref } } }` on every paid door:
+ * the schema was already a reference and the wrapper around it was
+ * thirty-five identical copies. Two component responses, one per
+ * fulfillment, referenced from the door; merged into the shared
+ * responses at the document, since the envelope references they wrap
+ * are declared here, below SHARED_RESPONSES.
+ */
+const PAID_DOOR_RESPONSES: Record<string, OpenApiObject> = {
+  Delivered: {
+    description: "OK — the goods and the signed certificate, in the response.",
+    content: { "application/json": { schema: DELIVERY_ENVELOPE_REF } },
+  },
+  OrderQueued: {
+    description: "OK — a queue ticket with an order id to poll; the certificate follows the work.",
+    content: { "application/json": { schema: ORDER_RECEIPT_REF } },
+  },
 };
 
 /**
@@ -5017,6 +5075,12 @@ function returns(
       },
     },
   };
+}
+
+/** The 200 as a reference into PAID_DOOR_RESPONSES, for the paid doors. */
+function returnsShared(operation: OpenApiObject, component: keyof typeof PAID_DOOR_RESPONSES & string): OpenApiObject {
+  const responses = operation["responses"] as OpenApiObject;
+  return { ...operation, responses: { ...responses, "200": { $ref: `#/components/responses/${component}` } } };
 }
 
 /** A list of stable identifiers, as the registries publish them. */
@@ -5818,6 +5882,11 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
       // below, once, and not repeated as parameters (see
       // DISCLOSURE_BLOCK_SCHEMA for the byte arithmetic).
       if (isDisclosureField(name)) return null;
+      // The cited artifact rides the request schema below as one
+      // reference (CITED_ARTIFACT_REF) and, like the disclosure
+      // block, is not repeated as a parameter: the two copies per door
+      // were the bytes the headroom spec could not spare.
+      if (name === CITED_ARTIFACT_FIELD) return null;
       const property =
         typeof definition === "object" && definition !== null
           ? (definition as Record<string, unknown>)
@@ -5857,7 +5926,9 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     title: `${item.name} request`,
     description: `Query parameters for GET /api/buy/${item.id}. Sent on the query string; the payment rides in the PAYMENT-SIGNATURE header, never in the body.`,
     properties: Object.fromEntries(
-      Object.entries(schema.properties).filter(([name]) => !isDisclosureField(name)),
+      Object.entries(schema.properties)
+        .filter(([name]) => !isDisclosureField(name))
+        .map(([name, definition]) => [name, name === CITED_ARTIFACT_FIELD ? CITED_ARTIFACT_REF : definition]),
     ),
     ...(schema.required && schema.required.length > 0
       ? { required: [...schema.required] }
@@ -5867,7 +5938,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     unevaluatedProperties: false,
   };
   const operation: OpenApiObject = {
-    ...returns(
+    ...returnsShared(
       paidOp(
       env,
       // A1: the summary is the first line a spec reader shows, so it
@@ -5888,9 +5959,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
        * ticket with an id to poll and no certificate, because the
        * work has not happened yet.
        */
-      item.fulfillment === "instant"
-        ? DELIVERY_ENVELOPE_REF
-        : ORDER_RECEIPT_REF,
+      item.fulfillment === "instant" ? "Delivered" : "OrderQueued",
     ),
     parameters,
   };
@@ -6135,10 +6204,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
         AskAnswer: ASK_SCHEMA,
         // The disclosure block, written once (lib/disclosure).
         DisclosureBlock: DISCLOSURE_BLOCK_SCHEMA,
+        CitedArtifact: { title: "Cited artifact", ...CITED_ARTIFACT_SCHEMA },
       },
-      responses: SHARED_RESPONSES,
+      responses: { ...SHARED_RESPONSES, ...PAID_DOOR_RESPONSES },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
-      parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER },
+      parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
     },
     /**
      * THE VERSIONING PROMISE, STATED (2026-08-21). The store already

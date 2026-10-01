@@ -170,6 +170,17 @@ export const CERT_FIELDS = [
    * under our signature, which is the maker's-mark lesson again.
    */
   "issuer",
+  /**
+   * THE CITED ARTIFACT, added 2026-10-01. Appended, never inserted,
+   * and OUT of LEGACY_FIELDS_ADDED_SINCE by the same law as the
+   * mandate link: no legacy certificate can honestly cite an outside
+   * artifact (the field did not exist), so stapling one onto an old
+   * certificate must break BOTH forms. It is a buyer's claim about a
+   * document the store never saw, and unsigned it would be the
+   * easiest forgery on the receipt: "my runtime's approval art_… was
+   * behind this purchase", written by anyone, under our signature.
+   */
+  "cited_artifact",
 ] as const;
 
 /**
