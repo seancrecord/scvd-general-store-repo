@@ -1,0 +1,14 @@
+HTTP/2 204 
+date: Thu, 01 Oct 2026 15:51:22 GMT
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains
+access-control-allow-headers: Content-Type
+access-control-allow-methods: GET, POST, OPTIONS
+access-control-max-age: 86400
+server-timing: isolate;desc=cold, age;dur=0, req;dur=0
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=RlCd%2BXRUAfZkor3tI2gQenrNJCpIgeAz8MqU3Cd85BxxXq7%2BPNGixfLeSTujCoElgOI3cnGbHq4MfmfWUvJ7p5z80wa2nZqfVV84%2FvlgMWVDws0DeJgs7hRK9gb%2BDMBsVHB%2BjK9Xxye%2B"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a43ca0d89abb8bfe-ATL
+alt-svc: h3=":443"; ma=86400
+

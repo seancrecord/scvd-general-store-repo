@@ -28,11 +28,16 @@ plugin entry merged. MCPpedia and mcp.so still show the reported wrong install
 configuration; their existing issues remain open. No duplicate requests sent.
 
 Store MCP 0.2.3 and Tab 0.11.2 are active/latest in the official registry.
-Three npm releases lag prepared source: CLI 0.4.0/0.3.0, preflight 0.3.0/0.2.0,
-defects 0.21.0/0.20.0 (source/published). New local store metadata 0.2.4 and
-portable wrapper 0.2.6 are **prepared only**. The [correction packet](research/listing-review-2026-09-30/CORRECTIONS.md)
-contains exact targets, replacement copy and publication dependencies.
-No confirmation dates, registry publications or external settings were changed.
+October 1 follow-through: the reviewed CLI 0.4.0, preflight 0.3.1,
+MCP starter 0.2.0 and defects 0.21.0 publication workflows succeeded.
+Registry processing and independent tarball readback are recorded separately
+from those successful dispatches. Store MCP 0.2.4 is independently verified
+active/latest and matches every source manifest field. Portable wrappers 0.2.6
+are released repository content; external immutable pins do not update
+themselves. GitHub About/topics are corrected and verified. Existing Agent
+Finder #34 has a validated refresh patch, but applying it needs the owning
+`cv-scvd` account. [Receipts and remaining hands](research/reporting-publication-2026-10-01/README.md).
+No external admission or search recrawl is inferred.
 
 ## September 24 readback
 

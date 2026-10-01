@@ -50,8 +50,7 @@ CI suite remains required before merge.
 ## Still open
 
 Production readback is incomplete. Repeated native-browser focus changes
-interrupted further navigation. The continuation below completes more of the named live pages; ward and
-MCP-ward remain unread in this pass. Production phone-width layout and meaningful warm/cold timings
+interrupted further navigation. The continuations below include the ward and MCP ward; both eventually loaded. Production phone-width layout and meaningful warm/cold timings
 remain unmeasured. The source/local tests from the original review do not
 stand in for these checks.
 
@@ -93,7 +92,40 @@ passed 70 tests across five files; the separate full funnel file passed all
 23 tests. Type checking and all three bundles passed after the Growth
 change. Final validation and release evidence belong to the follow-up PR.
 
-The remaining ward/MCP-ward reads and broader optional live coverage are still
-unverified: Brave repeatedly changed to other tabs during navigation, despite
-retries. This is not evidence that those routes fail. No production phone-width
-or latency benchmark claim is made, and PR1 remains open for release/readback.
+The later continuation below completed the ward/MCP-ward reads. Repeated
+focus changes still prevented a stable phone-width pass and latency benchmark;
+neither is claimed, and PR1 remains open for release/readback.
+
+
+## Ward continuation
+
+Both `/admin/ward` and `/admin/mcp-ward` loaded in the authenticated Brave
+session after the initial focus interruptions. The ward displayed its saved
+September 27 round timestamp, probed-versus-listed denominator, measured MPP
+coverage, incomplete discovery limits and a link to the separate MCP ward.
+The MCP ward separated its in-flight cursor from the last completed pass and
+all-pass register; it explicitly said listings are not endpoint probes. No
+walk, freeze, directory-pass or other operational button was pressed.
+
+Two stale descriptions were corrected in the follow-up source batch. The
+heartbeat counts all recorded host rows, including not-probed listings, and
+now labels them that way without changing its count or stored records. Both
+ward pages now link the public signed corpus instead of claiming the x402
+per-host rows are never published. This is a wording correction, not a new
+publication or a change to the corpus. The desktop reading covered labels and
+navigation; all table rows were not individually inspected.
+
+The ward's old one-GET description also predated the shared method reader.
+The page now describes unpaid probes, declared methods and the single
+method-refusal fallback, and drops an unmeasured runtime estimate. Probe
+requests and the signed observations themselves are unchanged.
+
+
+## Release evidence
+
+The desk/Growth/funnel repairs released in [#958](https://github.com/seancrecord/scvd-general-store-repo/pull/958)
+after all required checks passed; both merged-commit Worker builds passed.
+The final ward descriptions are a separate follow-up. A post-deployment
+browser attempt reported that the user was actively interacting with Brave,
+so the remaining live verification was not claimed. [Receipts and current
+boundaries](../reporting-publication-2026-10-01/README.md).

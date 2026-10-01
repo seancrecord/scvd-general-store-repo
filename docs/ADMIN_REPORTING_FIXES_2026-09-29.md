@@ -119,3 +119,13 @@ The separate [guide cleanup](../research/guide-readability-2026-09-30/README.md)
 released in #951 after the required checks passed. Its [live readback](../research/guide-release-2026-10-01/README.md)
 verified the smaller developer guide, configured alias parity, complete sections
 and unchanged full-guide bytes.
+
+
+## Follow-through — October 1
+
+PR #958 released the live-review fixes after the full CI gate; its merged
+Worker builds passed. The authenticated pass now includes twelve reports at
+the documented depth, including both wards. The final ward wording correction
+preserves arithmetic and signed records. [Release/publication evidence and
+unverified browser checks](../research/reporting-publication-2026-10-01/README.md)
+separate source fixes, deployment, npm processing and external-account access.
