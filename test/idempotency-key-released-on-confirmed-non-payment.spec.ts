@@ -59,7 +59,7 @@ async function setup(network: string, door: "http" | "mcp" | "mcp-standard", ite
   const item = items.find(row => row.id === itemId)!;
   const args = itemId === "context_anchor"
     ? { summary: `SCVD-E2E key-release ${crypto.randomUUID()}` }
-    : { ...baseline(item), detail: `SCVD-E2E key-release ${crypto.randomUUID()}` } as Record<string, string>;
+    : { ...await baseline(item), detail: `SCVD-E2E key-release ${crypto.randomUUID()}` } as Record<string, string>;
   const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(row => row.network === network)!;
   const first = await signLabor(offer), second = await signLabor(offer), key = crypto.randomUUID();
   const payer = network.startsWith("eip155:") ? evmBuyer.address : solBuyer;

@@ -1,3 +1,5 @@
+import { performChangeCheck, performBatchSpotCheck, retainSpotEvidence, SpotBaselineUnavailable, type SignedSpotAddition } from "@/services/spot-evidence";
+import { spotFollowUp } from "@/lib/spot-follow-up";
 import { assertReportedChain } from "@/lib/receipt-context";
 import { attestLoop, storeLinks } from "@/lib/store-links";
 import { feedbackInvite } from "@/store/agent-feedback";
@@ -84,7 +86,7 @@ import { takeStockUnit } from "@/services/stock";
 import { bestowedNameNote, drawerNote } from "@/store/copy";
 import { getMenuItem, VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
-import { recordSettleSignal } from "@/services/buyer-signals";
+import { recordSettleSignal, recordSpotFollowUp } from "@/services/buyer-signals";
 import type { PurchaseDoor } from "@/services/purchase-intent";
 
 /**
@@ -164,6 +166,8 @@ export interface FulfillmentInput {
   passId?: string;
   /** spot_check: the host to read from the books, pre-validated. */
   spotCheckHost?: string;
+  spotHosts?: string;
+  baselineCertId?: string;
   comparisonUrls?: string;
   /** the_confession: the confession itself, pre-validated. */
   confessionText?: string;
@@ -506,6 +510,18 @@ export async function fulfillPurchase(
     }
     mintOptions.attests = researchComparison.evidence_hash;
   }
+  let spotAddition: SignedSpotAddition | undefined = retainedObservation?.spotAddition;
+  if (["change_check", "batch_spot_check"].includes(item.id) && !retainedObservation) {
+    try {
+      spotAddition = item.id === "change_check"
+        ? await performChangeCheck(env, input.spotCheckHost ?? "", input.baselineCertId ?? "")
+        : await performBatchSpotCheck(env, input.spotHosts);
+    } catch (error) {
+      if (error instanceof SpotBaselineUnavailable) throw new SettlementDeclined(Response.json({ code: "baseline_unavailable", charged: false, settlement_attempted: false, error: "The earlier signed original is unavailable. Nothing charged; read the free history instead." }, {status:400}));
+      throw error;
+    }
+    mintOptions.attests = spotAddition.evidence_hash;
+  }
   let spotCheck: SignedSpotCheck | undefined = retainedObservation?.spotCheck;
   if (item.id === "spot_check" && !retainedObservation) {
     spotCheck = await performSpotCheck(env, input.spotCheckHost ?? "");
@@ -602,7 +618,7 @@ export async function fulfillPurchase(
   // publish the purchased observation, even if the target changes or vanishes.
   if (pending.observation) {
     const prepared = retainedObservation ?? await pending.observation.save({
-      attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, researchComparison, provenanceCheck,
+      attestation, bundle, serviceAudit, goodBuyer, signatureAgentCard, onpageAudit, a2aKit, spotCheck, spotAddition, researchComparison, provenanceCheck,
       walletStatement, reconciliation, passportRefresh, trustProfile, mandate, patronAnchor, caseFile, caseFileReused, launchCheck, patronage, operatorStatement,
       attests: mintOptions.attests!,
     });
@@ -614,6 +630,7 @@ export async function fulfillPurchase(
     onpageAudit = prepared.onpageAudit;
     a2aKit = prepared.a2aKit;
     spotCheck = prepared.spotCheck;
+    spotAddition = prepared.spotAddition;
     researchComparison = prepared.researchComparison;
     provenanceCheck = prepared.provenanceCheck;
     walletStatement = prepared.walletStatement;
@@ -630,6 +647,8 @@ export async function fulfillPurchase(
     if ((item.id === "the_mandate" && !mandate) || (item.id === "bitcoin_anchor" && !patronAnchor) ||
       (item.id === "the_case_file" && !caseFile) ||
       (item.id === "recurring_patronage" && !patronage) || (item.id === "operator_statement" && !operatorStatement) ||
+      (["change_check", "batch_spot_check"].includes(item.id) && !spotAddition) ||
+      (item.id === "spot_check" && !spotCheck) ||
       (item.id === "research_comparison" && !researchComparison) ||
       (["launch_check", "opening_day"].includes(item.id) && !launchCheck)) {
       const error = new Error("Original purchased record unavailable");
@@ -1032,6 +1051,7 @@ export async function fulfillPurchase(
     if (trustProfile) {
       goodsInput.trustProfile = trustProfile;
     }
+    if (spotAddition) goodsInput.spotAddition = spotAddition;
     if (researchComparison) goodsInput.researchComparison = researchComparison;
     if (spotCheck) {
       goodsInput.spotCheck = spotCheck;
@@ -1059,6 +1079,14 @@ export async function fulfillPurchase(
     if (!goods) {
       goods = await deliverInstantGoods(env, item, goodsInput, checkpoint);
       if (retainGoods) goods = await retainGoods.save("instant_goods", goods);
+    }
+    const spotEvidence = spotCheck ? {kind:"spot_check" as const, report:spotCheck}
+      : spotAddition ? {kind:spotAddition.record.kind, report:spotAddition} : null;
+    if (spotEvidence) await retainSpotEvidence(env, minted.certificate.cert_id, spotEvidence);
+    const spotContext = spotEvidence ? spotFollowUp(env.STORE_BASE_URL, minted.certificate.cert_id, spotEvidence) : null;
+    if (spotContext && !isHouseWallet(env, payment.payer ?? "")) {
+      const count = recordSpotFollowUp(env, item.id).catch(() => undefined);
+      if (hooks?.defer) hooks.defer(count); else void count;
     }
     const response = {
       message: VOICE.instantThanks,
@@ -1090,6 +1118,11 @@ export async function fulfillPurchase(
       ...(goods.extras ?? {}),
       ...patronBlock,
       ...disclosureBlock,
+      ...(spotContext ? { ...spotContext, view_url: spotContext.counter_note.source_url,
+        receipt_for_your_human: { ...patronBlock.receipt_for_your_human,
+          body: `${patronBlock.receipt_for_your_human.body}\n\n${spotContext.counter_note.text}`,
+          deliver: "Optional text for the buyer to keep or include in an existing conversation. Nothing is sent automatically; sharing and additional spending remain the buyer’s decisions.",
+        } } : {}),
     };
     return checkpoint ? await checkpoint.save("response", response) : response;
   }

@@ -136,6 +136,8 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
  * No ranking of demand or value is implied.
  */
 export const ROUTES: readonly Route[] = [
+  { job: "Compare a retained Spot Check with what the books hold now", free: "/corpus/host/{host}.json?view=stable", items: ["change_check"] },
+  { job: "Assemble signed recorded evidence about several hosts in one purchase", free: "/corpus/host/{host}.json for each host", items: ["batch_spot_check"] },
   { job: "Compare paid research endpoints before my agent buys financial data or other research", free: `Use /api/look/v1 and /api/preflight/${PREFLIGHT_VERSION_NEXT} separately for each endpoint, and /corpus/host/{host}.json for dated host history.`, items: ["research_comparison"] },
   { job: "Find and repair failures in my A2A agent", free: "/a2a-desk", items: ["a2a_repair_kit"] },
   {

@@ -102,6 +102,7 @@ export { howItWorksRoutes } from "@/routes/how-it-works";
 export { samplesRoutes } from "@/routes/samples";
 export { beforeYouPayRoutes } from "@/routes/before-you-pay";
 export { lookRoutes } from "@/routes/look";
+export { spotEvidenceRoutes } from "@/routes/spot-evidence";
 export { goodBuyerRoutes } from "@/routes/good-buyer";
 export { preflightRoutes } from "@/routes/preflight";
 export { discoveryRoutes } from "@/routes/discovery";

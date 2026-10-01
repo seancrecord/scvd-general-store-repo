@@ -1,3 +1,5 @@
+import { spotHosts, BASELINE_CERT_PATTERN } from "@/lib/spot-check-terms";
+import { readSpotOriginal } from "@/services/spot-evidence";
 import { EVM_TRANSACTION_PATTERN } from "@/lib/purchase-input-syntax";
 import { checkOptionalObservationConstraints } from "@/lib/purchase-constraints";
 import { unicodeLength, hasUnpairedSurrogate } from "@/lib/unicode";
@@ -664,11 +666,21 @@ export async function checkPurchaseArgs(
     }
   }
 
+  if (item.id === "batch_spot_check") {
+    try { spotHosts(read("hosts")); }
+    catch { return refuse(400, "bad_request", "Give a JSON array of distinct bare hostnames within the published batch bounds. Nothing charged.", { input_field: "hosts" }); }
+  }
+  if (item.id === "change_check") {
+    const id = read("baseline_cert_id") ?? "";
+    if (!new RegExp(BASELINE_CERT_PATTERN).test(id) || !(await readSpotOriginal(env, id, (read("host") ?? "").trim().toLowerCase()))) {
+      return refuse(400, "baseline_unavailable", "The earlier Spot Check original is unavailable, invalid or for a different host. Nothing charged. Read the free history instead.", { input_field: "baseline_cert_id" });
+    }
+  }
   if (item.id === "research_comparison") {
     try { comparisonUrls(read("urls"), env.STORE_BASE_URL); }
     catch (error) { return refuse(400, "bad_request", `${error instanceof Error ? error.message : "Invalid endpoint set."} Nothing charged.`, { input_field: "urls" }); }
   }
-  if (item.id === "spot_check") {
+  if (item.id === "spot_check" || item.id === "change_check") {
     const { validSpotCheckHost } = await import("@/services/spot-check");
     if (!validSpotCheckHost(read("host"))) {
       return refuse(
@@ -896,6 +908,8 @@ export function purchaseInputFrom(
   const args = readerFor(item, rawArgs);
   const read = (name: string) => args.get(name);
   const input: FulfillmentInput = {};
+  if (item.id === "batch_spot_check") input.spotHosts = read("hosts");
+  if (item.id === "change_check") input.baselineCertId = read("baseline_cert_id");
   if (item.id === "research_comparison") input.comparisonUrls = read("urls");
 
   /**
@@ -992,7 +1006,7 @@ export function purchaseInputFrom(
     input.statementHours = read("hours");
     input.statementNetwork = read("network");
   }
-  if (item.id === "spot_check") {
+  if (item.id === "spot_check" || item.id === "change_check") {
     input.spotCheckHost = (read("host") ?? "").replace(/\0/g, "");
   }
   if (item.id === "coffees_for_closers") {

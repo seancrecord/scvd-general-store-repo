@@ -9,7 +9,7 @@ for (const [id, field] of [
   it(`${door}/${id}: never quotes or settles for text containing NUL`, async () => {
     const item = items.find(item => item.id === id)!;
     const tool = shelves(item)[0]!;
-    const good = { ...baseline(item), [field]: "SCVD-E2E-valid-text" };
+    const good = { ...await baseline(item), [field]: "SCVD-E2E-valid-text" };
     const quote = await call(item, door, good, tool);
     expect(quote.offers.length).toBeGreaterThan(0);
     for (const value of ["\0", " \0\t", "SCVD-E2E-before\0after"]) {

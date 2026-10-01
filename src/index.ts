@@ -102,6 +102,7 @@ import {
   beforeYouPayRoutes,
   lookRoutes,
   goodBuyerRoutes,
+  spotEvidenceRoutes,
   preflightRoutes,
   discoveryRoutes,
   ucpRoutes,
@@ -226,6 +227,7 @@ app.route("/", beforeYouPayRoutes);
 app.route("/", lookRoutes);
 /* The signed half of the same reading, served forever and free. */
 app.route("/", goodBuyerRoutes);
+app.route("/", spotEvidenceRoutes);
 app.route("/", discoveryRoutes);
 app.route("/", ucpRoutes);
 app.route("/", ucpCheckoutRoutes);

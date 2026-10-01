@@ -37,7 +37,7 @@ describe("the map's price contradictions stay closed", () => {
     const listing = menu.items.find((entry) => entry.id === id)!;
     expect(listing.price_usdc).toBe(item.price_usdc);
     expect(listing.note_402).toBe(item.note_402);
-    const response = await SELF.fetch(`${BASE}/api/buy/${id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === id)!)).map(([key, value]) => [key, String(value)]))}`);
+    const response = await SELF.fetch(`${BASE}/api/buy/${id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(response.status).toBe(402);
     const body = await response.json() as { error: string };
     const challenge = JSON.parse(atob(response.headers.get("PAYMENT-REQUIRED")!)) as { accepts: { amount: string }[] };

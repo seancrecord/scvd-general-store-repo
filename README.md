@@ -207,6 +207,15 @@ What people arrive here to do, and where each door is:
 Every one of these ends in an ed25519-signed receipt or verdict that
 anyone can verify at `/api/verify/{id}` — free, no account, forever.
 
+Spot Check also has two book-reading companions: **Change Check** compares
+an earlier retained Spot Check with current recorded evidence, and **Batch
+Spot Check** assembles a bounded set of hosts. Both retain dates and gaps;
+neither probes a host. Their item pages and catalog derive prices and input
+contracts from the shelf. Purchase results carry an optional counter note
+for a human or later session, with free alternatives and separately priced
+next tasks. Nothing sends a message or buys again automatically.
+[Implementation and demand experiment](docs/SPOT_CHECK_FOLLOW_THROUGH_2026-09.md).
+
 ## Connecting over MCP
 
 The store is a remote MCP server — streamable HTTP, no install, no

@@ -223,6 +223,8 @@ export const FEATURES: readonly Feature[] = [
        * grip it extends, so the register matches what a reader finds.
        */
       "/api/replay/{cert_id}",
+      // Retained signed observations, linked from each purchase and its verification page.
+      "/api/spot-checks/{cert_id}",
     ],
     named_on: ["/criteria"],
     opened: SCORERS_OPENED,

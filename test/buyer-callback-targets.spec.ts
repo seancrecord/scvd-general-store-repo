@@ -17,7 +17,7 @@ const refusedCallbacks = ["x", "", "https://buyer.example/" + "a".repeat(2048),
 for (const menu of human) for (const door of ["http", "mcp", "mcp-standard"] as const) {
   for (const callback_url of refusedCallbacks) it(`${menu.id} ${door}: refuses callback ${callback_url.slice(0,70)} before quoting`, async () => {
     const item = items.find(i => i.id === menu.id)!;
-    const result = await sendLabor(item.id, door, { ...baseline(item), callback_url });
+    const result = await sendLabor(item.id, door, { ...await baseline(item), callback_url });
     expect(result.quote).toBe(false);
     expect(result.refused).toBe(true);
     expect(result.body).toMatchObject({ code: "callback_refused", input_field: "callback_url", charged: false });
@@ -26,7 +26,7 @@ for (const menu of human) for (const door of ["http", "mcp", "mcp-standard"] as 
   });
   for (const network of laborNetworks()) for (const callback_url of ["x", "https://169.254.169.254/hook"]) {
     it(`${menu.id} ${door} ${network}: a signed payment cannot bypass callback refusal (${callback_url})`, async () => {
-      const item = items.find(i => i.id === menu.id)!, args = baseline(item);
+      const item = items.find(i => i.id === menu.id)!, args = await baseline(item);
       const quote = await call(item, "mcp", args, shelves(item)[0]!);
       expect(quote.quote).toBe(true);
       const payment = await signLabor(quote.offers.find(o => o.network === network)!);
@@ -41,7 +41,7 @@ for (const menu of human) for (const door of ["http", "mcp", "mcp-standard"] as 
   for (const network of laborNetworks()) it(`${menu.id} ${door} ${network}: preserves a valid requested callback on the paid order`, async () => {
     const item = items.find(i => i.id === menu.id)!;
     const callback_url = "https://buyer.example/hook?reference=Original%2FCase";
-    const args = { ...baseline(item), callback_url };
+    const args = { ...await baseline(item), callback_url };
     const quote = await call(item, "mcp", args, shelves(item)[0]!);
     expect(quote.quote).toBe(true);
     const payment = await signLabor(quote.offers.find(o => o.network === network)!);
@@ -58,7 +58,7 @@ const probeProducts = ["standing_watch", "service_audit", "conformance_watch", "
   "trust_profile", "aura_walk", "signature_agent_card", "onpage_audit", "launch_check", "opening_day", "a2a_repair_kit"];
 for (const id of probeProducts) for (const door of ["http", "mcp", "mcp-standard"] as const) for (const network of laborNetworks()) {
   it(`${id} ${door} ${network}: refuses the store's root-dot hostname before verification`, async () => {
-    const item = items.find(i => i.id === id)!, args = baseline(item);
+    const item = items.find(i => i.id === id)!, args = await baseline(item);
     const quote = await call(item, "mcp", args, shelves(item)[0]!);
     expect(quote.quote, JSON.stringify(quote.body)).toBe(true);
     const payment = await signLabor(quote.offers.find(o => o.network === network)!);

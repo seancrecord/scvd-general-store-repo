@@ -171,6 +171,8 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // page's audience: before a practice buyer pays anyone, a tenth of
   // a cent asks what the observatory already knows about the door.
   "spot_check",
+  "change_check",
+  "batch_spot_check",
   /*
    * THE READING THAT BELONGS ON THIS PAGE MOST OF ALL (#96,
    * 2026-08-28). Every other cheap door here answers a question about

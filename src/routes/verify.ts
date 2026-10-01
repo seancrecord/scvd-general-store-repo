@@ -1,6 +1,8 @@
 import { settlementExplorer } from "@/lib/payment-networks";
 import { storeLinks } from "@/lib/store-links";
 import { EVIDENCE_TOOLS_SOURCE, EVIDENCE_TOOLS_DESCRIPTION } from "@/store/evidence-tools";
+import { readSpotEvidence } from "@/services/spot-evidence";
+import { spotFollowUp } from "@/lib/spot-follow-up";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import {
@@ -418,7 +420,7 @@ function audienceHtml(audience: ReceiptAudience, links: StoreLinks): string {
     return `<section>
       <h2>Your purchase, checked</h2>
       <p class="menu-desc">This is the receipt for what your agent just bought. It will verify at this URL forever, for anyone.</p>
-      ${nextStepsHtml(links, "What agents who bought this buy next")}
+      ${nextStepsHtml(links, "Optional next steps")}
       <p class="menu-desc"><a href="/bell">Ring the bell</a> (free, one a day, a card comes with it) · <a href="/api/stamp">take a visit stamp</a> (free, signed, dated) · <a href="/guestbook">sign the guestbook</a>.</p>
       ${developerDoorsHtml(links)}
     </section>`;
@@ -666,6 +668,9 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       record.public_key,
     );
     const valid = form !== "invalid";
+    const spotOriginal = valid && ["spot_check", "change_check", "batch_spot_check"].includes(record.certificate.item)
+      ? await readSpotEvidence(c.env, id).catch(() => null) : null;
+    const spotContext = spotOriginal ? spotFollowUp(c.env.STORE_BASE_URL, id, spotOriginal) : null;
     /**
      * THE EXISTED-BY BOUND (2026-09-05), on both faces of the receipt.
      * Computed once, up here, from the same signed payload the JSON
@@ -727,7 +732,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
               ...(record.certificate.settlement_tx ? { settlement: { tx: record.certificate.settlement_tx, item: record.certificate.item } } : {}),
             }),
             receiptAudience(record.certificate),
-          )}${jsonLdScript({
+          )}${spotContext ? `<section><h2>A note for your human</h2><p>${escapeHtml(spotContext.counter_note.text)}</p><p><a href="${escapeHtml(spotContext.counter_note.source_url)}">Read the original and review optional next steps</a></p></section>` : ""}${jsonLdScript({
             "@context": "https://schema.org",
             "@type": "DigitalDocument",
             name: `Receipt ${record.certificate.cert_id}`,
@@ -789,6 +794,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         item: record.certificate.item,
         ...(record.certificate.settlement_tx ? { settlement: { tx: record.certificate.settlement_tx, item: record.certificate.item } } : {}),
       }),
+      ...(spotContext ? spotContext : {}),
       certificate: record.certificate,
       offline_verification: { source: EVIDENCE_TOOLS_SOURCE, description: EVIDENCE_TOOLS_DESCRIPTION },
       signature: record.signature,

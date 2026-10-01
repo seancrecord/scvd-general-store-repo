@@ -42,7 +42,7 @@ describe("every priced door's 402 stays signable", () => {
     const inspected: string[] = [];
 
     for (const item of pricedItems) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
+      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
       // 503 is a door honestly not selling right now — the shuttered
       // human-labor shelf, the capacity bench, a launch check with no
       // field wallet in this deployment. Those issue no envelope to

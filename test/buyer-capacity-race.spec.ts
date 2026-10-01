@@ -20,7 +20,7 @@ for (const kind of ["house", "item", "week"] as const) for (const network of lab
       await sourceEnv.ORDERS.put(KV_KEYS.order(order.order_id), JSON.stringify(order));
       if (kind === "week") await recordInventorySale(sourceEnv, menu, order);
     }
-    const args = { ...baseline(item), detail: "SCVD-E2E final-slot race" };
+    const args = { ...await baseline(item), detail: "SCVD-E2E final-slot race" };
     const quote = await call(item, "mcp", args, shelves(item)[0]!);
     expect(quote.quote, JSON.stringify(quote.body)).toBe(true);
     const payments = await Promise.all(doors.map(() => signLabor(quote.offers.find(offer => offer.network === network)!)));

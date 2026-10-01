@@ -130,3 +130,11 @@ it("preserves each paid challenge header through its OpenAPI reference", async (
   }
   expect(checked).toBeGreaterThan(20);
 });
+
+it("retains the full conditional-read header contract through the shared parameter", async () => {
+  const document = await (await openapiRoutes.request("https://scvd.store/openapi.json", {}, allRails)).json() as Record<string, unknown>;
+  expect(expand({ $ref: "#/components/parameters/IfNoneMatch" }, document)).toEqual({
+    name: "If-None-Match", in: "header", required: false, schema: { type: "string" },
+    description: "Send a prior ETag (SHA-256 of exact response bytes). Unchanged content returns 304 with no body.",
+  });
+});

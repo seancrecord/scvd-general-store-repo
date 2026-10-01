@@ -7,7 +7,7 @@ installLaborAdmissionHarness();
 afterEach(() => vi.restoreAllMocks());
 for (const door of ["http", "mcp", "mcp-standard"] as const) for (const network of laborNetworks()) for (const failure of ["full", "lost_ack"] as const) {
   it(`${door} ${network} ${failure}: refusal exposes non-payment status before a new purchase`, async () => {
-    const item = items.find(item => item.id === "the_collab")!, args = { ...baseline(item), detail: `SCVD-E2E refusal status ${crypto.randomUUID()}` };
+    const item = items.find(item => item.id === "the_collab")!, args = { ...await baseline(item), detail: `SCVD-E2E refusal status ${crypto.randomUUID()}` };
     const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(offer => offer.network === network)!;
     const payment = await signLabor(offer), key = crypto.randomUUID();
     const reserve = LaborCapacityStore.prototype.reserve;
