@@ -146,5 +146,24 @@
       "bytes": 969
     }
   ],
-  "limits": "Local checks do not substitute for all four hosted CI test shards and aggregate check. No npm publication, native adoption or acceptance is claimed. Earlier archived acquisitions remain unchanged."
+  "limits": "Local checks do not substitute for all four hosted CI test shards and aggregate check. No npm publication, native adoption or acceptance is claimed. Earlier archived acquisitions remain unchanged.",
+  "ci_followup": {
+    "finding": "Hosted shard 3 caught stale guide digests after the derived package source-version label changed. Local reproduction was deterministic, not a timeout.",
+    "baseline_witness": "Restoring only the package version to 1.9.0 reproduced both old pins: 14/14 guide tests passed.",
+    "fix": "Re-pin both guide digests for source 1.10.0, retaining the complete prose guard.",
+    "logs": [
+      {
+        "file": "scvd-959-shard3-failure.log",
+        "sha256": "9ecd2aab172ac6d3c18bf8789b152f35df055050481d84ff180128a1d1f62170"
+      },
+      {
+        "file": "scvd-guide-version-baseline.log",
+        "sha256": "3e6b96f38e722ff3dce194dcdb3289f2fb8552ce96c47b63947b8dc22b544d00"
+      },
+      {
+        "file": "scvd-guide-version-source-links.log",
+        "sha256": "88bd3ea8db41ab7d4e91a584d916b67b8a9be40fabe7959e67b6642b1355b065"
+      }
+    ]
+  }
 }
