@@ -245,6 +245,15 @@ decision, permission or budget increase. Old prompts and offline recipients are
 unchanged. This reduces prescribed oversized output; it does not claim new
 filesystem enforcement. The [separate acquisition](research/bounded-source-review-buyer-2026-10-01/REPORT.md) passed all three capability gates, then scored **0 complete / 4, 3 reporting failures, 1 incomplete**. Three eligible recipients completed without host drift. Ten verbatim reports and all originals are archived; no retry or earlier rescore. Native setup and reporting errors remain distinct from the passing source workflow.
 
+**TR3 draft identifiers, October 1 (source implementation):**
+[An optional saved-draft check](docs/BUYER_DRAFT_IDENTIFIERS_2026-10-01.md)
+compares long hexadecimal tokens against identifiers from fresh verification,
+retaining unknown values, omitted display counts and the draft hash. Controller
+replay catches the recorded shortened digest while the original signature stays
+valid. It does not check prose, identifier roles, short/split values or a later
+final answer. Source 1.11.0 is not publication or native acceptance; no frozen
+prompt, budget, original or score changes. Interpretation gaps remain open.
+
 **TR3 candidate originals, October 1 (source implementation):**
 [The offline source-link command](docs/BUYER_SOURCE_LINKS_2026-10-01.md)
 extracts candidate originals from a saved snapshot index or exact-URL host-history

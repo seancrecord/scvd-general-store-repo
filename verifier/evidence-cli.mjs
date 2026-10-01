@@ -3,7 +3,7 @@ import { open, mkdir, access, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { webcrypto } from "node:crypto";
 import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit } from "./evidence-bundle.js";
-import { EVIDENCE_REPORT_FORMAT, CHALLENGE_HEADERS_MAX_BYTES, readPaymentChallenge, renderEvidenceReport } from "./evidence-report.js";
+import { EVIDENCE_REPORT_FORMAT, CHALLENGE_HEADERS_MAX_BYTES, readPaymentChallenge, renderEvidenceReport, checkDraftIdentifiers, EVIDENCE_REPORT_MAX_BYTES } from "./evidence-report.js";
 import { CAPABILITIES, runtimeCapabilities } from "./x402-verify.js";
 
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
@@ -18,7 +18,7 @@ const HELP = `scvd-evidence — free export and offline verification
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
     [--evidence <local-file> ...] [--subject <exact-endpoint-url>]
     [--format json|markdown] [--report-out <new-report.md>]
-    [--challenge-headers <saved-HTTP-headers.txt>]
+    [--challenge-headers <saved-HTTP-headers.txt>] [--check-identifiers <saved-draft.md>]
   capabilities
   All commands but capabilities: [--max-bytes <integer>]
 
@@ -44,6 +44,12 @@ original response using the same bundle verifier in memory,
 and prints findings plus the original file SHA-256 without repeating claims.
 With --format markdown --report-out, save a new report without overwriting any
 file and print a compact JSON receipt; otherwise verify-source writes no files.
+With --check-identifiers, scan a saved UTF-8 draft offline against identifiers
+from this verification. Long hex tokens (48+ digits) are compared, not prose or
+identifier roles. No text is changed; a later final answer is outside this check.
+Drafts are bounded to 128 KiB or the smaller --max-bytes. Exit 4 means the
+optional check needs review or found no candidates; existing verification
+failures keep their exit codes. --report-out cannot accompany this check.
 With --subject, it also selects exact-URL observations from verified corpus-v1
 claims only. Unsigned history and preflight are never included. Whole rows fit
 within a ${SUBJECT_OBSERVATIONS_MAX_BYTES}-byte compact JSON allowance; omitted rows are counted explicitly.
@@ -193,13 +199,14 @@ async function main(args) {
   const flags = {}; const evidence = [];
   for (let i = 0; i < rest.length; i += 2) {
     const [key, value] = [rest[i], rest[i + 1]];
-    if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject", "--format", "--challenge-headers", "--report-out"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
+    if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject", "--format", "--challenge-headers", "--report-out", "--check-identifiers"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
     if (key === "--evidence") evidence.push(value); else flags[key] = value;
   }
   if (flags["--max-bytes"] && !/^\d+$/.test(flags["--max-bytes"])) throw new Error("invalid_byte_limit");
   const maxBytes = evidenceByteLimit(flags["--max-bytes"] === undefined ? undefined : Number(flags["--max-bytes"]));
   if (!input) throw new Error("missing_input");
   if (flags["--format"] && (command !== "verify-source" || !["json", "markdown"].includes(flags["--format"]))) throw new Error("invalid_format");
+  if (flags["--check-identifiers"] && (command !== "verify-source" || flags["--report-out"])) throw new Error("invalid_identifier_check");
   if (flags["--report-out"] && (command !== "verify-source" || flags["--format"] !== "markdown")) throw new Error("report_requires_markdown");
   if (flags["--challenge-headers"] && (command !== "verify-source" || !flags["--subject"])) throw new Error("challenge_requires_subject");
   if (flags["--subject"]) {
@@ -236,11 +243,20 @@ async function main(args) {
         return { signed_claims_pointer: observation.signed_claims_pointer, observed_at: known ? date : null, status: known ? "recorded" : "unknown" };
       }) };
     if (flags["--challenge-headers"]) reading.payment_challenge = await readPaymentChallenge(await localBytes(flags["--challenge-headers"], Math.min(maxBytes, CHALLENGE_HEADERS_MAX_BYTES)), subject.subject_evidence);
+    if (flags["--check-identifiers"]) {
+      const references = { source_sha256: reading.source_sha256, signed_message_sha256: reading.signed_message_sha256,
+        supplied_public_key: flags["--public-key"], verified_signature: result.valid ? bundle.artifact.signature : null };
+      if (reading.payment_challenge) {
+        references.challenge_source_sha256 = reading.payment_challenge.source_sha256;
+        for (const row of reading.payment_challenge.offers) references[`unsigned_offer_${row.index}_address_digest`] = row.address_digest;
+      }
+      reading.identifier_check = await checkDraftIdentifiers(await localBytes(flags["--check-identifiers"], Math.min(maxBytes, EVIDENCE_REPORT_MAX_BYTES)), references, result.valid);
+    }
     if (flags["--report-out"]) {
       await writeFile(flags["--report-out"], renderEvidenceReport(reading, maxBytes), { flag: "wx", mode: 0o600 });
       console.log(JSON.stringify({ report_file: flags["--report-out"], source_sha256: reading.source_sha256, valid: reading.valid, evidence_complete: reading.evidence_complete }));
     } else console.log(flags["--format"] === "markdown" ? renderEvidenceReport(reading, maxBytes) : JSON.stringify(reading, null, flags["--subject"] ? undefined : 2));
-    process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
+    process.exitCode = !result.valid ? 1 : !result.evidence_complete ? 3 : reading.identifier_check && reading.identifier_check.status !== "all_candidates_recognized" ? 4 : 0;
     return;
   }
   if (command === "verify") {
