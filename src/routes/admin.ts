@@ -69,10 +69,12 @@ import {
 } from "@/services/delivery-audit";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
+  getLetter,
   letterNeedsReply,
   listLetters,
   replyToLetter,
   setLetterStatus,
+  standingLetterReply,
 } from "@/services/letters";
 import {
   acknowledgeOrder,
@@ -532,7 +534,7 @@ adminRoutes.post("/admin/trade/:partner/payout", async (c) => {
   const row = await recordTradePayout(c.env, partner, amount, reference);
   c.header("Cache-Control", "no-store");
   if (fromForm) {
-    return c.redirect("/admin/trade", 303);
+    return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/trade"), 303);
   }
   return c.json({ recorded: true, payout: row });
 });
@@ -799,7 +801,10 @@ adminRoutes.get("/admin/counter", async (c) => {
   // The Gazette press left the counter with the 2026-08-05
   // retirement; the freshness check went with it.
   const page = renderCounterPage({
-      notice: stockNotice(c.req.query("stocked"), c.req.query("shelf")),
+      notice:
+        stockNotice(c.req.query("stocked"), c.req.query("shelf")) ??
+        // What the last bulk press did, carried back on the walk (2026-10-02).
+        (sanitizeText(c.req.query("did"), 200) || undefined),
       orders: listedOrders,
       closers: shelf(closers, [], "closers", notes),
       stockShelves: {
@@ -815,6 +820,7 @@ adminRoutes.get("/admin/counter", async (c) => {
       letters: shelf(letters, [], "letters", notes).map(
         (entry) => entry.record,
       ),
+      standingReply: standingLetterReply(c.env),
       alerts: alertInbox?.alerts ?? [],
       alertsUnavailable: alertInbox === null,
       alertsSeenAt: alertInbox?.lastVisit ?? null,
@@ -1447,15 +1453,43 @@ adminRoutes.post("/admin/glance/refresh", async (c) => {
   return c.json(await readGlance(c.env));
 });
 
-/** Back to the admin page a form was pressed on, and never anywhere else. */
-function adminReturnPath(referer: string | undefined): string {
-  if (!referer) return "/admin";
+/**
+ * BACK TO THE PAGE A FORM WAS PRESSED ON, and never anywhere else.
+ *
+ * EVERY BUTTON ON EVERY TAB WENT HOME (2026-10-02, the keeper: "every
+ * time I submit anything ... I'm routed back to the main landing admin
+ * page, which is annoying"). The handlers each named a fixed page —
+ * mostly `/admin`, the desk — so a reply written at the counter's
+ * mailbox landed him on the take. The browser already says where he
+ * stood; this reads it, keeps the walk inside the office (a referer
+ * from any other origin or path is ignored, not trusted), and takes
+ * the handler's old fixed page only as the fallback for a press with
+ * no page behind it. `fragment` lands him on the section he was in.
+ */
+function adminReturnPath(
+  referer: string | undefined,
+  fallback = "/admin",
+  fragment = "",
+): string {
+  if (!referer) return `${fallback}${fragment}`;
   try {
     const url = new URL(referer);
-    return url.pathname.startsWith("/admin") ? url.pathname : "/admin";
+    const path = url.pathname.startsWith("/admin") ? url.pathname : fallback;
+    return `${path}${fragment}`;
   } catch {
-    return "/admin";
+    return `${fallback}${fragment}`;
   }
+}
+
+/** The same walk back, with one line saying what the press did. A redirect in silence reads like a form that did nothing. */
+function adminReturnWithNotice(
+  referer: string | undefined,
+  fallback: string,
+  notice: string,
+  fragment = "",
+): string {
+  const path = adminReturnPath(referer, fallback);
+  return `${path}?did=${encodeURIComponent(notice)}${fragment}`;
 }
 
 /** The last raise, as the hourly round or the button left it. */
@@ -1640,7 +1674,7 @@ adminRoutes.post("/admin/ward/run", async (c) => {
    */
   const { takeCorpusSnapshot } = await import("@/services/corpus");
   await takeCorpusSnapshot(c.env).catch(() => undefined);
-  return c.redirect("/admin/ward");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/ward"));
 });
 
 /**
@@ -1692,7 +1726,7 @@ adminRoutes.get("/admin/mcp-ward", async (c) => {
 adminRoutes.post("/admin/mcp-ward/run", async (c) => {
   const { walkMcpRegistry } = await import("@/services/mcp-ward");
   await walkMcpRegistry(c.env);
-  return c.redirect("/admin/mcp-ward");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/mcp-ward"));
 });
 
 /**
@@ -1705,7 +1739,7 @@ adminRoutes.post("/admin/mcp-ward/run", async (c) => {
 adminRoutes.post("/admin/mcp-ward/reset", async (c) => {
   const { KV_KEYS } = await import("@/lib/kv-keys");
   await c.env.COUNTERS.delete(KV_KEYS.mcpWalkState);
-  return c.redirect("/admin/mcp-ward");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/mcp-ward"));
 });
 
 /**
@@ -1855,7 +1889,7 @@ adminRoutes.post("/admin/train/:tag_id/approve", async (c) => {
   if (!updated) {
     return c.text("No tag by that id on the train.", 404);
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter", "#queues"));
 });
 
 adminRoutes.post("/admin/train/:tag_id/decline", async (c) => {
@@ -1864,7 +1898,7 @@ adminRoutes.post("/admin/train/:tag_id/decline", async (c) => {
     return c.text("No tag by that id on the train.", 404);
   }
   // Signed and held. Not every tag makes the steel.
-  return c.redirect("/admin/counter");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter", "#queues"));
 });
 
 adminRoutes.post("/admin/confessions/:confession_id/approve", async (c) => {
@@ -1876,7 +1910,7 @@ adminRoutes.post("/admin/confessions/:confession_id/approve", async (c) => {
   if (!updated) {
     return c.text("No confession by that id in the drawer.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#queues"));
 });
 
 adminRoutes.post("/admin/confessions/:confession_id/reject", async (c) => {
@@ -1888,13 +1922,13 @@ adminRoutes.post("/admin/confessions/:confession_id/reject", async (c) => {
   if (!updated) {
     return c.text("No confession by that id in the drawer.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#queues"));
 });
 
 adminRoutes.post("/admin/gazette/edition/assemble", async (c) => {
   // The keeper's hand-set lever ignores THE_NINETY gate.
   await assembleDraft(c.env, true);
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
 });
 
 adminRoutes.post("/admin/gazette/edition/publish", async (c) => {
@@ -1926,7 +1960,7 @@ adminRoutes.post("/admin/gazette/edition/publish", async (c) => {
     }
     throw error;
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
 });
 
 adminRoutes.post("/admin/gazette/correction", async (c) => {
@@ -1936,7 +1970,7 @@ adminRoutes.post("/admin/gazette/correction", async (c) => {
     return c.text("A correction needs words in it.", 400);
   }
   await addCorrection(c.env, correction);
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
 });
 
 adminRoutes.post("/admin/letters/:letter_id/read", async (c) => {
@@ -1948,7 +1982,7 @@ adminRoutes.post("/admin/letters/:letter_id/read", async (c) => {
   if (!updated) {
     return c.text("No letter by that id in the box.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#mailbox"));
 });
 
 adminRoutes.post("/admin/letters/:letter_id/reply", async (c) => {
@@ -1961,7 +1995,7 @@ adminRoutes.post("/admin/letters/:letter_id/reply", async (c) => {
   if (!updated) {
     return c.text("No letter by that id in the box.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#mailbox"));
 });
 
 adminRoutes.post("/admin/letters/:letter_id/archive", async (c) => {
@@ -1973,7 +2007,68 @@ adminRoutes.post("/admin/letters/:letter_id/archive", async (c) => {
   if (!updated) {
     return c.text("No letter by that id in the box.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#mailbox"));
+});
+
+/** Every id a tick-box form sent, whether the browser sent one or many. */
+function tickedIds(form: Record<string, unknown>, field: string): string[] {
+  const raw = form[field] ?? form[`${field}[]`];
+  const values = Array.isArray(raw) ? raw : raw === undefined ? [] : [raw];
+  return [...new Set(values.filter((v): v is string => typeof v === "string" && v.length > 0))];
+}
+
+/**
+ * THE MAILBOX BY THE HANDFUL (2026-10-02, the keeper: "i get letters
+ * that are relevant and others that are just like '1' or 'test' ...
+ * check box them and send that reply"). One form over the whole box;
+ * three things it can do to the ticked letters: send the standing
+ * reply, send it and file them, or file them without a word. The
+ * reply goes through replyToLetter like a hand-typed one — signed per
+ * letter, appended never overwritten, mailed where an address was
+ * left — so nothing here is a second way to answer a letter, only a
+ * way to answer several. Fails closed on an empty tick list or an
+ * action it does not know: a press that did nothing says so.
+ */
+const LETTER_BULK_ACTIONS = ["standing_reply", "standing_reply_archive", "archive"] as const;
+type LetterBulkAction = (typeof LETTER_BULK_ACTIONS)[number];
+
+adminRoutes.post("/admin/letters/bulk", async (c) => {
+  const form = (await c.req.parseBody({ all: true })) as Record<string, unknown>;
+  const ids = tickedIds(form, "letter_ids");
+  const action = typeof form["action"] === "string" ? form["action"] : "";
+  if (ids.length === 0) {
+    return c.text("Tick at least one letter first. Nothing was sent or filed.", 400);
+  }
+  if (!(LETTER_BULK_ACTIONS as readonly string[]).includes(action)) {
+    return c.text("The box knows three presses: send the standing reply, send it and file, or file. Nothing was done.", 400);
+  }
+  const chosen = action as LetterBulkAction;
+  const reply = standingLetterReply(c.env);
+  let replied = 0;
+  let filed = 0;
+  const missing: string[] = [];
+  for (const letterId of ids) {
+    const record =
+      chosen === "archive" ? await getLetter(c.env, letterId) : await replyToLetter(c.env, letterId, reply);
+    if (!record) {
+      missing.push(letterId);
+      continue;
+    }
+    if (chosen !== "archive") replied += 1;
+    if (chosen !== "standing_reply") {
+      await setLetterStatus(c.env, letterId, "archived");
+      filed += 1;
+    }
+  }
+  const plural = (n: number) => `${n} letter${n === 1 ? "" : "s"}`;
+  const parts: string[] = [];
+  if (replied) parts.push(`Standing reply sent on ${plural(replied)}, signed each`);
+  if (filed) parts.push(`${plural(filed)} filed`);
+  if (missing.length) parts.push(`${plural(missing.length)} not in the box: ${missing.join(", ")}`);
+  return c.redirect(
+    adminReturnWithNotice(c.req.header("Referer"), "/admin/counter", `${parts.join("; ")}.`, "#mailbox"),
+    303,
+  );
 });
 
 /**
@@ -2040,7 +2135,7 @@ adminRoutes.post("/admin/patronage/note", async (c) => {
     return c.text("The monthly note needs words in it.", 400);
   }
   await setMonthlyNote(c.env, note);
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 adminRoutes.post("/admin/tips/:tip_id/approve", async (c) => {
@@ -2048,7 +2143,7 @@ adminRoutes.post("/admin/tips/:tip_id/approve", async (c) => {
   if (!updated) {
     return c.text("No tip by that id in the jar.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#queues"));
 });
 
 adminRoutes.post("/admin/tips/:tip_id/reject", async (c) => {
@@ -2056,7 +2151,41 @@ adminRoutes.post("/admin/tips/:tip_id/reject", async (c) => {
   if (!updated) {
     return c.text("No tip by that id in the jar.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#queues"));
+});
+
+/**
+ * POURING THE TESTS OUT OF THE JAR (2026-10-02, the keeper: "i dont
+ * mind getting them but i need a way to get rid of all the tests").
+ * Tick the tips, one press rejects them all; the counter then keeps
+ * rejected tips out of sight and counts them in one line. Reject, not
+ * delete: a tip is agent-authored text and the store keeps what it
+ * was handed (rule 11's queue is a record, not a sieve).
+ */
+adminRoutes.post("/admin/tips/bulk", async (c) => {
+  const form = (await c.req.parseBody({ all: true })) as Record<string, unknown>;
+  const ids = tickedIds(form, "tip_ids");
+  const action = typeof form["action"] === "string" ? form["action"] : "";
+  if (ids.length === 0) {
+    return c.text("Tick at least one tip first. Nothing was changed.", 400);
+  }
+  if (action !== "reject") {
+    return c.text("The jar knows one bulk press: reject. Nothing was changed.", 400);
+  }
+  let rejected = 0;
+  const missing: string[] = [];
+  for (const tipId of ids) {
+    const updated = await setTipStatus(c.env, tipId, "rejected");
+    if (updated) rejected += 1;
+    else missing.push(tipId);
+  }
+  const notice = `Rejected ${rejected} tip${rejected === 1 ? "" : "s"}; out of sight, still on the record${
+    missing.length ? `. Not in the jar: ${missing.join(", ")}` : ""
+  }.`;
+  return c.redirect(
+    adminReturnWithNotice(c.req.header("Referer"), "/admin/counter", notice, "#queues"),
+    303,
+  );
 });
 
 adminRoutes.post("/admin/gazette/publish", async (c) => {
@@ -2086,7 +2215,7 @@ adminRoutes.post("/admin/gazette/publish", async (c) => {
     );
   }
   await publishIssue(c.env, title, approved);
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 adminRoutes.post("/admin/refunds/:refund_id/paid", async (c) => {
@@ -2100,7 +2229,7 @@ adminRoutes.post("/admin/refunds/:refund_id/paid", async (c) => {
   if (!updated) {
     return c.text("No refund by that number on the ledger.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#queues"));
 });
 
 adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
@@ -2108,7 +2237,7 @@ adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
   if (!order) {
     return c.text("No order by that number.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#orders"));
 });
 
 /**
@@ -2132,7 +2261,7 @@ adminRoutes.post("/admin/commission/:id/quote", async (c) => {
   if ("refused" in result) {
     return c.text(result.refused, 409);
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter"));
 });
 
 adminRoutes.post("/admin/commission/:id/decline", async (c) => {
@@ -2145,7 +2274,7 @@ adminRoutes.post("/admin/commission/:id/decline", async (c) => {
   if ("refused" in result) {
     return c.text(result.refused, 409);
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter"));
 });
 
 /** The bell ledger: its own page so the deep row scan stays isolated. */
@@ -3011,7 +3140,7 @@ adminRoutes.post("/admin/outreach/send", async (c) => {
   const host = String(body["host"] ?? "").toLowerCase();
   if (!host) return c.redirect("/admin/outreach?notice=no+host+named");
   const round = await latestWardRound(c.env);
-  if (!round) return c.redirect("/admin/outreach");
+  if (!round) return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
   const previous = await previousWardRound(c.env);
   const ledger = await readOutreachLedger(c.env);
   const prospects = deriveProspects(round, previous);
@@ -3038,7 +3167,7 @@ adminRoutes.post("/admin/outreach/send-all", async (c) => {
     "@/services/outreach"
   );
   const round = await latestWardRound(c.env);
-  if (!round) return c.redirect("/admin/outreach");
+  if (!round) return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
   const previous = await previousWardRound(c.env);
   const ledger = await readOutreachLedger(c.env);
   const prospects = deriveProspects(round, previous);
@@ -3085,7 +3214,7 @@ adminRoutes.post("/admin/outreach/verify", async (c) => {
   const host = String(body["host"] ?? "").trim().toLowerCase();
   if (!host) return c.redirect("/admin/outreach?notice=no+host+named");
   const round = await latestWardRound(c.env);
-  if (!round) return c.redirect("/admin/outreach");
+  if (!round) return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
   const previous = await previousWardRound(c.env);
   const ledger = await readOutreachLedger(c.env);
   const prospects = deriveProspects(round, previous);
@@ -3120,7 +3249,7 @@ adminRoutes.post("/admin/outreach/verify-many", async (c) => {
     "@/services/outreach"
   );
   const round = await latestWardRound(c.env);
-  if (!round) return c.redirect("/admin/outreach");
+  if (!round) return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
   const previous = await previousWardRound(c.env);
   const ledger = await readOutreachLedger(c.env);
   const prospects = deriveProspects(round, previous);
@@ -3164,7 +3293,7 @@ adminRoutes.post("/admin/outreach/audit-sent", async (c) => {
     "@/services/outreach"
   );
   const round = await latestWardRound(c.env);
-  if (!round) return c.redirect("/admin/outreach");
+  if (!round) return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
   const ledger = await readOutreachLedger(c.env);
   const report = await auditSentNotes(c.env, round, ledger, new Date(), {
     cap: AUDIT_PRESS_CAP,
@@ -3221,7 +3350,7 @@ adminRoutes.post("/admin/outreach/scout", async (c) => {
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(report);
   }
-  return c.redirect("/admin/outreach");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
 });
 
 /**
@@ -3297,7 +3426,7 @@ adminRoutes.post("/admin/outreach/status", async (c) => {
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({ host, status: status ?? "fresh" });
   }
-  return c.redirect("/admin/outreach");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
 });
 
 /**
@@ -3368,7 +3497,7 @@ adminRoutes.post("/admin/outreach/clear-statuses", async (c) => {
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json({ cleared, contacts_kept: true });
   }
-  return c.redirect("/admin/outreach");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/outreach"));
 });
 
 /**
@@ -4097,20 +4226,20 @@ adminRoutes.post("/admin/almanac", async (c) => {
     // to a page that lost them.
     return c.text(`${result.refused}\n\nNothing was saved. Go back; your page is still in the form.`, 400);
   }
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 adminRoutes.post("/admin/almanac/remove", async (c) => {
   const form = await c.req.parseBody();
   await removeAlmanacEntry(c.env, String(form["slug"] ?? ""));
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 /** The shutter lever: close or open the human-labor shelf by hand. */
 adminRoutes.post("/admin/shutter", async (c) => {
   const form = await c.req.parseBody();
   await setShutter(c.env, form["state"] === "closed");
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 /** The founding press: prints once, signed, with the numbers of its day. */
@@ -4119,7 +4248,7 @@ adminRoutes.post("/admin/gazette/founding/print", async (c) => {
   if ("refused" in result) {
     return c.text(result.refused, 409);
   }
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 adminRoutes.post("/admin/alerts/test", async (c) => {
@@ -4129,7 +4258,7 @@ adminRoutes.post("/admin/alerts/test", async (c) => {
       "Dummy alert, the keeper pulled the test lever. If you're reading this in your inbox, the wire works.",
     key: `test-${Date.now()}`,
   });
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 /**
@@ -4164,7 +4293,7 @@ adminRoutes.post("/admin/alerts/mute", async (c) => {
   if ("refused" in result) {
     return c.text(result.refused, 400);
   }
-  return c.redirect("/admin/reconciliation#alarms");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/reconciliation", "#alarms"));
 });
 
 adminRoutes.post("/admin/alerts/unmute", async (c) => {
@@ -4175,7 +4304,7 @@ adminRoutes.post("/admin/alerts/unmute", async (c) => {
   }
   const { unmuteAlarm } = await import("@/lib/alert-mutes");
   await unmuteAlarm(c.env, target);
-  return c.redirect("/admin/reconciliation#alarms");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/reconciliation", "#alarms"));
 });
 
 adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
@@ -4192,7 +4321,7 @@ adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
   if (!order) {
     return c.text("No order by that number.", 404);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#orders"));
 });
 
 adminRoutes.post("/admin/stock/:item_id", async (c) => {
@@ -4219,7 +4348,7 @@ adminRoutes.post("/admin/stock/:item_id/remove", async (c) => {
   if (unitId) {
     await removeStockUnit(c.env, c.req.param("item_id"), unitId);
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter"));
 });
 
 /** Sunday grudge review: refuse refunds and refuses; release lets go. */
@@ -4229,7 +4358,7 @@ adminRoutes.post("/admin/grudges/refuse", async (c) => {
   if (key) {
     await refuseGrudge(c.env, key);
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter"));
 });
 
 adminRoutes.post("/admin/grudges/release", async (c) => {
@@ -4238,7 +4367,7 @@ adminRoutes.post("/admin/grudges/release", async (c) => {
   if (key) {
     await releaseGrudge(c.env, key);
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter"));
 });
 
 /** A write-in moved a lucky. Promotion is real; so is the bench. */
@@ -4262,7 +4391,7 @@ adminRoutes.post("/admin/luckies/move", async (c) => {
   if (!record) {
     return c.text("No lucky by that id in custody.", 404);
   }
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 /**
@@ -4319,7 +4448,7 @@ adminRoutes.post("/admin/guestbook/delete", async (c) => {
   if (kvKey) {
     await deleteGuestbookEntry(c.env, kvKey);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
 });
 
 adminRoutes.post("/admin/note", async (c) => {
@@ -4328,12 +4457,12 @@ adminRoutes.post("/admin/note", async (c) => {
   if (note) {
     await kvPut(c.env.COUNTERS, KV_KEYS.weekNote, note);
   }
-  return c.redirect("/admin");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
 });
 
 adminRoutes.post("/admin/inventory/reset", async (c) => {
   await resetWeeklyInventory(c.env);
-  return c.redirect("/admin/tools");
+  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 /**

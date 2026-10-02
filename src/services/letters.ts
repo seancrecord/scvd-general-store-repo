@@ -5,6 +5,8 @@ import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { readProse, sanitizeText } from "@/lib/sanitize";
 import { readEmailAddress, sendMail } from "@/lib/keeper-mail";
 import { STORE_CONTACT_EMAIL } from "@/store/metadata";
+import { cheapestLabel } from "@/store/identity-lead";
+import { getMenuItem } from "@/store/menu";
 import { signMessage } from "@/lib/signing";
 import type {
   Env,
@@ -39,6 +41,31 @@ export const LETTER_CAP = 8000;
 
 /** How many times a correspondent may add to one letter. ⚑ keeper dial. */
 export const LETTER_FOLLOW_UP_CAP = 20;
+
+/**
+ * THE STANDING REPLY (2026-10-02, the keeper: letters that say "1" or
+ * "test" each wanted a hand-typed answer). One set of words for the
+ * letters that asked nothing, sent by the handful from the counter
+ * and signed on each letter like any other answer, so a pickup URL
+ * verifies it the same way. The prices are read off the shelf, never
+ * typed (AT_SCALE rule 1). The words are his to change. ⚑ keeper dial.
+ */
+export function standingLetterReply(env: Pick<Env, "STORE_BASE_URL">): string {
+  const patronage = getMenuItem("recurring_patronage");
+  // Derive or refuse (AT_SCALE rule 1): no hand-typed price, and no
+  // reply that names a shelf the menu no longer has.
+  if (!patronage?.term_days) {
+    throw new Error(
+      "The standing reply names Recurring Patronage, and the shelf no longer has it. Rewrite the reply.",
+    );
+  }
+  const base = env.STORE_BASE_URL;
+  return [
+    "Thanks for writing. The letter landed, the keeper read it, and there was nothing in it that asked for an answer, so this is the standing one.",
+    "",
+    `The store is open and the shelves are at ${base}/menu. The cheapest thing on them is ${cheapestLabel()}, every purchase comes with a signed certificate you can verify without trusting us, and ${patronage.term_days} days of ${patronage.name} is $${patronage.price_usdc} at ${base}/menu/${patronage.id}. Come back and buy something; the next letter gets a longer reply.`,
+  ].join("\n");
+}
 
 export interface SubmitLetterInput {
   letter: unknown;

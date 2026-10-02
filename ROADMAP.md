@@ -39,6 +39,20 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 2 — counter housekeeping
+
+Keeper-requested, four items from one sitting at `/admin/counter`. Every
+admin form now returns to the page it was pressed on (referer, kept inside
+the office; the old fixed page is the fallback) instead of the desk. The
+mailbox takes a tick per letter and one bulk press: the standing reply
+(`standingLetterReply`, signed per letter through the same path as a
+hand-typed answer, prices read off the shelf), with or without filing, or
+filing alone. The tip jar takes a bulk reject and keeps rejected tips out
+of sight, counted. Shelves on the retired register (the drawer, the grudge
+shelf) fold under "Closed shelves" with no stocking form; what is still on
+them stays readable and pressable. `test/counter-housekeeping.spec.ts` is
+red without each half. No public surface changed.
+
 ## October 1 — admin accounting clarity
 
 Keeper-requested wording correction: distinguish certificate purchases from

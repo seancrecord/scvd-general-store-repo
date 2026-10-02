@@ -62,6 +62,8 @@ export interface CounterPageData {
   stockShelves: Record<string, StockUnit[]>;
   grudges: GrudgeEntry[];
   letters: LetterRecord[];
+  /** The words the mailbox's bulk press sends, shown before they go. */
+  standingReply: string;
   confessions: ConfessionRecord[];
   trainTags: TrainTagRecord[];
   tips: TipRecord[];
@@ -73,46 +75,107 @@ export interface CounterPageData {
   loadNotes: string[];
 }
 
-/** The stocked shelves: the drawer (real oddities) and the name pool. */
-function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
-  const sections = Object.values(STOCK_DEFINITIONS).map((definition) => {
-    const units = shelves[definition.itemId] ?? [];
-    const unitList =
-      units.length === 0
-        ? "<p><em>Shelf's bare; the listing shows sold out until you stock it.</em></p>"
-        : `<ul>${units
-            .map(
-              (
-                unit,
-              ) => `<li>${escapeHtml(Object.values(unit.fields).join(" \u00B7 "))}
-              <form method="POST" action="/admin/stock/${definition.itemId}/remove" style="display:inline">
+/**
+ * The stocked shelves. A shelf whose item is on the retired register
+ * (2026-10-02, the keeper: "hide the drawer or anything that's not
+ * active") keeps its units readable and unstockable but loses the
+ * stocking form, and renders under the closed shelves below rather
+ * than in the working order of the day. Which shelves are closed is
+ * read off RETIRED_ITEMS, never listed here.
+ */
+function unitsHtml(itemId: string, units: StockUnit[], bare: string): string {
+  return units.length === 0
+    ? `<p><em>${bare}</em></p>`
+    : `<ul>${units
+        .map(
+          (
+            unit,
+          ) => `<li>${escapeHtml(Object.values(unit.fields).join(" \u00B7 "))}
+              <form method="POST" action="/admin/stock/${escapeHtml(itemId)}/remove" style="display:inline">
                 <input type="hidden" name="unit_id" value="${escapeHtml(unit.unit_id)}">
                 <button type="submit">Unstock</button>
               </form></li>`,
-            )
-            .join("\n")}</ul>`;
-    const inputs = definition.fields
-      .map(
-        (field) =>
-          `<input type="text" name="${escapeHtml(field.key)}" placeholder="${escapeHtml(field.label)}" maxlength="${field.cap}"${field.label.includes("(optional)") ? "" : " required"}>`,
-      )
-      .join("\n      ");
-    const shelfNote =
-      definition.itemId === "the_drawer"
-        ? "<p><em>The real-oddities shelf: a real thing of yours plus what it does, as listed. Describe-only; the object never ships and the shirt never gets named in public code.</em></p>"
-        : "";
-    return `<section>
+        )
+        .join("\n")}</ul>`;
+}
+
+function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
+  const sections = Object.values(STOCK_DEFINITIONS)
+    .filter((definition) => !getRetiredItem(definition.itemId))
+    .map((definition) => {
+      const units = shelves[definition.itemId] ?? [];
+      const inputs = definition.fields
+        .map(
+          (field) =>
+            `<input type="text" name="${escapeHtml(field.key)}" placeholder="${escapeHtml(field.label)}" maxlength="${field.cap}"${field.label.includes("(optional)") ? "" : " required"}>`,
+        )
+        .join("\n      ");
+      return `<section>
     <h2>Stocked shelf: ${escapeHtml(definition.itemId)} (${units.length})</h2>
-    ${shelfNote}
-    ${unitList}
+    ${unitsHtml(definition.itemId, units, "Shelf's bare; the listing shows sold out until you stock it.")}
     <form method="POST" action="/admin/stock/${definition.itemId}">
       ${inputs}
       <button type="submit">Stock it</button>
     </form>
-    
   </section>`;
-  });
+    });
   return sections.join("\n\n");
+}
+
+/**
+ * CLOSED SHELVES, folded (2026-10-02). The drawer closed 2026-08-20
+ * and the grudge shelf 2026-08-05, and both still stood in the day's
+ * working order with their forms open. What is left on them stays
+ * readable — a held grudge is a promise, and gets its two presses —
+ * but the fold opens on its own only while something on a closed
+ * shelf still needs hands. The lucky shelf's note rides here too:
+ * preset since 2026-07-25, it has never had a thing to do.
+ */
+function closedShelvesHtml(data: CounterPageData): string {
+  const retiredShelves = Object.values(STOCK_DEFINITIONS)
+    .map((definition) => ({ definition, retired: getRetiredItem(definition.itemId) }))
+    .filter((entry) => entry.retired !== undefined);
+  const heldGrudges = data.grudges.filter((grudge) => grudge.status === "held").length;
+  const unitsLeft = retiredShelves.reduce(
+    (sum, entry) => sum + (data.stockShelves[entry.definition.itemId] ?? []).length,
+    0,
+  );
+  const grudgeShelf = getRetiredItem("grudge");
+  const shelvesHtml = retiredShelves
+    .map(({ definition, retired }) => {
+      const units = data.stockShelves[definition.itemId] ?? [];
+      return `<h3>${escapeHtml(retired!.name)} (${escapeHtml(definition.itemId)}) \u2014 retired ${escapeHtml(retired!.retired_on)}${units.length ? `, ${units.length} unit${units.length === 1 ? "" : "s"} still on it` : ""}</h3>
+      <p><em>${escapeHtml(retired!.note)}</em></p>
+      ${unitsHtml(definition.itemId, units, "Nothing left on the shelf.")}`;
+    })
+    .join("\n");
+  const grudgesHtml =
+    data.grudges.length === 0
+      ? "<p>Nothing held.</p>"
+      : `<ul>${data.grudges
+          .map(
+            (
+              grudge,
+            ) => `<li>[${escapeHtml(grudge.status)}] "${escapeHtml(grudge.grievance)}" \u2014 patron #${grudge.patron_number}, ${escapeHtml(grudge.at.slice(0, 10))}
+              ${
+                grudge.status === "held"
+                  ? `<form method="POST" action="/admin/grudges/release" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Release (they wrote in)</button></form>
+                  <form method="POST" action="/admin/grudges/refuse" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Refuse + refund (abuse)</button></form>`
+                  : ""
+              }</li>`,
+          )
+          .join("\n")}</ul>`;
+  return `<section>
+    <details${heldGrudges || unitsLeft ? " open" : ""}>
+      <summary>Closed shelves and the ones that need no hands${heldGrudges ? ` (${heldGrudges} grudge${heldGrudges === 1 ? "" : "s"} still held)` : ""}</summary>
+      ${shelvesHtml}
+      <h3>The grudge register${grudgeShelf ? ` \u2014 retired ${escapeHtml(grudgeShelf.retired_on)}` : ""} (Sunday reading)</h3>
+      ${grudgeShelf ? `<p><em>${escapeHtml(grudgeShelf.note)}</em></p>` : ""}
+      ${grudgesHtml}
+      <h3>The lucky shelf (preset; nothing to do here)</h3>
+      <p>Luckies draw themselves from the herd since 2026-07-25: animal, lucky note, and strength all come off the preset pools in src/store/luckies.ts, never sell out, and need no hands. Write-ins still move a lucky from /admin/tools; the bench is real.</p>
+    </details>
+  </section>`;
 }
 
 /** Clip long stored text for list views; the full text always exists
@@ -271,6 +334,7 @@ function lettersHtml(letters: LetterRecord[]): string {
               }</button>
             </form>`;
       return `<li>
+      <label><input type="checkbox" name="letter_ids" value="${escapeHtml(letter.letter_id)}" form="letters-bulk"> tick</label>
       <strong>${escapeHtml(letter.letter_id)}</strong> [${letter.status}]
       ${letter.from_name ? `\u00B7 from ${escapeHtml(letter.from_name)}` : "\u00B7 unsigned"}
       ${letter.verified_identity ? `\u00B7 claimed identity (unverified): ${escapeHtml(letter.verified_identity)}` : ""}
@@ -356,11 +420,22 @@ function trainHtml(tags: TrainTagRecord[]): string {
     <ul>${rows}</ul>`;
 }
 
+/**
+ * The jar, with the rejected poured out of sight (2026-10-02). A
+ * rejected tip stays on the record and in the count; it stops taking
+ * up the keeper's screen. Each tip still in view carries a tick for
+ * the one bulk press below.
+ */
 function tipsHtml(tips: TipRecord[]): string {
-  if (tips.length === 0) {
-    return "<p>The tip jar is empty.</p>";
+  const shown = tips.filter((tip) => tip.status !== "rejected");
+  const rejected = tips.length - shown.length;
+  const rejectedLine = rejected
+    ? `<p><small>${rejected} rejected tip${rejected === 1 ? "" : "s"} kept on the record, out of sight.</small></p>`
+    : "";
+  if (shown.length === 0) {
+    return `<p>The tip jar is empty.</p>${rejectedLine}`;
   }
-  return tips
+  const rows = shown
     .map((tip) => {
       const reviewForms =
         tip.status === "pending_review"
@@ -368,6 +443,7 @@ function tipsHtml(tips: TipRecord[]): string {
              <form method="POST" action="/admin/tips/${escapeHtml(tip.id)}/reject" style="display:inline"><button type="submit">Reject</button></form>`
           : "";
       return `<li>
+      <label><input type="checkbox" name="tip_ids" value="${escapeHtml(tip.id)}" form="tips-bulk"> tick</label>
       <strong>${escapeHtml(tip.id)}</strong> [${tip.status}], ${escapeHtml(tip.tip)}
       ${tip.contributor_name ? `\u00B7 by ${escapeHtml(tip.contributor_name)}` : "\u00B7 unsigned"}
       ${tip.verified_identity ? `\u00B7 claimed identity (unverified): ${escapeHtml(tip.verified_identity)}` : ""}
@@ -376,6 +452,11 @@ function tipsHtml(tips: TipRecord[]): string {
     </li>`;
     })
     .join("\n");
+  return `<form method="POST" action="/admin/tips/bulk" id="tips-bulk">
+      <p>Tick the tests and the noise, then <button type="submit" name="action" value="reject">Reject the ticked</button>. Rejected tips leave the screen and stay on the record. There is no Gazette press running; approving files a tip for an edition that is not scheduled.</p>
+    </form>
+    <ul>${rows}</ul>
+    ${rejectedLine}`;
 }
 
 function refundsHtml(refunds: RefundRecord[]): string {
@@ -643,33 +724,7 @@ export function renderCounterPage(data: CounterPageData): string {
     ${ordersHtml(data.orders)}
   </section>
 
-  <section>
-    <h2>The lucky shelf (preset; nothing to do here)</h2>
-    <p>Luckies draw themselves from the herd since 2026-07-25: animal, lucky note, and strength all come off the preset pools in src/store/luckies.ts, never sell out, and need no hands. Write-ins still move a lucky from /admin/tools; the bench is real.</p>
-  </section>
-
   ${stockShelvesHtml(data.stockShelves)}
-
-  <section>
-    <h2>The grudge register (Sunday reading)</h2>
-    ${
-      data.grudges.length === 0
-        ? "<p>Nothing held. Somebody will be wronged eventually.</p>"
-        : `<ul>${data.grudges
-            .map(
-              (
-                grudge,
-              ) => `<li>[${escapeHtml(grudge.status)}] "${escapeHtml(grudge.grievance)}" \u2014 patron #${grudge.patron_number}, ${escapeHtml(grudge.at.slice(0, 10))}
-              ${
-                grudge.status === "held"
-                  ? `<form method="POST" action="/admin/grudges/release" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Release (they wrote in)</button></form>
-                  <form method="POST" action="/admin/grudges/refuse" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Refuse + refund (abuse)</button></form>`
-                  : ""
-              }</li>`,
-            )
-            .join("\n")}</ul>`
-    }
-  </section>
 
   <section>
     <h2>The closers list (Sunday coffee reading)</h2>
@@ -690,6 +745,17 @@ export function renderCounterPage(data: CounterPageData): string {
     <p>Private correspondence. Read here, replied here, published nowhere.
     An answered letter stays in the box until you archive it, and asks
     nothing of you while it waits.</p>
+    <form method="POST" action="/admin/letters/bulk" id="letters-bulk">
+      <p>For the letters that asked nothing: tick them below, then
+        <button type="submit" name="action" value="standing_reply">Send the standing reply, signed</button>
+        <button type="submit" name="action" value="standing_reply_archive">Send it and file them</button>
+        <button type="submit" name="action" value="archive">File them without a word</button>
+      </p>
+      <details>
+        <summary>The standing reply, as it goes out (signed on each letter; mailed where an address was left)</summary>
+        <p style="white-space:pre-wrap">${escapeHtml(data.standingReply)}</p>
+      </details>
+    </form>
     <ul>${lettersHtml(data.letters)}</ul>
   </section>
 
@@ -706,8 +772,12 @@ export function renderCounterPage(data: CounterPageData): string {
       ${trainHtml(data.trainTags)}
     </details>
     <details ${data.tips.some((tip) => tip.status === "pending_review") ? "open" : ""}>
-      <summary>Trading Post tips (${data.tips.length})</summary>
-      <ul>${tipsHtml(data.tips)}</ul>
+      <summary>Trading Post tips (${data.tips.filter((tip) => tip.status !== "rejected").length} in the jar${
+        data.tips.some((tip) => tip.status === "rejected")
+          ? `, ${data.tips.filter((tip) => tip.status === "rejected").length} rejected`
+          : ""
+      })</summary>
+      ${tipsHtml(data.tips)}
     </details>
     <details ${pendingRefunds > 0 ? "open" : ""}>
       <summary>The refund ledger (${pendingRefunds} pending)</summary>
@@ -727,6 +797,8 @@ export function renderCounterPage(data: CounterPageData): string {
       <summary>Guestbook moderation (${data.guestbook.length} shown)</summary>
       <ul>${guestbookHtml(data.guestbook)}</ul>
     </details>
-  </section>`;
+  </section>
+
+  ${closedShelvesHtml(data)}`;
   return renderAdminShell("counter", body, data.loadNotes);
 }
