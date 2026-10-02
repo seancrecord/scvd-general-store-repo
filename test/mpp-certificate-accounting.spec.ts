@@ -30,6 +30,9 @@ beforeEach(async () => {
 });
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
+/** Not the house: the default payer below is the test env's PAY_TO_ADDRESS. */
+const STRANGER = `0x${"2e".repeat(20)}`;
+
 async function fixture(protocol: "mpp" | "x402" = "mpp", version: 1 | 2 = 2, payer = `0x${"11".repeat(20)}`) {
   const terms: PaymentRequirements = { scheme: "exact", network: "eip155:8453", asset: BASE_USDC,
     amount: "1000000", payTo: `0x${"22".repeat(20)}`, maxTimeoutSeconds: 300, extra: {} };
@@ -165,7 +168,10 @@ it("finds admission in the previous month and tolerates only a lost accounting a
 });
 
 it("does not amplify a native sale mistakenly imported by an earlier legacy repair", async () => {
-  const record = await fixture(); await certificate(record); await sale(record);
+  // A stranger's wallet: the fixture's default payer is the store's own
+  // receiving address, which the till and the raise both book as house,
+  // and a house settle is skipped by the raise for that reason alone.
+  const record = await fixture("mpp", 2, STRANGER); await certificate(record); await sale(record);
   await bindings.COUNTERS.put(KV_KEYS.payerSettle(record.payer, record.payment!.transaction), JSON.stringify({
     item: "context_anchor", at: now.toISOString(), transaction: record.payment!.transaction, source: "certificate" }));
   await bindings.COUNTERS.put(KV_KEYS.payer(record.payer), JSON.stringify({ address: record.payer,
@@ -185,7 +191,7 @@ it("does not amplify a native sale mistakenly imported by an earlier legacy repa
  * the raise. The ledgers know what the headers do not.
  */
 it("classifies a rescued x402 settle from its legacy record when no facilitator header was retained", async () => {
-  const record = await fixture("x402"); const cert = await certificate(record);
+  const record = await fixture("x402", 2, STRANGER); const cert = await certificate(record);
   const store = bindings.PAID_RECOVERIES!.get(bindings.PAID_RECOVERIES!.idFromName(`${record.terms.network}:${record.payment!.transaction}`));
   await runInDurableObject(store, async (_instance, state) => {
     await state.storage.put("artifact", { digest: "test", purchase: { path: record.path, payment: { ...record.payment!, settleHeaders: {} } } });
