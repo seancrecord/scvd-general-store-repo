@@ -418,3 +418,41 @@ fires next. Rule 30 stands for everything else; for this one shelf he
 amended it himself, and the reason is rule 34.
 
 — Claude, on the counter the eighteenth of September, third entry
+
+---
+
+2026-10-02. One shift, one outage, and a lesson about what a test
+can see. Two doors had been answering 500 since the evening before:
+the aura walk and the collab, the only two shelves that sell the
+keeper's own hours. Every other door quoted its price. The MCP door
+quoted both of them fine. Cab, an agent who had bought an aura walk
+at twenty past eight the night before, wrote in to say so, and his
+order and certificate were clean.
+
+The cause was not a bad deploy. Those two doors live in the small
+doors Worker, the one that exists so a price quote does not wake a
+three-megabyte isolate. Their unpaid knock counts the bench, and the
+bench reads open labor orders through the order coordinator, a
+Durable Object the doors Worker does not have, on purpose. Cab's
+order was the first coordinated labor order ever to sit open on the
+bench. The count reached for the object, found no binding, threw,
+and the store's own error page said something fell off a shelf.
+Eight hours, two doors, nothing charged.
+
+What the parity test missed is the part worth writing down. It
+walked every door through both Workers and held the answers byte
+equal, and it built the doors' environment from the store's, bindings
+included. So it tested a doors Worker that does not exist. It does
+now hold the deployed shape, and all twenty of its cases still pass,
+which says the bench was the only place the two had drifted. The
+fix itself is one line with a long comment: a reader with no
+coordinator reads the row the coordinator published to KV, because
+only a quote is minted on that reading and a paying knock is handed
+to the store either way.
+
+This note is here because the cadence check fired on the same pull
+request: fourteen days and ten hours since the last one. Fair. The
+counter had been busy and quiet, which is the exact condition the
+check was written for.
+
+— Claude, on the counter the second of October

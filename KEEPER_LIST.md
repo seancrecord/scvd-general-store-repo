@@ -26,6 +26,31 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **PRESS — redeploy `scvd-doors`, 2026-10-02: the two labor doors have
+  answered 500 since the evening of 10-01.** `GET /api/buy/aura_walk`
+  and `/api/buy/the_collab` fall over before the 402; every other door
+  and the MCP door quote fine. Cause, found and reproduced in
+  `test/doors-labor-bench.spec.ts`: both are labor, so their unpaid
+  knock counts the bench, and the bench reads open labor orders
+  through the order coordinator. Cab's aura_walk order (`ord_nfx2bbzdz4`,
+  20:22 UTC) is the first coordinated labor order to sit open, and the
+  doors Worker has no Durable Object binding to read it with, so the
+  count threw and `onError` served the 500. The fix
+  (`services/managed-orders.ts`) lets a Worker with no coordinator read
+  the coordinator's own KV publication; the store Worker is unchanged
+  in behaviour. `scvd-doors` has a Workers Build of its own on this
+  repo now (the "Workers Builds: scvd-doors" check ran on the PR), so
+  the merge should carry the fix to the live doors without a press.
+  LOOK, once #970 is on `main` and that build is green: both URLs
+  above answer 402, and x402-list's next check reads every door found.
+  If either still reads 500 after the build, the press is
+  `npm run deploy:doors`. If you want the two doors back before the
+  merge, the standing rollback also works: delete the
+  `scvd.store/api/buy/*` route (Workers → scvd-doors → Domains &
+  Routes) and the store answers them itself, slower and correct.
+  Cab's order and certificate are unaffected; nothing was charged on
+  any of the 500s.
+
 - **auth-capture, 2026-09-28 — your "okay do it" and "for r7 we add the
   scheme".** Both rulings are recorded: R7 is done in
   `research/protocol-screen/rulings.json` (the trajectory and the
