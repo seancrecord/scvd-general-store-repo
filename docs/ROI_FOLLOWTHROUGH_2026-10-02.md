@@ -70,7 +70,8 @@ signed verdicts changed in this work.
 ## Local validation
 
 The initial nine mechanism regressions failed against the original source before
-implementation. The expanded census/mechanism/publication group passes 76 tests;
+implementation. The expanded census/mechanism/publication group passed 76 tests; a further malformed-topic regression was demonstrated
+red and the complete 17-test mechanism file passes after the guard;
 the existing shared authorization and settlement group passes 38. Type checking
 and both Worker dry-run bundles pass. The four full CI shards and `check` remain
 the merge gate; no focused run substitutes for that gate.

@@ -58,6 +58,7 @@ it("duplicate authorization events cannot inflate a paired total",async()=>{
 });
 it.each([
  {...authorization, removed:true},
+ {...authorization, topics:[42,topic(payer),authorization.topics[2]]},
  {...authorization, data:"0x01"},
  {...authorization, topics:[AUTHORIZATION_USED_TOPIC,topic(payer),"0x00"]},
  {...authorization, blockNumber:"0xffff"},

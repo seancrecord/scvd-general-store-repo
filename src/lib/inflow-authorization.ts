@@ -37,7 +37,7 @@ export async function classifyInflowAuthorizations(
 ): Promise<InflowAuthorizationCounts> {
   const result = emptyAuthorizationCounts();
   const valid = transfers.filter(({ log }) => indexed(log, chain, from, to) && Array.isArray(log.topics) &&
-    log.topics.length === 3 && log.topics[0]?.toLowerCase() === TRANSFER_TOPIC &&
+    log.topics.length === 3 && hash(log.topics[0]) && log.topics[0].toLowerCase() === TRANSFER_TOPIC &&
     addressTopic(log.topics[1]) && addressTopic(log.topics[2]) && hash(log.data));
   result.unread_transfers = transfers.length - valid.length;
   if (!valid.length) return result;
@@ -45,7 +45,7 @@ export async function classifyInflowAuthorizations(
   const senderSet = new Set(senders);
   const logs = await read(senders);
   const badRead = !logs || logs.some(log => !indexed(log, chain, from, to) || !Array.isArray(log.topics) ||
-    log.topics.length !== 3 || log.topics[0]?.toLowerCase() !== AUTHORIZATION_USED_TOPIC ||
+    log.topics.length !== 3 || !hash(log.topics[0]) || log.topics[0].toLowerCase() !== AUTHORIZATION_USED_TOPIC ||
     !addressTopic(log.topics[1]) || !hash(log.topics[2]) || log.data !== "0x" ||
     !senderSet.has(`0x${log.topics[1].slice(-40).toLowerCase()}`));
   if (badRead || new Set(logs!.map(identity)).size !== logs!.length ||
