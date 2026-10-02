@@ -147,7 +147,11 @@ function settlesHtml(r: SettleReconciliation | null): string {
     month-window compare would manufacture a discrepancy every time the
     calendar turned. "Purchases on the payer rows" is the larger of each
     wallet's row and its per-settle records. A certificate without a matching legacy record needs its payment protocol and settlement checked first.
-    The certificate backfill at <code>POST /admin/repair/payer-settles</code> only imports evidence it can classify as x402. Row-level detail lives at <a href="/admin/recount">the recount</a>;
+    The certificate backfill at <code>POST /admin/repair/payer-settles</code> only imports evidence it can classify as x402.
+    One shape the counters alone can produce: a settle the till booked as house by user-agent or header, whose
+    record the raise read as organic before 2026-10-02 and lifted onto the organic tally as well — one record,
+    two counter settles. The sale events (<code>sellevt:</code>, 90 days) carry <code>house</code> and <code>payer</code>
+    for such a settle; records written since carry the flag and the raise skips them. Row-level detail lives at <a href="/admin/recount">the recount</a>;
     the last raise, and what it lifted, at <a href="/admin/raise-log">/admin/raise-log</a>.</small></p>
     </details>`;
 }

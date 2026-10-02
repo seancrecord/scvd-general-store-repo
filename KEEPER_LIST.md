@@ -26,6 +26,23 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **LOOK — the books check's one settlement, 2026-10-02.** The
+  page read the counters one settlement over the derived payer
+  purchases. The code can produce exactly that shape on its own:
+  a settle the till booked as house by user-agent or house
+  header (not by wallet), which the hourly raise then read as
+  organic and lifted onto `paid` as well. Fixed from this
+  deploy forward (records carry `house`, the raise honours it;
+  ROADMAP October 2), but a lift already made stays made — the
+  raise never lowers. To name it: read `/admin/raise-log` for
+  `house_records` (nonzero means the raise now sees such
+  records), then the sale events under `sellevt:` for a row
+  with `house: true` whose `payer` is not on
+  `house-wallets.json`. If one exists, that is the settle, and
+  the correction is one `paid:<item>` for its month down by one
+  — your press, with a corrections entry, not the raise's. If
+  none exists within the 90-day window, the difference is older
+  than the events and this is not its cause.
 - **PRESS — redeploy `scvd-doors`, 2026-10-02: the two labor doors have
   answered 500 since the evening of 10-01.** `GET /api/buy/aura_walk`
   and `/api/buy/the_collab` fall over before the 402; every other door
