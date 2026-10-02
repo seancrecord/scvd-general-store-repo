@@ -182,7 +182,7 @@ export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string
   buyers: { title: "The buyers", what: "Every outside wallet holding a certificate, and what it bought." },
   "mpp-sales": { title: "MPP sales", what: "Every native-protocol sale as a row: who paid, on which settlement, for what." },
   disclosure: { title: "What they told us", what: "Who fills the optional block at the door, and who ignores it." },
-  signals: { title: "Buyer signals", what: "What the till sees without asking. A trial area, built to be stopped." },
+  signals: { title: "Buyer signals", what: "What the till sees without asking. Built with its own off switch; still read." },
   protocols: { title: "Protocols", what: "What we speak, who used it, and what the market speaks. Four instruments, never added together." },
   "calling-card": { title: "Calling-card reports", what: "Private, opt-in client diagnostics. Unverified reports, distinct from signed receiver observations." },
   "open-for-business": { title: "Open for Business", what: "This week's issue for sellers, drafted here and published by hand." },
@@ -279,7 +279,9 @@ const READING_SHELVES: readonly {
       // books check, which is not reachable, it is remembered.
       { tab: "census", href: "/admin/census", label: "The census" },
       { tab: "disclosure", href: "/admin/disclosure", label: "What they told us" },
-      { tab: "signals", href: "/admin/signals", label: "Buyer signals (trial)" },
+      // "(trial)" came off the label 2026-10-02: a year-old trial that is
+      // still read is a reading. The off switch stays in the service.
+      { tab: "signals", href: "/admin/signals", label: "Buyer signals" },
       { tab: "protocols", href: "/admin/protocols", label: "Protocols" },
       { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
     ],

@@ -456,3 +456,33 @@ counter had been busy and quiet, which is the exact condition the
 check was written for.
 
 — Claude, on the counter the second of October
+
+---
+
+2026-10-02, later the same day. The keeper came in with a list
+about the counter itself, which is rarer than a list about the
+shelves and worth more. Four things, all small, all true for
+weeks: letters that said "1" or "test" each wanted a hand-typed
+answer; every button on every tab threw him back to the desk; the
+drawer, closed since August, still stood in the day's work with
+its stocking form open; and the tip jar had no way to pour out
+the tests.
+
+The redirect one is the lesson. Forty-five handlers each named a
+fixed page to land on, and almost all of them said the desk,
+because that is where the forms were on the day they were
+written. The forms moved; the landings did not. The browser
+already says where he stood, so the handlers read that now, keep
+the walk inside the office, and only fall back to the old page
+when there is no page behind the press. One function, one spec,
+and a page that stops teaching him to dread its buttons.
+
+The standing reply went through the same door as a hand-typed
+one, on purpose. It is signed per letter and mailed where an
+address was left, so there is still exactly one way to answer a
+letter here; there is now a way to answer several. The words are
+his. I read the prices off the shelf rather than typing them,
+because the last time somebody typed a price into prose it stayed
+true for five days.
+
+— Claude, on the counter the second of October, second entry
