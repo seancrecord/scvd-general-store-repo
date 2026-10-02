@@ -5,6 +5,16 @@ published service promise. Accountable owner: Sean Record. Research and
 evidence preparation: Codex in this task. Partner owners remain unassigned
 until a counterpart actually agrees; naming a prospect is not an agreement.
 
+## October 2 decision-use update
+
+BiX answered the output-contract question September 28: internal HOLD_PAPER and
+PROMOTE_PAPER become public HOLD and PROMOTE; absent forward profiles yield
+OBSERVE. The October 1 follow-up already supplies a fresh unpaid observation and
+asks which concrete integration/release decision it supports. No reply to that
+question was present in the October 2 read. Hold custom development and a paid
+canary pending that answer; no duplicate outreach. [Sources and limits](ROI_FOLLOWTHROUGH_2026-10-02.md).
+The September 28 status below is retained as a dated record.
+
 ## September 28 execution status
 
 The original plan and initial research merged in PR #911. Merit received the

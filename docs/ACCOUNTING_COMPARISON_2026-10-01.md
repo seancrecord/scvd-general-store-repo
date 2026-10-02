@@ -29,10 +29,14 @@ repair, not a transaction repair or a point-in-time database snapshot.
   burst accounting and admin verdict tests. `npm run typecheck` passes.
 - Required full CI remains the merge gate.
 
-## Live acceptance still open
+## October 2 live acceptance
 
-After release, read the authenticated books check and confirm the metric side
-is complete. If a difference remains, inspect its transaction-level evidence
-before proposing any correction. Browser checks cannot currently finish while
-Brave reports active user interaction. No private records were exported, no
-repair action was pressed, and no paid qualification was performed.
+#967 is merged. The authenticated books check now completes its metric scan,
+with no INCOMPLETE warning. It reports counters one settlement above derived
+payer purchases. All three chain walks pass; seven historical holes show as
+backfilled, and the last raise made no increases. The delivery panel checked
+zero records, so it does not establish comprehensive delivery.
+
+Transaction-level arithmetic remains to be inspected before proposing any
+correction. Browser access became busy during that step. No private records
+were exported, no repair action was pressed and no paid qualification ran.

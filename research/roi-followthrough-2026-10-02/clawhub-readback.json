@@ -1,0 +1,88 @@
+{
+  "observed_at": "2026-10-02T16:02:02.129Z",
+  "version": "3.19.3",
+  "latest": "3.19.3",
+  "source_files_hash_matched": 11,
+  "raw_reference_matched": "references/mpp.md",
+  "registry_added_files": [
+    {
+      "path": "skill-card.md",
+      "size": 2631,
+      "sha256": "3c1e2a84b132c7acd54962113bf47ed51eb977b679198ebab97a15caf0911baf",
+      "contentType": "text/markdown"
+    }
+  ],
+  "security": {
+    "status": "clean",
+    "hasWarnings": true,
+    "checkedAt": 1790953773624,
+    "model": null,
+    "hasScanResult": true,
+    "sha256hash": "0516a7d0b37c61f3b3d8ea1f12c37daf4ee7003997b8c7296e63776eba4e3867",
+    "virustotalUrl": "https://www.virustotal.com/gui/file/0516a7d0b37c61f3b3d8ea1f12c37daf4ee7003997b8c7296e63776eba4e3867",
+    "scanners": {
+      "vt": {
+        "status": "clean",
+        "verdict": null,
+        "normalizedStatus": "clean",
+        "analysis": null,
+        "source": "engines",
+        "checkedAt": 1790953607358
+      },
+      "skillspector": {
+        "status": "suspicious",
+        "normalizedStatus": "suspicious",
+        "score": 52,
+        "severity": "HIGH",
+        "recommendation": "DO_NOT_INSTALL",
+        "issueCount": 6,
+        "checkedAt": 1790953773624
+      },
+      "llm": {
+        "status": "clean",
+        "verdict": "benign",
+        "normalizedStatus": "clean",
+        "confidence": "high",
+        "summary": "This skill is a disclosed x402 commerce helper with real-payment workflows, but it repeatedly requires user spending decisions and warns against sharing secrets.",
+        "dimensions": [
+          {
+            "detail": "Network calls, wallet-signed payments, and optional metadata are proportionate to the commerce-verification purpose; the artifacts disclose that free and paid calls may contact scvd.store and that live purchases settle real funds.",
+            "label": "Credentials",
+            "name": "environment_proportionality",
+            "rating": "note"
+          },
+          {
+            "detail": "Most use is Markdown guidance over HTTPS or existing tools; optional packages and the scvd-tab MCP server are discussed, with explicit warnings to install only when needed, pin versions, and treat local packages as code execution.",
+            "label": "Install Mechanism",
+            "name": "install_mechanism",
+            "rating": "note"
+          },
+          {
+            "detail": "The top-level instructions say to use the skill only for specific commerce tasks, avoid loading unrelated references, require user authorization for paid requests and free contributions, and never collect wallet secrets.",
+            "label": "Instruction Scope",
+            "name": "instruction_scope",
+            "rating": "ok"
+          },
+          {
+            "detail": "Persistent behavior is disclosed: public context anchors are intentionally durable and readable by anyone with the anchor id, and the optional local Tab stores JSONL locally; both include warnings about secrets, consent, and scope.",
+            "label": "Persistence & Privilege",
+            "name": "persistence_privilege",
+            "rating": "note"
+          },
+          {
+            "detail": "The skill is coherently aimed at x402 receipt verification, endpoint inspection, payment debugging, store purchases, and related evidence services; real USDC purchases and external SCVD API calls are central to that purpose and are disclosed.",
+            "label": "Purpose & Capability",
+            "name": "purpose_capability",
+            "rating": "note"
+          }
+        ],
+        "guidance": "Before installing or using it, understand that this skill can guide agents to contact scvd.store and, when you explicitly authorize a wallet payment, spend real USDC. Do not provide wallet secrets or private keys, avoid optional identifying metadata unless you want it recorded, and treat any optional npm/MCP component as local code that should be pinned and run with minimal filesystem and environment access.",
+        "findings": "[PE3] expected: The cited text is not credential access; it warns users not to send passwords, private keys, seed phrases, access tokens, personal data, or confidential information to a public anchor.\n[SQP-2] expected: Optional model/client/operator/prior purchase metadata is part of the payment workflow and is disclosed as optional buyer-census data, though users should avoid sending identifying metadata unless they want that recorded.\n[EA2] expected: The purchases citation describes cryptographic matching and verification without asking the store, not autonomous spending; the purchase rules separately require a spending decision before signing.\n[SQP-1] expected: The store.md scenarios are broad prompts for when the store may be useful, but the surrounding artifacts require user decisions for paid actions and say free writes should only happen when the user asks.\n[SQP-1] expected: The concrete HTTP examples are aligned with the store's purpose; paid endpoints still require x402 payment signing and the skill states that quotes or preflight checks never authorize spending.\n[EA2] expected: The cited Tab passage says data does not leave the local JSONL file without recorded consent, so it does not support an autonomous high-impact action concern.",
+        "agenticRiskFindings": null,
+        "riskSummary": null,
+        "model": null,
+        "checkedAt": 1790953773624
+      }
+    }
+  }
+}
