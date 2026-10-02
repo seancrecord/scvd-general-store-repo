@@ -115,15 +115,17 @@ build, it is on the roadmap.
   both pieces, and whether either URL turns up in the Sunday citation
   sweep (it should not; a byline is our words, listing fact 4).
 
-- **Partner evidence — Merit and BiX replies pending, September 28.** The keeper
+- **Partner evidence — decision-use reply pending, updated October 2.** The keeper
   approved the exact [issue follow-up](https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384);
   posting and text were verified. The [local reproduction](research/partner-evidence-2026-09-24/MERIT.md)
   narrows the reported bug: structured protocols accept nested pricing;
   the documented hybrid does not. Issue/comments and package were rechecked
   before sending; Merit has not replied. BiX accepted the free unpaid check:
   its exact synthetic POST answered 402, and the [results were sent and verified](research/partner-evidence-2026-09-28/results-outreach.json).
-  LOOK when Salman replies: clarify the paid output enum and identify the
-  decision this evidence helps. No paid attempt or repeat use established.
+  BiX clarified the public output enum September 28. The October 1 follow-up
+  already asks which decision the fresh unpaid record supports. LOOK when that
+  answer arrives; hold custom work and a paid canary until then. No paid attempt
+  or repeat use established. [Current evidence](docs/ROI_FOLLOWTHROUGH_2026-10-02.md).
   Browserbase remains a prepared, uncontacted prospect.
   [Plan and phase gates](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md).
   Research and any future build stay off this desk; implementation reference
@@ -134,9 +136,11 @@ build, it is on the roadmap.
   succeeded; npm and the official MCP Registry expose Tab 0.11.2. Do not rerun
   publication. The portable plugin updates from
   the repository; existing immutable submission pins do not update themselves.
-  The ClawHub press now carries skill 3.19.2 (2026-09-28): the purchases
-  reference buys an input-taking door at its `buy_url_template`, slots
-  filled, never at the bare door — one sentence, same bundle otherwise.
+  The ClawHub press now carries skill 3.19.3 (2026-10-02). All eleven source
+  file hashes match the registry; publication receipt is #971. The registry
+  overall/LLM/VirusTotal statuses are clean but Skillspector flags warnings;
+  this is not unanimous scan clearance. CLI 0.5.0 is also published and its
+  fresh-install project setup checks pass. No repeat publication needed.
   Claude's missing submission remains on the existing Anthropic report, with no
   reply as of September 24. Gemini remains paused. The skill publication receipt
   merged in #909; public scan clearance remains separate from that upload receipt.

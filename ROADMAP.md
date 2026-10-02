@@ -39,6 +39,17 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 2 — ROI follow-through
+
+[Evidence and scope](docs/ROI_FOLLOWTHROUGH_2026-10-02.md).
+Accounting #967 is merged and the live metric scan is complete; the remaining
+one-settlement difference still needs transaction evidence. CLI 0.5.0 is already
+published and fresh-install checks pass. Skill 3.19.3 is published, receipt #971 merged;
+scanner disagreement is retained. HF host-date tables and both previews pass
+public readback. BiX answered the enum question; the existing October 1 follow-up
+awaits a named decision before further custom work. S8 findings remain advisory.
+L13 implementation is in [#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972); a first live reading remains open.
+
 ## October 2 — counter housekeeping
 
 Keeper-requested, four items from one sitting at `/admin/counter`. Every
@@ -87,8 +98,9 @@ The follow-up now reads only paid, house-paid and unattributed counters for
 every month since opening, so unrelated traffic metrics cannot consume the
 sales scan cap. Regression demonstrated before the fix; 25 focused tests and
 type checking pass. [Implementation and remaining live acceptance](docs/ACCOUNTING_COMPARISON_2026-10-01.md).
-Release and an authenticated read are still required before investigating any
-remaining transaction-level difference; no records or counters were repaired.
+October 2: #967 is merged and the authenticated metric scan is complete. The
+remaining one-settlement difference needs transaction evidence; no records or
+counters were repaired.
 
 ## September 30 — Spot Check product and handoff experiment
 
@@ -118,7 +130,7 @@ the PR merge. Existing signed historical artifacts retain their original bytes.
 - [x] Expand the portfolio audit: six Perplexity questions, three Google AI Overviews and two completed Gemini answers (one additional Gemini error retained as unmeasured), eight SCVD npm manifests, three language source guides and existing protocol/digest surfaces. [Findings and limits](research/aeo-2026-09-28/PORTFOLIO.md).
 - [x] Reproduce the Hugging Face loader failure; verify all ten mirrored snapshot signatures/digests and chain continuity; prepare explicitly configured unsigned tables. Both card configurations load locally (24,913 host rows / ten rounds). Timestamp proofs were not independently checked in this pass.
 - [x] Replace obsolete SDK/UCP/MPP denials in shared developer/agent copy; index existing libraries and language guides from package metadata. Wire future corpus drops to rebuild the viewer tables.
-- [x] Publish the reviewed corpus viewer repair through the existing workflow (`hf_only` and `refresh_viewer`); run 36474411847 completed and both public configurations loaded. The separate per-host observation-date correction discovered below remains local.
+- [x] Publish the reviewed corpus viewer repair through the existing workflow (`hf_only` and `refresh_viewer`); run 36474411847 completed and both public configurations loaded. The subsequent host-date correction also passes the October 2 public readback below.
 - [x] Run the existing eight-family browser hand check; [bounded results](research/aeo-2026-09-28/README.md), with missing engines/results retained.
 - [x] Reuse the existing item evidence summary in markdown and single-item JSON; move the HTML summary before the long description. Regression demonstrated red, then 35 focused tests, typecheck and bundle checks passed.
 - [x] Validate the combined patch: 837 full-suite files passed, 15,610 tests passed / one skipped; corpus publisher checks, typecheck, bundle and claims checks passed.
@@ -135,7 +147,7 @@ asset reuse. [Working record](research/competitive-corpus-2026-09-28/README.md).
 - [x] Authenticate the existing corpus and derive catalog agreement, freshness and strictly comparable changes. Repaired notebook executes against the public chain.
 - [x] Prepare one historical listing record, a local authenticated adapter and a follow-on packet for the existing Merit workstream. Not sent; partner use remains unmeasured.
 - [x] Connect existing SDKs, corpus, notebook, verifier and brief in root/examples documentation; inspect the three article link paths and prepare the HF card correction and reproduction links.
-- [ ] Release this local patch through normal PR/CI. Then refresh and read back the HF projection: actual host dates, unknown dates, method/battery and unchanged signed originals. No new duplicate publication or outreach campaign.
+- [x] Release through #942 and read back the HF projection on October 2: regenerated tables and both previews pass; immutable signed fields match. Outer timestamp/citation metadata differs, so whole-envelope byte equality is not claimed. No duplicate publication or outreach campaign. [Readback](docs/ROI_FOLLOWTHROUGH_2026-10-02.md).
 
 
 ## September 23 batch — completed steps and release gates
@@ -530,13 +542,13 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L1 | Phase 4 `/agent/v1`, `find_endpoints`, `@scvd/agent` | Nothing is asking. Free desks already have MCP tools. |
 | L2 | Phase 5 chips, `@scvd/launch-check`, first `cross_ref` consumer | 5.2 pricing is ⚑. 5.1 partly live as `/corpus/diff.json`. |
 | L3 | Additional protocol inspection beyond the shipped MPP reader (AP2 / ACP / UCP as demanded) | Reconcile V3 and PS7/PS9 first; MPP census and paid-audit reading are already implemented. A named intake and the remaining rail/intake ruling govern expansion. Parser, not a new till. ACP merchant checkout stays read-only; UCP no longer does — this store's UCP checkout settles as of September 19, which is a till it runs rather than a till it reads. |
-| L4 | Directory / facilitator QA as a *report we already run* | Sell the weekly brief (S1) to a named directory. Do not build a second census. **Research execution started 2026-09-24:** [Partner Evidence Pilot Plan](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md), keeper-requested; Merit reproduction, seller qualification and Browserbase compatibility dossiers prepared. **September 28:** BiX accepted the free check; unsigned POST results were sent. Keeper-approved [pilot request-body support and durable invocation](docs/LAUNCH_CHECK_PILOT_INPUTS_2026-09-28.md) are implemented locally in the existing Launch Check engine and recovery store, with exact inputs retained as signed fingerprints and offline controls. Public checkout integration and any deployment or paid attempt remain separate. BiX's output-contract clarification is still pending. No new renderer or SKU. Partner decision use and repeat demand remain unproven. Any report assembly must preserve exact endpoint/method matching and the unsigned-versus-signed evidence boundary. |
+| L4 | Directory / facilitator QA as a *report we already run* | Sell the weekly brief (S1) to a named directory. Do not build a second census. **Research execution started 2026-09-24:** [Partner Evidence Pilot Plan](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md), keeper-requested; Merit reproduction, seller qualification and Browserbase compatibility dossiers prepared. **September 28:** BiX accepted the free check; unsigned POST results were sent. Keeper-approved [pilot request-body support and durable invocation](docs/LAUNCH_CHECK_PILOT_INPUTS_2026-09-28.md) are implemented locally in the existing Launch Check engine and recovery store, with exact inputs retained as signed fingerprints and offline controls. Public checkout integration and any deployment or paid attempt remain separate. BiX clarified the output enum September 28. The October 1 follow-up already asks which integration/release decision the observation supports; wait for that answer before custom work or a paid canary. No new renderer or SKU. Partner decision use and repeat demand remain unproven. Any report assembly must preserve exact endpoint/method matching and the unsigned-versus-signed evidence boundary. |
 | L5 | Corpus slices as paid history / API | Free public summaries stay free. Paid = convenience and history, not a score. Demand tag. |
 | L8 | Parked tickets: none. | Checked 2026-09-02: the seven numbers this row carried (#83, #70, #71, #68, #80, #57, #58) are August pull requests, all merged, and the tracker holds no open issue. The row stays so the next parked ticket has a place to land. |
 | L9 | Solana parity gaps 3 to 5; scoped Tab follow-through | Gap 1 and the observatory shipped September 2; gap 2 (Solana bounty claims, Base payout) shipped September 5. Gap 3 is the Solana Launch Check; gaps 4 and 5 remain blocked under the recorded payout/screening constraints in SOLANA_PARITY.md. Recheck those constraints before any build. Tab work needs a named remaining workflow, reconciled with the package maintenance lane; the old "leftovers" label is not a build specification. |
 | L10 | Card family, cheap `/check/{host}`, D5 patronage sell-up | Demand / ink. |
 | L12 | Sponsored bounties: an operator pays to post their door on the board | Demand tag: an operator asks. Honest only if loud — public bounty, disclosed finder wallets, corpus flags the settles bounty-driven never organic. The quiet version is the wash trading we called out. Do it that way or not at all. |
-| L13 | **Inflow census carries the settlement mechanism.** The census reads USDC Transfer logs to every advertised payTo and cannot tell an EIP-3009 authorized transfer (the x402 exact scheme on an EVM rail: `AuthorizationUsed` paired with its Transfer, the pairing the settlement attestation already reads per transaction) from a plain `transfer()`. Add the one read and two counts beside the existing ones — transfers paired with an authorization, and USDC in them, over the same window and the same addresses — so the reading can say what share of inflow settled through the protocol the door advertises. Counts only, under the 2026-08-28 T1 ruling: no addresses, no hosts, never on a named door's page. | Research tag, not demand: the Agent Almanac's 2026-08-03 report (one ~22-hour Base-only window; its own correction says Base held 37% of the dollars it tracked) found 78% of active listed wallets settling on-protocol and roughly 80% of the dollars not. Secondhand and stale under rule 61; the row exists because the fingerprint is the first chain-only fact that separates a protocol payment from treasury movement, a shared wallet or an operator funding itself, which the census header already names as the three things an inflow can be. No claim until the store's own first live reading. Solana stays out: no EIP-3009 there, and a forced verdict would be a false plain-transfer. |
+| L13 | **Implemented October 2 ([#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972)); first live reading pending.** The existing inflow census adds canonical EIP-3009 authorization-paired transfer count and exact USDC amount, with separate no-pair and unread counts. Matching requires transaction/block identity and adjacent log positions. Counts only; no addresses or hosts. Admin/public readers preserve older readings as not measured. [Implementation and limits](docs/ROI_FOLLOWTHROUGH_2026-10-02.md). | Measures settlement mechanism over the existing window and addresses. Corrects the earlier inference: EIP-3009 alone does not prove x402 use, an agent or a sale; no pair does not prove a plain transfer. The stale Almanac research tag is not demand or our own measurement. Solana remains outside this EVM-only read. |
 
 ---
 

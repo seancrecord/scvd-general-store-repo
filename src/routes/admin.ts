@@ -1,3 +1,4 @@
+import { inflowAuthorizationText } from "@/lib/inflow-authorization";
 import { readCommerceMonthLedger } from "@/services/commerce-month";
 import { Hono } from "hono";
 import { adminPurchaseRoutes } from "@/routes/admin-purchases";
@@ -3510,7 +3511,7 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
           window.addresses_unread > 0
             ? ` — <strong>${window.addresses_unread} addresses unread</strong>`
             : ""
-        }${window.unread ? ` — <strong>${escapeHtml(window.unread)}</strong>` : ""}</li>`,
+        }${window.unread ? ` — <strong>${escapeHtml(window.unread)}</strong>` : ""}<br>${escapeHtml(inflowAuthorizationText(window.authorization))}</li>`,
     )
     .join("");
   /*

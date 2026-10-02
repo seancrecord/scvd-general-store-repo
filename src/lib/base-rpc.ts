@@ -308,6 +308,24 @@ export interface RpcLog {
   data: string;
 }
 
+/** eth_getLogs identity, needed to prove adjacency without fetching receipts. */
+export interface IndexedRpcLog extends RpcLog {
+  transactionHash?: string;
+  blockHash?: string;
+  blockNumber?: string;
+  logIndex?: string;
+  removed?: boolean;
+}
+
+export interface UsdcInflowTransfer {
+  txHash: string;
+  from: string;
+  to: string;
+  amount: bigint;
+  block: number;
+  log: IndexedRpcLog;
+}
+
 export interface RpcReceipt {
   transactionHash?: string;
   status: string;
@@ -737,7 +755,7 @@ export async function usdcTransfersToAny(
   fromBlock: number,
   toBlock: number,
   chain: EvmChain = BASE_EVM,
-): Promise<Array<{ txHash: string; from: string; to: string; amount: bigint; block: number }>> {
+): Promise<UsdcInflowTransfer[]> {
   const padded = [
     ...new Set(
       toAddresses
@@ -750,7 +768,7 @@ export async function usdcTransfersToAny(
   ];
   if (padded.length === 0) return [];
   const logs = await rpc<
-    Array<{ transactionHash: string; topics: string[]; data: string; blockNumber: string }>
+    IndexedRpcLog[]
   >(env, "eth_getLogs", [
     {
       address: chain.usdc,
@@ -765,7 +783,30 @@ export async function usdcTransfersToAny(
     to: addressFromTopic(log.topics?.[2] ?? ""),
     amount: BigInt(log.data && log.data !== "0x" ? log.data : "0x0"),
     block: Number.parseInt(log.blockNumber ?? "0x0", 16),
+    log,
   }));
+}
+
+/** One bounded companion read for the senders in an observed transfer chunk. */
+export async function usdcAuthorizationLogs(
+  env: Env,
+  authorizers: readonly string[],
+  fromBlock: number,
+  toBlock: number,
+  chain: EvmChain,
+): Promise<IndexedRpcLog[]> {
+  if (authorizers.some(address => !/^0x[0-9a-f]{40}$/i.test(address))) {
+    throw new Error("Invalid authorization sender");
+  }
+  const topics = [...new Set(authorizers.map((address) =>
+    `0x${address.toLowerCase().slice(2).padStart(64, "0")}`))];
+  if (!topics.length) return [];
+  const logs = await rpc<IndexedRpcLog[]>(env, "eth_getLogs", [{
+    address: chain.usdc, fromBlock: `0x${fromBlock.toString(16)}`,
+    toBlock: `0x${toBlock.toString(16)}`, topics: [AUTHORIZATION_USED_TOPIC, topics],
+  }], chain);
+  if (!Array.isArray(logs)) throw new Error("Authorization logs unavailable");
+  return logs;
 }
 
 export async function usdcTransfersFrom(
