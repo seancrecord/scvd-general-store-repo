@@ -1,4 +1,6 @@
+import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import type { GazetteIssue } from "@/types";
 
 /**
  * KEEPER'S FILES: the drawer where downloadable records live. The
@@ -8,7 +10,20 @@ import { renderAdminShell } from "@/pages/admin/layout";
  * here is a record of what already happened; nothing on this page
  * can change the store.
  */
-export function renderFilesPage(loadNotes: string[] = []): string {
+/** Every issue that went to press, newest first as the rack lists them. */
+function rackHtml(issues: GazetteIssue[]): string {
+  if (issues.length === 0) {
+    return "<p>No issues off the press.</p>";
+  }
+  return `<ul>${issues
+    .map(
+      (issue) =>
+        `<li>Issue no. ${issue.issue_number}, ${escapeHtml(issue.title)}, ${escapeHtml(issue.date)}, contributors: ${issue.contributors.length > 0 ? issue.contributors.map((contributor) => escapeHtml(contributor.name)).join(", ") : "none named"}</li>`,
+    )
+    .join("\n")}</ul>`;
+}
+
+export function renderFilesPage(issues: GazetteIssue[] = [], loadNotes: string[] = []): string {
   const body = `
   <section>
     <p>Records for taking away. Nothing on this page changes the
@@ -35,6 +50,14 @@ export function renderFilesPage(loadNotes: string[] = []): string {
     frozen with the ledger's numbers of its day. A record now, not a lever;
     the press that made it fired its one shot and its button left the
     back shelf.</p>
+  </section>
+
+  <section>
+    <h2>The Gazette rack (${issues.length})</h2>
+    <p>What the press printed while it ran. A record, like the founding
+    edition above: the press's levers left the office 2026-10-02 and the
+    public rack at <a href="/gazette">/gazette</a> still reads every issue.</p>
+    ${rackHtml(issues)}
   </section>
 
   <section>

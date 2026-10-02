@@ -17,7 +17,7 @@ import type { TakeSummary } from "@/services/books-summary";
 import type { FieldWalletReading } from "@/services/field-wallet";
 import type { TillItemCount } from "@/services/stats";
 import { minimumUsdcForPath } from "@/lib/payments";
-import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
+import type { BazaarLedgerEntry, PayerRecord } from "@/types";
 
 /**
  * The desk: analytics front and center, because that's what the
@@ -143,7 +143,6 @@ export interface OfficePageData {
    */
   monthReclass: { settles: number; usdc: number } | null;
   bazaarLedger: BazaarLedgerEntry[];
-  gazetteIssues: GazetteIssue[];
   /** Pending work counts for the strip. */
   work: { orders: number; letters: number; reviews: number; alerts: number | null };
   /**
@@ -947,18 +946,6 @@ function bazaarHtml(entries: BazaarLedgerEntry[]): string {
     .join("\n");
 }
 
-function rackHtml(issues: GazetteIssue[]): string {
-  if (issues.length === 0) {
-    return "<p>No issues off the press yet.</p>";
-  }
-  return issues
-    .map(
-      (issue) =>
-        `<li>Issue no. ${issue.issue_number}, ${escapeHtml(issue.title)}, ${escapeHtml(issue.date)}, contributors: ${issue.contributors.length > 0 ? issue.contributors.map((contributor) => escapeHtml(contributor.name)).join(", ") : "none named"}</li>`,
-    )
-    .join("\n");
-}
-
 export function renderOfficePage(data: OfficePageData): string {
   const work = data.work;
   const workTotal = work.orders + work.letters + work.reviews;
@@ -1078,9 +1065,8 @@ export function renderOfficePage(data: OfficePageData): string {
 
   <section>
     <details>
-      <summary>Bazaar ledger (extension responses) and the Gazette rack (${data.gazetteIssues.length})</summary>
+      <summary>Bazaar ledger (extension responses)</summary>
       <ul>${bazaarHtml(data.bazaarLedger)}</ul>
-      <ul>${rackHtml(data.gazetteIssues)}</ul>
     </details>
   </section>`;
   return renderAdminShell("office", body, data.loadNotes);

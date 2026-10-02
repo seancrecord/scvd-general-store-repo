@@ -59,6 +59,28 @@ public readback. BiX answered the enum question; the existing October 1 follow-u
 awaits a named decision before further custom work. S8 v3 was subsequently approved; see the October 2 S8 entry.
 L13 implementation is in [#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972); a first live reading remains open.
 
+## October 2 — counter housekeeping
+
+Keeper-requested, four items from one sitting at `/admin/counter`. Every
+admin form now returns to the page it was pressed on (referer, kept inside
+the office; the old fixed page is the fallback) instead of the desk. The
+mailbox takes a tick per letter and one bulk press: the standing reply
+(`standingLetterReply`, signed per letter through the same path as a
+hand-typed answer, prices read off the shelf), with or without filing, or
+filing alone. The tip jar takes a bulk reject and keeps rejected tips out
+of sight, counted. Shelves on the retired register (the drawer, the grudge
+shelf) fold under "Closed shelves" with no stocking form; what is still on
+them stays readable and pressable. `test/counter-housekeeping.spec.ts` is
+red without each half. No public surface changed.
+
+Second sweep the same day, keeper's "go ahead and do all those": letters
+are read on sight when the counter opens (the Mark read button and its
+route are gone); the five Gazette admin routes with no form behind them
+are removed, the services and the public rack untouched, and the rack
+files under Keeper's files instead of riding the desk's glance; the
+confession drawer's approve button says no press is running; an empty
+commission ledger folds; "Buyer signals" drops "(trial)" from the nav.
+
 ## October 2 — the raise asks the till who is family
 
 The books check read ATTENTION: the counters one settlement over the
