@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { Hono } from "hono";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT, prefersMarkdown } from "@/lib/accept";
 import { escapeHtml } from "@/lib/sanitize";
@@ -40,7 +41,7 @@ function landingJson(base: string) {
     cost: "Free, no account, no wallet, and nothing to buy to make it go away.",
     why_it_is_not_listed:
       "Doors that failed a round are counted in our public aggregates and never named there; only the ready side is listed. A per-host notice is unlisted for that reason — reachable by the operator, linked from no index of ours.",
-    current_state_instead: `POST {"url":"<your endpoint>"} to ${base}/api/preflight/v2 for a live verdict rather than last week's.`,
+    current_state_instead: `POST {"url":"<your endpoint>"} to ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} for a live verdict rather than last week's.`,
     the_names_we_use: `${base}/defects`,
   };
 }
@@ -68,7 +69,7 @@ function landingHtml(base: string): string {
       operator and linked from no index of ours. Unlisted is not secret, and
       the page says so about itself.</p>
       <p>Want the current state rather than last week's? <code>POST
-      {"url":"…"}</code> to <a href="/developers"><code>/api/preflight/v2</code></a>.
+      {"url":"…"}</code> to <a href="/developers"><code>/api/preflight/${PREFLIGHT_VERSION_NEXT}</code></a>.
       The names we use for findings are defined at
       <a href="/defects"><code>/defects</code></a>, each with what would prove
       it wrong.</p>
@@ -271,7 +272,7 @@ noticeRoutes.get("/notice/:host", async (c) => {
         observed: false,
         what_this_means:
           "No feed we read has ever listed this host and no round of ours has probed it, so we have nothing to tell you. That is a fact about our sources, not about your endpoint.",
-        get_a_verdict_now: `POST {"url":"<your endpoint>"} to ${base}/api/preflight/v2 — free, no account, no wallet.`,
+        get_a_verdict_now: `POST {"url":"<your endpoint>"} to ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} — free, no account, no wallet.`,
       },
       404,
     );

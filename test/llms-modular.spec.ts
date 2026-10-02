@@ -1188,8 +1188,12 @@ const BASE = "https://scvd.store";
 // Same-day draft-check source 1.11.0 changes that label once more.
 // The 1.9.0 reversal reproduced the old pins (14/14); 1.10.0 reproduced
 // the intermediate digests above, and these pins cover 1.11.0 only.
+// 2026-10-02: S8 v3 adds two readiness checks, derives current guide links,
+// retains v1/v2 links, and updates the audit shelf criteria. The unchanged
+// base reproduced both previous pins (14/14); the reviewed S8 diff produces
+// the new pair. Existing signed artifacts are not part of this guide pin.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "80e13fa33bae523f62871e4ba1c78fb8163c0f4dcfe9908441180b4f58eb3f4b";
+  "f6e31511d1907347aaa987ff8bc1d0bf740342395e48b7133b2f21f1afde13be";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1291,7 +1295,7 @@ describe("nothing was rewritten", () => {
       // restored to main, 21a941ef reproduced. Then across the merge with
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
-      "ac6fbc5e731c73fb61c4ff5beeb0d4c895f5a11430c6b5ea5aca36e5d9697d73",
+      "1b3edd00169348d28dee4c5f6170fe3592ddb8cca2724adce0b417964fedc00c",
     );
   });
 

@@ -440,3 +440,9 @@ calendar gate — the dated wait written here earlier was struck
 - x402-foundation/x402#1945 (2026-04-06, unanswered): 1,480 of 1,938
   v2 catalog entries carry no marketplace metadata; `@x402/core`
   strips `description` and `mimeType` from v2 `accepts[]`.
+
+## October 2 decision and implementation
+
+The keeper approved PR 2: both contradiction findings affect v3 readiness.
+The earlier calendar wait and advisory-only recommendation are superseded.
+[Implementation, limits and validation](S8_V3_READINESS_2026-10-02.md).

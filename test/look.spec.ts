@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { SELF, env } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -154,7 +155,7 @@ describe("a host the chain never met", () => {
     expect(status).toBe(200);
     expect(door.probes(), "the single-probe promise is load-bearing").toBe(1);
     expect(body.now.verdict).toBe("ready");
-    expect(body.now.battery).toBe("v2");
+    expect(body.now.battery).toBe(PREFLIGHT_VERSION_NEXT);
     expect(body.now.the_door.verdict).toBe("ready");
     expect(body.now.the_door.checks.length).toBeGreaterThan(3);
     expect(body.held.never_met).toBe(true);

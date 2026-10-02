@@ -1,6 +1,6 @@
 import { env, SELF } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { preflightUrl, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
+import { preflightUrl, PREFLIGHT_VERSION_V2, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import type { Env } from "@/types";
 import inputs from "../x402-preflight/fixtures/inspection-inputs.json";
 import { inspectOne } from "../x402-preflight/x402-preflight.js";
@@ -43,13 +43,13 @@ describe("one unpaid observation, distinct from the x402 deploy verdict", () => 
         });
       });
       vi.stubGlobal("fetch", fetcher);
-      const result = await preflightUrl(sample.url, env as Env, PREFLIGHT_VERSION_NEXT);
+      const result = await preflightUrl(sample.url, env as Env, PREFLIGHT_VERSION_V2);
       expect(result.status).toBe(200);
       const reading = (result.body as unknown as { inspection: Reading }).inspection;
       expect(reading).toBeDefined();
       const recorded = retained[`../x402-preflight/fixtures/inspection/${sample.name}.json`];
       expect(recorded).toBeDefined();
-      expect({ version: PREFLIGHT_VERSION_NEXT, verdict: (result.body as { verdict: string }).verdict, inspection: reading }).toEqual(JSON.parse(recorded!));
+      expect({ version: PREFLIGHT_VERSION_V2, verdict: (result.body as { verdict: string }).verdict, inspection: reading }).toEqual(JSON.parse(recorded!));
       expect(reading.observed_at).toBe(now.toISOString());
       expect(reading.protocols.observed).toEqual(sample.protocols);
       expect(reading.protocols.scope).toMatch(/response/);
@@ -87,14 +87,14 @@ describe("one unpaid observation, distinct from the x402 deploy verdict", () => 
         body: JSON.stringify({ jsonrpc: "2.0", id: index + 1, method: "tools/call", params: { name: "preflight_endpoint", arguments: { url: sample.url } } }),
       });
       const envelope = await rpc.json() as { result: { structuredContent: unknown } };
-      expect(inspectionOf(envelope.result.structuredContent)).toEqual(legacy);
+      expect(inspectionOf(envelope.result.structuredContent)).toEqual(inspectionOf(await http(PREFLIGHT_VERSION_NEXT)));
       expect(legacy?.protocols).toEqual(reading.protocols);
       expect(legacy?.terms).toEqual(reading.terms);
       const client = await inspectOne(sample.url, { fetch: (input, init) => SELF.fetch(input, init) });
       expect(client.inspection).toEqual(reading);
       expect(client.inspectionExitCode).toBe(state === "responded" ? 0 : 3);
       // Every surface uses the same unpaid probe; no key resolution, payment retry or link following.
-      expect(fetcher).toHaveBeenCalledTimes((sample.name === "method-unresolved" ? 2 : 1) * 5);
+      expect(fetcher).toHaveBeenCalledTimes((sample.name === "method-unresolved" ? 2 : 1) * 6);
     });
   }
 });

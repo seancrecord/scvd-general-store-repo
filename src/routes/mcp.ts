@@ -92,7 +92,7 @@ import {
   usableIdempotencyKey,
 } from "@/lib/idempotency";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
-import { preflightUrl } from "@/services/preflight";
+import { preflightUrl, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { beforeYouPay, readProfile } from "@/services/before-you-pay";
 import { lookAtDoor } from "@/services/look";
 import { checkConformance } from "@/services/conformance";
@@ -672,7 +672,7 @@ export async function callFreeTool(
      * non-200 comes back as the service's own refusal text, unpaid
      * and uncharged in every sense: this tool is free.
      */
-    const outcome = await preflightUrl(args["url"], c.env);
+    const outcome = await preflightUrl(args["url"], c.env, PREFLIGHT_VERSION_NEXT);
     if (outcome.status !== 200) {
       const body = outcome.body as { error?: string };
       return body.error ?? "The preflight could not run. Try again shortly.";
