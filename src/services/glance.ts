@@ -5,7 +5,7 @@ import type { TakeSummary } from "@/services/books-summary";
 import type { MetricEvent, MonthLedger, PorchLedger } from "@/lib/metrics";
 import type { FieldWalletReading } from "@/services/field-wallet";
 import type { MonthReclassAdjustment } from "@/services/reclassify";
-import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
+import type { BazaarLedgerEntry, PayerRecord } from "@/types";
 import type { Env } from "@/types";
 
 /**
@@ -45,7 +45,7 @@ export const GLANCE_KEY = "glance:latest";
  * THE DESK'S READINGS, CACHED WITH THE GLANCE (2026-09-12). The desk
  * still fanned out to eleven loads on every open after the take moved
  * here — the month and porch ledgers (metric key scans), the payers,
- * the recent 402s (event rows), the Bazaar ledger, the Gazette,
+ * the recent 402s (event rows), the Bazaar ledger,
  * the reclassification cert walk, the MCP census, the paying wallet
  * (an eth_call on a leash) and the bounty board. The keeper asked why
  * the desk was slow. This is why. They now ride the hourly glance,
@@ -59,7 +59,6 @@ export interface DeskGlance {
   payers: PayerRecord[];
   recent_challenges: MetricEvent[];
   bazaar_ledger: BazaarLedgerEntry[];
-  gazette_issues: GazetteIssue[];
   month_reclass: { months: Record<string, MonthReclassAdjustment>; truncated: boolean } | null;
   mcp_clients: Record<string, number>;
   field_wallet: FieldWalletReading | null;
@@ -217,7 +216,6 @@ async function readDesk(env: Env): Promise<DeskGlance> {
     payers,
     recentChallenges,
     bazaarLedger,
-    gazetteIssues,
     monthReclass,
     mcpClients,
     fieldWallet,
@@ -228,7 +226,6 @@ async function readDesk(env: Env): Promise<DeskGlance> {
     metrics.listPayers(env),
     metrics.listRecentPricedEvents(env),
     import("@/lib/bazaar-observer").then(({ listBazaarLedger }) => listBazaarLedger(env)),
-    import("@/services/gazette").then(({ listIssues }) => listIssues(env)),
     import("@/services/reclassify").then(({ monthReclassAdjustments }) => monthReclassAdjustments(env)),
     import("@/services/mcp-clients").then(({ readMcpClients }) => readMcpClients(env)),
     // The paying wallet is one eth_call on a three-second leash, as
@@ -246,7 +243,6 @@ async function readDesk(env: Env): Promise<DeskGlance> {
     payers: take<PayerRecord[]>("payers", [])(payers),
     recent_challenges: take<MetricEvent[]>("window-shoppers", [])(recentChallenges),
     bazaar_ledger: take<BazaarLedgerEntry[]>("bazaar ledger", [])(bazaarLedger),
-    gazette_issues: take<GazetteIssue[]>("gazette", [])(gazetteIssues),
     month_reclass: take<DeskGlance["month_reclass"]>("reclass ledger", null)(monthReclass),
     mcp_clients: take<Record<string, number>>("the mcp census", {})(mcpClients),
     field_wallet: take<FieldWalletReading | null>("the paying wallet", null)(fieldWallet),

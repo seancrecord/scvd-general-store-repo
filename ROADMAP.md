@@ -53,6 +53,14 @@ shelf) fold under "Closed shelves" with no stocking form; what is still on
 them stays readable and pressable. `test/counter-housekeeping.spec.ts` is
 red without each half. No public surface changed.
 
+Second sweep the same day, keeper's "go ahead and do all those": letters
+are read on sight when the counter opens (the Mark read button and its
+route are gone); the five Gazette admin routes with no form behind them
+are removed, the services and the public rack untouched, and the rack
+files under Keeper's files instead of riding the desk's glance; the
+confession drawer's approve button says no press is running; an empty
+commission ledger folds; "Buyer signals" drops "(trial)" from the nav.
+
 ## October 1 — admin accounting clarity
 
 Keeper-requested wording correction: distinguish certificate purchases from

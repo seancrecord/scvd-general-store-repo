@@ -318,11 +318,8 @@ function lettersHtml(letters: LetterRecord[]): string {
               }:</em> <span style="white-space:pre-wrap">${escapeHtml(event.text)}</span></p>`,
         )
         .join("\n");
-      const actions = `${said}${
-        letter.status === "received"
-          ? `<form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/read" style="display:inline"><button type="submit">Mark read</button></form>`
-          : ""
-      }
+      // No "Mark read": opening this page is reading (2026-10-02).
+      const actions = `${said}
             <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/reply">
               <textarea name="reply" rows="2" cols="50" placeholder="${
                 thread.length > 0
@@ -358,7 +355,7 @@ function confessionsHtml(confessions: ConfessionRecord[]): string {
     .map((confession) => {
       const reviewForms =
         confession.status === "pending_review"
-          ? `<form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/approve" style="display:inline"><button type="submit">Approve (cleared for public use)</button></form>
+          ? `<form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/approve" style="display:inline"><button type="submit">Approve (reviewed and kept; no Gazette press is running, so nothing prints)</button></form>
              <form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/reject" style="display:inline"><button type="submit">Keep it in the drawer</button></form>`
           : "";
       return `<li>
@@ -787,8 +784,16 @@ export function renderCounterPage(data: CounterPageData): string {
   </section>
 
   <section>
-    <h2>Commission requests (${data.commissions.length})</h2>
-    <ul>${requestsHtml(data.commissions)}</ul>
+    ${
+      /*
+       * An empty ledger folds like the waitlists beside it
+       * (2026-10-02); a request on it stands open in the room.
+       */
+      data.commissions.length === 0
+        ? `<details><summary>Commission requests (0)</summary><p>The ledger is quiet.</p></details>`
+        : `<h2>Commission requests (${data.commissions.length})</h2>
+    <ul>${requestsHtml(data.commissions)}</ul>`
+    }
     ${sideCountersHtml(data)}
   </section>
 

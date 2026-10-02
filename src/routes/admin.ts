@@ -60,8 +60,6 @@ import { bulkGetText } from "@/lib/kv-bulk";
 import type { ShutterState } from "@/services/shutter";
 import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
-import { printFoundingEdition } from "@/services/founding";
-import { listIssues, publishIssue } from "@/services/gazette";
 import { createHandover, HandoverError } from "@/services/key-handover";
 import {
   auditDeliveries,
@@ -100,15 +98,6 @@ import { listTags, setTagStatus } from "@/services/train";
 import { setMonthlyNote } from "@/services/patronage";
 import { markKeeperSeen, setShutter, shutterState } from "@/services/shutter";
 import { kvGet, kvPut } from "@/lib/kv-retry";
-import {
-  addCorrection,
-  assembleDraft,
-  draftFreshness,
-  FRESH,
-  getDraft,
-  publishEdition,
-  StaleDraftError,
-} from "@/services/gazette-weekly";
 import {
   listCommissions,
   listFailedItems,
@@ -795,6 +784,24 @@ adminRoutes.get("/admin/counter", async (c) => {
   for (const order of unseen) {
     order.acknowledged_at = seenAt;
   }
+  /*
+   * LETTERS ARE READ ON SIGHT TOO (2026-10-02). "Mark read" was a
+   * button that recorded the keeper had done what opening this page
+   * is — the same ceremony the orders' acknowledge button was before
+   * 2026-07-24. Received becomes read here; "read" still asks for an
+   * answer (letterNeedsReply), and the Sunday digest's unread count
+   * now means "landed since the counter was last opened".
+   */
+  const listedLetters = shelf(letters, [], "letters", notes);
+  const unreadLetters = listedLetters.filter((entry) => entry.record.status === "received");
+  await Promise.all(
+    unreadLetters.map((entry) =>
+      setLetterStatus(c.env, entry.record.letter_id, "read").catch(() => null),
+    ),
+  );
+  for (const entry of unreadLetters) {
+    entry.record.status = "read";
+  }
   // The snapshot owns its receipts. An alert arriving while another
   // shelf loads must stay unread, even if its timestamp matches this visit.
   const alertInbox = shelf(alerts, null, "alerts", notes);
@@ -817,9 +824,7 @@ adminRoutes.get("/admin/counter", async (c) => {
       guestbook: shelf(guestbook, [], "guestbook", notes),
       weekNote: shelf(weekNote, null, "week note", notes) || DEFAULT_WEEK_NOTE,
       tips: shelf(tips, [], "tips", notes).map((tip) => tip.record),
-      letters: shelf(letters, [], "letters", notes).map(
-        (entry) => entry.record,
-      ),
+      letters: listedLetters.map((entry) => entry.record),
       standingReply: standingLetterReply(c.env),
       alerts: alertInbox?.alerts ?? [],
       alertsUnavailable: alertInbox === null,
@@ -841,7 +846,7 @@ adminRoutes.get("/admin", async (c) => {
   const notes: string[] = [];
   /*
    * THE GLANCE FIRST (2026-09-12). The heavy readings — both ledgers,
-   * the payers, the recent 402s, the Bazaar and Gazette lists, the
+   * the payers, the recent 402s, the Bazaar list, the
    * reclassification cert walk, the MCP census, the paying wallet
    * and the bounty board — ride the hourly glance now, dated on the
    * page, with a button that takes them again. A blob from before
@@ -859,7 +864,6 @@ adminRoutes.get("/admin", async (c) => {
     payers,
     recentChallenges,
     bazaarLedger,
-    gazetteIssues,
     orders,
     letters,
     tips,
@@ -878,7 +882,6 @@ adminRoutes.get("/admin", async (c) => {
     cached(desk?.payers, () => listPayers(c.env)),
     cached(desk?.recent_challenges, () => listRecentPricedEvents(c.env)),
     cached(desk?.bazaar_ledger, () => listBazaarLedger(c.env)),
-    cached(desk?.gazette_issues, () => listIssues(c.env)),
     listOrders(c.env),
     listLetters(c.env),
     listTips(c.env),
@@ -1039,7 +1042,6 @@ adminRoutes.get("/admin", async (c) => {
         return { week: round.week, at: round.at, doors };
       })(),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
-      gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(
         (entry) => entry.slug,
       ),
@@ -1253,8 +1255,18 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
 
 /** KEEPER'S FILES: downloadable records, nothing that changes the store. */
 adminRoutes.get("/admin/files", async (c) => {
+  const notes: string[] = [];
   const { renderFilesPage } = await import("@/pages/admin/files-page");
-  return c.html(renderFilesPage());
+  // The Gazette rack is a record of what was printed, so it files here
+  // (2026-10-02); it used to ride the desk's hourly glance beside a
+  // press that no longer exists.
+  const issues = await import("@/services/gazette")
+    .then(({ listIssues }) => listIssues(c.env))
+    .catch(() => {
+      notes.push("gazette rack: could not be read");
+      return [];
+    });
+  return c.html(renderFilesPage(issues, notes));
 });
 
 /** THE TEST DRAWER: prove-the-machinery levers, off the daily shelf. */
@@ -1835,7 +1847,8 @@ adminRoutes.get("/admin/tools", async (c) => {
   const settled = await Promise.allSettled([
     shutterState(c.env),
     kvGet(c.env.COUNTERS, KV_KEYS.patronageNote(month)),
-    getDraft(c.env),
+    // The weekly Gazette draft was read here and shown nowhere; the
+    // read left with the press's levers (2026-10-02).
     listKeys(c.env.COUNTERS, { prefix: "inventory:", cap: 200 }),
     listKeeperEntries(c.env),
   ]);
@@ -1845,7 +1858,7 @@ adminRoutes.get("/admin/tools", async (c) => {
       : null;
 
   let inventory: Record<string, number> | null = null;
-  const inventoryKeys = value<{ names: string[] }>(3);
+  const inventoryKeys = value<{ names: string[] }>(2);
   if (inventoryKeys) {
     inventory = {};
     const counts = await bulkGetText(c.env.COUNTERS, inventoryKeys.names).catch(
@@ -1872,8 +1885,8 @@ adminRoutes.get("/admin/tools", async (c) => {
       month,
       today,
       almanacPages:
-        settled[4]?.status === "fulfilled"
-          ? (value<{ slug: string; title: string; date: string }[]>(4) ?? [])
+        settled[3]?.status === "fulfilled"
+          ? (value<{ slug: string; title: string; date: string }[]>(3) ?? [])
           : null,
     }),
   );
@@ -1901,6 +1914,19 @@ adminRoutes.post("/admin/train/:tag_id/decline", async (c) => {
   return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/counter", "#queues"));
 });
 
+/*
+ * THE GAZETTE'S LEVERS LEFT THE OFFICE (2026-10-02, the keeper: "we
+ * don't have a gazette"). Five POST routes stood here — assemble and
+ * publish a weekly edition, file a correction, publish an issue from
+ * approved tips, print the founding edition — and none had a form on
+ * any admin page since the 2026-08-05 retirement took the press off
+ * the counter. A route with no button is a door nobody can see and
+ * anybody with the password can walk through. The services underneath
+ * (gazette, gazette-weekly, founding) stay: the public rack still
+ * reads, every signed issue still verifies, and the freshness gate's
+ * own specs still hold it to account. Bringing the press back is one
+ * form and one route per lever, not a rebuild.
+ */
 adminRoutes.post("/admin/confessions/:confession_id/approve", async (c) => {
   const updated = await setConfessionStatus(
     c.env,
@@ -1923,66 +1949,6 @@ adminRoutes.post("/admin/confessions/:confession_id/reject", async (c) => {
     return c.text("No confession by that id in the drawer.", 404);
   }
   return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#queues"));
-});
-
-adminRoutes.post("/admin/gazette/edition/assemble", async (c) => {
-  // The keeper's hand-set lever ignores THE_NINETY gate.
-  await assembleDraft(c.env, true);
-  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
-});
-
-adminRoutes.post("/admin/gazette/edition/publish", async (c) => {
-  const form = await c.req.parseBody();
-  const markdown =
-    typeof form["markdown"] === "string" ? form["markdown"].trim() : "";
-  if (!markdown) {
-    return c.text("An edition needs its pages.", 400);
-  }
-  try {
-    await publishEdition(c.env, markdown);
-  } catch (error) {
-    /**
-     * The press refused a stale draft. Named movements, then the way
-     * out — re-assemble — spelled beside the refusal, because a
-     * refusal without the next step is a wall rather than a gate.
-     * 409: the draft conflicts with the current state of the books.
-     */
-    if (error instanceof StaleDraftError) {
-      return c.text(
-        [
-          "Not printed. The books moved since this draft was set:",
-          ...error.changes.map((change) => `  - ${change}`),
-          "",
-          "Re-assemble the draft from the back shelf (or the desk's re-assemble button), re-apply any edits worth keeping, and publish that.",
-        ].join("\n"),
-        409,
-      );
-    }
-    throw error;
-  }
-  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
-});
-
-adminRoutes.post("/admin/gazette/correction", async (c) => {
-  const form = await c.req.parseBody();
-  const correction = sanitizeText(form["correction"], 500);
-  if (!correction) {
-    return c.text("A correction needs words in it.", 400);
-  }
-  await addCorrection(c.env, correction);
-  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin"));
-});
-
-adminRoutes.post("/admin/letters/:letter_id/read", async (c) => {
-  const updated = await setLetterStatus(
-    c.env,
-    c.req.param("letter_id"),
-    "read",
-  );
-  if (!updated) {
-    return c.text("No letter by that id in the box.", 404);
-  }
-  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin", "#mailbox"));
 });
 
 adminRoutes.post("/admin/letters/:letter_id/reply", async (c) => {
@@ -2186,36 +2152,6 @@ adminRoutes.post("/admin/tips/bulk", async (c) => {
     adminReturnWithNotice(c.req.header("Referer"), "/admin/counter", notice, "#queues"),
     303,
   );
-});
-
-adminRoutes.post("/admin/gazette/publish", async (c) => {
-  const form = await c.req.parseBody();
-  const title = sanitizeText(form["title"], 200);
-  const rawIds = typeof form["tip_ids"] === "string" ? form["tip_ids"] : "";
-  const requestedIds = rawIds
-    .split(",")
-    .map((id) => id.trim())
-    .filter((id) => id.length > 0);
-  if (!title || requestedIds.length === 0) {
-    return c.text(
-      "An issue needs a title and at least one approved tip id.",
-      400,
-    );
-  }
-  const allTips = await listTips(c.env);
-  const approved = allTips
-    .map((tip) => tip.record)
-    .filter(
-      (tip) => requestedIds.includes(tip.id) && tip.status === "approved",
-    );
-  if (approved.length !== requestedIds.length) {
-    return c.text(
-      "Every tip in an issue must exist and be approved first. Check the ids.",
-      400,
-    );
-  }
-  await publishIssue(c.env, title, approved);
-  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 
 adminRoutes.post("/admin/refunds/:refund_id/paid", async (c) => {
@@ -4239,15 +4175,6 @@ adminRoutes.post("/admin/almanac/remove", async (c) => {
 adminRoutes.post("/admin/shutter", async (c) => {
   const form = await c.req.parseBody();
   await setShutter(c.env, form["state"] === "closed");
-  return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
-});
-
-/** The founding press: prints once, signed, with the numbers of its day. */
-adminRoutes.post("/admin/gazette/founding/print", async (c) => {
-  const result = await printFoundingEdition(c.env);
-  if ("refused" in result) {
-    return c.text(result.refused, 409);
-  }
   return c.redirect(adminReturnPath(c.req.header("Referer"), "/admin/tools"));
 });
 

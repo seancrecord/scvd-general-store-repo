@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { verifyMessageSignature } from "@/lib/signing";
 import { getLetter, letterThread, standingLetterReply } from "@/services/letters";
 import { findTip } from "@/services/tips";
+import { hearConfession } from "@/services/confessions";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
@@ -74,9 +75,9 @@ const counterPage = async () =>
   (await SELF.fetch(`${BASE}/admin/counter`, { headers: KEEPER })).text();
 
 describe("a form goes back to the page it was pressed on", () => {
-  it("marks a letter read and lands on the counter's mailbox, not the desk", async () => {
+  it("answers a letter and lands on the counter's mailbox, not the desk", async () => {
     const letterId = await postLetter("Returner", "Where do I land after this?");
-    const response = await press(`/admin/letters/${letterId}/read`, {});
+    const response = await press(`/admin/letters/${letterId}/reply`, { reply: "Right here." });
     expect(response.status).toBe(302);
     expect(response.headers.get("Location")).toBe("/admin/counter#mailbox");
   });
@@ -104,9 +105,9 @@ describe("a form goes back to the page it was pressed on", () => {
 
   it("never follows a referer off the office", async () => {
     const letterId = await postLetter("Elsewhere", "Sent from a strange page.");
-    const response = await press(`/admin/letters/${letterId}/read`, {}, "https://evil.example/admin/counter");
+    const response = await press(`/admin/letters/${letterId}/archive`, {}, "https://evil.example/admin/counter");
     expect(response.headers.get("Location")).toBe("/admin/counter#mailbox");
-    const second = await press(`/admin/letters/${letterId}/read`, {}, `${BASE}/gazette`);
+    const second = await press(`/admin/letters/${letterId}/archive`, {}, `${BASE}/gazette`);
     expect(second.headers.get("Location")).toBe("/admin#mailbox");
   });
 });
@@ -217,5 +218,40 @@ describe("closed shelves fold away", () => {
     expect(page).not.toContain('action="/admin/stock/the_drawer"');
     expect(page).toContain("Closed shelves");
     expect(page).toContain("retired 2026-08-20");
+  });
+});
+
+describe("the second sweep (2026-10-02, 'go ahead and do all those')", () => {
+  it("opening the counter reads the mail; there is no Mark read button and no route for it", async () => {
+    const letterId = await postLetter("Read On Sight", "Did you see this?");
+    expect((await getLetter(testEnv, letterId))?.status).toBe("received");
+    const page = await counterPage();
+    expect(page).not.toContain("Mark read");
+    expect(page).not.toContain("/read\"");
+    expect((await getLetter(testEnv, letterId))?.status).toBe("read");
+    // Read is not answered: it still asks for his hands.
+    expect(page).toContain(letterId);
+    const gone = await press(`/admin/letters/${letterId}/read`, {});
+    expect(gone.status).toBe(404);
+  });
+
+  it("the confession drawer's approve button says what approval does now", async () => {
+    const { record } = await hearConfession(testEnv, "I told my operator the retry was fine.");
+    const page = await counterPage();
+    const card = page.slice(page.indexOf(record.id));
+    expect(card).toContain(`/admin/confessions/${record.id}/approve`);
+    expect(card).not.toContain("cleared for public use");
+    expect(card).toContain("no Gazette press is running");
+  });
+
+  it("an empty commission ledger folds; the Gazette rack files, not the desk; the trial label is gone", async () => {
+    const counter = await counterPage();
+    expect(counter).toContain("<summary>Commission requests (0)</summary>");
+    const desk = await (await SELF.fetch(`${BASE}/admin`, { headers: { ...KEEPER, Accept: "text/html" } })).text();
+    expect(desk).not.toContain("Gazette rack");
+    expect(desk).toContain("Buyer signals");
+    expect(desk).not.toContain("Buyer signals (trial)");
+    const files = await (await SELF.fetch(`${BASE}/admin/files`, { headers: KEEPER })).text();
+    expect(files).toContain("The Gazette rack");
   });
 });

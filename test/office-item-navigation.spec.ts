@@ -15,7 +15,7 @@ it("takes the desk reader to retained events for the selected item", async () =>
   const data: OfficePageData = {
     monthLedger, porchLedger: { surfaces: {}, organicVisits: 0, porchToPurchase: null, truncated: false },
     payers: [], recentChallenges: [], take: null, allTime: null,
-    reconciliation: null, monthReclass: null, bazaarLedger: [], gazetteIssues: [],
+    reconciliation: null, monthReclass: null, bazaarLedger: [],
     work: { orders: 0, letters: 0, reviews: 0, alerts: 0 }, almanacSlugs: [], loadNotes: [],
   };
   const html = renderOfficePage(data);
