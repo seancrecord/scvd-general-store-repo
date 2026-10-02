@@ -10,6 +10,10 @@ import {
   PREFLIGHT_VERSION_NEXT,
   probeOnce,
   runChecks,
+  checksForBattery,
+  batteryDifference,
+  PREFLIGHT_VERSION,
+  PREFLIGHT_V3_SINCE,
 } from "@/services/preflight";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { checkEvmReceivable } from "@/services/evm-receivable";
@@ -61,17 +65,17 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * The criteria the audit cites — the SAME battery the weekly census
- * applies (PREFLIGHT_BATTERY_NEXT / preflight-v2). #82, 2026-09-01:
+ * applies (PREFLIGHT_BATTERY_NEXT). #82, 2026-09-01:
  * the $5 headline used to cite v1 while the corpus cited v2, so a
  * door the census called not_ready could buy a signed ready. Old
  * reports keep the citation they were signed under.
  */
 export const AUDIT_CRITERIA_VERSION = PREFLIGHT_BATTERY_NEXT;
 
-/** The day the paid headline moved to v2. Named so the criteria page and the correction derive one date. */
-export const AUDIT_BATTERY_CHANGED = "2026-09-01";
+/** The day the paid headline last changed battery. Named so the criteria page and the correction derive one date. */
+export const AUDIT_BATTERY_CHANGED = PREFLIGHT_V3_SINCE;
 
-export const AUDIT_BATTERY_CHANGE_NOTE = `${AUDIT_BATTERY_CHANGED}: the paid Once-Over cites ${AUDIT_CRITERIA_VERSION} as its headline battery, the same battery the weekly census has applied since 2026-08-24. Reports signed before this date cite preflight-v1 and keep that citation forever. The frozen v1 score still rides in also_under so the overlap is visible. We do not resign old artifacts.`;
+export const AUDIT_BATTERY_CHANGE_NOTE = `${AUDIT_BATTERY_CHANGED}: the paid Once-Over and weekly census now cite ${AUDIT_CRITERIA_VERSION}. Discovery info that contradicts its declared schema and decoded offer terms with no matching challenge entry now prevent ready. Optional extensions remain optional; missing resource descriptions and the paid surfaces section remain advisory. Existing v1 and v2 reports keep their original bytes and criteria. The frozen v1 score still rides in also_under. No old artifact is resigned.`;
 
 export function auditCriteriaNote(base: string): string {
   return `${AUDIT_CRITERIA_VERSION}: the published check battery documented at ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} (GET). The audit runs those checks and no others; the criteria page is the contract.`;
@@ -290,31 +294,13 @@ export async function performServiceAudit(
       }));
       advisories.push(...evm.advisories);
     }
-    const v1Checks = ran.checks;
-    const v2Checks = [
-      ...ran.checks,
-      ...(ran.l3b ?? []),
-      ...(rail.check ? [rail.check] : []),
-    ];
-    const v2Extras = [
-      ...(ran.l3b ? ["the L3b consistency trio"] : []),
-      ...(rail.check ? ["solana-rail-receivable"] : []),
-    ];
-    const v1Verdict = v1Checks.every((check) => check.ok)
-      ? ("ready" as const)
-      : ("not_ready" as const);
-    const v2Verdict = v2Checks.every((check) => check.ok)
-      ? ("ready" as const)
-      : ("not_ready" as const);
-    checks = v2Checks;
-    verdict = v2Verdict;
+    const v1Checks = checksForBattery(ran, PREFLIGHT_VERSION, rail.check);
+    checks = checksForBattery(ran, PREFLIGHT_VERSION_NEXT, rail.check);
+    verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
     alsoUnder = {
       battery: PREFLIGHT_BATTERY,
-      verdict: v1Verdict,
-      difference:
-        v2Extras.length > 0
-          ? `${AUDIT_CRITERIA_VERSION} folds ${v2Extras.join(" and ")} into the verdict; ${PREFLIGHT_BATTERY} reports the same observations as advisories. On this probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"}.`
-          : "No accepts parsed and the rail read did not apply, so both batteries scored the identical set of checks.",
+      verdict: v1Checks.every((check) => check.ok) ? "ready" : "not_ready",
+      difference: batteryDifference(PREFLIGHT_VERSION_NEXT, checks, PREFLIGHT_VERSION, v1Checks),
     };
   } catch (error) {
     /*

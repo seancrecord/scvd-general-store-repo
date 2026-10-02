@@ -169,7 +169,7 @@ describe("the once-over", () => {
     expect(checkNames).toContain("status-402");
     expect(checkNames).toContain("accepts");
     // The criteria are named ON the artifact, versioned.
-    expect(body.audit.criteria).toContain("preflight-v2");
+    expect(body.audit.criteria).toContain(AUDIT_CRITERIA_VERSION);
 
     // The certificate's attests field IS the report's evidence hash:
     // the store's dated word, on the endpoint that already existed.
@@ -247,7 +247,7 @@ describe("the audit's honest boundaries", () => {
       },
     );
     expect(audit.verdict).toBe("not_ready");
-    expect(audit.criteria).toContain("preflight-v2");
+    expect(audit.criteria).toContain(AUDIT_CRITERIA_VERSION);
     expect(audit.also_under).toBeDefined();
     expect(audit.also_under!.battery).toBe("preflight-v1");
     expect(audit.also_under!.verdict).toBe("ready");

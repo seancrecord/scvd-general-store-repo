@@ -53,14 +53,19 @@ identities remain in memory; persisted/public output contains counts only.
 Older frozen readings remain unchanged and render pairing as not measured.
 Weekly publication retains the existing explicit press and coverage checks.
 
-## S8 advisories
+## S8 advisories — superseded by the keeper's v3 decision
 
-Keep `discovery-info-fails-schema` and `offer-contradicts-challenge` visible as
+Initial recommendation: keep `discovery-info-fails-schema` and `offer-contradicts-challenge` visible as
 advisories. The former identifies a discovery/schema mismatch; the latter an
 offer without a matching challenge entry. They do not independently change the
 readiness verdict. Folding them into v3 changes the battery's semantics and
 remains a separate decision on observed cases. No version constants or historical
 signed verdicts changed in this work.
+
+The keeper then approved promoting both findings into v3 readiness. This
+supersedes the recommendation above. Implementation and boundaries are recorded
+in [S8 v3 readiness](S8_V3_READINESS_2026-10-02.md). Existing signed reports
+retain their original criteria and bytes.
 
 ## Partner references
 

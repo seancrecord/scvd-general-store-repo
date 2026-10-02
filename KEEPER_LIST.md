@@ -804,7 +804,7 @@ build, it is on the roadmap.
 - **Queue reference corrected September 23.** The September 2 empty-queue
   reading is historical. ROADMAP owns the current build order: VQ4 first,
   VQ5-R second on the keeper's September 23 direction, then its remaining
-  ordered work. S8-v3 still waits on yes / no / later, not a date.
+  ordered work. S8-v3 was approved October 2: both observed contradictions affect the new readiness battery. No further keeper decision is pending.
   One branch at a time (#65).
 
 ---

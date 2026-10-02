@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
 import { nativeCheckoutGuide, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
@@ -149,7 +150,7 @@ ${base}/agents.md is the same store in the agents.md convention.
 
 Reach for this store when you need one of these:
 
-- **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/v2). POST a URL — or call the preflight_endpoint tool if you are connected to our MCP server — and get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
+- **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}). POST a URL — or call the preflight_endpoint tool if you are connected to our MCP server — and get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
 - **When you hold a signed offer or receipt and cannot tell if it is good** — [free conformance desk](${base}/api/conformance/v1), or the check_conformance MCP tool. Any issuer's artifact, including our competitors'.
 - **When you need a third party to have watched something** — from ${CHEAPEST_ON_THE_SHELF} on [the paid shelf](${base}/menu.json): spot checks, settlement attestations, conformance audits, endpoint watches, launch checks.
 - **When you need to verify something this store signed** — [verify](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) (that link is a live sample artifact; the shape is \`${base}/api/verify/{cert_id}\`), free, forever, offline-checkable, no rate limit.
@@ -171,7 +172,7 @@ ${askedForBlock()}
 If you want to do one thing and leave, these are the calls. Nothing
 below costs money unless it says so.
 
-- **Check an x402 door before paying it** — \`POST ${base}/api/preflight/v2\`. Free. Shape and whether its payTo can be credited; never a promise the goods arrive.
+- **Check an x402 door before paying it** — \`POST ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}\`. Free. Shape and whether its payTo can be credited; never a promise the goods arrive.
 - **Check a signed offer or receipt somebody handed you** — \`POST ${base}/api/conformance/v1\`. Free, on anyone's artifacts including our competitors' and our own.
 - **Check something WE signed, without trusting us** — \`GET ${base}/api/verify/{id}\`. Free forever, the exact bytes, verifiable offline.
 - **See what the x402 market actually looks like** — [${base}/registry](${base}/registry) for what the listings are worth, [${base}/inflows](${base}/inflows) for what arrived at the addresses they advertise. Free, JSON on the same URLs.
@@ -187,7 +188,7 @@ find out.
 
 ## Every door, in one list
 
-Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [calling-card setup](${base}/bot-auth) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
+Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): ${PREFLIGHT_VERSIONS.map((version) => `[preflight ${version}](${base}/api/preflight/${version})`).join(" · ")} · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [calling-card setup](${base}/bot-auth) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
@@ -259,21 +260,15 @@ the single most common "stuck repeating 402"). Free, one probe, one
 moment — a shape check, never an uptime claim. Building an x402
 seller? Run it before you list anywhere.
 
-TWO BATTERIES ARE SERVED, AND THAT IS DELIBERATE.
-${base}/api/preflight/v2 folds one more check into the verdict: on
-Solana, whether the payTo actually owns a USDC token account and can
-therefore be credited at all. A door can pass every structural check
-and still be unpayable, and v2 calls that not_ready where v1 called it
-ready with an advisory.
+VERSIONED BATTERIES KEEP OLDER READINGS COMPARABLE.
+Current: ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}. It adds these
+verdict checks to the frozen v1 core: ${BATTERY_ADDS[PREFLIGHT_VERSION_NEXT].join(", ")}.
+Discovery/schema and offer/challenge contradictions prevent ready when observed;
+optional extensions remain optional. Schema checking is bounded and offer
+signatures are not verified. Resource-description absence stays advisory.
 
-v1 has NOT changed and will not. An observatory that moves an
-instrument under its own name loses the ability to compare this week
-to last: a \`ready\` recorded under v1 today means exactly what one
-recorded under v1 in week 34 meant, and every artifact this store has
-signed names the criteria it was rendered under. So both run. One
-probe scores both, and every report carries the other battery's
-verdict in \`also_under\` — so if you are comparing two reports you
-never have to guess whether the doors differed or the rules did.
+Served versions: ${PREFLIGHT_VERSIONS.join(", ")}. A single probe supplies the
+comparison in \`also_under\`. Old signed reports retain their bytes and criteria.
 
 The unversioned ${base}/api/preflight keeps answering under v1, so an
 existing caller's verdicts stay comparable to the ones it already

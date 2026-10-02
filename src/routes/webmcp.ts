@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { isVerificationTool } from "@/lib/mcp-tool-effects";
 import purchaseSource from "../../webmcp/purchase.js";
 import { MENU_ITEMS } from "@/store";
@@ -23,7 +24,7 @@ export const TOOL_ENDPOINTS: Readonly<
   Record<string, { method: "GET" | "POST"; path: string; bearerArgument?: string }>
 > = {
   read_store_guide: { method: "GET", path: "/llms.txt" },
-  preflight_endpoint: { method: "POST", path: "/api/preflight/v2" },
+  preflight_endpoint: { method: "POST", path: `/api/preflight/${PREFLIGHT_VERSION_NEXT}` },
   /*
    * The dry run belongs on the browser surface for the same reason it
    * belongs on MCP: the moment it serves is the moment before a

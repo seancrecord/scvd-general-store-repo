@@ -311,8 +311,7 @@ const TOO_MANY_REQUESTS: OpenApiObject = {
  */
 export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string[]>> = {
   "/menu.json": ["application/json", "text/markdown"],
-  "/api/preflight/v1": ["application/json", "text/markdown"],
-  "/api/preflight/v2": ["application/json", "text/markdown"],
+  ...Object.fromEntries(PREFLIGHT_VERSIONS.map((version) => [`/api/preflight/${version}`, ["application/json", "text/markdown"]])),
   // Gained a markdown twin on 2026-09-09, beside the preflight's.
   "/api/look/v1": ["application/json", "text/markdown"],
   "/pricing": ["application/json", "text/markdown", "text/html"],
@@ -7569,7 +7568,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
         post: withRateLimitHeaders(returns(postOp(
           "Look at a door: what this store holds about it",
-          "One live preflight (the same single probe and limiter as /api/preflight/v2) folded with the held half: rounds probed of rounds since first sighting, the tier with its fraction, the last signed verdict, the passport decision, and now against held. Counts with denominators, never a score. Refuses this store's own host like the audit does. Free.",
+          `One live preflight (the same single probe and limiter as /api/preflight/${PREFLIGHT_VERSION_NEXT}) folded with the held half: rounds probed of rounds since first sighting, the tier with its fraction, the last signed verdict, the passport decision, and now against held. Counts with denominators, never a score. Refuses this store's own host like the audit does. Free.`,
           "The x402 door to look at.",
           URL_BODY,
         ), LOOK_VERDICT_SCHEMA)),

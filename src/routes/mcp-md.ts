@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { Hono } from "hono";
 import { SECURITY_INVARIANTS, refusalVocabularyMarkdown } from "@/store/surface-contract";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
@@ -176,7 +177,7 @@ without the API loads a no-op; ordinary HTTP and remote MCP remain available.
 ## 4. No MCP at all
 
 Everything free here is also a plain HTTPS request:
-\`POST ${base}/api/preflight/v2\`,
+\`POST ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}\`,
 \`POST ${base}/api/conformance/v1\`,
 \`GET ${base}/api/verify/{id}\`. Start at
 [llms.txt](${base}/llms.txt). Nothing is installed and no protocol is
