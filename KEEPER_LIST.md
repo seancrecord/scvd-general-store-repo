@@ -38,11 +38,14 @@ build, it is on the roadmap.
   count threw and `onError` served the 500. The fix
   (`services/managed-orders.ts`) lets a Worker with no coordinator read
   the coordinator's own KV publication; the store Worker is unchanged
-  in behaviour. The doors Worker is deployed by your hand, not by the
-  git build, so once this lands on `main`:
-  `npm run deploy:doors`, then LOOK: both URLs above answer 402, and
-  x402-list's next check reads every door found. If you want the two
-  doors back before that, the standing rollback also works: delete the
+  in behaviour. `scvd-doors` has a Workers Build of its own on this
+  repo now (the "Workers Builds: scvd-doors" check ran on the PR), so
+  the merge should carry the fix to the live doors without a press.
+  LOOK, once #970 is on `main` and that build is green: both URLs
+  above answer 402, and x402-list's next check reads every door found.
+  If either still reads 500 after the build, the press is
+  `npm run deploy:doors`. If you want the two doors back before the
+  merge, the standing rollback also works: delete the
   `scvd.store/api/buy/*` route (Workers → scvd-doors → Domains &
   Routes) and the store answers them itself, slower and correct.
   Cab's order and certificate are unaffected; nothing was charged on
