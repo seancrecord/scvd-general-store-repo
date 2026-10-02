@@ -1,6 +1,8 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { publishIssue } from "@/services/gazette";
+import { findTip } from "@/services/tips";
 import type { Env } from "@/types";
 import { isRecord } from "@/types";
 import {
@@ -155,21 +157,6 @@ describe("the Gazette press (tip -> review -> publish -> penny copy)", () => {
     );
     const tipId = tipResponse["tip_id"] as string;
 
-    // Publishing before approval is refused.
-    const premature = await SELF.fetch(`${BASE}/admin/gazette/publish`, {
-      method: "POST",
-      headers: {
-        ...adminAuth,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        title: "Too Soon",
-        tip_ids: tipId,
-      }).toString(),
-      redirect: "manual",
-    });
-    expect(premature.status).toBe(400);
-
     // The keeper approves it.
     const approve = await SELF.fetch(`${BASE}/admin/tips/${tipId}/approve`, {
       method: "POST",
@@ -178,20 +165,11 @@ describe("the Gazette press (tip -> review -> publish -> penny copy)", () => {
     });
     expect([200, 302]).toContain(approve.status);
 
-    // The keeper assembles and publishes issue no. 1.
-    const publish = await SELF.fetch(`${BASE}/admin/gazette/publish`, {
-      method: "POST",
-      headers: {
-        ...adminAuth,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        title: "On Bells and Gratitude",
-        tip_ids: tipId,
-      }).toString(),
-      redirect: "manual",
-    });
-    expect([200, 302]).toContain(publish.status);
+    // The keeper assembles and publishes issue no. 1 — through the
+    // service, since the press's admin lever left the office 2026-10-02.
+    const approved = await findTip(testEnv, tipId);
+    expect(approved?.record.status).toBe("approved");
+    await publishIssue(testEnv, "On Bells and Gratitude", [approved!.record]);
 
     // The free index lists it with credit.
     const index = await json(await SELF.fetch(`${BASE}/gazette`));
