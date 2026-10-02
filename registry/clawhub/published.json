@@ -1,8 +1,8 @@
 {
-  "version": "3.19.2",
+  "version": "3.19.3",
   "bundle_sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
-  "tree_sha256": "1ea1340ab68a52ecb79cc7bbf36251575cae7bd147eddbc3ca3150e290c6fdc2",
-  "published_at": "2026-09-28T18:32:49.257Z",
-  "commit": "12653aedf267126273cce6014257f9dbdb6b8e97",
-  "changelog": "Updated buyer documentation with buyable URLs, canoonical fields resolve before validation"
+  "tree_sha256": "b0cedc1e5402896c44c76edaf53dcf33e70b04bcd94fb70825855ea846a26ab9",
+  "published_at": "2026-10-02T15:01:31.460Z",
+  "commit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90",
+  "changelog": "Clarify MPP inspection scope, bounded evidence acquisition and retained-original guidance; preserve signed evidence and existing checkout boundaries."
 }

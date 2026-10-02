@@ -61,6 +61,23 @@ files under Keeper's files instead of riding the desk's glance; the
 confession drawer's approve button says no press is running; an empty
 commission ledger folds; "Buyer signals" drops "(trial)" from the nav.
 
+## October 2 — the raise asks the till who is family
+
+The books check read ATTENTION: the counters one settlement over the
+derived payer purchases, and the raise unable to close it. Found in code,
+not in the live records (no authenticated read was taken): the till books
+a settle as house by four tests (wallet list, our own receiving addresses,
+a house user-agent, the house header) and writes one per-settle record
+either way; the hourly raise asked only the wallet list, so a settle
+booked under `paidh` by agent or header was lifted onto `paid` as well —
+one record, two counter settles, and nothing lowers. The record now
+carries `house: true` when the till booked it so; the raise skips flagged
+records and asks the till's own wallet question for the rest, and reports
+`house_records`. No counter, record or row was changed. A flagless record
+from before this date that was booked house by agent or header keeps its
+one historic lift; the keeper's LOOK is on the desk.
+`test/counter-raise-house.spec.ts` showed the lift before the fix.
+
 ## October 1 — admin accounting clarity
 
 Keeper-requested wording correction: distinguish certificate purchases from

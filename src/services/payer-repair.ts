@@ -138,6 +138,8 @@ interface SettleRecordValue {
   at?: string;
   transaction?: string;
   source?: string;
+  /** Stamped by the till when it booked the settle as house (2026-10-02). */
+  house?: boolean;
   /**
    * Stamped by the backfill when a rebooked settle's certificate
    * predates the rail-meter seam: the rail count was left to the
