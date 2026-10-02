@@ -84,5 +84,13 @@
         "checkedAt": 1790953773624
       }
     }
+  },
+  "normal_install": {
+    "observed_at": "2026-10-02T17:23:17.593Z",
+    "status": "passed",
+    "version": "3.19.3",
+    "flags_overridden": false,
+    "registry_files_hash_matched": 12,
+    "scope": "Temporary isolated directory; skill instructions were not executed."
   }
 }

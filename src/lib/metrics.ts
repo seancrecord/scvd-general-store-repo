@@ -1138,7 +1138,7 @@ async function recordSettlementKeyed(
   pending.push(raiseFirstOutsideSignature(env, event, "settled"));
   if (signals.payer) {
     pending.push(recordPayerSeen(env, signals.payer));
-    pending.push(recordPayerSettle(env, signals.payer, signals.transaction, event.item, event.at));
+    pending.push(recordPayerSettle(env, signals.payer, signals.transaction, event.item, event.at, event.house));
   } else {
     // Money moved and no wallet came back with it. Counted, so the gap
     // between settle counters and payer rows stays explainable instead
@@ -1154,6 +1154,18 @@ async function recordSettlementKeyed(
  * stays as the cache the desks read; reconcileSettles takes the larger
  * of the two per wallet, and the certificate backfill (payer-repair.ts)
  * seeds history so old wallets are not short from before this existed.
+ *
+ * THE RECORD SAYS WHICH FAMILY (2026-10-02). The till decides house by
+ * four tests (lib/channel.ts isHouseTraffic): the wallet list, the
+ * store's own receiving addresses, a house user-agent, the house
+ * header. The raise (services/counter-raise.ts) reads these records
+ * to lift the ORGANIC tallies and could only ask the first test, so a
+ * settle the till had booked under `paidh` by agent or header was
+ * lifted onto `paid` as well within the hour — two counter settles for
+ * one record, and a books check reading one settlement more than the
+ * payer side with the raise unable to put it back. The flag is written
+ * only when true, so a record without it is organic exactly as every
+ * record before this date was read.
  */
 async function recordPayerSettle(
   env: Env,
@@ -1161,12 +1173,13 @@ async function recordPayerSettle(
   transaction: string | undefined,
   item: string,
   at: string,
+  house: boolean,
 ): Promise<void> {
   const id = transaction ?? `nonce_${Math.random().toString(36).slice(2, 12)}`;
   await kvPut(
     env.COUNTERS,
     KV_KEYS.payerSettle(address, id),
-    JSON.stringify({ item, at, ...(transaction ? { transaction } : {}) }),
+    JSON.stringify({ item, at, ...(transaction ? { transaction } : {}), ...(house ? { house: true } : {}) }),
   );
 }
 

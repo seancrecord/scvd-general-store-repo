@@ -6,7 +6,7 @@ released capability from adoption, live acceptance and a public report.
 | Item | Result | Remaining boundary |
 | --- | --- | --- |
 | Accounting | #967 merged; authenticated books check no longer reports incomplete metric coverage. | It still reports counters one settlement above derived payer purchases. Do not change counters without transaction evidence. |
-| Developer activation | npm `scvd-cli` 0.5.0 already published by run 37023037626. Fresh registry install passed dry-run, Claude/Cursor project configuration, repeat and conflict-preservation checks. Skill 3.19.3 published by run 37023795395 after dry-run 37023555386. | No native-host or buyer qualification. Skill publication receipt is #971; registry scanner disagreement remains visible. |
+| Developer activation | npm `scvd-cli` 0.5.0 already published by run 37023037626. Fresh registry install passed dry-run, Claude/Cursor project configuration, repeat and conflict-preservation checks. Skill 3.19.3 published by run 37023795395 after dry-run 37023555386. | No native-host or buyer qualification. Skill publication receipt #971 is merged; registry scanner disagreement remains visible. |
 | Hugging Face | Public signed snapshot fields match the store; regenerated tables match both public configurations, including actual host observation dates. Both previews load. No second refresh needed. | Outer envelope bytes differ in timestamp/citation metadata. Timestamp proofs were not independently checked. |
 | Partner pilot | BiX answered the enum question September 28. The October 1 follow-up already asks which integration/release decision the observation supports. | Wait for that answer before custom work or a paid canary. No duplicate message sent. Decision use and repeat demand remain unproven. |
 | L13 | Counts-only authorization pairing added to the existing census and its admin/public readers. | Requires normal CI/release; no live measurement or weekly publication claimed by implementation. |
@@ -75,3 +75,20 @@ red and the complete 17-test mechanism file passes after the guard;
 the existing shared authorization and settlement group passes 38. Type checking
 and both Worker dry-run bundles pass. The four full CI shards and `check` remain
 the merge gate; no focused run substitutes for that gate.
+
+## Concurrent accounting repair reconciled
+
+Main advanced through #973 while #972 was in CI. Its fix preserves house
+classification on settlement records so the hourly raise cannot also lift those
+settlements onto the organic tally. This is a reproduced code path capable of
+creating the observed one-settlement shape; it does not identify the historical
+transaction without the live records. Both roadmap entries and the keeper's
+existing investigation remain. No accounting counters were adjusted here.
+
+The first complete #972 CI run passed all four shards, quality and the required
+check at fe33f345. The roadmap-only conflict with #973 is resolved by retaining
+both dated entries. The combined merge commit must pass CI again.
+
+The follow-up normal ClawHub 3.19.3 installation succeeded without force or scan
+bypass. All twelve registry files, including its added card, match their registry
+hashes. This temporary install did not execute the skill or qualify a native host.

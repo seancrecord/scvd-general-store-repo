@@ -44,11 +44,28 @@ already produce. Do not grow by becoming a score.
 [Evidence and scope](docs/ROI_FOLLOWTHROUGH_2026-10-02.md).
 Accounting #967 is merged and the live metric scan is complete; the remaining
 one-settlement difference still needs transaction evidence. CLI 0.5.0 is already
-published and fresh-install checks pass. Skill 3.19.3 is published, receipt #971;
+published and fresh-install checks pass. Skill 3.19.3 is published, receipt #971 merged;
 scanner disagreement is retained. HF host-date tables and both previews pass
 public readback. BiX answered the enum question; the existing October 1 follow-up
 awaits a named decision before further custom work. S8 findings remain advisory.
-L13 is implemented below, pending protected CI/release and a first live reading.
+L13 implementation is in [#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972); a first live reading remains open.
+
+## October 2 — the raise asks the till who is family
+
+The books check read ATTENTION: the counters one settlement over the
+derived payer purchases, and the raise unable to close it. Found in code,
+not in the live records (no authenticated read was taken): the till books
+a settle as house by four tests (wallet list, our own receiving addresses,
+a house user-agent, the house header) and writes one per-settle record
+either way; the hourly raise asked only the wallet list, so a settle
+booked under `paidh` by agent or header was lifted onto `paid` as well —
+one record, two counter settles, and nothing lowers. The record now
+carries `house: true` when the till booked it so; the raise skips flagged
+records and asks the till's own wallet question for the rest, and reports
+`house_records`. No counter, record or row was changed. A flagless record
+from before this date that was booked house by agent or header keeps its
+one historic lift; the keeper's LOOK is on the desk.
+`test/counter-raise-house.spec.ts` showed the lift before the fix.
 
 ## October 1 — admin accounting clarity
 
@@ -509,7 +526,7 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L9 | Solana parity gaps 3 to 5; scoped Tab follow-through | Gap 1 and the observatory shipped September 2; gap 2 (Solana bounty claims, Base payout) shipped September 5. Gap 3 is the Solana Launch Check; gaps 4 and 5 remain blocked under the recorded payout/screening constraints in SOLANA_PARITY.md. Recheck those constraints before any build. Tab work needs a named remaining workflow, reconciled with the package maintenance lane; the old "leftovers" label is not a build specification. |
 | L10 | Card family, cheap `/check/{host}`, D5 patronage sell-up | Demand / ink. |
 | L12 | Sponsored bounties: an operator pays to post their door on the board | Demand tag: an operator asks. Honest only if loud — public bounty, disclosed finder wallets, corpus flags the settles bounty-driven never organic. The quiet version is the wash trading we called out. Do it that way or not at all. |
-| L13 | **Implemented October 2; CI/release and first live reading pending.** The existing inflow census adds canonical EIP-3009 authorization-paired transfer count and exact USDC amount, with separate no-pair and unread counts. Matching requires transaction/block identity and adjacent log positions. Counts only; no addresses or hosts. Admin/public readers preserve older readings as not measured. [Implementation and limits](docs/ROI_FOLLOWTHROUGH_2026-10-02.md). | Measures settlement mechanism over the existing window and addresses. Corrects the earlier inference: EIP-3009 alone does not prove x402 use, an agent or a sale; no pair does not prove a plain transfer. The stale Almanac research tag is not demand or our own measurement. Solana remains outside this EVM-only read. |
+| L13 | **Implemented October 2 ([#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972)); first live reading pending.** The existing inflow census adds canonical EIP-3009 authorization-paired transfer count and exact USDC amount, with separate no-pair and unread counts. Matching requires transaction/block identity and adjacent log positions. Counts only; no addresses or hosts. Admin/public readers preserve older readings as not measured. [Implementation and limits](docs/ROI_FOLLOWTHROUGH_2026-10-02.md). | Measures settlement mechanism over the existing window and addresses. Corrects the earlier inference: EIP-3009 alone does not prove x402 use, an agent or a sale; no pair does not prove a plain transfer. The stale Almanac research tag is not demand or our own measurement. Solana remains outside this EVM-only read. |
 
 ---
 
