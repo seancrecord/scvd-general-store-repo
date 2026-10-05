@@ -1543,21 +1543,14 @@ what you ruled and what is still yours to look at.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
-- **Hugging Face: the Space waits for the account to turn 30
-  (2026-09-11, evening).** Read off the Hub's own docs after the
-  static Space came down: Gradio and Docker Spaces need a paid plan
-  (PRO, $9/mo) — only static Spaces are free — with one exception,
-  a free personal account older than 30 days may host two Gradio
-  Spaces on ZeroGPU. `keeper-scvd` was created 2026-09-03, so the
-  free route opens 2026-10-03. CV's static Space was the only free
-  shape available to him; taking it down was still right (its
-  `SKILL.md` was a version stale, missing the postcard rule, and the
-  `agent-skill` tag is not an index hf-discover reads). Your ruling:
-  wait, which is the recommendation — a reminder fires into the
-  session on 2026-10-04 with the steps (create the Space with SDK
-  Gradio, hardware ZeroGPU, paste the four files from
-  `spaces/scvd-x402-verifier/`, read the MCP schema, file the
-  hf-discover search). PRO now is the alternative if a month matters.
+- **LOOK: hf-discover, now that the Space is live (2026-10-05).**
+  `keeper-scvd/scvd-x402-verifier` is RUNNING on ZeroGPU with the
+  five tools published (`docs/ard-discovery/2026-10-05/`). The one
+  read left is the index it was built for, and it takes a POST this
+  build cannot send. From your machine:
+  `curl -sS -X POST https://huggingface-hf-discover.hf.space/search -H 'content-type: application/json' -d '{"query":{"text":"scvd"},"pageSize":10,"federation":"none"}'`
+  Paste the result here; it gets filed beside the 2026-09-06 zero.
+  Empty is not a failure yet — a new Space can take the index a while.
 
 - **The ChatGPT verifier plugin is published (2026-09-17).** The
   [publication record](registry/openai-plugin-verifier-submission.md) supersedes

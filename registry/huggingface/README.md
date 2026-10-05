@@ -100,6 +100,22 @@ The README's frontmatter already carries `sdk: gradio`,
 so the Space builds and is tagged on the first upload. Watch the build
 log once; the first start of a Gradio 6 Space takes about a minute.
 
+## Live (2026-10-05)
+
+Pasted in by the keeper on 2026-10-05, ZeroGPU hardware, free tier.
+After the GPU declaration above, the Hub API reported RUNNING at
+20:45 UTC and the Space's own MCP schema listed the five tools by the
+door's names (prefixed `scvd_x402_verifier_` by Gradio):
+`docs/ard-discovery/2026-10-05/hf-space-mcp-schema.json`. The one
+thing that reading notes and does not fix: Gradio's generated schema
+marks every parameter required, including the optional ones; the
+Space omits blanks before calling the door, so an empty string still
+reads as absent.
+
+The hf-discover search below takes a POST, which the outside fetcher
+cannot send and this build's egress refuses; it is the keeper's curl,
+and the index may take time to notice a new Space.
+
 ## The read afterwards
 
 ```bash
