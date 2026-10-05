@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -77,7 +78,7 @@ describe("the practice counter", () => {
     const bridge = body.when_its_your_till;
     expect(isRecord(bridge)).toBe(true);
     if (!isRecord(bridge)) return;
-    expect(bridge.preflight).toBe(`${BASE}/api/preflight/v1`);
+    expect(bridge.preflight).toBe(`${BASE}/api/preflight/${PREFLIGHT_VERSION_NEXT}`);
     expect(bridge.conformance_desk).toBe(`${BASE}/api/conformance/v1`);
     expect(bridge.launch_check).toBe(`${BASE}/menu/launch_check`);
 
@@ -90,7 +91,7 @@ describe("the practice counter", () => {
       await SELF.fetch(`${BASE}/try`, { headers: { Accept: "text/html" } })
     ).text();
     expect(html).toContain("When it&#39;s your till on the line");
-    expect(html).toContain("POST /api/preflight/v1");
+    expect(html).toContain(`POST /api/preflight/${PREFLIGHT_VERSION_NEXT}`);
     expect(html).toContain("POST /api/conformance/v1");
     expect(html).toContain("/menu/launch_check");
   });
