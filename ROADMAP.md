@@ -39,6 +39,15 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 5 — R2 read failures
+
+- [x] Prepare the keeper-requested local repair: bounded transient R2 read retries,
+  an honest corpus-index fallback, and shared email windows with per-route alarm
+  records preserved. [Scope and validation](docs/R2_READ_RESILIENCE_2026-10.md).
+- [ ] Release this isolated repair through a PR, pass all required CI shards,
+  and verify production. The local patch does not establish live recovery.
+
+
 ## October 2 — S8 v3 readiness
 
 Keeper approved making discovery/schema and offer/challenge contradictions affect

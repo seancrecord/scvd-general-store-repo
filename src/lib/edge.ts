@@ -16,6 +16,7 @@ import type { HonoEnv } from "@/types";
 import type { ErrorHandler, MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { sendAlert } from "@/lib/alerts";
+import { R2ReadUnavailable } from "@/lib/r2-read";
 
 /**
  * THE EDGE — what every answer from scvd.store passes through, in
@@ -358,6 +359,7 @@ export const edgeOnError: ErrorHandler<HonoEnv> = (err, c) => {
         sendAlert(c.env, {
           condition: "worker_health",
           key: `http500:${routeClass}:${errorName}`,
+          emailGroup: err instanceof R2ReadUnavailable ? "r2_read_unavailable" : undefined,
           detail: `500 on ${c.req.method} ${c.req.path}: ${errorName}: ${
             err instanceof Error ? err.message : String(err)
           }. A visitor was handed an error page here.`,

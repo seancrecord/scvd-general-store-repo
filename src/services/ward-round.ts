@@ -8,6 +8,7 @@ import { mppCensusOf, type MppCensus, type MppCensusReading } from "@/services/m
 import { signerKidsFromChallenge } from "@/services/watch-evidence";
 import type { EvidenceDigest } from "@/services/corpus-evidence";
 import { sendAlert } from "@/lib/alerts";
+import { r2ReadText } from "@/lib/r2-read";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import {
@@ -2030,9 +2031,9 @@ async function storeRoundRows(env: Env, round: WardRound): Promise<WardRound> {
 export async function hydrateRound(env: Env, stored: WardRound | null): Promise<WardRound | null> {
   if (!stored) return null;
   if (!stored.hosts_r2_key) return stored;
-  const object = env.CORPUS_R2 ? await env.CORPUS_R2.get(stored.hosts_r2_key) : null;
-  if (!object) return null;
-  const hosts = (await object.json()) as WardHostResult[];
+  const text = env.CORPUS_R2 ? await r2ReadText(env.CORPUS_R2, stored.hosts_r2_key) : null;
+  if (text === null) return null;
+  const hosts = JSON.parse(text) as WardHostResult[];
   if (!Array.isArray(hosts)) return null;
   return { ...stored, hosts };
 }

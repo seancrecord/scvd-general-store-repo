@@ -12,6 +12,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { r2ReadText } from "@/lib/r2-read";
 import type { OtsAnchor } from "@/services/anchor-log";
 import type { CorpusSnapshot } from "@/services/corpus";
 import type { Env } from "@/types";
@@ -56,16 +57,16 @@ export async function resolveRecord(
 ): Promise<CorpusRecord | null> {
   if (!stored) return null;
   if (!isPointer(stored)) return stored;
-  const object = env.CORPUS_R2
-    ? await env.CORPUS_R2.get(stored.r2_key)
+  const text = env.CORPUS_R2
+    ? await r2ReadText(env.CORPUS_R2, stored.r2_key)
     : null;
-  if (!object) {
+  if (text === null) {
     // A pointer whose object is gone is a chain problem, not a quiet
     // absence — surface it as missing and let verifyCorpusChain say
     // the chain is not contiguous rather than papering over it.
     return null;
   }
-  return JSON.parse(await object.text()) as CorpusRecord;
+  return JSON.parse(text) as CorpusRecord;
 }
 
 /**
