@@ -68,7 +68,7 @@ const defectProperties = {
   detectable: { type: "string", enum: ["unpaid", "paid"] },
   our_signal: nullableText,
   falsified_by: text, repair_hint: text, buyer_hint: text,
-} satisfies Record<keyof Omit<DefectClass, "also_known_as" | "sourced_by" | "registered">, Schema>;
+} satisfies Record<keyof Omit<DefectClass, "also_known_as" | "sourced_by" | "registered" | "verdict_signal">, Schema>;
 const commonDefectProperties = { vocabulary_version: text, definition_url: text };
 
 // No id returns the vocabulary index; an id returns the full definition.
@@ -84,7 +84,7 @@ export const DEFECT_OUTPUT_SCHEMA: Schema = {
     { ...object({ ...commonDefectProperties, ...defectProperties }),
       properties: { ...commonDefectProperties, ...defectProperties,
         also_known_as: { type: "array", items: object({ instrument: text, as: text, verify: text, falsified_by: text }) },
-        sourced_by: text, registered: text,
+        sourced_by: text, registered: text, verdict_signal: text,
       },
       additionalProperties: false,
     },

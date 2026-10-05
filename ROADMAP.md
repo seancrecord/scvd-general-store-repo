@@ -39,14 +39,26 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 5 — release verification
+
+S8 #975 and L13 #972 merged October 2 with all required checks green; both
+merged-commit Worker builds succeeded. [Live readback and remaining gaps](research/release-verification-2026-10-05/README.md):
+HTTP, MCP and WebMCP show a discovery contradiction changing v2 `ready` to v3
+`not_ready`; the new census contains v3 rows. A live offer contradiction was
+not exercised. Public inflow readers preserve the old week as not measured;
+a new L13 reading and the one-settlement accounting reconciliation remain open.
+Authenticated checks are deferred by the keeper. Stale current-version links,
+the free report's battery explanation and repair mappings are corrected locally,
+pending release; they do not change scoring or old signed records.
+
 ## October 2 — S8 v3 readiness
 
 Keeper approved making discovery/schema and offer/challenge contradictions affect
-readiness. Implementation complete on the feature branch: free v3, new paid
+readiness. Merged and deployed in #975: free v3, new paid
 audits and new census rows use one scoring recipe. v1/v2 scoring and stored
 signed bytes remain unchanged. Optional extensions stay optional; missing
-resource descriptions and paid Tier B surface reads remain advisory. Merge and
-live verification remain release gates. [Scope and validation](docs/S8_V3_READINESS_2026-10-02.md).
+resource descriptions and paid Tier B surface reads remain advisory. The October 5
+entry records live verification and its remaining limits. [Scope and validation](docs/S8_V3_READINESS_2026-10-02.md).
 
 ## October 2 — ROI follow-through
 
@@ -57,7 +69,7 @@ published and fresh-install checks pass. Skill 3.19.3 is published, receipt #971
 scanner disagreement is retained. HF host-date tables and both previews pass
 public readback. BiX answered the enum question; the existing October 1 follow-up
 awaits a named decision before further custom work. S8 v3 was subsequently approved; see the October 2 S8 entry.
-L13 implementation is in [#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972); a first live reading remains open.
+L13 merged in [#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972); the public reader is verified deployed, while a first current admin reading remains open.
 
 ## October 2 — counter housekeeping
 
@@ -556,7 +568,7 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L9 | Solana parity gaps 3 to 5; scoped Tab follow-through | Gap 1 and the observatory shipped September 2; gap 2 (Solana bounty claims, Base payout) shipped September 5. Gap 3 is the Solana Launch Check; gaps 4 and 5 remain blocked under the recorded payout/screening constraints in SOLANA_PARITY.md. Recheck those constraints before any build. Tab work needs a named remaining workflow, reconciled with the package maintenance lane; the old "leftovers" label is not a build specification. |
 | L10 | Card family, cheap `/check/{host}`, D5 patronage sell-up | Demand / ink. |
 | L12 | Sponsored bounties: an operator pays to post their door on the board | Demand tag: an operator asks. Honest only if loud — public bounty, disclosed finder wallets, corpus flags the settles bounty-driven never organic. The quiet version is the wash trading we called out. Do it that way or not at all. |
-| L13 | **Implemented October 2 ([#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972)); first live reading pending.** The existing inflow census adds canonical EIP-3009 authorization-paired transfer count and exact USDC amount, with separate no-pair and unread counts. Matching requires transaction/block identity and adjacent log positions. Counts only; no addresses or hosts. Admin/public readers preserve older readings as not measured. [Implementation and limits](docs/ROI_FOLLOWTHROUGH_2026-10-02.md). | Measures settlement mechanism over the existing window and addresses. Corrects the earlier inference: EIP-3009 alone does not prove x402 use, an agent or a sale; no pair does not prove a plain transfer. The stale Almanac research tag is not demand or our own measurement. Solana remains outside this EVM-only read. |
+| L13 | **Merged and deployed October 2 ([#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972)); public reader verified October 5, first current admin reading deferred.** The existing inflow census adds canonical EIP-3009 authorization-paired transfer count and exact USDC amount, with separate no-pair and unread counts. Matching requires transaction/block identity and adjacent log positions. Counts only; no addresses or hosts. Admin/public readers preserve older readings as not measured. [Implementation and limits](docs/ROI_FOLLOWTHROUGH_2026-10-02.md). | Measures settlement mechanism over the existing window and addresses. Corrects the earlier inference: EIP-3009 alone does not prove x402 use, an agent or a sale; no pair does not prove a plain transfer. The stale Almanac research tag is not demand or our own measurement. Solana remains outside this EVM-only read. |
 
 ---
 

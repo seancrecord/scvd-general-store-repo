@@ -1,0 +1,13 @@
+{
+  "source": "https://scvd.store/corpus/11.json",
+  "read_on": "2026-10-05",
+  "snapshot_taken_at": "2026-10-04T11:01:14.516Z",
+  "snapshot_digest_as_served": "29058c63a111944af152340eb5198102e6a2b5b970eee63f06a77fb452325e63",
+  "signature_verified_in_this_pass": false,
+  "rows": 4955,
+  "v3_rows": 48,
+  "v2_rows": 4799,
+  "battery_absent": 108,
+  "v3_discovery_failures": 1,
+  "offer_contradiction_rows": 0
+}

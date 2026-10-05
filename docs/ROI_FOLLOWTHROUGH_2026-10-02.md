@@ -9,7 +9,7 @@ released capability from adoption, live acceptance and a public report.
 | Developer activation | npm `scvd-cli` 0.5.0 already published by run 37023037626. Fresh registry install passed dry-run, Claude/Cursor project configuration, repeat and conflict-preservation checks. Skill 3.19.3 published by run 37023795395 after dry-run 37023555386. | No native-host or buyer qualification. Skill publication receipt #971 is merged; registry scanner disagreement remains visible. |
 | Hugging Face | Public signed snapshot fields match the store; regenerated tables match both public configurations, including actual host observation dates. Both previews load. No second refresh needed. | Outer envelope bytes differ in timestamp/citation metadata. Timestamp proofs were not independently checked. |
 | Partner pilot | BiX answered the enum question September 28. The October 1 follow-up already asks which integration/release decision the observation supports. | Wait for that answer before custom work or a paid canary. No duplicate message sent. Decision use and repeat demand remain unproven. |
-| L13 | Counts-only authorization pairing added to the existing census and its admin/public readers. | Requires normal CI/release; no live measurement or weekly publication claimed by implementation. |
+| L13 | Counts-only authorization pairing added to the existing census and its admin/public readers. | Merged with full CI green October 2; public reader verified October 5. First current admin measurement is deferred by the keeper; no new weekly publication. |
 
 ## Readback evidence
 
@@ -97,3 +97,5 @@ both dated entries. The combined merge commit must pass CI again.
 The follow-up normal ClawHub 3.19.3 installation succeeded without force or scan
 bypass. All twelve registry files, including its added card, match their registry
 hashes. This temporary install did not execute the skill or qualify a native host.
+
+October 5: [release verification and remaining gates](../research/release-verification-2026-10-05/README.md). The keeper deferred authenticated accounting and inflow checks; no counters or published weeks were changed.

@@ -26,6 +26,12 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
+  authenticated checks for now. The L13 code and public reader are released;
+  `/admin/market/inflows` still needs its first current authorization-pairing
+  reading. The one-settlement difference below still needs transaction evidence.
+  No publish or accounting repair was pressed. [Public release readback](research/release-verification-2026-10-05/README.md).
+
 - **LOOK — the books check's one settlement, 2026-10-02.** The
   page read the counters one settlement over the derived payer
   purchases. The code can produce exactly that shape on its own:
@@ -41,8 +47,8 @@ build, it is on the roadmap.
   `house-wallets.json`. If one exists, that is the settle, and
   the correction is one `paid:<item>` for its month down by one
   — your press, with a corrections entry, not the raise's. If
-  none exists within the 90-day window, the difference is older
-  than the events and this is not its cause.
+  none exists within the retained window, the cause remains unestablished;
+  missing event evidence neither rules this cause out nor dates the difference.
 - **PRESS — redeploy `scvd-doors`, 2026-10-02: the two labor doors have
   answered 500 since the evening of 10-01.** `GET /api/buy/aura_walk`
   and `/api/buy/the_collab` fall over before the 402; every other door

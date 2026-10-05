@@ -1,6 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { preflightUrl, type PreflightBattery, type PreflightReport } from "@/services/preflight";
+import { preflightUrl, reachedLevelMeaning, PREFLIGHT_VERSION_NEXT, type PreflightBattery, type PreflightReport } from "@/services/preflight";
 import { performServiceAudit } from "@/services/service-audit";
 import { probeHost } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -43,6 +43,7 @@ describe("S8 v3 readiness", () => {
     expect(current.verdict).toBe("not_ready");
     expect(current.version).toBe("v3");
     expect(current.checks.find(row => row.name === check)?.ok).toBe(false);
+    expect(current.remediation).toEqual(expect.arrayContaining([expect.objectContaining({ signal: check, kind: "check" })]));
     expect(current.also_under).toMatchObject({ version: "v2", verdict: "ready" });
     const census = await probeHost(testEnv, url);
     expect(census).toMatchObject({ battery: "preflight-v3", verdict: "not_ready" });
@@ -51,6 +52,12 @@ describe("S8 v3 readiness", () => {
     expect(audit.criteria).toContain("preflight-v3");
     expect(audit.verdict).toBe("not_ready");
     expect(audit.checks.find(row => row.name === check)?.ok).toBe(false);
+  });
+
+  it.each(["v1", "v2", "v3"])("describes the actual %s battery", async (version) => {
+    stub({});
+    const result = await read(version);
+    expect(result.reached_level_meaning).toBe(reachedLevelMeaning(`preflight-${version}`));
   });
 
   it("accepts valid discovery and multiple matching price tiers", async () => {
@@ -92,6 +99,13 @@ describe("S8 v3 readiness", () => {
     const rpc = await response.json() as { result: { content: { text: string }[] } };
     const result = JSON.parse(rpc.result.content[0]!.text) as PreflightReport;
     expect(result).toMatchObject({ version: "v3", verdict: "not_ready" });
+    const handshake = await SELF.fetch("https://scvd.store/mcp", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "initialize", params: {} }),
+    });
+    const discovery = await handshake.json() as { result: { instructions: string } };
+    expect(discovery.result.instructions).toContain(`POST /api/preflight/${result.version}`);
   });
 
   it("serves the new version and retains both old documents", async () => {
@@ -100,5 +114,17 @@ describe("S8 v3 readiness", () => {
       expect(response.status).toBe(200);
       expect(await response.json()).toMatchObject({ version, batteries: { served: ["v1", "v2", "v3"] } });
     }
+  });
+
+  it("current getting-started surfaces link the same battery the agent tool runs", async () => {
+    const route = `/api/preflight/${PREFLIGHT_VERSION_NEXT}`;
+    const practice = await SELF.fetch("https://scvd.store/try", { headers: { Accept: "application/json" } });
+    const guide = await practice.json() as { when_its_your_till: { preflight: string } };
+    expect(guide.when_its_your_till.preflight).toBe(`https://scvd.store${route}`);
+    const html = await SELF.fetch("https://scvd.store/try", { headers: { Accept: "text/html" } });
+    expect(await html.text()).toContain(`POST ${route}`);
+    const openapi = await SELF.fetch("https://scvd.store/openapi.json");
+    const contract = await openapi.json() as { info: { "x-guidance": string } };
+    expect(contract.info["x-guidance"]).toContain(`POST ${route}`);
   });
 });
