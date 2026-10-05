@@ -1543,14 +1543,12 @@ what you ruled and what is still yours to look at.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
-- **LOOK: hf-discover, now that the Space is live (2026-10-05).**
-  `keeper-scvd/scvd-x402-verifier` is RUNNING on ZeroGPU with the
-  five tools published (`docs/ard-discovery/2026-10-05/`). The one
-  read left is the index it was built for, and it takes a POST this
-  build cannot send. From your machine:
-  `curl -sS -X POST https://huggingface-hf-discover.hf.space/search -H 'content-type: application/json' -d '{"query":{"text":"scvd"},"pageSize":10,"federation":"none"}'`
-  Paste the result here; it gets filed beside the 2026-09-06 zero.
-  Empty is not a failure yet — a new Space can take the index a while.
+- **hf-discover: zero twenty minutes after the Space went live
+  (2026-10-05, filed).** Your curl returned `{"results":[]}` with the
+  Space RUNNING and tagged `mcp-server`
+  (`docs/ard-discovery/2026-10-05/hf-discover-scvd-after.json`). Too
+  soon to read as a refusal; a reminder re-runs the same read on
+  2026-10-12 from here. Nothing for your hands until then.
 
 - **The ChatGPT verifier plugin is published (2026-09-17).** The
   [publication record](registry/openai-plugin-verifier-submission.md) supersedes
