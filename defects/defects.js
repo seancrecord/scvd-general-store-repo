@@ -39,7 +39,7 @@ export function defectClass(id) {
 
 /** Every class a raw signal (a check or advisory name) explains, in either spelling. */
 export function defectsBySignal(signal) {
-  return DEFECT_CLASSES.filter((entry) => entry.our_signal === signal || entry.our_signal === `${signal} (advisory)`);
+  return DEFECT_CLASSES.filter((entry) => entry.verdict_signal === signal || entry.our_signal === signal || entry.our_signal === `${signal} (advisory)`);
 }
 
 /** Both halves of the remediation for one class: what the operator does, what the buyer does. */

@@ -65,6 +65,13 @@ release.
 
 ## Still open
 
+PR #976's first full CI run caught the package snapshot still at vocabulary
+v21. The follow-up regenerates it, prepares `scvd-defects` 0.22.0 and updates
+its TypeScript field, signal lookup and package-content manifest. A new Node
+regression failed before the lookup fix and passes afterwards. Registry
+publication of 0.22.0 remains separate; this is a source release, not a claim
+that npm has updated.
+
 The keeper explicitly deferred authenticated checks October 5. L13's first
 current admin reading and the remaining one-settlement reconciliation therefore
 remain open. No publish, replace, raise, repair or counter-adjustment action was
