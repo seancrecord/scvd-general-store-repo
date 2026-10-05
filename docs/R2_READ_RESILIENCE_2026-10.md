@@ -45,6 +45,9 @@ establish the cause or extent of Cloudflare's underlying failures.
   136-test suite, typecheck, and production bundle checks.
 - `npm run typecheck` passed, including after the final adjustment.
 - `npm run build:check` passed for both Workers and the MPP SDK bundle check.
+- The CI scalability audit initially misclassified the new retry primitive
+  as a KV keyspace loop. Reproduced locally, then registered it alongside the
+  existing retry primitive; the warning budget is unchanged. The audit passes.
 - Full CI shards remain required before merge. No production alarm was muted,
   no manual scout was triggered, and no external email was sent during repair.
 

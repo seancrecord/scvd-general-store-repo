@@ -237,7 +237,11 @@ for (const path of sourceFiles(SRC)) {
     // kv-retry.ts defines withKvRetry; since 2026-09-19 the write rule
     // reads through that wrapper, so its own put/get helpers are the
     // primitive, not a call site.
-    path.endsWith("kv-retry.ts");
+    path.endsWith("kv-retry.ts") ||
+    // r2-read.ts retries one object under that same bounded policy.
+    // Its loop does not walk a growing keyspace, and the injected
+    // bucket parameter cannot match the Env binding names above.
+    path.endsWith("r2-read.ts");
 
   lines.forEach((line, i) => {
     const n = i + 1;
