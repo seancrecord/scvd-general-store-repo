@@ -9,6 +9,7 @@ on the store's other doors and are not reachable from this Space.
 """
 
 import gradio as gr
+import spaces
 
 from verifier import (
     get_defect_definition,
@@ -26,6 +27,23 @@ POSITION = (
 )
 
 OUTPUT = lambda: gr.Code(label="The door's answer", language="json")  # noqa: E731
+
+
+@spaces.GPU(duration=1)
+def _zerogpu_declaration() -> str:
+    """The declaration ZeroGPU hardware requires, and nothing else.
+
+    The free tier a personal account may host on is ZeroGPU, and that
+    hardware refuses to start a Space with "No @spaces.GPU function
+    detected during startup" (read off the Space's own runtime error,
+    2026-10-05). This Space has no GPU work: five HTTPS calls to a
+    door that answers in milliseconds. So one decorated function
+    exists to be detected, is wired to no interface, is never called,
+    and would hold a GPU for one second if it ever were. The decorator
+    is effect-free off ZeroGPU, so the local launch and the tests are
+    unchanged.
+    """
+    return "This Space uses no GPU; this function exists only to be detected."
 
 preflight = gr.Interface(
     fn=preflight_x402_endpoint,

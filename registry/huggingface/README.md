@@ -67,6 +67,18 @@ The static Space CV pushed on 2026-09-11 (`keeper-scvd/scvd-general-store`,
 and was deleted the same day: its `SKILL.md` was a version stale and
 hf-discover does not read that tag.
 
+## The one line ZeroGPU adds (2026-10-05, the first real build)
+
+The Space went up by hand on 2026-10-05 and its first clean build
+failed with "No @spaces.GPU function detected during startup":
+ZeroGPU hardware refuses to start a Space that never declares a GPU
+function, and this one has no GPU work. `app.py` now carries one
+decorated function wired to nothing and never called, with the
+reason in its docstring; `requirements.txt` lists `spaces`. The
+decorator is effect-free elsewhere, so the local launch still lists
+the five tools and the tests are unchanged. `test_verifier.py` holds
+it to exactly one declaration that is not a tool.
+
 ## The press (from 2026-10-03)
 
 A **fine-grained** token, write on this one Space only, with an
