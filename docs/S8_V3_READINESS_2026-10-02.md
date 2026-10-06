@@ -47,3 +47,13 @@ unchanged base reproduced both earlier guide fingerprints (14/14).
 The unbounded local full-suite attempt was stopped after repeated Worker runtime
 internal errors. All four CI test shards and the aggregate check remain required
 before merge. No production payment or paid canary was made.
+
+## October 5 release readback
+
+#975 merged October 2 with full CI green; both merged-commit Worker builds
+succeeded. [Production verification](../research/release-verification-2026-10-05/README.md)
+confirms the discovery verdict change through HTTP, MCP and WebMCP and new
+v3 census rows. No live offer contradiction or paid audit was exercised. The
+readback also found stale version links, a v1 explanation on newer free reports,
+and missing check-level remediation mappings; their local follow-up is recorded
+there separately from the deployed release.
