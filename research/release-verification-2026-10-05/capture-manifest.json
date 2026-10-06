@@ -1,0 +1,41 @@
+{
+  "read_on": "2026-10-05",
+  "captures": [
+    {
+      "file": "readx-v3.json",
+      "sha256": "6526697c4ec2209f39132164afb095b89fad76b61bf3286379fe015256683de4",
+      "bytes": 21305
+    },
+    {
+      "file": "nansen-v3.json",
+      "sha256": "cc126965867ba57a09b0098f94239f978c587983701b94d6a733a01b2475dd1a",
+      "bytes": 24520
+    },
+    {
+      "file": "x402scan-v3.json",
+      "sha256": "1575bb71b32ac70765c32a912b26c4afe15710c6960cdbf431485d52d6bca36b",
+      "bytes": 21185
+    },
+    {
+      "file": "mcp-x402scan.json",
+      "sha256": "d54c0c9db01f9dd980a0a9b6b5dd834ecb8cc3e52958f797ea7920c9de32ca44",
+      "bytes": 43455
+    },
+    {
+      "file": "mcp-initialize.json",
+      "sha256": "49a816ef6eb01804a54a9574996dc40b8dbcf42cf1e0b450afeb5a14ab268eb7",
+      "bytes": 3959
+    },
+    {
+      "file": "inflows.json",
+      "sha256": "aa72764b51783fa8b22478822aaae7c6a611fbc79a6a883cc3f608e1e3bb254c",
+      "bytes": 8051
+    },
+    {
+      "file": "corpus-index.json",
+      "sha256": "3285e41af8cf00ca76d93581b90dbae9ea687d62b864d09611de17e4a811417c",
+      "bytes": 2879
+    }
+  ],
+  "scope": "Unsigned public HTTP responses. Hashes identify these captures; they do not independently authenticate the endpoint observations."
+}

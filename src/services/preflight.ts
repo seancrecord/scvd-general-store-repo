@@ -659,7 +659,7 @@ function report(
     version: battery,
     verdict,
     reached_level: level,
-    reached_level_meaning: REACHED_LEVEL_MEANING,
+    reached_level_meaning: reachedLevelMeaning(`preflight-${battery}`),
     ...(level === "none" ? { network_failure: "unlocalized" as const } : {}),
     checks_vector: vector,
     checks,

@@ -26,6 +26,12 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
+  authenticated checks for now. The L13 code and public reader are released;
+  `/admin/market/inflows` still needs its first current authorization-pairing
+  reading. The one-settlement difference below still needs transaction evidence.
+  No publish or accounting repair was pressed. [Public release readback](research/release-verification-2026-10-05/README.md).
+
 - **LOOK — the books check's one settlement, 2026-10-02.** The
   page read the counters one settlement over the derived payer
   purchases. The code can produce exactly that shape on its own:
@@ -41,8 +47,8 @@ build, it is on the roadmap.
   `house-wallets.json`. If one exists, that is the settle, and
   the correction is one `paid:<item>` for its month down by one
   — your press, with a corrections entry, not the raise's. If
-  none exists within the 90-day window, the difference is older
-  than the events and this is not its cause.
+  none exists within the retained window, the cause remains unestablished;
+  missing event evidence neither rules this cause out nor dates the difference.
 - **PRESS — redeploy `scvd-doors`, 2026-10-02: the two labor doors have
   answered 500 since the evening of 10-01.** `GET /api/buy/aura_walk`
   and `/api/buy/the_collab` fall over before the 402; every other door
@@ -1543,21 +1549,12 @@ what you ruled and what is still yours to look at.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
-- **Hugging Face: the Space waits for the account to turn 30
-  (2026-09-11, evening).** Read off the Hub's own docs after the
-  static Space came down: Gradio and Docker Spaces need a paid plan
-  (PRO, $9/mo) — only static Spaces are free — with one exception,
-  a free personal account older than 30 days may host two Gradio
-  Spaces on ZeroGPU. `keeper-scvd` was created 2026-09-03, so the
-  free route opens 2026-10-03. CV's static Space was the only free
-  shape available to him; taking it down was still right (its
-  `SKILL.md` was a version stale, missing the postcard rule, and the
-  `agent-skill` tag is not an index hf-discover reads). Your ruling:
-  wait, which is the recommendation — a reminder fires into the
-  session on 2026-10-04 with the steps (create the Space with SDK
-  Gradio, hardware ZeroGPU, paste the four files from
-  `spaces/scvd-x402-verifier/`, read the MCP schema, file the
-  hf-discover search). PRO now is the alternative if a month matters.
+- **hf-discover: zero twenty minutes after the Space went live
+  (2026-10-05, filed).** Your curl returned `{"results":[]}` with the
+  Space RUNNING and tagged `mcp-server`
+  (`docs/ard-discovery/2026-10-05/hf-discover-scvd-after.json`). Too
+  soon to read as a refusal; a reminder re-runs the same read on
+  2026-10-12 from here. Nothing for your hands until then.
 
 - **The ChatGPT verifier plugin is published (2026-09-17).** The
   [publication record](registry/openai-plugin-verifier-submission.md) supersedes
