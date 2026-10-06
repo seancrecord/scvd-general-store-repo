@@ -73,6 +73,53 @@ describe("the RFC 8785 canonicalizer", () => {
     const value = { z: [1, 2.5, "é"], a: { c: true, b: null } };
     expect(JSON.parse(jcsCanonicalize(value))).toEqual(value);
   });
+
+  it("writes null into an array hole, the way JSON.stringify does — never an empty slot", () => {
+    /*
+     * map() skips a hole and join() renders it as nothing, so a sparse
+     * array came out as "[1,,3]": not JSON, and a signature over bytes
+     * no RFC 8785 implementation can reproduce. The RFC inherits
+     * JSON.stringify here, which writes null in the slot.
+     */
+    const sparse: unknown[] = [1, , 3]; // eslint-disable-line no-sparse-arrays
+    expect(jcsCanonicalize(sparse)).toBe("[1,null,3]");
+    expect(jcsCanonicalize({ a: sparse })).toBe('{"a":[1,null,3]}');
+    expect(JSON.parse(jcsCanonicalize(sparse))).toEqual([1, null, 3]);
+  });
+
+  it("REFUSES a Date, a URL, a boxed primitive, a Map, a Set and a typed array instead of signing an empty object", () => {
+    /*
+     * Object.keys sees nothing on a Date (and the wrong thing on a
+     * boxed string), so these canonicalized to "{}" — while the primary
+     * signature's serializer, JSON.stringify, honours toJSON and writes
+     * the ISO string. Two signatures over different bytes, on a path
+     * typed Record<string, unknown> where the compiler cannot help.
+     * RFC 8785 is defined over JSON data; a value that is not already
+     * JSON data is refused, the same way a non-finite number is.
+     */
+    const nonPlain: unknown[] = [
+      new Date(0),
+      new URL("https://scvd.store/"),
+      new Number(5), // eslint-disable-line no-new-wrappers
+      new String("x"), // eslint-disable-line no-new-wrappers
+      new Boolean(true), // eslint-disable-line no-new-wrappers
+      new Map([["a", 1]]),
+      new Set([1]),
+      new Uint8Array([1, 2]),
+    ];
+    for (const value of nonPlain) {
+      expect(() => jcsCanonicalize({ a: value }), String(value)).toThrow(/^jcs: /);
+      expect(() => jcsCanonicalize([value]), String(value)).toThrow(/^jcs: /);
+      expect(() => jcsCanonicalize(value), String(value)).toThrow(/^jcs: /);
+    }
+  });
+
+  it("still accepts a prototype-less record, which is plain data by any reading", () => {
+    const bare = Object.create(null) as Record<string, unknown>;
+    bare.b = 2;
+    bare.a = { c: [1] };
+    expect(jcsCanonicalize(bare)).toBe('{"a":{"c":[1]},"b":2}');
+  });
 });
 
 let facilitator: ReturnType<typeof installMultiPurchaseFacilitatorMock>;
@@ -229,6 +276,16 @@ describe("the overlap classes — the artifacts in the receipts race's lane", ()
 });
 
 describe("signJcs, the helper every mint path shares", () => {
+  it("refuses a Date in the subset, so a mint path fails closed instead of emitting a signature nobody can verify", async () => {
+    // Money fails closed: the store delivers first and settles after,
+    // so a throw here takes no money. The alternative — signing "{}"
+    // where the served field says an ISO string — is a published
+    // artifact whose JCS signature reads invalid to anyone who checks.
+    await expect(
+      signJcs({ observed_at: new Date(0), a: 1 }, testEnv.SIGNING_KEY),
+    ).rejects.toThrow(/^jcs: /);
+  });
+
   it("signs the sorted bytes, so field order at the call site cannot matter", async () => {
     const one = await signJcs({ b: 2, a: 1 }, testEnv.SIGNING_KEY);
     const two = await signJcs({ a: 1, b: 2 }, testEnv.SIGNING_KEY);
