@@ -1,0 +1,82 @@
+{
+  "checked_at": "2026-10-07T18:50:01.120767+00:00",
+  "pages": [
+    {
+      "url": "https://scvd.store/conformance",
+      "status": 200,
+      "final_url": "https://scvd.store/conformance",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 25961
+    },
+    {
+      "url": "https://scvd.store/try",
+      "status": 200,
+      "final_url": "https://scvd.store/try",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 54302
+    },
+    {
+      "url": "https://scvd.store/corpus",
+      "status": 200,
+      "final_url": "https://scvd.store/corpus",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 26264
+    },
+    {
+      "url": "https://scvd.store/corpus/brief",
+      "status": 200,
+      "final_url": "https://scvd.store/corpus/brief",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 22357
+    },
+    {
+      "url": "https://scvd.store/criteria",
+      "status": 200,
+      "final_url": "https://scvd.store/criteria",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 79939
+    },
+    {
+      "url": "https://scvd.store/bounties",
+      "status": 200,
+      "final_url": "https://scvd.store/bounties",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 42637
+    },
+    {
+      "url": "https://scvd.store/samples/once-over.json",
+      "status": 200,
+      "final_url": "https://scvd.store/samples/once-over.json",
+      "content_type": "application/json",
+      "bytes": 12995
+    },
+    {
+      "url": "https://scvd.store/samples/case-file.json",
+      "status": 200,
+      "final_url": "https://scvd.store/samples/case-file.json",
+      "content_type": "application/json",
+      "bytes": 5582
+    },
+    {
+      "url": "https://scvd.store/samples/settlement-attestation.json",
+      "status": 200,
+      "final_url": "https://scvd.store/samples/settlement-attestation.json",
+      "content_type": "application/json",
+      "bytes": 3466
+    },
+    {
+      "url": "https://scvd.store/samples/conformance-watch.json",
+      "status": 200,
+      "final_url": "https://scvd.store/samples/conformance-watch.json",
+      "content_type": "application/json",
+      "bytes": 3971
+    },
+    {
+      "url": "https://scvd.store/menu/aura_walk",
+      "status": 200,
+      "final_url": "https://scvd.store/menu/aura_walk",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 37294
+    }
+  ]
+}

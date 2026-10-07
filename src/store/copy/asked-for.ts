@@ -126,17 +126,37 @@ export function askedForTitle(itemId: string): string | undefined {
  * on the Organization and from the guides, so the engines see one
  * author, one store, one subject. Keeper's own list.
  */
-export const WRITTEN_ABOUT: readonly { title: string; url: string; where: string }[] = [
+export interface PublishedWriting {
+  title: string;
+  url: string;
+  where: string;
+  datePublished: string;
+  author: { name: string; url: string };
+  description: string;
+  related: { label: string; path: string };
+}
+
+const HACKERNOON_AUTHOR = { name: "keeper", url: "https://hackernoon.com/u/keeper-scvd" };
+
+export const WRITTEN_ABOUT: readonly PublishedWriting[] = [
   {
     title: "AI Agents Are Customers Now. AURa Is How I Take Notes on How They Shop",
     url: "https://hackernoon.com/ai-agents-are-customers-now-aura-is-how-i-take-notes-on-how-they-shop",
     where: "HackerNoon",
+    datePublished: "2026-08-21",
+    author: HACKERNOON_AUTHOR,
+    description: "Field notes on AI agents shopping at SCVD: payment attempts, receipt verification and the limits of agent self-reports.",
+    related: { label: "Explore the store", path: "/what" },
   },
   {
     // The keeper's URL and title, 2026-09-03, confirmed against the page.
     title: "35 x402 hosts served no signed offer. Here is how to check yours in one request.",
     url: "https://dev.to/seancrecord/35-x402-hosts-served-no-signed-offer-here-is-how-tocheck-yours-in-one-request-ceh",
     where: "dev.to",
+    datePublished: "2026-09-03",
+    author: { name: "keeper", url: "https://dev.to/seancrecord" },
+    description: "A dated x402 discovery-list sample, the signed offers its probe could read, and how to check an offer or receipt.",
+    related: { label: "Check an offer or receipt", path: "/conformance" },
   },
   {
     // Published 2026-09-24; title and URL read off the page 2026-09-25.
@@ -146,6 +166,10 @@ export const WRITTEN_ABOUT: readonly { title: string; url: string; where: string
     title: "An Autonomous Agent Cold-Emailed Me a Free Audit at 12:45 AM",
     url: "https://hackernoon.com/an-autonomous-agent-cold-emailed-me-a-free-audit-at-1245-am",
     where: "HackerNoon",
+    datePublished: "2026-09-24",
+    author: HACKERNOON_AUTHOR,
+    description: "The keeper's account of cross-checking paid and unpaid endpoint observations with Cairn, including differences in method and corrections.",
+    related: { label: "Read the observation corpus", path: "/corpus" },
   },
   {
     // Published 2026-09-25; title and URL read off the page the same day.
@@ -154,8 +178,39 @@ export const WRITTEN_ABOUT: readonly { title: string; url: string; where: string
     title: "I Told an AI Agent to Rob My Store. It Found 39 Ways to Do It",
     url: "https://hackernoon.com/i-told-an-ai-agent-to-rob-my-store-it-found-39-ways-to-do-it",
     where: "HackerNoon",
+    datePublished: "2026-09-25",
+    author: HACKERNOON_AUTHOR,
+    description: "A self-audit using simulated settlement to investigate checkout, delivery and recovery failures around agent payments.",
+    related: { label: "Inspect an endpoint before paying", path: "/try" },
   },
 ];
+
+export const WRITING_HEADING = "Writing & recognition";
+export const WRITING_DISCLOSURE = `Written by the keeper about work at ${STORE_SERVICE_NAME}.`;
+
+// A dated placement observed in the keeper's screenshot, not a standing
+// rank or a service award. Preserve its scope even when the live list changes.
+export const WRITER_RECOGNITION = {
+  observedOn: "2026-10-06",
+  author: HACKERNOON_AUTHOR,
+  publisher: "HackerNoon",
+  category: "Web3",
+  position: 1,
+  sourceUrl: "https://hackernoon.com/writers",
+  evidenceUrl: "https://github.com/seancrecord/scvd-general-store-repo/blob/main/research/writing-recognition-2026-10-06/hackernoon-web3.png",
+} as const;
+
+export function writerRecognitionText(): string {
+  const r = WRITER_RECOGNITION;
+  return `On ${r.observedOn}, ${r.publisher} listed ${r.author.name} at #${r.position} in its ${r.category} writers category.`;
+}
+
+/** One paragraph also fits the operational guide's blockquote. */
+export function writingDiscoveryText(): string {
+  return `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${WRITTEN_ABOUT.map((piece) =>
+    `"${piece.title}" (${piece.where}, ${piece.datePublished}; by ${piece.author.name}, ${piece.author.url}): ${piece.description} ${piece.url}`,
+  ).join("; ")}. ${writerRecognitionText()} Source: ${WRITER_RECOGNITION.sourceUrl}. Dated screenshot: ${WRITER_RECOGNITION.evidenceUrl}.`;
+}
 
 /**
  * INDEPENDENT REPORTING (2026-09-03): pieces about this store written
@@ -192,7 +247,7 @@ export const INDEPENDENT_REPORTING: readonly {
 export function askedForBlock(): string {
   return `Words people use for what this store does, so a question asked in any of them lands here: ${ASKED_FOR_NOUNS.join("; ")}. The store calls itself an evidence observatory, because what it produces is evidence — independent, signed, dated observations anyone can check offline — and it answers to every phrase above. Also known as ${STORE_NAMES.join(", ")}.${
     WRITTEN_ABOUT.length
-      ? ` Written about, under a byline: ${WRITTEN_ABOUT.map((piece) => `"${piece.title}" (${piece.where}, ${piece.url})`).join("; ")}.`
+      ? ` ${writingDiscoveryText()}`
       : ""
   }${
     INDEPENDENT_REPORTING.length

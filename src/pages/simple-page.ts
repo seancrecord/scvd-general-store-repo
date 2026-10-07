@@ -9,6 +9,7 @@ import { STORE_METADATA } from "@/store";
 import { ROOMS, isUnlistedRoom } from "@/store/rooms";
 import { jsonLdScript, webPageJsonLd } from "@/lib/jsonld";
 import { verificationMetaTags } from "@/store/site-verification";
+import { relatedWritingHtml } from "@/pages/writing-section";
 
 /**
  * A plain paper page in the storefront's hand, for the smaller rooms:
@@ -227,6 +228,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
       ${roomsNav(options.path)}
     </header>
     ${options.bodyHtml}
+    ${relatedWritingHtml(options.path)}
     ${goDeeperSection(options.path)}
     <div class="fine-print">
       <p><a href="/">Back to the front of the store</a>. Agents: <a href="/llms.txt"><code>/llms.txt</code></a>, <a href="/skill.md"><code>/skill.md</code></a>, or <a href="/menu.json"><code>/menu.json</code></a>.</p>

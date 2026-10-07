@@ -1195,8 +1195,10 @@ const BASE = "https://scvd.store";
 // 2026-10-06: scvd-defects source 0.22.0 changes only its derived package
 // label. Restoring only defects/package.json to 0.21.0 reproduced both
 // previous pins (14/14 tests); the intended version produces this pair.
+// 2026-10-07: dated keeper bylines and recognition in askedForBlock.
+// Restoring only askedForBlock to main reproduced both prior digests (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "521f7c15aad08cc390262b42f1602fdfaeca015978689900589dcc7549732e39";
+  "2918899797995a3658c129a33759d51422b693c427837d902a2c01feeffed6e0";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1299,7 +1301,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "e76a59aa9e039cd40da79cda5818ac45e4dcd17b4596f09d2a353284fa82e530",
+      "b6ad7df9f9cda92cfb657d1c2063edc2b23c6e8ebfb07d473b1586d968d9b2e2",
     );
   });
 
