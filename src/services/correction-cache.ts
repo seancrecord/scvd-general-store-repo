@@ -16,7 +16,7 @@ const CACHE_SLOTS = 1024;
 const CLEANUP_KEY = "internal/correction-page-cleanup.json";
 
 /** One bounded cleanup page per pass; its cursor survives failures/restarts. */
-async function pruneCache(bucket: R2Bucket, now: Date): Promise<{ cursor?: string }> {
+async function pruneCache(bucket: R2Bucket, now: Date): Promise<{ cursor?: string; knownPages?: Set<string> }> {
   const state = await r2ReadText(bucket, CLEANUP_KEY);
   const cursor = state === null ? undefined : (JSON.parse(state) as { cursor?: string }).cursor;
   const page = await bucket.list({ prefix: CACHE_PREFIX, limit: 1000,
@@ -26,7 +26,12 @@ async function pruneCache(bucket: R2Bucket, now: Date): Promise<{ cursor?: strin
     return Number.isFinite(expires) && expires <= now.getTime();
   }).map(object => object.key);
   if (expired.length) await bucket.delete(expired);
-  return { cursor: page.truncated ? page.cursor : undefined };
+  // Only a complete listing from the beginning can establish absence. A
+  // cleanup continuation is still partial even when it reaches the last page.
+  const removed = new Set(expired);
+  return { cursor: page.truncated ? page.cursor : undefined,
+    ...(!cursor && !page.truncated ? { knownPages: new Set(page.objects
+      .filter(object => !removed.has(object.key)).map(object => object.key)) } : {}) };
 }
 
 /** Only classification inputs; never payer, signature, note or other purchase data. */
@@ -64,7 +69,7 @@ export async function* cachedCorrectionPages(
   const cleanup = await pruneCache(env.CORPUS_R2, now);
   // Persist only after pruning succeeds. Keep the R2 binding explicit: this is
   // object storage, outside the KV per-key write-rate/retry contract.
-  await env.CORPUS_R2.put(CLEANUP_KEY, JSON.stringify(cleanup));
+  await env.CORPUS_R2.put(CLEANUP_KEY, JSON.stringify({ cursor: cleanup.cursor }));
   // One extra day covers the key-write/TTL boundary; actual list expiration
   // decides membership. No assumption that event.at equals the key timestamp.
   const prefixes = eventPrefixes(now.getTime() - (EVENT_TTL_SECONDS + 86400) * 1000,
@@ -84,7 +89,10 @@ export async function* cachedCorrectionPages(
       // Names and expiration, never the opaque list cursor. The full prefix is
       // in every name, so a rotated slot cannot reuse another slice's data.
       const digest = await sha256Hex(JSON.stringify(keys.map(k => [k.name, k.expiration ?? null])));
-      const raw = await r2ReadText(env.CORPUS_R2, cacheKey);
+      // Warm-up can have hundreds of missing pages. Reuse the cleanup's
+      // complete inventory instead of paying a storage round-trip per miss.
+      const raw = cleanup.knownPages && !cleanup.knownPages.has(cacheKey)
+        ? null : await r2ReadText(env.CORPUS_R2, cacheKey);
       const cached = raw === null ? null : JSON.parse(raw) as CachedPage;
       if (cached?.digest === digest && Array.isArray(cached.events)) {
         scan.cached_pages += 1;

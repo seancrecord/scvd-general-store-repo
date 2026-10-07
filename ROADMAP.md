@@ -102,8 +102,13 @@ typecheck and bundle checks pass. Full CI gates merge; no change to build order.
   resource failure received its own repair in #990, merged and deployed October 7;
   two live probes passed and a captured CPU sample fell from 2,672 ms to 523 ms.
   [Profile scope and verification limits](docs/PROFILE_READ_BUDGET_2026-10.md).
-- [ ] Release the hourly KV recount cost repair and measure its live read budget,
-  cache warm-up and billing impact. [Design and acceptance](docs/CORRECTION_READ_CACHE_2026-10.md).
+- [x] Recount cost repair #994 merged and deployed October 7; all required CI
+  passed. A live bounded pass saved its result at the 20,000-read cap, and the
+  public pulse exposes its incomplete warm-up status.
+- [ ] Finish cache warm-up and measure billing impact; resolve the hourly
+  duration failure (20:30 UTC ran for almost exactly 15 minutes). The follow-up
+  skips known-missing cache pages using the existing cleanup inventory.
+  [Design, release evidence and remaining acceptance](docs/CORRECTION_READ_CACHE_2026-10.md).
 
 ## October 5 — release verification
 
