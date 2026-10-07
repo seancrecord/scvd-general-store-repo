@@ -1,5 +1,56 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-07 — Personal Agent Protocol announcement
+
+Read the primary source, Sierra's
+[Introducing Personal Agent Protocol](https://sierra.ai/blog/introducing-personal-agent-protocol)
+(published 2026-10-06T17:32Z). Meta and Sierra, with Genesys, Instinct,
+Rocket, Shopify, Stripe and Walmart, are developing an open standard for how
+a consumer's personal agent interacts with a business. The post describes a
+session built on OAuth: the agent discovers the business on its website,
+opens a guest session, and the customer later grants read-only or write
+access to their account. The business routes the agent through its website,
+through APIs "built on standards such as MCP and OpenAPI", or through an
+agent of its own. A v0.1 specification, design workshops and a reference
+implementation are promised "later this month"; finer permissions, push
+notifications and a payments extension are named as possible later additions
+with no dates. No specification text, repository or reference implementation
+was published with the announcement, so every shape above is prose, not wire.
+
+Secondhand (rule 55): CMSWire and Unite.AI restate the post; a Superpower
+Daily summary attributes to Bret Taylor that OpenAI and Anthropic are not
+participating. None of that was confirmed from a primary source.
+
+Position taken from this read:
+
+- No authentication or protocol change. The store has no accounts, so the
+  consent-scoped account session the protocol exists for has nothing here to
+  scope. Every free instrument already answers a cold request, which is the
+  announcement's guest tier, and every paid instrument settles with x402 or
+  MPP at the moment of the call. The no-account position in
+  `src/store/agent-auth.ts` and the 2026-10-01 ruling above (OAuth
+  authorization-server metadata is not a missing login feature) both stand.
+  `/auth.md` and the protocol list at `/developers` are unchanged; the store
+  does not claim a protocol it does not speak, and this one has no text yet.
+- The pending [Muse connector submission](../research/muse-connector-2026-09-19.md)
+  is the one in-flight item this touches: Muse is Meta's personal agent and
+  this is Meta's standard for how it reaches businesses. The submitted scope
+  (five free verification tools, no auth) fits the guest tier as described.
+  Re-read the connector terms against the v0.1 text before claiming fit.
+- Observatory interest, not merchant interest. Once businesses expose these
+  sessions, "the agent was scoped read-only" and "the session carried across
+  channels" become checkable artifacts; that is conformance-desk territory
+  after a specification and a first implementation exist, not before. The
+  protocol screen gains a row when a repository with merges exists to read.
+- The spec watch carries `personal-agent-protocol` with the blog post as its
+  source, to be replaced by the specification URL when one exists. The v0.1
+  publication is the re-read trigger, not the ninety-day clock.
+
+Limits: one blog post and three restatements read; no specification, no
+repository, no partner documentation beyond the quotes in the post. Nothing
+about Stripe's role in the payments extension, or any relation to MPP, was
+stated anywhere read; the overlap is conjecture and is not recorded as a fact.
+
 ## 2026-10-06 — durable artifact pages and discovery
 
 Read Google's [sitemap guidance](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)

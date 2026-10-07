@@ -13,6 +13,7 @@ import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { r2ReadText } from "@/lib/r2-read";
+import { readOnceInScope } from "@/lib/read-scope";
 import type { OtsAnchor } from "@/services/anchor-log";
 import type { CorpusSnapshot } from "@/services/corpus";
 import type { Env } from "@/types";
@@ -229,9 +230,9 @@ async function resolveAll(env: Env, pointers: CorpusPointers): Promise<CorpusRec
   return records;
 }
 
-export async function listCorpus(env: Env): Promise<CorpusRecord[]> {
+export const listCorpus = readOnceInScope(async (env: Env): Promise<CorpusRecord[]> => {
   return resolveAll(env, await listPointers(env));
-}
+});
 
 /**
  * The fingerprint of a chain already in hand, from the records'

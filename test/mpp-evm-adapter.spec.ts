@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { Challenge, Credential, Receipt } from "mppx";
 import { Fetch } from "mppx/client";
 import { charge } from "mppx/evm/client";
+import { keccak256, stringToBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { PaymentRequirements, SettleResponse } from "@x402/core/types";
 import { createMppEvmAdapter, MppSettlementEvidenceUnavailable, type MppEvmTerms } from "@/lib/mpp-evm-adapter";
@@ -91,6 +92,51 @@ for (const field of ["nonce", "from", "to", "value", "source", "signature", "typ
     expect(f.config.verify).not.toHaveBeenCalled();
   });
 }
+
+it("binds the authorization nonce to keccak256 of the JSON pair [id, realm], and refuses the 0.10 concatenation", async () => {
+  /*
+   * mppx 0.13.0 changed how the challenge hash that becomes the EIP-3009
+   * nonce frames its input: keccak256 over the UTF-8 bytes of
+   * JSON.stringify([id, realm]) instead of `${id}${realm}`. Client and
+   * server both check it, so a door and a client on different sides of
+   * that line cannot settle with each other. This pins the framing the
+   * door expects, so the next change arrives as a red test rather than
+   * as refused buyers. The second half re-signs the SAME authorization
+   * under the old framing with the buyer's own key: a correctly signed
+   * credential, refused on the nonce alone, before any facilitator call.
+   * The control re-signs under the current framing to prove the typed
+   * data here is the one the SDK signs, so the refusal is the nonce.
+   */
+  const f = await fixture();
+  type Authorization = { from: `0x${string}`; to: `0x${string}`; value: string; validAfter: string; validBefore: string; nonce: `0x${string}`; signature: `0x${string}` };
+  const credential = Credential.deserialize<Authorization>(f.header);
+  const { id, realm } = credential.challenge;
+  const currency = credential.challenge.request.currency as `0x${string}`;
+  const framed = keccak256(stringToBytes(JSON.stringify([id, realm])));
+  const concatenated = keccak256(stringToBytes(`${id}${realm}`));
+  expect(framed).not.toBe(concatenated);
+  expect(credential.payload.nonce).toBe(framed);
+
+  const resign = async (nonce: `0x${string}`) => {
+    const p = credential.payload;
+    p.nonce = nonce;
+    p.signature = await buyer.signTypedData({
+      domain: { name: "USD Coin", version: "2", chainId: 8453, verifyingContract: currency },
+      types: { TransferWithAuthorization: [
+        { name: "from", type: "address" }, { name: "to", type: "address" }, { name: "value", type: "uint256" },
+        { name: "validAfter", type: "uint256" }, { name: "validBefore", type: "uint256" }, { name: "nonce", type: "bytes32" },
+      ] },
+      primaryType: "TransferWithAuthorization",
+      message: { from: p.from, to: p.to, value: BigInt(p.value),
+        validAfter: BigInt(p.validAfter), validBefore: BigInt(p.validBefore), nonce },
+    });
+    return Credential.serialize(credential);
+  };
+  await expect(f.adapter.validate(await resign(framed))).resolves.toBeDefined();
+  expect(f.config.verify).toHaveBeenCalledTimes(1);
+  await expect(f.adapter.validate(await resign(concatenated))).rejects.toBeDefined();
+  expect(f.config.verify).toHaveBeenCalledTimes(1);
+});
 
 it("binds valid server-issued challenges to the exact route, inputs, purchase key and terms", async () => {
   const f = await fixture();
