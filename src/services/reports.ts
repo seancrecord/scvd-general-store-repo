@@ -46,6 +46,28 @@ export function getReport(id: string): { meta: typeof REPORT_META; body: string 
   return REPORTS[id] ?? null;
 }
 
+/** The page gained withdrawal metadata and evidence navigation on this date. */
+export const REPORT_PAGE_UPDATED = "2026-10-06";
+
+/** Publication metadata lives outside the signed original, including withdrawals. */
+export function reportCatalog() {
+  return reportIds().map(id => {
+    const { meta } = REPORTS[id]!;
+    const withdrawn = meta.withdrawn ?? null;
+    return {
+      id, path: `/api/report/${id}`,
+      title: `${withdrawn ? "Withdrawn — " : ""}${meta.title}`,
+      published: meta.published,
+      modified: withdrawn?.at ?? meta.published,
+      page_modified: [REPORT_PAGE_UPDATED, withdrawn?.at ?? meta.published].sort().at(-1)!,
+      withdrawn,
+      description: withdrawn
+        ? `Withdrawn ${withdrawn.at}. ${meta.title}. Original signed report retained with the withdrawal, evidence and verification instructions.`
+        : `${meta.title}. Published ${meta.published}. Free signed research report with its evidence and verification instructions.`,
+    };
+  });
+}
+
 async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest(
     "SHA-256",

@@ -1,0 +1,23 @@
+{
+  "registry": "huggingface-space",
+  "space": "keeper-scvd/scvd-x402-verifier",
+  "url": "https://keeper-scvd-scvd-x402-verifier.hf.space/gradio_api/mcp/schema",
+  "checked_at": "2026-10-05T20:47:00Z",
+  "how": "GET through an outside fetcher (the hf.space host refuses this build's egress); the Hub API reported runtime.stage RUNNING on hardware zero-a10g at 20:45:28Z",
+  "status": 200,
+  "tools": [
+    "preflight_x402_endpoint",
+    "verify_x402_receipt",
+    "lookup_endpoint_readiness",
+    "get_defect_definition",
+    "verify_scvd_artifact"
+  ],
+  "tool_names_as_published": [
+    "scvd_x402_verifier_preflight_x402_endpoint",
+    "scvd_x402_verifier_verify_x402_receipt",
+    "scvd_x402_verifier_lookup_endpoint_readiness",
+    "scvd_x402_verifier_get_defect_definition",
+    "scvd_x402_verifier_verify_scvd_artifact"
+  ],
+  "note": "Gradio prefixes each tool with the Space's slug. Its generated inputSchema marks every parameter required, including the optional kind and public_key_hex on verify_x402_receipt and the optional id on get_defect_definition; the Space's verifier.py omits blank values before calling the door, so an empty string still reads as absent. A client that refuses to send an empty string for a required field will have to send one; noted, not fixed, because the five names and their purposes are the record."
+}

@@ -47,7 +47,11 @@ import { signMessage } from "@/lib/signing";
  * omitted, never null). But a non-finite number (NaN, Infinity) throws
  * instead of becoming null: a signature over "null" where a number was
  * meant is a signature over a lie, and no artifact this store mints
- * should ever contain one.
+ * should ever contain one. The same rule covers any object that is not
+ * plain data (a Date, a URL, a boxed primitive, a Map, a Set, a typed
+ * array, since 2026-10-06): the input must already BE JSON data —
+ * timestamps arrive as ISO strings — and anything else throws rather
+ * than being coerced on the way into a signature.
  */
 
 /** The day dual-emit began; artifacts minted earlier carry no JCS signature. */
@@ -73,17 +77,38 @@ export function jcsCanonicalize(value: unknown): string {
     return JSON.stringify(value);
   }
   if (Array.isArray(value)) {
-    return `[${value
-      .map((entry) =>
-        // Inside arrays JSON puts null where stringify would; RFC 8785
-        // inherits that (arrays keep their positions).
+    // Indexed, not map/join: map() skips a hole and join() renders it
+    // as nothing, so a sparse array came out "[1,,3]" — not JSON, and
+    // bytes no other RFC 8785 implementation can reproduce (found
+    // 2026-10-06; no caller had ever passed one). Inside arrays JSON
+    // puts null where stringify would, holes included; RFC 8785
+    // inherits that (arrays keep their positions).
+    const members: string[] = [];
+    for (let index = 0; index < value.length; index += 1) {
+      const entry = value[index];
+      members.push(
         entry === undefined || typeof entry === "function" || typeof entry === "symbol"
           ? "null"
           : jcsCanonicalize(entry),
-      )
-      .join(",")}]`;
+      );
+    }
+    return `[${members.join(",")}]`;
   }
   if (typeof value === "object") {
+    // Plain data only. A Date, a URL, a boxed primitive, a Map, a Set, a
+    // typed array: Object.keys sees nothing (or the wrong thing) on any
+    // of them, and this branch used to sign "{}" where the primary
+    // signature's serializer, JSON.stringify, honours toJSON and writes
+    // the ISO string — two signatures over different bytes, on a path
+    // typed Record<string, unknown> where the compiler cannot see it
+    // (found 2026-10-06; no caller had ever passed one). RFC 8785 is
+    // defined over JSON data, so a value that is not already JSON data
+    // is refused here, the same way a non-finite number is, rather
+    // than coerced on the way into a signature.
+    const prototype: unknown = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      throw new Error("jcs: cannot canonicalize a non-plain object (Date, URL, boxed primitive, Map, Set, typed array); pass JSON data");
+    }
     const record = value as Record<string, unknown>;
     // Default sort() compares UTF-16 code units — RFC 8785's exact rule.
     const keys = Object.keys(record).sort();

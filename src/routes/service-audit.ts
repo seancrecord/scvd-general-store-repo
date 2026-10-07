@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { getServiceAudit } from "@/services/service-audit";
+import { wantsHtml } from "@/pages/simple-page";
+import { serviceAuditPage } from "@/pages/service-audit-page";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -22,7 +24,7 @@ serviceAuditRoutes.get("/api/service-audit/:audit_id", async (c) => {
       404,
     );
   }
-  return c.json({
+  const document = {
     ...record,
     badge_url: `${c.env.STORE_BASE_URL}/badges/audit/${record.audit.audit_id}.svg`,
     how_to_verify: [
@@ -32,5 +34,9 @@ serviceAuditRoutes.get("/api/service-audit/:audit_id", async (c) => {
     ],
     what_this_is_not:
       "A dated observation of what one endpoint answered at one moment, against published criteria. Not an endorsement, not an uptime claim, and not a score on whoever runs the endpoint — rule of the house: we verify artifacts, we do not rate actors. The badge_url above renders this same dated observation as an embeddable label and nothing more; it ages, and it is never revoked (see /criteria).",
-  });
+  };
+  if (c.req.query("format") !== "json" && wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+    return c.html(serviceAuditPage(record, document.how_to_verify, c.env.STORE_BASE_URL));
+  }
+  return c.json(document);
 });

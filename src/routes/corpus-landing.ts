@@ -7,6 +7,9 @@ import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { deriveWalletFacts, type WalletFacts } from "@/services/operator-facts";
 import { listCorpus } from "@/services/corpus";
+import { reportCatalog } from "@/services/reports";
+import { sendAlert } from "@/lib/alerts";
+import { R2ReadUnavailable } from "@/lib/r2-read";
 import type { HonoEnv } from "@/types";
 import { NEVER_A_RANKING_SENTENCE } from "@/store/copy/doctrine";
 import {
@@ -46,6 +49,7 @@ function landingJson(base: string) {
     every_door_listed: `${base}/doors.json`,
     per_host: `${base}/corpus/host/{host}.json`,
     weekly_brief: `${base}/corpus/brief`,
+    reports: reportCatalog().map(report => ({ ...report, url: `${base}${report.path}` })),
     as_time: `${base}/corpus/trajectory.json`,
     since_diff: `${base}/corpus/diff.json?since={week}`,
     latest: `${base}/corpus/latest.json`,
@@ -122,7 +126,7 @@ function corpusDatasetJsonLd(base: string): string {
  * yet it says what it can without inventing a figure — the same
  * contract every other derived surface here keeps.
  */
-function landingHtml(base: string, facts: WalletFacts | null): string {
+function landingHtml(base: string, facts: WalletFacts | null | undefined): string {
   return `<section>
       <p class="menu-desc"><strong>Weekly signed observations of the x402 ecosystem. Hash-chained. Bitcoin-anchored. Free to read.</strong></p>
       <p class="menu-desc">Once a week this store walks the public x402 discovery list and freezes what it saw: which hosts were listed, which answered, and what a single conformance probe found at that moment. Each snapshot is ed25519-signed, chained to the one before it by hash, and its digest is submitted to OpenTimestamps for anchoring into Bitcoin — so the record provably existed when we say it did, on evidence this store does not control.</p>
@@ -133,6 +137,10 @@ function landingHtml(base: string, facts: WalletFacts | null): string {
       <p class="menu-desc">${escapeHtml(CENSUS_FINDING)}</p>
       <p class="menu-desc">${escapeHtml(CENSUS_WHY_IT_MATTERS)}</p>
       <p class="menu-desc">The rounds since then track the same population week over week: newly failing hosts, newly fixed ones, flappers, and hosts leaving or rejoining the discovery list — with every coverage caveat recorded inside the round it applies to.</p>
+    </section>
+    <section>
+      <h2>Published research reports</h2>
+      <ul>${reportCatalog().map(report => `<li><a href="${escapeHtml(report.path)}">${escapeHtml(report.title)}</a> — published ${escapeHtml(report.published)}${report.withdrawn ? `. Withdrawn ${escapeHtml(report.withdrawn.at)}; retained for the record, not a current finding` : ""}.</li>`).join("\n")}</ul>
     </section>
     <section>
       <h2>Reading it</h2>
@@ -147,7 +155,9 @@ function landingHtml(base: string, facts: WalletFacts | null): string {
       <p class="menu-desc">Wallet facts, counted and never judged: <a href="/corpus/wallet-facts.json"><code>/corpus/wallet-facts.json</code></a> says how many receiving addresses the week's doors advertised and how many receive at more than one door — counts only, no names, no addresses, and never an operator claim.${
         facts
           ? ` <strong>This week: ${facts.distinct_addresses} distinct receiving addresses across ${facts.hosts_with_pay_to} doors that advertised one, ${facts.addresses_at_multiple_doors} of them receiving at more than one door, and the largest single cluster fronting ${facts.largest_cluster_doors}.</strong> Those figures move every Sunday and are read from the latest signed week as this page was served, not typed into it.`
-          : " The chain holds no signed week yet, so there is nothing to count over — this sentence fills with the first ward round rather than quoting a number we do not have."
+          : facts === undefined
+            ? " Wallet facts could not be read. No counts are shown."
+            : " The chain holds no signed week yet, so there is nothing to count over — this sentence fills with the first ward round rather than quoting a number we do not have."
       } Each door's own page carries its <code>payment_address</code> fact. Custodial and platform wallets make unrelated doors share one address; the observation is served, the inference is yours.</p>
       <p class="menu-desc">And the subject gets a voice: an operator who proves control of a door or a wallet can attach a standing note at <a href="/api/standing-note"><code>/api/standing-note</code></a> — their dated statement, riding beside our observation on every surface that shows it. Beside, never instead.</p>
       <p class="menu-desc">Cite it as a dataset: DOI <a href="${CORPUS_DATASET_DOI_URL}"><code>${CORPUS_DATASET_DOI}</code></a> (Zenodo; the same files, a new version each signed round; CC BY 4.0). The same files are on <a href="${CORPUS_DATASET_HUGGINGFACE_URL}">Hugging Face</a>.</p>
@@ -194,9 +204,19 @@ corpusLandingRoutes.get("/corpus", async (c) => {
      * sentence — the corpus index is how a reader reaches everything
      * else here.
      */
-    const facts = await deriveWalletFacts(await listCorpus(c.env)).catch(
-      () => null,
-    );
+    let facts: WalletFacts | null | undefined;
+    try {
+      facts = await deriveWalletFacts(await listCorpus(c.env));
+    } catch (error) {
+      // Catch the storage read as well as the derivation. Unreadable is
+      // not empty; preserve the failure while leaving the index usable.
+      c.executionCtx.waitUntil(sendAlert(c.env, {
+        condition: "worker_health",
+        key: "corpus-wallet-facts-unavailable",
+        emailGroup: error instanceof R2ReadUnavailable ? "r2_read_unavailable" : undefined,
+        detail: "The corpus index could not read wallet facts. The index is available without counts; the archive reading needs attention.",
+      }));
+    }
     return c.html(
       renderSimplePage({
         title: "The corpus",

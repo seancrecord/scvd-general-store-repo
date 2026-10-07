@@ -39,6 +39,23 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 6 — artifact discovery
+
+**Artifact discovery, local follow-through October 6:** Once-Over reports now
+have readable dated pages at their existing URLs; published research gains
+corpus-hub and sitemap links, with withdrawals visible in search metadata.
+Signed bytes and default JSON are preserved. [Scope and validation](docs/ARTIFACT_DISCOVERY_2026-10.md).
+Release prepared on an isolated branch from current main; 121 focused checks,
+typecheck and bundle checks pass. Full CI gates merge; no change to build order.
+
+## October 5 — R2 read failures
+
+- [x] Prepare the keeper-requested local repair: bounded transient R2 read retries,
+  an honest corpus-index fallback, and shared email windows with per-route alarm
+  records preserved. [Scope and validation](docs/R2_READ_RESILIENCE_2026-10.md).
+- [ ] Release this isolated repair through a PR, pass all required CI shards,
+  and verify production. The local patch does not establish live recovery.
+
 ## October 5 — release verification
 
 S8 #975 and L13 #972 merged October 2 with all required checks green; both

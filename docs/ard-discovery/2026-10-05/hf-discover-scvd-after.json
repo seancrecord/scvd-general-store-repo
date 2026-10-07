@@ -1,0 +1,14 @@
+{
+  "registry": "huggingface",
+  "url": "https://huggingface-hf-discover.hf.space/search",
+  "request": {
+    "query": { "text": "scvd" },
+    "pageSize": 10,
+    "federation": "none"
+  },
+  "checked_at": "2026-10-05T21:05:00Z",
+  "how": "the keeper's curl from his own machine, pasted; this build's egress refuses the host",
+  "status": 200,
+  "body": { "results": [] },
+  "context": "keeper-scvd/scvd-x402-verifier had been RUNNING on ZeroGPU, tagged mcp-server, for about twenty minutes. A zero this soon is the index not having walked the new Space yet, not a refusal; re-read 2026-10-12."
+}
