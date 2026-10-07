@@ -1312,14 +1312,15 @@ const worker: ExportedHandler<Env> = {
      * /admin/recount has to stop at a cap because a page that times out
      * is worse than one that says how far it got — which makes its
      * figure a window, not a month. Nothing renders here, so this walk
-     * reads every row and the published correction is a real month
-     * total. It recurs because the crawler table keeps gaining entries
+     * lists retained rows and reuses cached inputs for unchanged pages.
+     * A bounded value-read budget warms the cache across invocations; only
+     * a complete pass can publish a month correction. It recurs because the crawler table keeps gaining entries
      * and every entry retroactively changes what old rows mean; a
      * correction computed once is a correction with an expiry date
      * nobody wrote down.
      */
     ctx.waitUntil(
-      recomputeCorrections(env).then(
+      recomputeCorrections(env, new Date(), { cache: true }).then(
         () => undefined,
         (error) =>
           sendAlert(env, {

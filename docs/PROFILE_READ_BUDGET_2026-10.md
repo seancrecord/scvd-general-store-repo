@@ -23,5 +23,11 @@ fix makes both new read-budget assertions fail (four archive reads instead
 of one, and four instead of zero for an expired-only index). The next-request
 freshness control passes both ways. Full CI remains the merge gate.
 
-Deployment and a new live resource sample are still required. A short clean
-sample cannot prove that an intermittent resource failure is eliminated.
+PR #990 merged October 7 at 18:30:28 UTC after all four test shards and
+required checks passed (merge `384978f8da37c63cb041f3152ead8cf6c528eeee`).
+Production version `0753c380-44f0-4241-84ef-54e85b88d03c` deployed at
+18:31:05 UTC. Two subsequent probes returned 200; the captured request used
+523 ms CPU and 1,680 ms wall time, outcome `ok`, no exception. That CPU sample
+is about 80% below the earlier 2,672 ms sample. These were separate live
+requests, not a controlled benchmark. A short clean sample cannot prove that
+an intermittent resource failure is eliminated.

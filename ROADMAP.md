@@ -53,8 +53,13 @@ typecheck and bundle checks pass. Full CI gates merge; no change to build order.
 - [x] Prepare the keeper-requested local repair: bounded transient R2 read retries,
   an honest corpus-index fallback, and shared email windows with per-route alarm
   records preserved. [Scope and validation](docs/R2_READ_RESILIENCE_2026-10.md).
-- [ ] Release this isolated repair through a PR, pass all required CI shards,
-  and verify production. The local patch does not establish live recovery.
+- [x] R2 repair #977 merged and deployed October 6 after all required checks.
+  Live corpus, ledger, host and feed probes passed. The remaining `/profiles`
+  resource failure received its own repair in #990, merged and deployed October 7;
+  two live probes passed and a captured CPU sample fell from 2,672 ms to 523 ms.
+  [Profile scope and verification limits](docs/PROFILE_READ_BUDGET_2026-10.md).
+- [ ] Release the hourly KV recount cost repair and measure its live read budget,
+  cache warm-up and billing impact. [Design and acceptance](docs/CORRECTION_READ_CACHE_2026-10.md).
 
 ## October 5 — release verification
 

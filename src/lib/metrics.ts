@@ -1,3 +1,4 @@
+import { EVENT_TTL_SECONDS } from "@/lib/event-range";
 import { SETTLEMENT_ACCOUNTING } from "@/lib/settlement-accounting";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import { ARBITRUM_NETWORK, WORLD_NETWORK } from "@/lib/payment-networks";
@@ -108,7 +109,7 @@ const PAYER_KEY_CAP = 5000;
  * chaos at this counter's line speed.
  */
 
-const EVENT_TTL_SECONDS = 90 * 86400;
+
 
 export function metricsMonth(date: Date = new Date()): string {
   return date.toISOString().slice(0, 7);
