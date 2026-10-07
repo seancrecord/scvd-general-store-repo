@@ -73,3 +73,15 @@ with the code so its public evidence link resolves on main.
 This is an implementation and measurement record, not evidence of search gains.
 Search Console access to the property was unavailable in the preceding audit.
 No recrawl, indexing, AI citation, traffic lift or conversion effect is claimed.
+
+## Release handoff, October 7
+
+[PR #993](https://github.com/seancrecord/scvd-general-store-repo/pull/993) contains
+only this task's changes. The GitHub connector cannot create PRs with its current
+permissions and the CLI login returned 401; the signed-in browser created the PR.
+A normal merge commit is configured after the required checks pass.
+
+The browser blocked access to `/admin/referrals` (`ERR_BLOCKED_BY_CLIENT`). No
+private analytics baseline was retrieved. The measurement plan records existing
+counters and their limitations; future results must be read from an accessible
+admin session and the owner's Search Console property.
