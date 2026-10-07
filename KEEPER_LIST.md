@@ -36,6 +36,14 @@ build, it is on the roadmap.
   official MPP PR closed because intake moved here; no second registration
   is needed. [Exact target and limits](research/distribution-2026-10-07/README.md).
 
+- **Python public-route access — fixed October 7, broader scope approved.**
+  Browser Integrity Check is disabled on `scvd.store` except `/admin` paths.
+  Real Python reads the homepage, discovery documents and MCP catalogue;
+  unpaid checkout still returns a valid 402. Admin and credential-probe
+  controls retain their prior responses. No regression in those checks;
+  longer-term traffic/cost effects are unmeasured. No further approval is
+  pending. [Rule, evidence and scope](docs/PYTHON_CLIENT_ACCESS_2026-10.md).
+
 - **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
   authenticated checks for now. The L13 code and public reader are released;
   `/admin/market/inflows` still needs its first current authorization-pairing

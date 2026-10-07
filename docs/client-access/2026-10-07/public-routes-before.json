@@ -1,0 +1,65 @@
+{
+  "taken_at": "2026-10-07T16:29:55.210635+00:00",
+  "rows": [
+    {
+      "path": "/",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 403,
+      "ray": "a46e4988ca5fc5e7-EWR",
+      "content_type": "text/plain; charset=UTF-8",
+      "bytes": 17,
+      "body_excerpt": "error code: 1010\n"
+    },
+    {
+      "path": "/mcp",
+      "method": "POST",
+      "ua": "Python-urllib/3.13",
+      "status": 403,
+      "ray": "a46e49892f11c991-IAD",
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 700,
+      "body_excerpt": "{\"type\":\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/\",\"title\":\"Error 1010: Access d"
+    },
+    {
+      "path": "/admin",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 403,
+      "ray": "a46e498999429a1a-EWR",
+      "content_type": "text/plain; charset=UTF-8",
+      "bytes": 17,
+      "body_excerpt": "error code: 1010\n"
+    },
+    {
+      "path": "/admin",
+      "method": "GET",
+      "ua": "node",
+      "status": 401,
+      "ray": "a46e498a1c6dce96-EWR",
+      "content_type": "text/plain;charset=UTF-8",
+      "bytes": 12,
+      "body_excerpt": "Unauthorized"
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 403,
+      "ray": "a46e4993786c174d-IAD",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 4571,
+      "body_excerpt": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US"
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "ua": "node",
+      "status": 403,
+      "ray": "a46e49940e8bde6d-EWR",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 4571,
+      "body_excerpt": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US"
+    }
+  ]
+}

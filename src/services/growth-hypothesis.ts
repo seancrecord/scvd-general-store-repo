@@ -148,6 +148,8 @@ export interface HypothesisSide {
 }
 
 export interface GrowthHypothesis {
+  /** False until the UTC calendar month closes; counts remain month to date. */
+  month_complete: boolean;
   /** The market this month, and ours. */
   now: HypothesisSide;
   /** The month before, when there is one to compare against. */
@@ -181,7 +183,7 @@ export const DOOR_RATIO_NOTE =
   "Declines against settles, per month. It falls when buyers get better at paying, when WE fix a door of our own, when a noisy scanner stops or is reclassified, and when fewer agents try at all. This series cannot tell those apart: the stage split that can — input, payment, settlement — is on the funnel, and only for its scanned window. Read a fall beside the month's releases before reading it as the market learning.";
 
 export const MARKET_NOTE =
-  "The market is the signed corpus's closing week for the month: doors a directory listed, and how many of them were payable when the round knocked. A census of a directory is a floor on the market and never the market itself — doors nobody lists are doors nobody here can count, and their number is unknown rather than zero.";
+  "The market is the signed corpus's latest available week in each month, the closing week once the month ends: doors a directory listed, and how many of them were payable when the round knocked. A census of a directory is a floor on the market and never the market itself — doors nobody lists are doors nobody here can count, and their number is unknown rather than zero.";
 
 /** Did a count rise, fall, or hold? Null when either side is unmeasured. */
 function moved(now: number | null, before: number | null): number | null {
@@ -190,6 +192,7 @@ function moved(now: number | null, before: number | null): number | null {
 }
 
 export function deriveHypothesis(input: {
+  monthComplete: boolean;
   now: HypothesisSide;
   before: HypothesisSide | null;
   declines: number;
@@ -204,7 +207,12 @@ export function deriveHypothesis(input: {
 
   let reading: string;
   let againstUs = false;
-  if (!now.market) {
+  if (!input.monthComplete) {
+    // A running month's total cannot refute (or confirm) a claim
+    // against the previous month's complete total.
+    reading = "Month to date: counts are still accumulating. No verdict until the month closes.";
+    if (!now.market) reading += " Market not measured: no signed week.";
+  } else if (!now.market) {
     // Short on purpose: this one repeats across every unmeasured
     // column, and a paragraph per cell buries the months that DO read.
     reading = "Not measured: no signed week. Not a flat market — an unread one.";
@@ -224,6 +232,7 @@ export function deriveHypothesis(input: {
   }
 
   return {
+    month_complete: input.monthComplete,
     now,
     before,
     reading,

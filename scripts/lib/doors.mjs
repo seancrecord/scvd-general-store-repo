@@ -39,6 +39,8 @@
  * nothing in CI depends on production being up to be correct.
  */
 
+import { readClientAccess } from "./client-access.mjs";
+
 /** How long a door's design assumptions stand before a human re-reads them. */
 export const REVIEW_EVERY_DAYS = 90;
 
@@ -344,6 +346,12 @@ export const DOORS = [
       },
     ],
     criteria: [
+      {
+        id: "plain_http_clients",
+        asks: "Can ordinary HTTP user-agents read the discovery document?",
+        how: "curl -i -A Python-urllib/3.11 https://scvd.store/llms.txt; npm run doors:check -- --clients-only",
+        read(snap) { return readClientAccess(snap.clientAccess); },
+      },
       {
         id: "openapi_served",
         asks: "Is there a machine-readable description of every HTTP door?",
