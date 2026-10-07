@@ -216,6 +216,9 @@ named human. Your operator can read every receipt.
 
 ## At the counter
 
+${EVIDENCE_PILOT.name}: ${base}${EVIDENCE_PILOT.path}.
+${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
+
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
 \`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
 works whether or not you bought the thing. A live one to try right
@@ -355,7 +358,6 @@ a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
 
 For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
-${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
 
 For anyone who runs a door: ${base}/operators is the shelf from your
 side, in the order a launch happens — before you launch, the week you

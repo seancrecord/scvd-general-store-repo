@@ -1196,9 +1196,10 @@ const BASE = "https://scvd.store";
 // label. Restoring only defects/package.json to 0.21.0 reproduced both
 // previous pins (14/14 tests); the intended version produces this pair.
 // 2026-10-07: bounded Attestation pilot paragraph. Removing only that paragraph
-// reproduced both current main pins (14/14); the combined guide yields these pins.
+// reproduced both current main pins (14/14). The full offer now lives at the
+// counter section, with a short pointer in the index to preserve its reading budget.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "0c0059726da30f7d2dd16f01751ce8712b3697e5435b1c9285ed3c0525079ba0";
+  "fd9bcd94c97615b6cc9d2396c3f92cd18888be80e02f689afc5eb0be2f594fe2";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1301,7 +1302,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "4910b072e38387e7c515f349c4684f4e635d7a4c02db55ca59f88846974d8dba",
+      "48c8a3ec59815184e6a8768934629a77855c3b7ef793b29d5d7a8c580298d6f7",
     );
   });
 

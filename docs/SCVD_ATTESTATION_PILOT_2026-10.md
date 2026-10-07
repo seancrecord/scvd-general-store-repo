@@ -120,6 +120,12 @@ rule 9 rather than introducing an ongoing payment relationship.
 
 ## Validation record, October 7
 
+PR #996 initially caught missing response schemas, an over-budget agent index
+and omitted porch counters. Concrete response schemas, a short index pointer
+with the full offer in the counter guide, and bounded pilot read counters address
+those failures. The existing schema, reading-budget and route-inventory guards
+remain unchanged.
+
 - The JCS input regression failed on the original canonicalizer (11 cases), then
   passed with the existing signing tests. The end-of-term watch check also failed
   before the inclusive stop-boundary repair. The new page acceptance check first
