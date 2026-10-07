@@ -930,3 +930,11 @@ cover source and package installation.
 [Ed25519 and ML-DSA-65: signature size and local signing measurements](docs/PQ_MEASUREMENT_2026-09.md)
 publishes the retained September 11 experiment, raw records, reproduction
 instructions and limits. Production checkpoint issuance is parked.
+
+### SCVD Attestation pilot
+
+A human-requested, bounded evidence engagement for one public x402 endpoint:
+daily observations and a signed report for a customer or internal review.
+The offer, operating steps and scope limits are in
+[the pilot runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+This is endpoint evidence, with no AI-decision compliance certification claim.

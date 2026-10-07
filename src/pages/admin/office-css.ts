@@ -169,12 +169,12 @@ section {
    the page. */
 @media (max-width: 600px) {
   section { padding: 1.1rem 1rem; }
-  input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+  input[type="text"], input[type="url"], textarea { width: 100%; box-sizing: border-box; }
   textarea { min-height: 4.5rem; }
   form[style*="inline"] button, button { margin: 0.15rem 0.25rem 0.15rem 0; }
   li { overflow-wrap: anywhere; }
 }
-input[type="text"], textarea { max-width: 100%; box-sizing: border-box; }
+input[type="text"], input[type="url"], textarea { max-width: 100%; box-sizing: border-box; }
 .table-rail { overflow-x: auto; }
 @media (max-width: 600px) {
   table { display: block; overflow-x: auto; white-space: nowrap; }
@@ -245,7 +245,7 @@ pre {
 pre code { background: none; border: 0; padding: 0; }
 
 /* The levers. A study's fittings, not a dashboard's. */
-input[type=text], input[type=number], input[type=password], textarea, select {
+input[type=text], input[type=url], input[type=number], input[type=password], textarea, select {
   width: 100%;
   max-width: 520px;
   background: var(--walnut-lift);

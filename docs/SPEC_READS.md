@@ -2846,6 +2846,15 @@ Source hashes, validation and release limits: [PS6 record](../research/endpoint-
 and [implementation](ENDPOINT_INSPECTION_2026-09-28.md). Buyer/model qualification
 was excluded by keeper direction.
 
+## 2026-10-07 — JCS input boundary
+
+RFC 8785 sections 3.1 and 3.2.2.2 read October 6 for the pilot prerequisite:
+<https://www.rfc-editor.org/rfc/rfc8785.html>. Inputs must be adapted to I-JSON;
+lone surrogates must terminate canonicalization. The local canonicalizer accepted
+invalid Unicode and mishandled native JavaScript values; regression tests now
+pin its explicit input contract. Valid JSON preimages remain unchanged. Gaps:
+no inventory of historical issued artifacts containing invalid Unicode; no claim
+of production exploitation. [Implementation scope](SCVD_ATTESTATION_PILOT_2026-10.md).
 ### 2026-09-30 — reporting discovery and structured-data review
 
 Read Google's [structured-data introduction](https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data),

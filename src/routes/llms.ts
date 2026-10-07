@@ -1,3 +1,4 @@
+import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
@@ -215,6 +216,9 @@ named human. Your operator can read every receipt.
 
 ## At the counter
 
+${EVIDENCE_PILOT.name}: ${base}${EVIDENCE_PILOT.path}.
+${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
+
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
 \`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
 works whether or not you bought the thing. A live one to try right
@@ -352,6 +356,8 @@ whether the catalog's copy agreed with the door, and whether the door
 answered now the way the last signed round saw it. Never a score, never
 a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
+
+For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
 
 For anyone who runs a door: ${base}/operators is the shelf from your
 side, in the order a launch happens — before you launch, the week you

@@ -1198,8 +1198,11 @@ const BASE = "https://scvd.store";
 // 2026-10-07: narrow the shared signature/expiry claim to signed observations
 // and explicitly name unsigned inspection. Before changing position.ts, both
 // prior pins passed (14/14); this one-sentence source change yields this pair.
+// 2026-10-07: joined the bounded pilot offer and index pointer to main's
+// unsigned-inspection wording. Removing only the two pilot paragraphs
+// reproduced main's pins (14/14); these pins cover both intentional changes.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6c38fd5ff496cfa915ea2b3ee6014694ca38085a8f575462eeaeb0b3ab86293b";
+  "b9b0afaae1782ac77388d268b72b7224051ff560de01270a17008a5c692a6bcd";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1302,7 +1305,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "88f8ae708a5734056e95548625c7969c94c13d92f311ee89fa2108a7ff29e8d5",
+      "6fe76fa3dd0415c7d892f171efa56c8ed0f5984dd51832bf5311a41a753ddade",
     );
   });
 

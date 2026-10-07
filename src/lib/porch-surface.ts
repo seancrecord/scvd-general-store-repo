@@ -87,6 +87,8 @@ export const PORCH_EXACT = new Map<string, string>([
    */
   ["/bounties", "bounties"],
   ["/api/bounties", "bounties.json"],
+  ["/evidence-pilot", "evidence-pilot"],
+  ["/api/evidence-pilot/sample", "evidence-pilot:sample"],
   ["/field-study", "field-study"],
   ["/api/field-study", "field-study.json"],
   ["/credit", "credit"],
@@ -292,6 +294,7 @@ const KIND_BY_PREFIX: ReadonlyArray<readonly [string, PorchSurfaceKind]> = [
   ["store-month", "evidence"],
   ["pulse", "evidence"],
   ["watch:", "evidence"],
+  ["evidence-pilot:", "evidence"],
   ["gazette", "storefront"],
   ["how-it-works", "room"],
   ["pricing", "storefront"],
@@ -584,6 +587,7 @@ export function porchSurface(path: string, method: string): string | undefined {
   if (path.startsWith("/api/watch/")) {
     return "watch:history";
   }
+  if (path.startsWith("/api/evidence-pilot/")) return "evidence-pilot:report";
   if (path.startsWith("/api/conformance-watch/")) {
     return "conformance-watch:history";
   }

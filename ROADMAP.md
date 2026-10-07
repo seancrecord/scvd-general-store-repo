@@ -67,6 +67,16 @@ measurement](research/seo-brand-2026-10-06/README.md#october-7--local-repair-aut
 Merge/deploy authorized October 7; isolated release validation is recorded in
 the linked note. Ranking effect remains unmeasured.
 
+## October 7 — SCVD Attestation pilot
+
+Keeper authorized proceeding with the bounded pilot. Implementation is prepared
+on `codex/scvd-attestation-pilot`: human request page, public unsigned specimen,
+keeper-activated 30-day endpoint watch, signed report with per-day gaps and offline
+verification. The $300 offer uses manual invoicing after final delivery and no
+automatic renewal. JCS input-boundary repair is included. Keeper authorized UI
+review, push and merge October 7; required CI gates release. This is not evidence
+of customer demand. [Offer and operating runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+
 ## October 6 — artifact discovery
 
 **October 7 growth-period correction:** `/admin/growth` keeps the open month's

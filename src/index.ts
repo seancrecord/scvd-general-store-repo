@@ -1,3 +1,4 @@
+import { evidencePilotRoutes } from "@/routes/evidence-pilot";
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
 import { documentDiscovery } from "@/lib/document-discovery";
 import { whereToLookNext } from "@/lib/store-links";
@@ -188,6 +189,7 @@ for (const middleware of edgeMiddleware) {
 // Discovery does not enter the paid-door chain shared with the doors Worker.
 app.use("/:document{(?!api/buy(?:/|$)).*}", documentDiscovery);
 
+app.route("/", evidencePilotRoutes);
 app.route("/", storefrontRoutes);
 app.route("/", developerRoutes);
 app.route("/", deprecationRoutes);

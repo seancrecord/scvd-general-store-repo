@@ -44,6 +44,13 @@ build, it is on the roadmap.
   longer-term traffic/cost effects are unmeasured. No further approval is
   pending. [Rule, evidence and scope](docs/PYTHON_CLIENT_ACCESS_2026-10.md).
 
+- **SCVD Attestation pilot, October 7 — first customer hands.** The bounded offer
+  is prepared and release authorized after your go-ahead. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+  Once released and a buyer agrees the public endpoint, price and start time,
+  activate from `/admin/evidence-pilot`; hand over and verify the final report
+  before invoicing. No prospect was contacted, customer activated or invoice sent.
+  Implementation and release status live on ROADMAP, not this desk.
+
 - **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
   authenticated checks for now. The L13 code and public reader are released;
   `/admin/market/inflows` still needs its first current authorization-pairing
