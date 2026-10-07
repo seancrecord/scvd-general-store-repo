@@ -24,8 +24,9 @@ function side(over: Partial<HypothesisSide> = {}): HypothesisSide {
   };
 }
 
-function read(now: HypothesisSide, before: HypothesisSide | null) {
+function read(now: HypothesisSide, before: HypothesisSide | null, monthComplete = true) {
   return deriveHypothesis({
+    monthComplete,
     now,
     before,
     declines: 3,
@@ -46,6 +47,18 @@ function read(now: HypothesisSide, before: HypothesisSide | null) {
  * so it is the first thing held here.
  */
 describe("the hypothesis can be refuted", () => {
+  it.each([34, 114, 150])("withholds the verdict while the month is open, even with %i settles", (settles) => {
+    const now = side({ market: { week: "2026-W40", listed: 17692, payable: 2092 }, settles });
+    const before = side({ market: { week: "2026-W39", listed: 15170, payable: 2213 }, settles: 114 });
+    const h = read(now, before, false);
+    expect(h.against_us).toBe(false);
+    expect(h.reading).toContain("Month to date");
+    expect(h.reading).toContain("No verdict until the month closes");
+    expect(h.reading).not.toMatch(/grew with|did not|this month it did not/i);
+    expect(h.now).toEqual(now);
+    expect(h.before).toEqual(before);
+  });
+
   it("says so plainly when the market grew and we did not", () => {
     const h = read(side({ settles: 10 }), side({ market: { week: "2026-W34", listed: 80, payable: 30 }, settles: 12 }));
     expect(h.against_us).toBe(true);
