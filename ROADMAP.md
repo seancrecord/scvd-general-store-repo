@@ -39,6 +39,15 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 6 — artifact discovery
+
+**Artifact discovery, local follow-through October 6:** Once-Over reports now
+have readable dated pages at their existing URLs; published research gains
+corpus-hub and sitemap links, with withdrawals visible in search metadata.
+Signed bytes and default JSON are preserved. [Scope and validation](docs/ARTIFACT_DISCOVERY_2026-10.md).
+Release prepared on an isolated branch from current main; 121 focused checks,
+typecheck and bundle checks pass. Full CI gates merge; no change to build order.
+
 ## October 5 — R2 read failures
 
 - [x] Prepare the keeper-requested local repair: bounded transient R2 read retries,

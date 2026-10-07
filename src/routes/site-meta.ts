@@ -14,6 +14,7 @@ import { SITEMAP_ROOMS } from "@/store/rooms";
 import { getFoundingEdition } from "@/services/founding";
 import type { HonoEnv } from "@/types";
 import { NAMED_AI_CRAWLERS } from "@/lib/crawlers";
+import { reportCatalog } from "@/services/reports";
 
 /**
  * robots.txt and sitemap.xml. The store has no pages to hide:
@@ -215,6 +216,7 @@ Agentmap: ${base}${ARD_WELL_KNOWN_PATH}
 async function sitemapPaths(env: HonoEnv["Bindings"]): Promise<string[]> {
   const paths = [
     ...HUMAN_SURFACES,
+    ...reportCatalog().map(report => report.path),
     ...directoryData.listings.map((listing) => `/directory/${listing.slug}`),
     /**
      * PER-ITEM PAGES, added 2026-07-30. They serve JSON and markdown
@@ -356,10 +358,11 @@ siteMetaRoutes.get("/sitemap.xml", async (c) => {
   // lastmod on every entry: a crawler deciding whether to re-read us
   // has nothing else to go on, and "no date" reads as "never changed".
   const lastmod = catalogLastUpdated();
+  const reportDates = new Map(reportCatalog().map(report => [report.path, report.page_modified]));
   const urls = paths
     .map(
       (path) =>
-        `  <url><loc>${base}${path}</loc><lastmod>${lastmod}</lastmod></url>`,
+        `  <url><loc>${base}${path}</loc><lastmod>${reportDates.get(path) ?? lastmod}</lastmod></url>`,
     )
     .join("\n");
   return c.body(
