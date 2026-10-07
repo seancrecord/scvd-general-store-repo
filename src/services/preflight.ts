@@ -1,3 +1,14 @@
+import {
+  PREFLIGHT_VERSION, PREFLIGHT_VERSION_V2, PREFLIGHT_VERSION_V3, PREFLIGHT_VERSION_NEXT,
+  PREFLIGHT_BATTERY, PREFLIGHT_V3_SINCE, BATTERY_ADDS,
+  type PreflightBattery,
+} from "@/lib/preflight-batteries";
+export {
+  PREFLIGHT_VERSION, PREFLIGHT_VERSION_V2, PREFLIGHT_VERSION_V3, PREFLIGHT_VERSION_NEXT,
+  PREFLIGHT_BATTERY, PREFLIGHT_BATTERY_NEXT, PREFLIGHT_VERSIONS,
+  PREFLIGHT_V2_SINCE, PREFLIGHT_V3_SINCE, BATTERY_ADDS,
+  CROSS_SURFACE_CHECK_NAMES, VERDICT_FOLD_CHECK_NAMES, type PreflightBattery,
+} from "@/lib/preflight-batteries";
 import { getMenuItem } from "@/store/menu";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { buyerLinks } from "@/lib/buyer-contract";
@@ -96,89 +107,6 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
  * cites the criteria it was rendered under, forever, the same way a
  * certificate keeps its mint-day canonical form.
  */
-export const PREFLIGHT_VERSION = "v1";
-
-/**
- * The battery's citable name (roadmap 1.3 / D6): what a signed row
- * writes INSIDE its bytes to say which criteria produced the verdict.
- * Derived here, beside the version, so the audit's citation and the
- * rows' citations cannot drift apart.
- */
-export const PREFLIGHT_BATTERY = `preflight-${PREFLIGHT_VERSION}`;
-
-/**
- * THE SECOND BATTERY, AND THE FIRST ONE KEPT RUNNING (2026-08-23).
- *
- * v2 folds the Solana rail-receivability read into the VERDICT. v1
- * reported it as an advisory, which meant a door that literally cannot
- * be credited — the payTo owns no token account for the mint it asked
- * for — was still called `ready`. That is wrong on the merits and the
- * published defect vocabulary at /defects says so.
- *
- * WHY v1 DOES NOT SIMPLY CHANGE. An observatory's most valuable asset
- * is a comparable series. If the battery moves under the name `v1`,
- * then a `ready` recorded in week 34 stops meaning what a `ready`
- * recorded in week 36 means, and six weeks of hash-chained weekly
- * rounds quietly lose the property that made them worth keeping. Every
- * artifact this store has signed names the criteria it was rendered
- * under; renaming those criteria retroactively would make a signature
- * cover a claim nobody made.
- *
- * So both run. This is what an observatory does when it upgrades an
- * instrument: keep the old one going through an overlap so the records
- * join up, rather than starting a new series that cannot be compared
- * to the old one. The comment above PREFLIGHT_VERSION already promised
- * exactly this — "the old version keeps serving; a verdict cites the
- * criteria it was rendered under, forever" — and this is the first
- * time the store has had a second version to prove it with.
- *
- * ONE PROBE, TWO VERDICTS. The door is walked once. Both batteries
- * read the same observation, so the overlap costs a caller nothing and
- * the two verdicts can never disagree about what was seen — only about
- * what counts.
- */
-export const PREFLIGHT_VERSION_NEXT = "v2";
-
-/**
- * v2's citable name, DERIVED like v1's rather than typed. A citation
- * that can drift from the version it names is the defect 2.5 fixes;
- * it would be a poor joke to reintroduce it in the fix.
- */
-export const PREFLIGHT_BATTERY_NEXT = `preflight-${PREFLIGHT_VERSION_NEXT}`;
-
-/** Every battery currently served. Ordered oldest first. */
-export const PREFLIGHT_VERSIONS = [
-  PREFLIGHT_VERSION,
-  PREFLIGHT_VERSION_NEXT,
-] as const;
-
-export type PreflightBattery = (typeof PREFLIGHT_VERSIONS)[number];
-
-/** The date v2 began rendering verdicts. Its series starts here. */
-export const PREFLIGHT_V2_SINCE = "2026-08-23";
-
-/**
- * What each battery folds into its verdict. Stated as data rather than
- * prose so the criteria page cannot drift from the code that renders
- * the verdict — the same derive-or-refuse rule the rest of the store
- * lives under.
- */
-export const BATTERY_ADDS: Record<PreflightBattery, readonly string[]> = {
-  v1: [],
-  // 2.1c: the L3b consistency checks joined the rail read in v2's
-  // verdict — same observations v1 carries as advisories, scored.
-  // transfer-method-signable joined them 2026-08-30 on the keeper's
-  // ruling: a standard no client can build is unsignable in exactly
-  // the sense an unsignable amount is.
-  v2: [
-    "payto-payable",
-    "amount-atomic",
-    "network-mainnet",
-    "transfer-method-signable",
-    "solana-rail-receivable",
-  ],
-};
-
 /**
  * 2.3 — THE BATTERY AS DATA, COMPLETE. BATTERY_CHECK_NAMES (2.1a)
  * named the unconditional core; these registries name the rest, so
@@ -188,21 +116,6 @@ export const BATTERY_ADDS: Record<PreflightBattery, readonly string[]> = {
 export const CONDITIONAL_CHECK_NAMES = [
   "bazaar-extension",
   "signed-offers",
-] as const;
-
-/** Checks a battery MAY fold into its verdict beyond the core. */
-export const VERDICT_FOLD_CHECK_NAMES = [
-  "payto-payable",
-  "amount-atomic",
-  "network-mainnet",
-  /*
-   * Promoted out of the advisory list on the keeper's ruling
-   * (2026-08-30): a door naming an authorization standard no
-   * published client can build is unsignable in exactly the sense
-   * amount-atomic is unsignable.
-   */
-  "transfer-method-signable",
-  "solana-rail-receivable",
 ] as const;
 
 /**
@@ -312,8 +225,8 @@ export const ADVISORY_NAMES = [
    * schema (the rule the catalog's own validator applies before
    * listing), a signed offer against the challenge it rides, and the
    * top-level resource description the catalog indexes. Advisories
-   * first, by the keeper's ruling; two of them fold under v3 after a
-   * month of rows, as L3b went into v2.
+   * first; the keeper approved the two contradiction checks for v3
+   * on 2026-10-02. Resource-description absence remains advisory.
    */
   "discovery-info-fails-schema",
   "resource-description-absent",
@@ -408,6 +321,11 @@ export const BATTERY_CHANGELOG: readonly {
     battery: "v2",
     change:
       "S8 Tier A, advisory-side and outside every verdict: three readings of a door disagreeing with itself inside one 402. discovery-info-fails-schema applies the catalog's own listing rule (the bazaar info block must satisfy the schema beside it) over type, const, enum, required, properties and items; offer-contradicts-challenge decodes each signed offer's payload and looks for the accepts entry it commits to by network, asset, payTo and amount, so a signed promise of one price beside a challenge for another is named; resource-description-absent notes a bazaar block with no top-level resource description, the field the catalog indexes. placement-mismatch now names which fields differ between the header and body challenges. No verdict moved; the fold into v3 is the keeper's call after a month of rows.",
+  },
+  {
+    date: PREFLIGHT_V3_SINCE,
+    battery: PREFLIGHT_VERSION_V3,
+    change: "S8 v3: discovery-info-validates and offer-amount-matches-accepts join the verdict when the corresponding bytes can be compared. The existing discovery-info-fails-schema and offer-contradicts-challenge advisories remain available; resource-description-absent remains advisory only. Optional extensions stay optional. v1 and v2 retain their scoring; the paid audit and census move together. No stored report is rewritten or resigned. Schema validation is bounded; offer signatures, discovery ingestion and payment completion are not verified.",
   },
 ];
 
@@ -741,7 +659,7 @@ function report(
     version: battery,
     verdict,
     reached_level: level,
-    reached_level_meaning: REACHED_LEVEL_MEANING,
+    reached_level_meaning: reachedLevelMeaning(`preflight-${battery}`),
     ...(level === "none" ? { network_failure: "unlocalized" as const } : {}),
     checks_vector: vector,
     checks,
@@ -1221,8 +1139,11 @@ export function runChecks(
    * can pay is not ready by any reading a buyer would accept.
    */
   l3b?: PreflightCheck[];
+  /** S8 comparisons actually performed; absent comparisons are not passes. */
+  crossSurface?: PreflightCheck[];
 } {
   const checks: PreflightCheck[] = [];
+  const crossSurface: PreflightCheck[] = [];
   const advisories: PreflightAdvisory[] = [];
 
   /*
@@ -1697,9 +1618,8 @@ export function runChecks(
      * S8 TIER A (2026-09-02): THE BLOCK AGAINST ITS OWN SCHEMA. The
      * bazaar extension ships the info block beside the schema that
      * describes it, and the catalog's own rule is that the facilitator
-     * validates one against the other before listing — a block that
-     * fails is a door that has dropped out of the catalog without
-     * knowing. Read here over the keywords a bounded validator can
+     * validates one against the other before listing. Whether an actual
+     * catalog rejected this door is not observed here. A bounded validator can
      * hold to (type, const, enum, required, properties, items,
      * additionalProperties: false); formats, patterns, numeric ranges
      * and composition keywords are NOT checked, and the detail says
@@ -1709,10 +1629,17 @@ export function runChecks(
     const schema = bazaar && typeof bazaar === "object" ? bazaar["schema"] : undefined;
     if (info && typeof info === "object" && isRecord(schema)) {
       const problems = schemaProblems(info, schema, "info");
+      crossSurface.push({
+        name: "discovery-info-validates",
+        ok: problems.length === 0,
+        detail: problems.length === 0
+          ? "The discovery info satisfies the supported keywords of its declared schema. This is bounded validation: formats, patterns, numeric ranges, composition keywords and references are not checked; recursion stops after depth 12. Directory ingestion was not observed."
+          : `The discovery info contradicts its declared schema: ${problems.slice(0, SCHEMA_PROBLEM_CAP).join("; ")}. Checked: type, const, enum, required, properties, items, additionalProperties false; other keywords are not checked. Directory ingestion was not observed.`,
+      });
       if (problems.length > 0) {
         advisories.push({
           name: "discovery-info-fails-schema",
-          detail: `extensions.bazaar.info does not satisfy extensions.bazaar.schema: ${problems.slice(0, SCHEMA_PROBLEM_CAP).join("; ")}${problems.length > SCHEMA_PROBLEM_CAP ? ` (and ${problems.length - SCHEMA_PROBLEM_CAP} more)` : ""}. The catalog's own rule is that a facilitator validates info against schema before listing, so a block that fails is a listing that never appears — the door disagreeing with itself in one response. Checked: type, const, enum, required, properties, items, additionalProperties false. Not checked: formats, patterns, numeric ranges, composition keywords.`,
+          detail: `extensions.bazaar.info does not satisfy extensions.bazaar.schema: ${problems.slice(0, SCHEMA_PROBLEM_CAP).join("; ")}${problems.length > SCHEMA_PROBLEM_CAP ? ` (and ${problems.length - SCHEMA_PROBLEM_CAP} more)` : ""}. The discovery block disagrees with its own schema in this response. Rejection by an indexer is a possible consequence, not an observed ingestion result. Checked: type, const, enum, required, properties, items, additionalProperties false. Not checked: formats, patterns, numeric ranges, composition keywords.`,
         });
       }
     }
@@ -1884,6 +1811,24 @@ export function runChecks(
      * this reads the payload's own words against the header's.
      */
     const contradictions = offerContradictions(parsedOffers, accepts);
+    const comparable = parsedOffers.filter((parsed) => {
+      if (!parsed.ok || !("payload" in parsed) || !isRecord(parsed.payload)) return false;
+      const payload = parsed.payload;
+      return ["network", "asset", "payTo", "amount"].every(
+        (field) => typeof payload[field] === "string" && payload[field] !== "",
+      );
+    });
+    // A known contradiction can fail even if another offer is unread. A pass
+    // requires every offer to have supplied the fields we actually compare.
+    if (contradictions.length > 0 || (comparable.length > 0 && comparable.length === offers.length)) {
+      crossSurface.push({
+        name: "offer-amount-matches-accepts",
+        ok: contradictions.length === 0,
+        detail: contradictions.length === 0
+          ? "Each decoded offer matches one accepts entry on network, asset, payTo and amount; multiple price tiers may match different entries. Signatures and payment completion were not verified."
+          : `Offer terms contradict the challenge: ${contradictions.slice(0, SCHEMA_PROBLEM_CAP).join("; ")}. No single accepts entry matches those terms. Signatures were not verified; this does not establish that every payment path is impossible.`,
+      });
+    }
     if (contradictions.length > 0) {
       advisories.push({
         name: "offer-contradicts-challenge",
@@ -1941,7 +1886,34 @@ export function runChecks(
     });
   }
 
-  return { checks, advisories, accepts, l3b, ...methodRead };
+  return { checks, advisories, accepts, l3b, crossSurface, ...methodRead };
+}
+
+/** The free probe, paid audit, sample and census all score this same recipe. */
+export function checksForBattery(
+  ran: ReturnType<typeof runChecks>,
+  battery: PreflightBattery,
+  railCheck?: PreflightCheck | null,
+): PreflightCheck[] {
+  const additions = BATTERY_ADDS[battery];
+  return [
+    ...ran.checks,
+    ...[...(ran.l3b ?? []), ...(railCheck ? [railCheck] : []), ...(ran.crossSurface ?? [])]
+      .filter((check) => additions.includes(check.name)),
+  ];
+}
+
+export function batteryDifference(
+  version: PreflightBattery,
+  checks: PreflightCheck[],
+  otherVersion: PreflightBattery,
+  otherChecks: PreflightCheck[],
+): string {
+  const difference = checks.filter((check) => !otherChecks.some((other) => other.name === check.name))
+    .concat(otherChecks.filter((check) => !checks.some((other) => other.name === check.name)));
+  if (difference.length === 0) return "Both batteries scored the identical set of observed checks.";
+  const agreed = checks.every((check) => check.ok) === otherChecks.every((check) => check.ok);
+  return `${version} and ${otherVersion} differ on these observed verdict checks: ${difference.map((check) => check.name).join(", ")}. On this probe the two batteries ${agreed ? "agreed" : "DISAGREED"}. Optional or unread comparisons are not invented passes.`;
 }
 
 /**
@@ -1994,7 +1966,7 @@ const LADDER_CLIMBED_HERE =
 
 /** What a given battery leaves unclimbed, named rather than lumped. */
 export function reachedLevelMeaning(battery: string = PREFLIGHT_BATTERY): string {
-  const foldsL3b = battery === PREFLIGHT_BATTERY_NEXT;
+  const foldsL3b = [PREFLIGHT_VERSION_V2, PREFLIGHT_VERSION_NEXT].some((version) => battery === `preflight-${version}`);
   const l3b = foldsL3b
     ? "L3b internal consistency is measured here and folded into the verdict (payto-payable, amount-atomic, network-mainnet, transfer-method-signable)."
     : "This battery reports the L3b consistency observations as advisories, outside its verdict; the next battery folds them into it.";
@@ -2055,7 +2027,7 @@ function climbedBy(itemId: string, base: string): Record<string, unknown> | null
 }
 
 export function theRestOfTheLadder(battery: string, base: string): Record<string, unknown> {
-  const climbed = ["L1", "L2", "L3a", ...(battery === PREFLIGHT_BATTERY_NEXT ? ["L3b"] : [])];
+  const climbed = ["L1", "L2", "L3a", ...([PREFLIGHT_VERSION_V2, PREFLIGHT_VERSION_NEXT].some((version) => battery === `preflight-${version}`) ? ["L3b"] : [])];
   const signedObservation = climbedBy("service_audit", base);
   return {
     current_reading: {
@@ -2471,7 +2443,7 @@ async function preflightUrlInner(
       ),
     };
   }
-  const { checks, advisories, accepts, l3b } = ran;
+  const { advisories, accepts } = ran;
   /*
    * THE SAME ONE GET, PARSED TWICE (roadmap V3 PR 1): the MPP battery
    * reads the response's WWW-Authenticate for Payment challenges. Zero
@@ -2520,65 +2492,17 @@ async function preflightUrlInner(
    * finishes before pending.settle(); signing follows settlement.
    */
 
-  /*
-   * ONE PROBE, TWO BATTERIES (2026-08-23).
-   *
-   * v1 is frozen: the structural checks and nothing else, so a `ready`
-   * recorded today means exactly what a `ready` recorded in week 34
-   * meant. The rail read rides it as an advisory, outside the verdict.
-   *
-   * v2 folds the rail read INTO the verdict, because a door whose payTo
-   * cannot be credited is not ready by any reading a buyer would accept
-   * — and /defects says so in public.
-   *
-   * Both are computed from the SAME observation, so they can never
-   * disagree about what was seen, only about what counts. That is the
-   * whole reason to run an overlap rather than cut the old series.
-   */
-  const v1Checks = [...checks];
-  /*
-   * 2.1c: v2 counts the L3b consistency checks the same way it counts
-   * the rail read — same observation the advisories carry, scored
-   * instead of shrugged at. v1 stays frozen; the two batteries can
-   * never disagree about what was seen, only about what counts.
-   */
-  const v2Checks = [
-    ...checks,
-    ...(l3b ?? []),
-    ...(rail.check ? [rail.check] : []),
-  ];
-  const scoreOf = (entries: PreflightCheck[]): PreflightReport["verdict"] =>
-    entries.every((check) => check.ok) ? "ready" : "not_ready";
-  const v1Verdict = scoreOf(v1Checks);
-  const v2Verdict = scoreOf(v2Checks);
-
-  const asked = battery === PREFLIGHT_VERSION_NEXT ? "v2" : "v1";
-  const servedChecks = asked === "v2" ? v2Checks : v1Checks;
-  const servedVerdict = asked === "v2" ? v2Verdict : v1Verdict;
-  const otherVersion =
-    asked === "v2" ? PREFLIGHT_VERSION : PREFLIGHT_VERSION_NEXT;
-  const otherVerdict = asked === "v2" ? v1Verdict : v2Verdict;
-
-  /*
-   * If the rail read produced nothing — no Solana rail offered, or the
-   * ledger would not answer — the two batteries scored identically and
-   * saying so plainly beats implying a distinction that did not apply.
-   */
-  const v2Extras = [
-    ...(l3b
-      ? [
-          "the L3b consistency checks (payto-payable, amount-atomic, network-mainnet, transfer-method-signable)",
-        ]
-      : []),
-    ...(rail.check ? ["solana-rail-receivable"] : []),
-  ];
-  const railNote = rail.check
-    ? ""
-    : " The Solana rail read did not apply to this endpoint (no Solana rail offered, or the ledger could not be read).";
-  const difference =
-    v2Extras.length > 0
-      ? `v2 folds ${v2Extras.join(" and ")} into the verdict; v1 reports the same observations as advisories. On this probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"}.${railNote}`
-      : "No accepts parsed and the rail read did not apply, so both batteries scored the identical set of checks.";
+  // All versions read the same observation. Only their verdict membership differs.
+  const asked = battery;
+  const servedChecks = checksForBattery(ran, asked, rail.check);
+  const servedVerdict = servedChecks.every((check) => check.ok) ? "ready" : "not_ready";
+  const otherVersion = asked === PREFLIGHT_VERSION_NEXT
+    ? PREFLIGHT_VERSION_V2
+    : asked === PREFLIGHT_VERSION_V2 ? PREFLIGHT_VERSION : PREFLIGHT_VERSION_NEXT;
+  const otherChecks = checksForBattery(ran, otherVersion, rail.check);
+  const otherVerdict = otherChecks.every((check) => check.ok) ? "ready" : "not_ready";
+  const difference = batteryDifference(asked, servedChecks, otherVersion, otherChecks)
+    + (rail.check ? "" : " The Solana rail read did not apply or could not be completed; receivability was not scored.");
 
   return {
     status: 200,

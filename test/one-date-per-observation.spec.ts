@@ -79,7 +79,7 @@ describe("the note and the passport it links carry the same date", () => {
 
     const welcome = deriveWelcomes(round([ready]), null)[0]!;
     const note = draftWelcome(welcome, BASE);
-    expect(note).toContain(`On ${KNOCKED_AT.slice(0, 10)} our weekly pass`);
+    expect(note).toContain(`At ${KNOCKED_AT}`);
     // The note links this page; the page must not tell another day.
     expect(note).toContain(`${BASE}/passport/stamped.example`);
 
@@ -94,19 +94,19 @@ describe("the note and the passport it links carry the same date", () => {
     expect(passport.payload.latest.observed_at).toBe(KNOCKED_AT);
     // Said the way the operator read it: one calendar day, both places.
     expect(passport.payload.summary.observed_at.slice(0, 10)).toBe(
-      note.match(/On (\d{4}-\d{2}-\d{2}) our weekly pass/)![1],
+      note.match(/At (\d{4}-\d{2}-\d{2})T/)![1],
     );
   });
 
-  it("an unstamped legacy row still agrees with itself on the seal", async () => {
+  it("an unstamped legacy row cannot establish passport freshness", async () => {
     const ready = row("legacy.example", "ready", false);
     await seedCorpus([ready]);
     const welcome = deriveWelcomes(round([ready]), null)[0]!;
-    expect(draftWelcome(welcome, BASE)).toContain(`On ${SEALED_AT.slice(0, 10)} our weekly pass`);
+    expect(draftWelcome(welcome, BASE)).toContain("request time unknown");
     const passport = (await (
       await SELF.fetch(`${BASE}/passport/legacy.example`, { headers: { Accept: "application/json" } })
-    ).json()) as { payload: { summary: { observed_at: string } } };
-    expect(passport.payload.summary.observed_at).toBe(SEALED_AT);
+    ).json()) as { issued: boolean; reason: string; decision: string };
+    expect(passport).toMatchObject({ issued: false, reason: "observation-undated", decision: "INDETERMINATE" });
   });
 
   it("the broken-door note dates by the knock too", () => {

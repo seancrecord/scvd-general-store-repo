@@ -72,6 +72,13 @@ export const BOUNTY_MAX_REWARD_USD = 0.25;
 export const BOUNTY_WEEKLY_BUDGET_USD = 10;
 /** Payout authorizations expire on their own: seven days. */
 export const BOUNTY_AUTH_VALID_SECONDS = 7 * 24 * 3600;
+/**
+ * THE RECOVERY LINE (2026-09-29), printed on every payout and on the
+ * board's walkthrough, so a walker whose client dropped the signature
+ * reads the way back in the response it kept. One string, both places.
+ */
+export const BOUNTY_REISSUE_LINE =
+  "Lost this body? Send the same claim again — same bounty_id, tx_hash, payer and payout_to — and the same signature comes back, under the same nonce, until it expires or is redeemed.";
 /** Verbatim observation cap — a claim, not a filesystem. */
 export const BOUNTY_OBSERVATION_CAP = 4000;
 /**
@@ -1035,6 +1042,16 @@ export interface ClaimResult {
     signature: string;
     how_to_redeem: string;
   };
+  /**
+   * PRESENT ONLY WHEN THIS ANSWER IS THE SAME ANSWER AGAIN (2026-09-29).
+   * The claim was paid earlier and resent identically; the payout above
+   * is the original authorization re-signed under its original nonce,
+   * not a second one. Absent on a first payout.
+   */
+  reissued?: {
+    first_claimed_at: string;
+    note: string;
+  };
 }
 
 /**
@@ -1134,7 +1151,7 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     check: "That settlement has never been claimed",
     refused_when: "some claim already paid out against that transaction",
     then_what:
-      "One payout per settlement, ever — this is the one refusal that does not come back. A fresh walk needs a fresh payment to the door.",
+      "One payout per settlement, ever — this is the one refusal that does not come back. A fresh walk needs a fresh payment to the door. The exception is your own claim sent again: the same bounty, transaction, payer and payout address is not a second claim, and the door answers it with the same signature again (see the two rows at the end).",
     matches: /already been claimed/,
   },
   {
@@ -1190,6 +1207,22 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     then_what:
       "The claim is released and the board reopens with the ISO week. Every read publishes spent_this_week_usd against weekly_budget_usd, so a week with no room left says so before you walk.",
     matches: /budget .* is spent/,
+  },
+  {
+    check: "A resent claim's original authorization has not expired",
+    refused_when:
+      "the same claim comes back after the authorization it was paid with lapsed",
+    then_what:
+      "Nothing is signed. A fresh authorization would be a second payout on one settlement, and the board signs one; the reward returned to the week's budget when it lapsed. Redeem inside the window next time — the response says when it closes.",
+    matches: /authorization expired at unix/,
+  },
+  {
+    check: "A resent claim's original authorization has not already been redeemed",
+    refused_when:
+      "the same claim comes back after the USDC contract already honoured its nonce",
+    then_what:
+      "Nothing is signed: the reward already reached the payout address on chain, so there is nothing left to hand back. The chain is read for this, and a read that does not answer refuses too — try again when it does; nothing is lost.",
+    matches: /already been redeemed|redemption could not be read/,
   },
 ];
 
@@ -1275,6 +1308,29 @@ export async function claimBounty(
     if (!/^0x[0-9a-fA-F]{40}$/.test(input.payer)) {
       throw new BountyRefused("payer must be a 0x address on the bounty's EVM rail");
     }
+  }
+  /*
+   * THE SAME CLAIM AGAIN IS THE SAME ANSWER AGAIN (2026-09-29). A
+   * walker's client kept the summary fields of a paid claim and
+   * dropped payout.authorization and the signature — the only copy,
+   * since the record keeps the nonce and expiry and never the
+   * signature. Their only move was a letter to the keeper, who
+   * re-signed it by hand. That hand is now the door's: a repeat that
+   * names the same bounty, the same settlement, the same payer and
+   * the same payout address is not a second claim, and it gets the
+   * original authorization back under its original nonce.
+   *
+   * Why this cannot pay twice: the nonce is the one already on the
+   * record, and the USDC contract honours a nonce once. Why it cannot
+   * be redirected: a different payout_to falls through to the
+   * refusals below and is never re-signed. Why it stores nothing new:
+   * the field wallet signs deterministically, so the same message
+   * under the same key IS the same signature. The two refusals a
+   * reissue can meet — expired, or already redeemed — are in the
+   * catalogue, and the chain is read for the second one, fail closed.
+   */
+  if (bounty.status === "paid" && isRepeatOfPaidClaim(bounty, input, solanaRail || algorandRail)) {
+    return reissuePayout(env, bounty, input, options, now);
   }
   if (bounty.status !== "open") {
     throw new BountyRefused(`that bounty is ${bounty.status}, not open`);
@@ -1691,26 +1747,7 @@ export async function claimBounty(
       ),
       nonce: (options.randomNonce ?? defaultNonce)(),
     };
-    const signature = await signer.signTypedData({
-      domain: {
-        name: "USD Coin",
-        version: "2",
-        chainId: 8453,
-        verifyingContract: BASE_USDC as `0x${string}`,
-      },
-      types: {
-        TransferWithAuthorization: [
-          { name: "from", type: "address" },
-          { name: "to", type: "address" },
-          { name: "value", type: "uint256" },
-          { name: "validAfter", type: "uint256" },
-          { name: "validBefore", type: "uint256" },
-          { name: "nonce", type: "bytes32" },
-        ],
-      },
-      primaryType: "TransferWithAuthorization",
-      message: authorization,
-    });
+    const signature = await signPayoutAuthorization(signer, authorization);
 
     const reading = readReport(input.report);
     const paid: BountyRecord = {
@@ -1774,13 +1811,150 @@ export async function claimBounty(
         chain: "eip155:8453",
         authorization,
         signature,
-        how_to_redeem: `Submit transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, signature) on the USDC contract (${BASE_USDC}) on Base — from your own wallet or any relayer; the function is submittable by anyone. Valid until unix ${authorization.validBefore}; unredeemed, it expires on its own and the budget takes it back. The signature is the payment — treat it like cash.`,
+        how_to_redeem: howToRedeem(authorization.validBefore),
       },
     };
   } catch (error) {
     await releaseClaim();
     throw error;
   }
+}
+
+/** The redemption line every payout carries, first answer and reissue alike. */
+function howToRedeem(validBefore: string): string {
+  return `Submit transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, signature) on the USDC contract (${BASE_USDC}) on Base — from your own wallet or any relayer; the function is submittable by anyone. Valid until unix ${validBefore}; unredeemed, it expires on its own and the budget takes it back. The signature is the payment — treat it like cash. ${BOUNTY_REISSUE_LINE}`;
+}
+
+/**
+ * ONE MESSAGE, ONE DOMAIN, ONE PLACE. USDC's exact EIP-712 domain on
+ * Base — the same check the token contract performs at redemption —
+ * lives here and nowhere else, so the first signature and a reissue
+ * cannot drift apart by a field.
+ */
+async function signPayoutAuthorization(
+  signer: FieldSigner,
+  authorization: ClaimResult["payout"]["authorization"],
+): Promise<string> {
+  return signer.signTypedData({
+    domain: {
+      name: "USD Coin",
+      version: "2",
+      chainId: 8453,
+      verifyingContract: BASE_USDC as `0x${string}`,
+    },
+    types: {
+      TransferWithAuthorization: [
+        { name: "from", type: "address" },
+        { name: "to", type: "address" },
+        { name: "value", type: "uint256" },
+        { name: "validAfter", type: "uint256" },
+        { name: "validBefore", type: "uint256" },
+        { name: "nonce", type: "bytes32" },
+      ],
+    },
+    primaryType: "TransferWithAuthorization",
+    message: authorization,
+  });
+}
+
+/**
+ * The repeat test: same bounty (already looked up), same settlement,
+ * same payer, same payout address. Address case is ignored on EVM;
+ * base58 and base32 ids are case-sensitive and compared as written,
+ * the way the record keeps them.
+ */
+function isRepeatOfPaidClaim(
+  bounty: BountyRecord,
+  input: ClaimInput,
+  caseSensitiveIds: boolean,
+): boolean {
+  const claim = bounty.claim;
+  if (!claim) return false;
+  const sameId = (a: string, b: string) =>
+    caseSensitiveIds ? a === b : a.toLowerCase() === b.toLowerCase();
+  return (
+    sameId(claim.tx_hash, input.txHash) &&
+    sameId(claim.payer, input.payer) &&
+    isSameAddress(claim.payout_to, input.payoutTo)
+  );
+}
+
+/**
+ * The same payout again. Nothing here moves the budget, writes the
+ * record, or touches the tx key: all three were settled when the
+ * claim first paid. The only writes are a chain read and a signature
+ * over a message the record already fixes.
+ */
+async function reissuePayout(
+  env: Env,
+  bounty: BountyRecord,
+  input: ClaimInput,
+  options: BountyBoardOptions,
+  now: Date,
+): Promise<ClaimResult> {
+  const claim = bounty.claim!;
+  const nowSeconds = Math.floor(now.getTime() / 1000);
+  const validBefore = Number(claim.authorization_valid_before);
+  if (!(validBefore > nowSeconds)) {
+    throw new BountyRefused(
+      `that claim was paid and its authorization expired at unix ${claim.authorization_valid_before} — a fresh one would be a second payout on one settlement, and the board signs one. The reward went back to the week's budget when it lapsed`,
+    );
+  }
+  const signer =
+    options.signer ?? (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+  // Money fails closed: a chain that does not answer refuses, and the
+  // same claim can come back when it does.
+  let used: boolean;
+  try {
+    used = await authorizationUsed(env, signer.address, claim.authorization_nonce, BASE_EVM);
+  } catch {
+    throw new BountyRefused(
+      "that claim was paid, and whether its authorization was redeemed could not be read from Base just now — nothing is signed; send the same claim again in a moment",
+    );
+  }
+  if (used) {
+    throw new BountyRefused(
+      `that claim was paid and its authorization has already been redeemed on Base — the reward reached ${claim.payout_to}, and there is nothing left to hand back`,
+    );
+  }
+  const authorization = {
+    from: signer.address,
+    to: input.payoutTo,
+    value: String(Math.round(bounty.reward_usd * 1e6)),
+    validAfter: "0",
+    validBefore: claim.authorization_valid_before,
+    nonce: claim.authorization_nonce,
+  };
+  const signature = await signPayoutAuthorization(signer, authorization);
+  const missing = BOUNTY_REPORT_FIELDS.filter(
+    (entry) => claim.report?.[entry.field] === undefined,
+  ).map((entry) => ({ field: entry.field, why: entry.why, how: entry.how }));
+  return {
+    bounty_id: bounty.bounty_id,
+    reward_usd: bounty.reward_usd,
+    your_report: {
+      received: claim.report ?? null,
+      missing,
+      dropped: [],
+      template: BOUNTY_REPORT_TEMPLATE,
+      note: "This is the report kept from your first claim. A reissue changes nothing on the record — what you sent then is what stands.",
+    },
+    what_was_verified: `The chain's part was verified when this claim first paid, at ${claim.claimed_at}: transaction ${claim.tx_hash}, from your wallet to the door's captured payTo, after the bounty existed, never claimed before. Just now the chain was read once more, to confirm the authorization below is still unredeemed. It is.`,
+    what_was_not:
+      "Nothing new was verified and nothing new was signed: this is the original authorization under its original nonce, which the USDC contract honours once. Your observations stay on the record as YOUR claim, as before.",
+    payout: {
+      method: "eip3009_transfer_with_authorization",
+      asset: BASE_USDC,
+      chain: "eip155:8453",
+      authorization,
+      signature,
+      how_to_redeem: howToRedeem(authorization.validBefore),
+    },
+    reissued: {
+      first_claimed_at: claim.claimed_at,
+      note: "The same claim, sent again, gets the same signature again: same nonce, same expiry, same address. It is a reprint, not a second payout.",
+    },
+  };
 }
 
 /**

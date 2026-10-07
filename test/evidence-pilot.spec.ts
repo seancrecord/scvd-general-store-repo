@@ -116,6 +116,15 @@ describe("pilot activation and export", () => {
     expect(await verifyMessageSignature(artifact.signed_payload, artifact.signature, artifact.public_key)).toBe(true);
     expect((await SELF.fetch(`${BASE}${location}`, { headers: { Accept: "text/html" } })).status).toBe(200);
   });
+  it("puts the export before the rows and explains gaps in readable language", async () => {
+    vi.useFakeTimers(); vi.setSystemTime(START + 3 * DAY);
+    const record = await start();
+    const response = await SELF.fetch(`${BASE}/api/evidence-pilot/${record.watch_id}`, { headers: { Accept: "text/html" } });
+    const html = await response.text();
+    expect(html).toContain("No attempt recorded");
+    expect(html).toContain("2026-10-07 12:00:00 UTC");
+    expect(html.indexOf("Download signed JSON")).toBeLessThan(html.indexOf("<table>"));
+  });
   it("does not invent a report for an unknown id", async () => {
     expect((await SELF.fetch(`${BASE}/api/evidence-pilot/${id()}`)).status).toBe(404);
   });

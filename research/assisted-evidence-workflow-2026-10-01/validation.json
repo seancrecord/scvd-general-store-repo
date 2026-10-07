@@ -1,0 +1,75 @@
+{
+  "kind": "software regression validation only; zero native attempts",
+  "checks": {
+    "buyer_tests": {
+      "passed": 323,
+      "failed": 0
+    },
+    "typecheck": "pass",
+    "worker_bundles": "pass",
+    "closed_plan_prompt_comparisons": 7
+  },
+  "logs": [
+    {
+      "file": "scvd-assisted-red.log",
+      "sha256": "07b0ab071667a4e7aed8880575c9d49df4d55e0f0efd159a51b8f027c2189bbe"
+    },
+    {
+      "file": "scvd-assisted-runner-red.log",
+      "sha256": "1f1b2d0d0b48f0aabed696178968619fe655e443254e09d668bb32dae226f139"
+    },
+    {
+      "file": "scvd-assisted-source-replay-red.log",
+      "sha256": "b55f4cdafbbf3b23b2ab112bfdd892966e55d4491463ecc0829398357a016620"
+    },
+    {
+      "file": "scvd-assisted-stopped-red.log",
+      "sha256": "f1fca90eb8abdcc7b485faa7d2217d94bb5361456c9fce73b71054e7ce685e9a"
+    },
+    {
+      "file": "scvd-assisted-stopped-green.log",
+      "sha256": "55579357f852207330fcabc1d15f6b0f93f395aa7b2477600f32929ad5b22d03"
+    },
+    {
+      "file": "scvd-assisted-buyer.log",
+      "sha256": "ecb799240ae07c2ea176d43c56ef4ad2fd2bae13fa318eff165a5a049689864f"
+    },
+    {
+      "file": "scvd-assisted-buyer-final.log",
+      "sha256": "4ca6a2e23328935fe36779afcf4bc261225a624f593a232c6be5ae8fb772449a"
+    },
+    {
+      "file": "scvd-assisted-typecheck.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "scvd-assisted-build.log",
+      "sha256": "af1c2b78175e5f237f3531db6e1bdd06d7db20707a021f5524621068e45e2d5f"
+    },
+    {
+      "file": "scvd-assisted-buyer-final-2.log",
+      "sha256": "45e8c1e4c9d7fd783e0af0f2859c3cfce5129dccd63635d6e7c3e662a8cf5859"
+    },
+    {
+      "file": "scvd-assisted-terminal-red.log",
+      "sha256": "de5c1f02f20b7765b25b49b3940d9292df3d9b099faf21981a437156ab778469"
+    },
+    {
+      "file": "scvd-assisted-docs.log",
+      "sha256": "5ac3eced962e8d735977ef85423b47ebc1dadb326cbaaa9162f7a9bfc03494ad"
+    },
+    {
+      "file": "scvd-assisted-online-gate-red.log",
+      "sha256": "f076cc43c1f2ea7feb045d733dbe3c2e46c4ab893ac3f3dd505893720fd05a8d"
+    },
+    {
+      "file": "scvd-assisted-buyer-complete.log",
+      "sha256": "19b66975e245fc2146ff9d5775c170f85544a5271c678435579b740adafd2c7d"
+    },
+    {
+      "file": "scvd-assisted-typecheck-final.log",
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    }
+  ],
+  "limits": "Full hosted four-shard CI and aggregate check are required before merge. No native qualification or buyer acceptance is claimed."
+}

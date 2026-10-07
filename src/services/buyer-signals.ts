@@ -134,6 +134,7 @@ export type SignalKind =
   | "refusal_organic"
   | "refusal_machinery"
   | "reads"
+  | "follow_ups"
   | "readers"
   | "referrers"
   | "examples"
@@ -143,7 +144,7 @@ export type SignalKind =
   | "selfreads"
   | "artifacts"
   | "latency";
-export type ReadKind = "replay" | "order_poll" | "purchase_status" | "check_order";
+export type ReadKind = "spot_evidence_read" | "replay" | "order_poll" | "purchase_status" | "check_order";
 export type { ReaderClass };
 export { readerClass };
 export type RefusalReason = "missing" | "malformed" | "example" | "other";
@@ -167,6 +168,8 @@ export interface BuyerSignals {
   /** Self-identified machinery, kept and shown rather than dropped. */
   refusal_machinery: Record<string, number>;
   reads: Record<string, number>;
+  /** Responses carrying an offer, not impressions or completed purchases. */
+  follow_ups?: Record<string, number>;
   /** `${class}:${age}` for every verify hit, house excluded. */
   readers: Record<string, number>;
   /** Referrer hosts on verify hits: where receipts are shown. */
@@ -492,6 +495,12 @@ export function notePageRead(c: Context<HonoEnv>, page: PageKind, format: PageFo
   );
 }
 
+/** A fulfillment containing optional next tasks; not an impression. */
+export async function recordSpotFollowUp(env: Env, item: string): Promise<void> {
+  if (!["spot_check", "change_check", "batch_spot_check"].includes(item)) return;
+  await bumpMap(env, "follow_ups", `${item}:returned`);
+}
+
 /** A read of something already bought, bucketed by how old it was. */
 export async function recordPostPurchaseRead(env: Env, kind: ReadKind, mintedIso?: string): Promise<void> {
   const age = mintedIso ? verifyAgeBucket(mintedIso, Date.now()) : "unknown_age";
@@ -505,11 +514,12 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
   const fromStore = store ? await store.readMonth(month) : null;
   const read = (kind: SignalKind): Promise<Record<string, number>> =>
     fromStore ? Promise.resolve(fromStore[kind] ?? {}) : readMap(env, kind, month);
-  const [rail, refusal, refusalMachinery, reads, readers, referrers, examples, pages, crawlers, subjectFormats, selfreads, artifacts, latency, purposesRaw, ...verify] = await Promise.all([
+  const [rail, refusal, refusalMachinery, reads, followUps, readers, referrers, examples, pages, crawlers, subjectFormats, selfreads, artifacts, latency, purposesRaw, ...verify] = await Promise.all([
     read("rail"),
     read("refusal_organic"),
     read("refusal_machinery"),
     read("reads"),
+    read("follow_ups"),
     read("readers"),
     read("referrers"),
     read("examples"),
@@ -543,6 +553,7 @@ export async function readBuyerSignals(env: Env, month = metricsMonth()): Promis
     refusal,
     refusal_machinery: refusalMachinery,
     reads,
+    follow_ups: followUps,
     readers,
     referrers,
     examples,

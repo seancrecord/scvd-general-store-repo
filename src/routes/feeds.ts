@@ -158,7 +158,7 @@ export function hostEntriesOf(history: SubjectHistory, base: string): FeedEntry[
       title: `${host}: first probe on record, ${firstProbed.verdict}`,
       link: page,
       updated: firstProbed.observed_at ?? firstProbed.taken_at,
-      summary: `First probed round on the signed chain: verdict ${firstProbed.verdict} in week ${firstProbed.week}, snapshot ${firstProbed.sequence} (${firstProbed.entry_url}). ${failed.length === 0 ? "No failing checks named." : `Failing checks: ${failed.join(", ")}.`} Later entries are changes only; a week with none is unchanged or unwalked, and the history page says which. Not a ranking.`,
+      summary: `First probed round on the signed chain: verdict ${firstProbed.verdict} in week ${firstProbed.week}, snapshot ${firstProbed.sequence} (${firstProbed.entry_url}). ${firstProbed.observed_at ? `Observed ${firstProbed.observed_at}.` : "Request time unknown; feed update uses the snapshot publication date."} ${failed.length === 0 ? "No failing checks named." : `Failing checks: ${failed.join(", ")}.`} Later entries are changes only; a week with none is unchanged or unwalked, and the history page says which. Not a ranking.`,
     });
   }
   for (const change of history.verdict_changes) {
@@ -166,8 +166,8 @@ export function hostEntriesOf(history: SubjectHistory, base: string): FeedEntry[
       id: `${page}#${change.week}-verdict`,
       title: `${host}: ${change.from} → ${change.to}`,
       link: page,
-      updated: change.at,
-      summary: `Verdict changed from ${change.from} to ${change.to} in week ${change.week}, observed ${change.at}. The row, its failing checks and the snapshot it sits in are at ${page}.json. A change is a dated observation of a moment, not a rating.`,
+      updated: change.at ?? history.timeline.find(row => row.week === change.week)!.taken_at,
+      summary: `Verdict changed from ${change.from} to ${change.to} in week ${change.week}, ${change.at ? `observed ${change.at}` : "request time unknown; feed update uses the snapshot publication date"}. The row, its failing checks and the snapshot it sits in are at ${page}.json. A change is a dated observation of a moment, not a rating.`,
     });
   }
   for (const change of history.pay_to?.changes ?? []) {

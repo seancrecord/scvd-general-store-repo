@@ -55,7 +55,7 @@ async function seedReadyHost(): Promise<void> {
           host: "alpha.example",
           url: "https://alpha.example/x402",
           verdict: "ready",
-          checked_at: OBSERVED_AT,
+          observed_at: OBSERVED_AT,
           failed: [],
           advisories: [],
           offer: {
@@ -143,13 +143,14 @@ describe("not_observed states the gaps beside the verdict", () => {
     expect(summary.not_observed.length).toBeGreaterThan(0);
   });
 
-  it("is stated as [] rather than omitted when nothing is cited", async () => {
+  it("states unpaid probe limits even when no module is cited", async () => {
     await seedReadyHost();
     const outcome = await issuePassport(testEnv, "alpha.example");
     expect(outcome.issued).toBe(true);
     if (!outcome.issued) return;
     expect(outcome.passport.payload.modules).toEqual([]);
-    expect(outcome.passport.payload.summary.not_observed).toEqual([]);
+    expect(outcome.passport.payload.summary.not_observed.join(" ")).toContain("Paid settlement");
+    expect(outcome.passport.payload.summary.not_observed.join(" ")).toContain("Successful delivery");
     expect(outcome.passport.signed_payload).toContain('"not_observed"');
   });
 });

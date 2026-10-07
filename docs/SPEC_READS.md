@@ -1,5 +1,151 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-07 — Personal Agent Protocol announcement
+
+Read the primary source, Sierra's
+[Introducing Personal Agent Protocol](https://sierra.ai/blog/introducing-personal-agent-protocol)
+(published 2026-10-06T17:32Z). Meta and Sierra, with Genesys, Instinct,
+Rocket, Shopify, Stripe and Walmart, are developing an open standard for how
+a consumer's personal agent interacts with a business. The post describes a
+session built on OAuth: the agent discovers the business on its website,
+opens a guest session, and the customer later grants read-only or write
+access to their account. The business routes the agent through its website,
+through APIs "built on standards such as MCP and OpenAPI", or through an
+agent of its own. A v0.1 specification, design workshops and a reference
+implementation are promised "later this month"; finer permissions, push
+notifications and a payments extension are named as possible later additions
+with no dates. No specification text, repository or reference implementation
+was published with the announcement, so every shape above is prose, not wire.
+
+Secondhand (rule 55): CMSWire and Unite.AI restate the post; a Superpower
+Daily summary attributes to Bret Taylor that OpenAI and Anthropic are not
+participating. None of that was confirmed from a primary source.
+
+Position taken from this read:
+
+- No authentication or protocol change. The store has no accounts, so the
+  consent-scoped account session the protocol exists for has nothing here to
+  scope. Every free instrument already answers a cold request, which is the
+  announcement's guest tier, and every paid instrument settles with x402 or
+  MPP at the moment of the call. The no-account position in
+  `src/store/agent-auth.ts` and the 2026-10-01 ruling above (OAuth
+  authorization-server metadata is not a missing login feature) both stand.
+  `/auth.md` and the protocol list at `/developers` are unchanged; the store
+  does not claim a protocol it does not speak, and this one has no text yet.
+- The pending [Muse connector submission](../research/muse-connector-2026-09-19.md)
+  is the one in-flight item this touches: Muse is Meta's personal agent and
+  this is Meta's standard for how it reaches businesses. The submitted scope
+  (five free verification tools, no auth) fits the guest tier as described.
+  Re-read the connector terms against the v0.1 text before claiming fit.
+- Observatory interest, not merchant interest. Once businesses expose these
+  sessions, "the agent was scoped read-only" and "the session carried across
+  channels" become checkable artifacts; that is conformance-desk territory
+  after a specification and a first implementation exist, not before. The
+  protocol screen gains a row when a repository with merges exists to read.
+- The spec watch carries `personal-agent-protocol` with the blog post as its
+  source, to be replaced by the specification URL when one exists. The v0.1
+  publication is the re-read trigger, not the ninety-day clock.
+
+Limits: one blog post and three restatements read; no specification, no
+repository, no partner documentation beyond the quotes in the post. Nothing
+about Stripe's role in the payments extension, or any relation to MPP, was
+stated anywhere read; the overlap is conjecture and is not recorded as a fact.
+
+## 2026-10-06 — durable artifact pages and discovery
+
+Read Google's [sitemap guidance](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)
+and [canonicalization guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls):
+sitemaps identify preferred canonical URLs, discovery is not guaranteed indexing,
+and lastmod should describe a real significant update rather than request time.
+Read Schema.org's [Report](https://schema.org/Report) definition and inherited
+publication-date, encoding and creativeWorkStatus properties. These support dated
+report pages and visible withdrawal metadata, not a claim to search rich results.
+
+The keeper's Cairn search ranking was not independently reproduced, and the web
+reader could not open Cairn's reports path. No attribution of ranking gains to
+signatures, sitemap inclusion or the proposed change is established. Local scope
+and validation: [artifact discovery](ARTIFACT_DISCOVERY_2026-10.md).
+
+## 2026-10-01 — document discovery and reader compatibility
+
+Follow-up read for the keeper-approved HTML and browser changes:
+[Workers HTMLRewriter](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter/)
+documents streaming element handling and `onEndTag`, allowing missing links
+to be inserted after existing head links have been inspected without buffering
+the page. [Fetch §§4.8–4.10](https://fetch.spec.whatwg.org/#cors-preflight-fetch)
+separates permission for requested methods/headers from the actual response's
+CORS check. A read-only conditional preflight can therefore be answered
+without fetching a route merely to classify it; the existing machine-document
+response boundary still controls body exposure. The added allowance is limited
+to GET/HEAD and cache-validation headers, without credentials or payment headers.
+
+Read [RFC 9727 §§2–4](https://www.rfc-editor.org/rfc/rfc9727),
+[RFC 8288 §3](https://www.rfc-editor.org/rfc/rfc8288), and the
+[Fetch standard's exposed response headers](https://fetch.spec.whatwg.org/#http-access-control-expose-headers).
+The API catalog relation can be advertised from a publisher's pages; the
+well-known catalog must also answer HEAD with the discovery Link header.
+Existing links must survive additions and conditional responses. Browser
+script readers need Link exposed by CORS; the store already does that for
+published machine-readable documents.
+
+Live reads confirmed the HTML homepage's four discovery relations, but its
+JSON/Markdown variants had only canonical links. `/what` served both HTML
+and Markdown without Link headers. HEAD on `/.well-known/api-catalog`
+answered 200 without a Link header. The user-supplied isitagentready scanner
+passed homepage Link discovery and Markdown negotiation, plus robots,
+sitemap, DNS-AID, MCP, ARD and WebMCP checks. Those are scanner observations,
+not independent end-to-end qualifications of every protocol.
+
+Also read [A2A 1.0 §3.6](https://a2a-protocol.org/latest/specification/#36-versioning):
+an absent version header means 0.3, while 1.0 clients must request their
+version. The scanner reported missing `supportedInterfaces` on the default
+0.3 card; that is not evidence that the store lacks its negotiated 1.0 card.
+An explicit live `A2A-Version: 1.0` request returned both supported interfaces;
+the card and bounded audit are retained in
+[`research/document-discovery-2026-10-01/`](../research/document-discovery-2026-10-01/README.md).
+OAuth authorization-server metadata is not a missing login feature for an
+accountless store. No protocol or authentication change is justified by
+those two scanner grades alone.
+
+Limits: bounded public HTTP reads and source review; no paid calls, new
+directory submissions, or changes to crawler admission. A failed web-reader
+fetch of RFC 9110 was not used to justify negotiation changes.
+
+## 2026-10-01 — external directory and package records
+
+Read all seven keeper-supplied public URLs directly; each returned HTTP 200
+and identified SCVD or its Python preflight package:
+
+- [AllthingsPM](https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store): MCP directory page naming SCVD General Store, its description, maintainer and source repository.
+- [piwheels](https://www.piwheels.org/project/scvd-preflight/): Python package page, with a wheel listing and PyPI link. Package indexing, not store identity or device/runtime qualification.
+- [UCP.tools](https://ucptools.dev/directory/scvd.store): existing merchant listing, REST transport and UCP profile link. Its listed/validated date remains September 20; October 1 is our re-read date. Scores remain the directory's own.
+- [APIs.io provider](https://apis.io/providers/scvd-store/): SCVD General Store and Record Creative Co. LLC profile, API and developer-resource indexing. Its scores and classifications are not adopted.
+- [APIs.io A2A](https://apis.io/a2a/scvd-store/): SCVD Evidence Agent, canonical card/endpoint links and evidence skills. The page dates its card capture September 19, displays protocol 0.3.0 and separately claims A2A 1.0.0 structural conformance. These are recorded as that page's observations, not reconciled into a fresh compatibility claim.
+- [Enterprise DNA](https://enterprisedna.co/directories/mcp/seancrecord-scvd-general-store-repo/): repository-specific MCP directory page describing the observatory and its free checks.
+- [AI Agent Board](https://aiagentboard.org/mcp/store.scvd/general-store): public JSON record with the hosted MCP endpoint, repository/registry links and the board's dated working verdict and tool count. The verdict is an outside instrument reading, not our own execution test.
+
+Limits: the web reader retrieved only the APIs.io A2A page; the other reads
+initially failed there. Direct public HTTP reads subsequently succeeded for
+all seven after network access was enabled. No installation, tool execution,
+payment, security audit or directory submission was performed. Added store
+records feed the trust and discovery surfaces; piwheels stays in package and
+distribution documentation because its subject is the Python client.
+
+## 2026-09-30 — production guide size and alternate URLs
+
+Read the [llms.txt v2 proposal](https://llmstxt.org/) (page modified August 10,
+2026). It describes concise background and links to detailed Markdown, including
+files under subpaths. This cleanup preserves the existing full guide and moves
+one intact section between existing area guides. The 30,000-character ceiling
+and the smaller root-index alarm are SCVD's existing engineering budgets, not
+promises about every host's context limit. No ranking, indexing or buyer
+comprehension result is inferred. Live guide bodies and the local production
+fixture identify the size and configuration mismatch independently of the proposal.
+
+## 2026-09-30 — literal native-shell command recognition
+
+Read the primary [zsh quoting source](https://raw.githubusercontent.com/zsh-users/zsh/master/Doc/Zsh/grammar.yo), Quoting section, while reproducing a retained Codex command whose shell concatenates quoted fragments. A bounded matcher recognizes literal words only; it does not implement or execute general shell grammar. Captured-command and actual `/bin/sh` controls cover the supported subset; substitutions, operators and nested wrappers are refused. Non-default shell quoting options remain unsupported. POSIX's online chapter returned 403 through the web reader and GNU web manual reads timed out; no claim of having read those documents. The retrieved zsh source is retained with its hash in the source-review validation archive. See [implementation and native limits](BUYER_PACKAGE_SOURCE_REVIEW_2026-09-30.md).
+
 ## 2026-09-28 — revised AEO hand-check protocol
 
 Re-read [Google AI features guidance](https://developers.google.com/search/docs/appearance/ai-features).
@@ -73,6 +219,33 @@ escrow's `paymentState` and op events at one moment — is a different product
 and sits on the roadmap as AC2 until a door advertises the scheme; R7's
 per-scheme count on the trajectory is the sensor. Not read: the Solidity of
 the escrow, the facilitator implementations, or any live payment.
+
+## 2026-09-28 — Launch Check pilot request inputs
+
+Follow-through source read: Cloudflare's [storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and [storage concurrency guidance](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/)
+were read before extending the existing recovery store. Durable storage survives
+object eviction; external I/O can interleave calls, so the existing per-object
+queue and pre-presentation checkpoint remain necessary. No network operation is
+added inside a storage transaction. Rechecked BiX issue comments: the latest
+comment remains our results/enum question, with no partner clarification yet.
+
+Read the current [x402 v2 core specification](https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md)
+and the locked `@x402/fetch` 2.26.0 distribution's `wrapFetchWithPayment`
+implementation (`dist/esm/index.mjs`): it clones the original Request before
+fetching and adds payment headers to the clone. This supports preserving the
+original request body when presenting payment; it does not bind that body in
+the EIP-3009 authorization. No upstream package or protocol was modified.
+
+The partner input comes from [BiX's explicit pilot request](https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5867404582).
+Earlier today the new origin's OpenAPI and reliability documents were read and
+one unsigned POST with `{"pair":"USDG","tax":1}` answered 402. The
+[posted results](https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5874641977)
+state the observed quote, the output enum question and the missing input support
+in this engine. No paid response was read and settlement remains unverified.
+This implementation makes no new network request to the partner.
+
+[Implementation scope and offline controls](LAUNCH_CHECK_PILOT_INPUTS_2026-09-28.md).
 
 ## 2026-09-24 — partner evidence pilot qualification
 
@@ -2656,3 +2829,47 @@ invalid Unicode and mishandled native JavaScript values; regression tests now
 pin its explicit input contract. Valid JSON preimages remain unchanged. Gaps:
 no inventory of historical issued artifacts containing invalid Unicode; no claim
 of production exploitation. [Implementation scope](SCVD_ATTESTATION_PILOT_2026-10.md).
+### 2026-09-30 — reporting discovery and structured-data review
+
+Read Google's [structured-data introduction](https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data),
+[AI features guidance](https://developers.google.com/search/docs/appearance/ai-features)
+and [canonical URL guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls).
+Structured data should describe the visible page; AI Search uses ordinary
+Search eligibility rather than a special new schema or AI text file. This
+review checks existing text, links and schema parity, not indexing or ranking.
+Canonical aliases retain the established `/developers` destination.
+
+Read the [WebMCP draft's ModelContext interface](https://webmachinelearning.github.io/webmcp/#modelcontext-interface):
+it describes tool registration and invocation. Reading that draft does not
+establish current browser support, a payment wallet, successful registration
+on a particular browser, or paid execution. This pass changes discovery copy,
+not the browser adapter or protocol implementation. A2A/UCP version and
+checkout declarations remain derived from their existing source constants;
+no new conformance or interoperability qualification is inferred.
+
+### 2026-09-30 — standalone MCP starter compatibility
+
+Read the official [modern lifecycle/versioning](https://modelcontextprotocol.io/specification/2026-07-28/basic/lifecycle),
+[base metadata](https://modelcontextprotocol.io/specification/2026-07-28/basic),
+[stdio binding](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio),
+[HTTP binding](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http)
+and [legacy lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle).
+Modern requests declare version and capabilities per request; discovery and
+unsupported-version errors replace the handshake. Stdio cancellation suppresses
+later replies. HTTP forwarding must mirror version, method and tool name.
+Legacy initialization negotiates a supported legacy revision separately.
+The direct modern `/basic/versioning` and `/server/discovery` URLs failed on
+follow-up; lifecycle, base metadata and transport pages were readable.
+
+The bounded repair covers the starter's existing verifier tools and JSON
+upstream. It does not turn this into a general HTTP MCP client (SSE, sessions,
+authentication and custom tool-header annotations are outside this adapter).
+The installed official TypeScript SDK 1.30.0 remains handshake-based; its
+client can independently check legacy behavior, while its stdio transport can
+carry explicit modern probes. Neither establishes modern native-host adoption.
+
+## 2026-10-02 — S8 v3 scoring decision
+
+Read the current primary [Bazaar extension](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/bazaar.md), Schema Validation: info is validated against its declared schema before cataloging. Read the [offer/receipt extension](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/extension-offer-and-receipt.md), sections 2 and 4.1: the extension is optional and offers match accepts by payload fields, not array position. The shorter guessed offer-receipt.md URL was unavailable; the canonical document above was reachable.
+
+These reads support promoting the existing bounded comparisons into a new battery; they do not establish actual directory ingestion, signature validity or payment completion. The schema reader supports only its documented keyword subset and bounded depth. The offer reader compares decoded JWS terms, not all signature formats. Both old batteries retain their scoring. [Implementation](S8_V3_READINESS_2026-10-02.md).

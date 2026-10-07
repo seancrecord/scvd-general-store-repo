@@ -1,6 +1,9 @@
 # Upstream note for `wevm/mppx` — the x402 reader's strict resource URL
 
-**Status:** draft for the keeper. Filing an issue on another project's
+**Status:** MOOT as of mppx 0.11.0 (released 2026-09-23; changelog entry
+4dc37a8 "Removed the x402 client requirement that resource URLs match
+response URLs"). Nothing left to file; kept as the dated record of what the
+2026-09-18 buyer hit. Was: draft for the keeper. Filing an issue on another project's
 tracker is the keeper's press (rule 30); this container has no access to
 that repository. Goodwill, not a dependency: the store already names the
 asked URL in its envelope since

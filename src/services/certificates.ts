@@ -113,6 +113,13 @@ export interface MintOptions {
    */
   mandateId?: string;
   /**
+   * Any item: an outside artifact cited by the buyer as
+   * <format>:<reference>, shape-checked by the buy door and otherwise
+   * untouched (2026-10-01). Signed, never resolved: the store holds no
+   * copy and makes no claim about it beyond "this was cited".
+   */
+  citedArtifact?: string;
+  /**
    * settlement_attestation: the observation's evidence hash, bound
    * into the certificate so /api/verify covers the attestation too.
    * No new verification endpoint: the one that already exists now
@@ -259,6 +266,9 @@ async function prepareCertificate(
   }
   if (options.mandateId) {
     certificate.mandate_id = options.mandateId;
+  }
+  if (options.citedArtifact) {
+    certificate.cited_artifact = options.citedArtifact;
   }
   /**
    * The store's word, on every receipt: the week's line from the

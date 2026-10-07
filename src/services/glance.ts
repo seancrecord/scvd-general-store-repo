@@ -1,10 +1,11 @@
+import { commerceMonthTotals, readCommerceMonthLedger } from "@/services/commerce-month";
 import { listAlerts } from "@/lib/alerts";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import type { TakeSummary } from "@/services/books-summary";
 import type { MetricEvent, MonthLedger, PorchLedger } from "@/lib/metrics";
 import type { FieldWalletReading } from "@/services/field-wallet";
 import type { MonthReclassAdjustment } from "@/services/reclassify";
-import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
+import type { BazaarLedgerEntry, PayerRecord } from "@/types";
 import type { Env } from "@/types";
 
 /**
@@ -44,7 +45,7 @@ export const GLANCE_KEY = "glance:latest";
  * THE DESK'S READINGS, CACHED WITH THE GLANCE (2026-09-12). The desk
  * still fanned out to eleven loads on every open after the take moved
  * here — the month and porch ledgers (metric key scans), the payers,
- * the recent 402s (event rows), the Bazaar ledger, the Gazette,
+ * the recent 402s (event rows), the Bazaar ledger,
  * the reclassification cert walk, the MCP census, the paying wallet
  * (an eth_call on a leash) and the bounty board. The keeper asked why
  * the desk was slow. This is why. They now ride the hourly glance,
@@ -58,7 +59,6 @@ export interface DeskGlance {
   payers: PayerRecord[];
   recent_challenges: MetricEvent[];
   bazaar_ledger: BazaarLedgerEntry[];
-  gazette_issues: GazetteIssue[];
   month_reclass: { months: Record<string, MonthReclassAdjustment>; truncated: boolean } | null;
   mcp_clients: Record<string, number>;
   field_wallet: FieldWalletReading | null;
@@ -85,9 +85,9 @@ export interface Glance {
    * 2026-09-12 this field held the ALL-TIME certificate count under a
    * monthly label, which is how the keeper read 94 as a month.
    */
-  organic_settlements: number;
+  organic_settlements: number | null;
   /** The month's organic revenue in USDC, off the till, after the reclassification ledger. */
-  take_usdc: number;
+  take_usdc: number | null;
   /** Organic sales all-time as the storefront counts them (the till), beside the certificates the take counts. */
   organic_sales_all_time: number;
   /** Of those, how many carry a certificate: the take's row count. */
@@ -130,7 +130,12 @@ export async function readGlance(env: Env): Promise<Glance | null> {
   const raw = await kvGet(env.COUNTERS, GLANCE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as Glance;
+    const glance = JSON.parse(raw) as Glance;
+    if (!glance.desk?.month_ledger.native_mpp) {
+      glance.organic_settlements = null;
+      glance.take_usdc = null;
+    }
+    return glance;
   } catch {
     /*
      * A blob that will not parse is treated as absent rather than as
@@ -166,12 +171,7 @@ export async function writeGlance(env: Env): Promise<Glance> {
 
   const month = desk.month_ledger.month;
   const reclass = desk.month_reclass?.months[month];
-  const monthSettles = Math.max(
-    0,
-    Object.values(desk.month_ledger.items).reduce((sum, row) => sum + row.settled, 0) -
-      (reclass?.settles ?? 0),
-  );
-  const monthUsdc = Math.max(0, desk.month_ledger.revenueUsdc - (reclass?.usdc ?? 0));
+  const totals = commerceMonthTotals(desk.month_ledger, reclass);
   const glance: Glance = {
     computed_at: new Date().toISOString(),
     pending_orders: orders.filter((order) => order.status === "queued").length,
@@ -181,8 +181,8 @@ export async function writeGlance(env: Env): Promise<Glance> {
         .length +
       refunds.filter((refund) => refund.status === "refund_pending").length,
     open_alerts: alerts.length,
-    organic_settlements: monthSettles,
-    take_usdc: monthUsdc,
+    organic_settlements: totals?.organic ?? null,
+    take_usdc: totals?.revenue_usdc ?? null,
     organic_sales_all_time: stats.organic_settlements,
     with_certificate_all_time: take.total.organic_sales,
     take,
@@ -216,18 +216,16 @@ async function readDesk(env: Env): Promise<DeskGlance> {
     payers,
     recentChallenges,
     bazaarLedger,
-    gazetteIssues,
     monthReclass,
     mcpClients,
     fieldWallet,
     bounty,
   ] = await Promise.allSettled([
-    metrics.readMonthLedger(env),
+    readCommerceMonthLedger(env),
     metrics.readPorchLedger(env),
     metrics.listPayers(env),
     metrics.listRecentPricedEvents(env),
     import("@/lib/bazaar-observer").then(({ listBazaarLedger }) => listBazaarLedger(env)),
-    import("@/services/gazette").then(({ listIssues }) => listIssues(env)),
     import("@/services/reclassify").then(({ monthReclassAdjustments }) => monthReclassAdjustments(env)),
     import("@/services/mcp-clients").then(({ readMcpClients }) => readMcpClients(env)),
     // The paying wallet is one eth_call on a three-second leash, as
@@ -245,7 +243,6 @@ async function readDesk(env: Env): Promise<DeskGlance> {
     payers: take<PayerRecord[]>("payers", [])(payers),
     recent_challenges: take<MetricEvent[]>("window-shoppers", [])(recentChallenges),
     bazaar_ledger: take<BazaarLedgerEntry[]>("bazaar ledger", [])(bazaarLedger),
-    gazette_issues: take<GazetteIssue[]>("gazette", [])(gazetteIssues),
     month_reclass: take<DeskGlance["month_reclass"]>("reclass ledger", null)(monthReclass),
     mcp_clients: take<Record<string, number>>("the mcp census", {})(mcpClients),
     field_wallet: take<FieldWalletReading | null>("the paying wallet", null)(fieldWallet),
@@ -271,6 +268,6 @@ async function readDesk(env: Env): Promise<DeskGlance> {
  */
 export async function ensureGlance(env: Env): Promise<Glance | null> {
   const existing = await readGlance(env);
-  if (existing) return existing;
+  if (existing?.desk?.month_ledger.native_mpp) return existing;
   return writeGlance(env).catch(() => null);
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.1.0",
   "name": "https://scvd.store/agents/general-store",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "SCVD General Store is an x402 payment-verification and signed-evidence service for autonomous agents. It preflights payment-protected endpoints before spend, checks any issuer's signed x402 offers and receipts against published criteria, observes settlement on-chain, and returns dated ed25519-signed evidence that a third party can verify offline. Signature validity is separate from the signed observation date, stated gaps and any declared expiry. It is not an escrow, a guarantee, or a ranking. Free instruments — preflight and the conformance desk — answer before any money moves; the paid instruments produce durable third-party evidence. Reachable over MCP at a remote Streamable HTTP endpoint and through an installable stdio bridge.",
   "authors": [
     "Record Creative Co. LLC <sean@recordcreativeco.com>"
@@ -57,7 +57,7 @@
       "name": "integration/mcp",
       "data": {
         "name": "scvd-general-store",
-        "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
+        "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
         "connections": [
           {
             "type": "streamable-http",
@@ -253,7 +253,7 @@
         "skill_manifest": {
           "name": "scvd-x402-verification",
           "description": "Check an x402 endpoint before paying it, and check the receipt after. Free instruments first; a paid signed observation only when durable third-party evidence is actually needed.",
-          "version": "0.2.3",
+          "version": "0.2.4",
           "license": "MIT"
         },
         "source_locator": {

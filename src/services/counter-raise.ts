@@ -1,5 +1,5 @@
 import { accountingContextFor, certificateProtocol } from "@/services/certificate-accounting";
-import { isHouseWallet } from "@/lib/channel";
+import { isHouseTraffic } from "@/lib/channel";
 import { canonicalAddress } from "@/lib/addresses";
 import { counterLedger } from "@/lib/counter-ledger";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
@@ -46,6 +46,27 @@ import type { CertificateRecord, Env, PayerRecord } from "@/types";
  * certificate and no fixed price counts as a settle and books no
  * money; the result names how many.
  *
+ * WHO IS HOUSE IS THE TILL'S CALL, NOT THIS FILE'S (2026-10-02). The
+ * till books a settle under `paidh` by four tests — the wallet list,
+ * the store's own receiving addresses, a house user-agent, the house
+ * header — and writes the same per-settle record either way. Until
+ * this date the raise asked only the wallet list, so a settle booked
+ * house by agent or header read here as organic and `paid:<item>` was
+ * lifted for it within the hour: the counters then held that sale
+ * twice (once under `paidh`, once under `paid`) against one record,
+ * which is exactly a books check reading "the counters read 1
+ * settlement more than the derived payer purchases" — a difference
+ * this raise manufactured and cannot resolve, since it never lowers.
+ * The record now carries `house: true` when the till booked it so
+ * (lib/metrics.ts recordPayerSettle) and is skipped here; a record
+ * without the flag is asked the till's own wallet question, which
+ * also covers a payer that is one of our receiving addresses. The
+ * agent and header tests cannot be re-run from a record, so a
+ * flagless house-by-agent record from before this date still reads
+ * organic here — and its lift has already happened, once; this pass
+ * finds nothing short and moves nothing. The result counts the
+ * records it set aside as house.
+ *
  * IDEMPOTENT: a second pass finds nothing short. It rides the hourly
  * round, so a counter that ever falls behind its records is lifted
  * within the hour with nobody cross-referencing anything; with the
@@ -60,6 +81,8 @@ interface SettleRecord {
   item: string;
   at: string;
   transaction?: string;
+  /** The till booked this settle under the house tally; never raised. */
+  house?: boolean;
 }
 
 export interface CounterRaise {
@@ -76,6 +99,13 @@ export interface CounterRaiseResult {
   certificates_truncated: boolean;
   /** Records counted as organic settles (house and reclassified wallets excluded). */
   organic_records: number;
+  /**
+   * Records set aside because the till booked them as house: the
+   * wallet is family, the payer is one of our receiving addresses, or
+   * the record itself says so (house by agent or header). Absent on
+   * results written before 2026-10-02.
+   */
+  house_records: number;
   /** Organic records whose amount nothing could name; counted, not priced. */
   unpriced_records: number;
   counters_checked: number;
@@ -115,12 +145,18 @@ export async function raiseCountersToRecords(env: Env): Promise<CounterRaiseResu
   const raise = (key: string, by: number) => expected.set(key, (expected.get(key) ?? 0) + by);
   const perWallet = new Map<string, { count: number; first: string }>();
   let organicRecords = 0;
+  let houseRecords = 0;
   let unpriced = 0;
   const prefixLength = KV_KEYS.payerSettlePrefix().length;
   for (const [name, record] of records) {
     if (!record?.item || !record.at) continue;
     const wallet = name.slice(prefixLength).split(":")[0] ?? "";
-    if (!wallet || isHouseWallet(env, wallet) || skipWallets.has(canonicalAddress(wallet))) continue;
+    if (!wallet || skipWallets.has(canonicalAddress(wallet))) continue;
+    // The till's own question, with the record's own answer on top.
+    if (record.house === true || isHouseTraffic(env, { payer: wallet })) {
+      houseRecords += 1;
+      continue;
+    }
     const cert = record.transaction ? certByTx.get(record.transaction.toLowerCase()) : undefined;
     if (cert && await certificateProtocol(env, cert, context) !== "x402") continue;
     organicRecords += 1;
@@ -153,6 +189,7 @@ export async function raiseCountersToRecords(env: Env): Promise<CounterRaiseResu
     certificates_scanned: certKeys.names.length,
     certificates_truncated: certKeys.truncated,
     organic_records: organicRecords,
+    house_records: houseRecords,
     unpriced_records: unpriced,
     counters_checked: expected.size,
     raised: [],

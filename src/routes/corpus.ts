@@ -733,7 +733,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
   const jsonLd = jsonLdScript({
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: `x402 endpoint readiness — ${host}`,
+    name: title,
     description,
     url: `${base}/corpus/host/${host}`,
     sameAs: `${base}/corpus/host/${host}.json`,
@@ -1254,8 +1254,8 @@ corpusRoutes.get("/corpus/battery-delta.json", async (c) => {
   return c.json({
     ...series,
     corrections: CORRECTIONS_POINTER,
-    how_to_rederive: `Fetch ${base}/corpus/{sequence}.json for any week, take each host row's verdict and failed[], and count the rows whose every failed name is one of v2_only_checks above — those are the doors v1 would have passed. The check names are published at ${base}/api/preflight/checks; nothing here is computed from anything the signed snapshots do not already contain.`,
-    the_open_question: `Whether v2 should become the headline battery on every instrument is the keeper's call, not this number's: the change renames the criteria on every artifact this store has already signed. See ${base}/api/preflight/${PREFLIGHT_VERSION} for what each battery folds.`,
+    how_to_rederive: `Fetch ${base}/corpus/{sequence}.json for any week, take each scored host row's failed[], discard v3-only names listed in the battery manifest, and count rows with at least one remaining failure and every remaining name in v2_only_checks above — those are the doors v1 would have passed. The check names are published at ${base}/api/preflight/checks; nothing here is computed from anything the signed snapshots do not already contain.`,
+    the_open_question: `Changing readiness criteria is the keeper's call, not this number's. This remains the historical v1/v2 comparison; the current battery is published at /criteria. Existing signed artifacts retain their original criteria. See ${base}/api/preflight/${PREFLIGHT_VERSION} for what each battery folds.`,
   });
 });
 

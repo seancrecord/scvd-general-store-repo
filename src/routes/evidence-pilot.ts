@@ -32,11 +32,13 @@ body.pilot {background:#101921;color:#ecf1f4}
 .pilot .limits li {margin-bottom:.9rem}
 .pilot .facts {display:flex;gap:2rem;flex-wrap:wrap;margin:1rem 0}
 .pilot .facts strong {font-size:1.5rem;display:block}
-.pilot .download {overflow-wrap:anywhere}
+.pilot .download,.pilot .endpoint {overflow-wrap:anywhere}
 @media(max-width:640px){.pilot .offer{grid-template-columns:1fr;gap:1.5rem}.pilot .offer section[aria-label]{grid-row:1}.pilot .sample{padding:1rem}.pilot .cta{white-space:normal}.pilot td,.pilot th{padding:.6rem .25rem}}
 `;
+const readableTime = (iso: string) => iso.replace("T", " ").replace(".000Z", " UTC");
+const gapLabel = (gap: string | null) => gap === "no_attempt" ? "No attempt recorded" : gap === "no_conformance_result" ? "No conformance result" : "Checks recorded";
 const sample = samplePilotReport();
-const sampleRows = sample.report.days.map(day => `<tr><th scope="row">Day ${day.day}</th><td>${day.attempts}</td><td>${day.conformance_checks}</td><td>${day.gap ? "Coverage gap" : day.outcomes.map(o => h(o.verdict)).join(", ")}</td></tr>`).join("");
+const sampleRows = sample.report.days.map(day => `<tr><th scope="row">Day ${day.day}</th><td>${day.attempts}</td><td>${day.conformance_checks}</td><td>${day.gap ? "Coverage gap" : day.outcomes.map(o => o.verdict === "ready" ? "Ready" : "Not ready").join(", ")}</td></tr>`).join("");
 
 function payload(base: string) {
   return { what_this_is: PILOT_PROPOSITION, proposition: PILOT_PROPOSITION, price: PILOT_MONEY, free_first: PILOT_FREE,
@@ -77,7 +79,7 @@ evidencePilotRoutes.get("/api/evidence-pilot/:watch_id", async c => {
       const report = data.report;
       return c.html(renderSimplePage({ title: `${pilot.name}: ${report.window.complete ? "final report" : "interim report"}`, path: `/api/evidence-pilot/${record.watch_id}`,
         description: PILOT_PROPOSITION, webmcp: false, collapseNavigation: true, bodyClass: "pilot", extraCss: CSS,
-        bodyHtml: `<p>${h(record.url)}</p><p>${h(record.started_at)} to ${h(record.ends_at)}</p><p><strong>${report.coverage.days_with_conformance_checks} / ${report.coverage.elapsed_days}</strong> completed days with conformance checks; <strong>${report.coverage.days_without_conformance_checks}</strong> without.</p><p>${h(report.coverage.denominator)}</p><p>${report.changes.length} changes between comparable readings or criteria revisions; inspect the export for their kinds.</p><table><caption>Completed observation windows</caption><thead><tr><th>Day</th><th>Attempts</th><th>Checks</th><th>Gap</th></tr></thead><tbody>${report.days.map(day => `<tr><th>${day.day}</th><td>${day.attempts}</td><td>${day.conformance_checks}</td><td>${h(day.gap ?? "none in this slot")}</td></tr>`).join("")}</tbody></table><p><a href="?download=1">Download signed JSON</a></p><p>${h(data.how_to_verify)}</p><ul>${PILOT_LIMITS.map(limit => `<li>${h(limit)}</li>`).join("")}</ul>`,
+        bodyHtml: `<p class="endpoint">${h(record.url)}</p><p>${h(readableTime(record.started_at))}<br>to ${h(readableTime(record.ends_at))}</p><p><a class="cta" href="?download=1">Download signed JSON</a></p><p><strong>${report.coverage.days_with_conformance_checks} / ${report.coverage.elapsed_days}</strong> completed days with conformance checks; <strong>${report.coverage.days_without_conformance_checks}</strong> without.</p><p>${h(report.coverage.denominator)}</p><p>Changes recorded: ${report.changes.length}. These compare readings or criteria revisions; inspect the export for their kinds.</p><table><caption>Completed observation windows</caption><thead><tr><th scope="col">Day</th><th scope="col">Attempts</th><th scope="col">Checks</th><th scope="col">Coverage</th></tr></thead><tbody>${report.days.map(day => `<tr><th scope="row">${day.day}</th><td>${day.attempts}</td><td>${day.conformance_checks}</td><td>${gapLabel(day.gap)}</td></tr>`).join("")}</tbody></table><p><a href="?download=1">Download signed JSON</a></p><p>${h(data.how_to_verify)}</p><ul>${PILOT_LIMITS.map(limit => `<li>${h(limit)}</li>`).join("")}</ul>`,
       }));
     }
     return c.json(data);

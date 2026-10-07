@@ -1081,3 +1081,19 @@ test("the default fetch is bound, so a browser does not answer 'Illegal invocati
     globalThis.fetch = original;
   }
 });
+
+test("a delivered Spot Check visibly offers an optional human note and same-origin next purchases", async () => {
+  const { renderResult } = await import("./till.js");
+  const doc = fakeDocument();
+  doc.location = {origin:"https://scvd.store"};
+  const output=doc.createElement("pre"); output.ownerDocument=doc;
+  const body={counter_note:{optional:true,text:"Dated evidence for example.com. <script>untrusted</script>"},follow_up:{free_alternatives:[{name:"History",price_usdc:0,url:"https://scvd.store/corpus/host/example.com.json"}],options:[{name:"Change Check",price_usdc:0.005,listing_url:"https://scvd.store/menu/change_check?host=example.com"},{name:"Hostile",price_usdc:1,listing_url:"https://elsewhere.example/pay"}]}};
+  renderResult({result:{outcome:"delivered",body},say:()=>{},output,item:{name:"Spot Check"}});
+  const section=doc.inserted.find(node=>Object.hasOwn(node.attributes,"data-counter-note"));
+  assert.ok(section,"the follow-up must be visible outside the raw response");
+  const nodes=section.children.flatMap(row=>[row,...row.children]);
+  assert.equal(nodes.find(row=>row.tag==="textarea").value,body.counter_note.text);
+  assert.ok(nodes.some(row=>row.tag==="a" && row.href.includes("/menu/change_check")));
+  assert.ok(!nodes.some(row=>row.href?.includes("elsewhere.example")));
+  assert.ok(nodes.every(row=>Object.keys(row.listeners).length===0),"nothing sends or buys automatically");
+});

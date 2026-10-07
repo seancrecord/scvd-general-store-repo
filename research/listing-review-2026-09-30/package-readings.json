@@ -1,0 +1,301 @@
+[
+  {
+    "directory": "cli",
+    "local": {
+      "name": "scvd-cli",
+      "version": "0.4.0",
+      "description": "The official command line for scvd.store: check any x402 door, verify any signed offer or receipt, read the weekly corpus and the fresh set, and verify anything the store ever signed. Zero dependencies, no account, no key.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "cli"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:19.571308+00:00",
+      "url": "https://registry.npmjs.org/scvd-cli",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/scvd-cli",
+      "http_date": "Wed, 30 Sep 2026 13:41:19 GMT",
+      "content_type": "application/json",
+      "sha256": "633c80ded3dbe5ba7bdf4a53a2e845dd1ed44844a58dddba44a36b3d90e18a02",
+      "bytes": 17815
+    },
+    "published": {
+      "name": "scvd-cli",
+      "version": "0.3.0",
+      "description": "The official command line for scvd.store: check any x402 door, verify any signed offer or receipt, read the weekly corpus and the fresh set, and verify anything the store ever signed. Zero dependencies, no account, no key.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "cli"
+      },
+      "homepage": "https://scvd.store/developers",
+      "bin": {
+        "scvd": "scvd.mjs"
+      }
+    },
+    "published_at": "2026-09-10T16:05:30.303Z"
+  },
+  {
+    "directory": "tab",
+    "local": {
+      "name": "scvd-tab",
+      "version": "0.11.2",
+      "description": "The Tab: an MCP server that keeps the running account of every tool a builder signs up for \u2014 trial deadlines, burn, price drift, and what each signup demanded of a human. Local JSONL, append-only, zero dependencies; nothing leaves the file without deliberate, consented contribution.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "tab"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:19.832420+00:00",
+      "url": "https://registry.npmjs.org/scvd-tab",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/scvd-tab",
+      "http_date": "Wed, 30 Sep 2026 13:41:20 GMT",
+      "content_type": "application/json",
+      "sha256": "7c6b0d3db07df76ebe7ba23d44652a426d538e48b833bc1ca2a6bfb343a76013",
+      "bytes": 26380
+    },
+    "published": {
+      "name": "scvd-tab",
+      "version": "0.11.2",
+      "description": "The Tab: an MCP server that keeps the running account of every tool a builder signs up for \u2014 trial deadlines, burn, price drift, and what each signup demanded of a human. Local JSONL, append-only, zero dependencies; nothing leaves the file without deliber",
+      "repository": {
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "type": "git",
+        "directory": "tab"
+      },
+      "homepage": "https://scvd.store",
+      "bin": {
+        "scvd-tab": "server.mjs",
+        "scvd-tab-pager": "pager.mjs"
+      }
+    },
+    "published_at": "2026-09-24T15:07:45.468Z"
+  },
+  {
+    "directory": "verifier",
+    "local": {
+      "name": "x402-verify",
+      "version": "1.9.0",
+      "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: compact JWS or x402 JWS envelopes (EdDSA/Ed25519), did:web resolution, local revision-1 schema checks, explicit result statuses, and optional anchored key history.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "verifier"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:20.037053+00:00",
+      "url": "https://registry.npmjs.org/x402-verify",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/x402-verify",
+      "http_date": "Wed, 30 Sep 2026 13:41:20 GMT",
+      "content_type": "application/json",
+      "sha256": "a9a616866a03ff8272f742e1c3b6ef42bf8ef9d9e5182e955efc4d90592071a4",
+      "bytes": 62783
+    },
+    "published": {
+      "name": "x402-verify",
+      "version": "1.9.0",
+      "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: compact JWS or x402 JWS envelopes (EdDSA/Ed25519), did:web resolution, local revision-1 schema checks, explicit result statuses, and optional anchored key history.",
+      "repository": {
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "type": "git",
+        "directory": "verifier"
+      },
+      "homepage": "https://scvd.store/api/conformance/v1",
+      "bin": {
+        "scvd-evidence": "evidence-cli.mjs"
+      }
+    },
+    "published_at": "2026-09-28T20:15:55.023Z"
+  },
+  {
+    "directory": "signer",
+    "local": {
+      "name": "x402-sign",
+      "version": "1.0.3",
+      "description": "Zero-dependency signer for x402 Signed Offers & Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s, generate your did:web document, refuse partial commitments. The issuing half of x402-verify.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "signer"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:20.248112+00:00",
+      "url": "https://registry.npmjs.org/x402-sign",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/x402-sign",
+      "http_date": "Wed, 30 Sep 2026 13:41:20 GMT",
+      "content_type": "application/json",
+      "sha256": "dab389659e72e02532a3de801143391b52fad8dc068e5f25417bbee02d81fe47",
+      "bytes": 16408
+    },
+    "published": {
+      "name": "x402-sign",
+      "version": "1.0.3",
+      "description": "Zero-dependency signer for x402 Signed Offers & Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s, generate your did:web document, refuse partial commitments. The issuing half of x402-verify.",
+      "repository": {
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "type": "git",
+        "directory": "signer"
+      },
+      "homepage": "https://scvd.store/api/conformance/v1",
+      "bin": null
+    },
+    "published_at": "2026-09-10T16:06:54.129Z"
+  },
+  {
+    "directory": "x402-preflight",
+    "local": {
+      "name": "scvd-preflight",
+      "version": "0.3.0",
+      "description": "Zero-dependency client for scvd.store's free x402 preflight: one probe per door, every check named, the remediation rows, and the deploy gate's exit law. The GitHub Action's file as a library and a command.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "x402-preflight"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:20.460819+00:00",
+      "url": "https://registry.npmjs.org/scvd-preflight",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/scvd-preflight",
+      "http_date": "Wed, 30 Sep 2026 13:41:20 GMT",
+      "content_type": "application/json",
+      "sha256": "cfa5bab916c2a2159b860f5f7435787eb4293b642e894697b2d5c96374a94c98",
+      "bytes": 7766
+    },
+    "published": {
+      "name": "scvd-preflight",
+      "version": "0.2.0",
+      "description": "Zero-dependency client for scvd.store's free x402 preflight: one probe per door, every check named, the remediation rows, and the deploy gate's exit law. The GitHub Action's file as a library and a command.",
+      "repository": {
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "type": "git",
+        "directory": "x402-preflight"
+      },
+      "homepage": "https://scvd.store/api/preflight/v2",
+      "bin": {
+        "scvd-preflight": "bin.mjs"
+      }
+    },
+    "published_at": "2026-09-19T14:15:37.257Z"
+  },
+  {
+    "directory": "corpus-client",
+    "local": {
+      "name": "scvd-corpus-client",
+      "version": "0.1.0",
+      "description": "Zero-dependency reader for scvd.store's signed x402 corpus: the weekly census, the fresh set, one host's readiness history, the month, the feeds and the diff, as the store serves them. The scvd CLI's library half.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "corpus-client"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:20.663403+00:00",
+      "url": "https://registry.npmjs.org/scvd-corpus-client",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/scvd-corpus-client",
+      "http_date": "Wed, 30 Sep 2026 13:41:20 GMT",
+      "content_type": "application/json",
+      "sha256": "e69cc6dd972d7b30bb5aedbeb7f5c18ec51189d1a196dc790722288b47a63ea6",
+      "bytes": 6996
+    },
+    "published": {
+      "name": "scvd-corpus-client",
+      "version": "0.1.0",
+      "description": "Zero-dependency reader for scvd.store's signed x402 corpus: the weekly census, the fresh set, one host's readiness history, the month, the feeds and the diff, as the store serves them. The scvd CLI's library half.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "corpus-client"
+      },
+      "homepage": "https://scvd.store/corpus",
+      "bin": null
+    },
+    "published_at": "2026-09-10T16:47:12.092Z"
+  },
+  {
+    "directory": "defects",
+    "local": {
+      "name": "scvd-defects",
+      "version": "0.21.0",
+      "description": "scvd.store's x402 defect vocabulary as data: every class with what it asserts, what falsifies it, whether an unpaid probe can see it, and both halves of the remediation \u2014 plus recorded 402 door fixtures to test a client against, and settlement-response fixtures with a reader that says what a SettleResponse lets you conclude. CC BY 4.0 names, MIT code.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "defects"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:20.883267+00:00",
+      "url": "https://registry.npmjs.org/scvd-defects",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/scvd-defects",
+      "http_date": "Wed, 30 Sep 2026 13:41:21 GMT",
+      "content_type": "application/json",
+      "sha256": "99d4bcb444a582a1be9a1581ed9cd6cc263655608f9235507e8b519773070286",
+      "bytes": 18908
+    },
+    "published": {
+      "name": "scvd-defects",
+      "version": "0.20.0",
+      "description": "scvd.store's x402 defect vocabulary as data: every class with what it asserts, what falsifies it, whether an unpaid probe can see it, and both halves of the remediation \u2014 plus recorded 402 door fixtures to test a client against, and settlement-response fi",
+      "repository": {
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "type": "git",
+        "directory": "defects"
+      },
+      "homepage": "https://scvd.store/defects",
+      "bin": null
+    },
+    "published_at": "2026-09-23T17:14:06.709Z"
+  },
+  {
+    "directory": "mcp-starter",
+    "local": {
+      "name": "scvd-mcp-starter",
+      "version": "0.1.1",
+      "description": "A zero-dependency MCP server over stdio that serves scvd.store's five free x402 verifier tools \u2014 preflight, receipt verification, readiness lookup, defect definitions, artifact verification \u2014 to any MCP client. Copy it, keep it, or point it at your own door.",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "directory": "mcp-starter"
+      }
+    },
+    "reading": {
+      "read_at": "2026-09-30T13:41:21.112858+00:00",
+      "url": "https://registry.npmjs.org/scvd-mcp-starter",
+      "status": 200,
+      "final_url": "https://registry.npmjs.org/scvd-mcp-starter",
+      "http_date": "Wed, 30 Sep 2026 13:41:21 GMT",
+      "content_type": "application/json",
+      "sha256": "875a9bb14bd7cf476f7d6153a852645bea8e58f835549e72b6a39aabb9967e48",
+      "bytes": 6838
+    },
+    "published": {
+      "name": "scvd-mcp-starter",
+      "version": "0.1.1",
+      "description": "A zero-dependency MCP server over stdio that serves scvd.store's five free x402 verifier tools \u2014 preflight, receipt verification, readiness lookup, defect definitions, artifact verification \u2014 to any MCP client. Copy it, keep it, or point it at your own do",
+      "repository": {
+        "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+        "type": "git",
+        "directory": "mcp-starter"
+      },
+      "homepage": "https://scvd.store/mcp/verifier",
+      "bin": {
+        "scvd-mcp-starter": "server.mjs"
+      }
+    },
+    "published_at": "2026-09-18T15:57:56.289Z"
+  }
+]

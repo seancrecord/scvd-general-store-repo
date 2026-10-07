@@ -61,7 +61,7 @@ const get = (path: string) => app.request(base + path, { headers: { Accept: "app
 type Offers = { "offer-receipt": { info: { offers: { signature: string; acceptIndex: number }[] } } };
 
 it("fits every five-network menu and publication quote within stock Node response headers", async () => {
-  const paths = MENU_ITEMS.map(item => `/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
+  const paths = await Promise.all(MENU_ITEMS.map(async item => `/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`));
   for (const [path, field] of [["/almanac", "entries"], ["/gazette", "issues"], ["/zodiac/archive", "pages"]]) {
     const index = await (await get(`${path}?view=compact`)).json() as Record<string, { buy_url: string }[]>;
     expect(index[field!]!.length).toBeGreaterThan(0);

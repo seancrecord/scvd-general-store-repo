@@ -6,6 +6,7 @@ import {
   PREFLIGHT_VERSIONS,
   PREFLIGHT_VERSION_NEXT,
   PREFLIGHT_V2_SINCE,
+  PREFLIGHT_VERSION_V2,
   runChecks,
 } from "@/services/preflight";
 
@@ -161,7 +162,7 @@ describe("v2 exists, is served, and says what it added", () => {
     };
     // Derived, not typed: the criteria page cannot drift from the code.
     expect(body.batteries.v2_adds).toEqual([
-      ...BATTERY_ADDS[PREFLIGHT_VERSION_NEXT],
+      ...BATTERY_ADDS[PREFLIGHT_VERSION_V2],
     ]);
     expect(body.batteries.v2_adds).toContain("solana-rail-receivable");
     // A series with no stated start is not a series.

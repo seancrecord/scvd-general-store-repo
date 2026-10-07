@@ -15,6 +15,9 @@ import {
   PREFLIGHT_VERSIONS,
   PREFLIGHT_VERSION_NEXT,
   PREFLIGHT_V2_SINCE,
+  PREFLIGHT_V3_SINCE,
+  PREFLIGHT_VERSION_V2,
+  PREFLIGHT_VERSION_V3,
   preflightUrl,
   type PreflightBattery,
   ADVISORY_NAMES,
@@ -59,10 +62,13 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
     batteries: {
       served: PREFLIGHT_VERSIONS,
       this_one: battery,
-      v2_adds: BATTERY_ADDS[PREFLIGHT_VERSION_NEXT],
+      v2_adds: BATTERY_ADDS[PREFLIGHT_VERSION_V2],
       v2_series_begins: PREFLIGHT_V2_SINCE,
+      v3_adds: BATTERY_ADDS[PREFLIGHT_VERSION_V3].filter((name) => !BATTERY_ADDS[PREFLIGHT_VERSION_V2].includes(name)),
+      v3_series_begins: PREFLIGHT_V3_SINCE,
+      verdict_additions: BATTERY_ADDS[battery],
       why_both:
-        "v1 is frozen: a `ready` rendered under it today means what a `ready` rendered under it in week 34 meant, and every artifact this store has signed names the criteria it was rendered under. v2 folds the rail read into the verdict, because a payTo that owns no token account for the mint it asked for cannot be credited and is not ready by any reading a buyer would accept. Both are computed from the SAME probe and every response carries the other one's verdict in `also_under`, so a reader comparing two reports never has to guess whether the doors differed or the rules did.",
+        "Each version keeps its scoring rules: v1 scores structure; v2 adds internal consistency and readable Solana receivability; v3 also rejects observed discovery/schema and offer/challenge contradictions. One probe supplies the versioned comparisons in also_under. Missing optional extensions do not fail v3, and unsupported or unread comparisons are not reported as passes. Older signed reports keep their original bytes and criteria.",
       defect_vocabulary: `${base}/defects`,
     },
     summary:
@@ -82,6 +88,7 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
       `Every accepts entry carries ${ACCEPT_REQUIRED_FIELDS.join(", ")} as strings — the same fields this store's own till refuses to sign offers without.`,
       "extensions.bazaar, if declared, carries a parseable info block (what discovery ingestion actually reads).",
       "extensions['offer-receipt'] signed offers, if present, are structurally valid JWS. Their signatures are NOT verified here — that needs a second request to the issuer's did:web, which this probe refuses to make in your name. The conformance desk does it free.",
+      ...BATTERY_ADDS[battery].map((name) => `Verdict check when observable: ${name}. Optional extensions are not required; a missing comparison is not a pass.`),
     ],
     common_failures_this_catches: {
       stuck_repeating_402:

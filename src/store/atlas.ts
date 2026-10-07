@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
 import { buyerLinks } from "@/lib/buyer-contract";
 import { chainIdentity, identitySurfaces } from "@/store/chain-identity";
@@ -76,7 +77,7 @@ export interface AtlasJourney {
 const TASKS: readonly AtlasTask[] = [
   {
     goal: "I am about to pay an x402 endpoint and want to know if it will work",
-    call: ["POST /api/preflight/v2"],
+    call: [`POST /api/preflight/${PREFLIGHT_VERSION_NEXT}`],
     note: "Free, no account. Checks the door's challenge shape and whether its payTo can actually be credited. It does NOT buy anything, so it cannot tell you the goods arrive — nothing that costs you nothing can.",
   },
   {
@@ -147,7 +148,7 @@ const JOURNEYS: readonly AtlasJourney[] = [
     steps: [
       {
         do: "Check the door's shape and whether its payTo can be credited",
-        endpoint: "/api/preflight/v2",
+        endpoint: `/api/preflight/${PREFLIGHT_VERSION_NEXT}`,
         method: "POST",
         cost: "free",
         expect: "A verdict plus named advisories. A pass means the shape is right, never that goods arrive.",
@@ -212,7 +213,7 @@ const JOURNEYS: readonly AtlasJourney[] = [
 export const FREE_DOORS: readonly AtlasDoor[] = [
   { path: "/api/a2a/check", name: "A2A card check", access: "free", method: "POST", purpose: "Check an A2A 0.3.0 agent card and get evidence with suggested repairs; instructions at /a2a-desk.", caution: "One bounded GET, no runtime task. Unsupported versions and untested capabilities remain unassessed. Rate limited; no credentials." },
   {
-    path: "/api/preflight/v2",
+    path: `/api/preflight/${PREFLIGHT_VERSION_NEXT}`,
     name: "Preflight",
     access: "free",
     method: "POST",

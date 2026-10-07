@@ -3,6 +3,9 @@ import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { app } from "@/index";
 import { checkPurchaseArgs, toolArgs } from "@/lib/purchase-args";
+import { performSpotCheck } from "@/services/spot-check";
+import { mintCertificate } from "@/services/certificates";
+import { retainSpotEvidence } from "@/services/spot-evidence";
 import { getMenuItem } from "@/store";
 import type { Env } from "@/types";
 
@@ -52,7 +55,7 @@ it("the previously published /keys link still resolves to the key registry", asy
   expect(await response.json()).toHaveProperty("key_history");
 });
 
-it("every published shelf example passes the purchase input checks unchanged", async () => {
+it("published shelf examples validate, with a real retained original for Change Check", async () => {
   const listing = await rpc("/mcp", "tools/list");
   const shelves = listing.result!.tools!.filter(tool => tool.itemIds);
   expect(shelves.length).toBeGreaterThan(0);
@@ -64,6 +67,16 @@ it("every published shelf example passes the purchase input checks unchanged", a
       // readiness and inventory are separate from whether the example is valid.
       // Disposable fixture key: validation only; this test submits no payment.
       const validationEnv = { ...env, FIELD_WALLET_KEY: `0x${"01".repeat(32)}` } as Env;
+      if (item === "change_check") {
+        // The discovery placeholder names a prior purchase, not a certificate
+        // the store pretends to have issued. It must refuse until supplied.
+        expect(await checkPurchaseArgs(validationEnv, getMenuItem(item)!, toolArgs(example!), { deferAvailability: true }))
+          .toMatchObject({ body: { code: "baseline_unavailable" } });
+        const report = await performSpotCheck(validationEnv, String(example!.host));
+        const minted = await mintCertificate(validationEnv, { itemId: "spot_check", attests: report.evidence_hash });
+        await retainSpotEvidence(validationEnv, minted.certificate.cert_id, { kind: "spot_check", report });
+        example!.baseline_cert_id = minted.certificate.cert_id;
+      }
       const refusal = await checkPurchaseArgs(validationEnv, getMenuItem(item)!, toolArgs(example!), { deferAvailability: true });
       expect(refusal, `${tool.name}/${item}`).toBeUndefined();
     }

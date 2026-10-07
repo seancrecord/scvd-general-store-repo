@@ -1,0 +1,14 @@
+{
+  "recipient_digest": {
+    "cell": "codex-directed-r2",
+    "trace_sha256": "71ac8a1b7c9c660d939d305645b5aa621e395c4b64b0bfbc522bab46987d43d2",
+    "final_line": 23,
+    "verified_output_line": 15,
+    "reported": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9b08370df4e2eb",
+    "reported_length": 62,
+    "computed": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+    "computed_length": 64,
+    "matches": false
+  },
+  "limits": "Correct underlying cryptography is preserved. No native text corrected and no new scoring rule added; the existing reporting criterion also applied to earlier digest transcription errors."
+}

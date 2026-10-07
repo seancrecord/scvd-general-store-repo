@@ -417,6 +417,138 @@ describe("the public board", () => {
   });
 });
 
+/**
+ * The same world, except the USDC contract says every authorization
+ * nonce has been used: authorizationState(address,bytes32) answers a
+ * non-zero word.
+ */
+function redeemedWorld(): typeof fetch {
+  const inner = world();
+  return (async (input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(init?.body ?? "").includes("0xe94a0102")) {
+      return new Response(JSON.stringify({ result: `0x${"0".repeat(63)}1` }), {
+        status: 200,
+      });
+    }
+    return inner(input, init);
+  }) as typeof fetch;
+}
+
+describe("the same claim again is the same answer again (2026-09-29)", () => {
+  const sameClaim = (bountyId: string, over: Partial<ClaimInput> = {}): ClaimInput => ({
+    bountyId,
+    txHash: TX,
+    payer: SHOPPER,
+    payoutTo: PAYOUT_TO,
+    ...over,
+  });
+
+  it("resent identically, returns the original signature byte for byte and spends nothing", async () => {
+    const bounty = await openTestBounty();
+    vi.stubGlobal("fetch", world());
+    const first = await claimBounty(testEnv, sameClaim(bounty.bounty_id, {
+      observation: "paid, 200, receipt header present",
+      report: { status: 200, payment_response: true },
+    }), await claimOptions());
+    expect(first.reissued).toBeUndefined();
+    const boardAfterFirst = await bountyBoard(testEnv);
+    const recordAfterFirst = boardAfterFirst.bounties[0]?.claim;
+
+    // Case on the addresses and the hash is the walker's client's
+    // business, not a different claim.
+    const again = await claimBounty(
+      testEnv,
+      sameClaim(bounty.bounty_id, {
+        txHash: TX.toUpperCase().replace("0X", "0x"),
+        payer: SHOPPER.toUpperCase().replace("0X", "0x"),
+        payoutTo: PAYOUT_TO.toLowerCase(),
+      }),
+      await claimOptions(),
+    );
+    expect(again.reissued?.first_claimed_at).toBe(recordAfterFirst?.claimed_at);
+    expect(again.payout.signature).toBe(first.payout.signature);
+    expect(again.payout.authorization.nonce).toBe(first.payout.authorization.nonce);
+    expect(again.payout.authorization.validBefore).toBe(first.payout.authorization.validBefore);
+    expect(again.payout.authorization.value).toBe(first.payout.authorization.value);
+    expect(again.payout.authorization.from).toBe(first.payout.authorization.from);
+    expect(again.your_report.received).toEqual({ status: 200, payment_response: true });
+    expect(again.payout.how_to_redeem).toContain("Send the same claim again");
+    expect(first.payout.how_to_redeem).toContain("Send the same claim again");
+
+    // Nothing moved: the budget, the record, the tx key.
+    const board = await bountyBoard(testEnv);
+    expect(board.spent_this_week_usd).toBe(0.1);
+    expect(board.bounties[0]?.status).toBe("paid");
+    expect(board.bounties[0]?.claim).toEqual(recordAfterFirst);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.bountyTx(TX))).toBeTruthy();
+  });
+
+  it("a repeat naming a different payout address is refused, never re-signed", async () => {
+    const bounty = await openTestBounty();
+    vi.stubGlobal("fetch", world());
+    await claimBounty(testEnv, sameClaim(bounty.bounty_id), await claimOptions());
+    const signer = await fieldSignerFromKey(TEST_FIELD_KEY);
+    const signed = vi.fn(signer.signTypedData);
+    await expect(
+      claimBounty(
+        testEnv,
+        sameClaim(bounty.bounty_id, { payoutTo: "0x4444444444444444444444444444444444444444" }),
+        { signer: { address: signer.address, signTypedData: signed }, fetch: world() },
+      ),
+    ).rejects.toThrow(BountyRefused);
+    await expect(
+      claimBounty(
+        testEnv,
+        sameClaim(bounty.bounty_id, { payer: "0x4444444444444444444444444444444444444444" }),
+        { signer: { address: signer.address, signTypedData: signed }, fetch: world() },
+      ),
+    ).rejects.toThrow(BountyRefused);
+    expect(signed).not.toHaveBeenCalled();
+  });
+
+  it("refuses to reissue an expired authorization rather than sign a fresh one", async () => {
+    const bounty = await openTestBounty();
+    vi.stubGlobal("fetch", world());
+    const first = await claimBounty(testEnv, sameClaim(bounty.bounty_id), await claimOptions());
+    const signer = await fieldSignerFromKey(TEST_FIELD_KEY);
+    const signed = vi.fn(signer.signTypedData);
+    await expect(
+      claimBounty(testEnv, sameClaim(bounty.bounty_id), {
+        signer: { address: signer.address, signTypedData: signed },
+        fetch: world(),
+        now: new Date((Number(first.payout.authorization.validBefore) + 1) * 1000),
+      }),
+    ).rejects.toThrow(/expired at unix/);
+    expect(signed).not.toHaveBeenCalled();
+  });
+
+  it("refuses to reissue an authorization the chain says is redeemed", async () => {
+    const bounty = await openTestBounty();
+    vi.stubGlobal("fetch", world());
+    await claimBounty(testEnv, sameClaim(bounty.bounty_id), await claimOptions());
+    vi.stubGlobal("fetch", redeemedWorld());
+    const signer = await fieldSignerFromKey(TEST_FIELD_KEY);
+    const signed = vi.fn(signer.signTypedData);
+    await expect(
+      claimBounty(testEnv, sameClaim(bounty.bounty_id), {
+        signer: { address: signer.address, signTypedData: signed },
+        fetch: redeemedWorld(),
+      }),
+    ).rejects.toThrow(/already been redeemed/);
+    expect(signed).not.toHaveBeenCalled();
+  });
+
+  it("a rival claim on the same settlement is still refused, not reissued", async () => {
+    const bounty = await openTestBounty();
+    vi.stubGlobal("fetch", world());
+    await claimBounty(testEnv, sameClaim(bounty.bounty_id), await claimOptions());
+    await clearBoardStatusOpen(bounty.bounty_id);
+    await expect(
+      claimBounty(testEnv, sameClaim(bounty.bounty_id), await claimOptions()),
+    ).rejects.toThrow(/already been claimed/);
+  });
+});
+
 /** Reopen a paid bounty so the tx-replay guard is tested in isolation. */
 async function clearBoardStatusOpen(bountyId: string): Promise<void> {
   const record = await testEnv.COUNTERS.get<Record<string, unknown>>(
@@ -1175,6 +1307,29 @@ describe("the refusal catalogue is the door's own words", () => {
       KV_KEYS.bounty(bounty.bounty_id),
       "json",
     );
+    // The same claim sent again, after its authorization lapsed, and
+    // after the chain honoured it (2026-09-29).
+    await testEnv.COUNTERS.put(
+      KV_KEYS.bounty(bounty.bounty_id),
+      JSON.stringify({ ...stored, status: "paid" }),
+    );
+    const validBefore = Number(
+      (stored?.["claim"] as { authorization_valid_before: string }).authorization_valid_before,
+    );
+    await drive(
+      async () =>
+        claimBounty(testEnv, claim(), {
+          ...(await claimOptions()),
+          now: new Date((validBefore + 1) * 1000),
+        }),
+      "the resent claim's authorization expired",
+    );
+    vi.stubGlobal("fetch", redeemedWorld());
+    await drive(
+      async () => claimBounty(testEnv, claim(), { ...(await claimOptions()), fetch: redeemedWorld() }),
+      "the resent claim's authorization was already redeemed",
+    );
+    vi.stubGlobal("fetch", world());
     await testEnv.COUNTERS.put(
       KV_KEYS.bounty(bounty.bounty_id),
       JSON.stringify({ ...stored, status: "open", expires_at: "2026-08-27T00:00:00.000Z" }),

@@ -56,6 +56,10 @@ ed25519-signed, dated, and verifiable offline without asking us,
 including the gaps we count against ourselves. Operated by Record
 Creative Co. LLC.
 
+For working examples, use the [SDK and evidence paths](examples/README.md#choose-the-job):
+check an endpoint, verify an artifact, reproduce the corpus findings, or attach
+one dated observation to a listing.
+
 Not an escrow, a guarantor, or a dispute court. Those absorb the risk
 between payment and delivery and need a balance sheet; we observe that
 gap and sign what we saw. If you are building escrow or adjudication,
@@ -94,7 +98,15 @@ What people arrive here to do, and where each door is:
   [`x402-verify`](https://www.npmjs.com/package/x402-verify) (MIT,
   zero deps), and [`x402-sign`](https://www.npmjs.com/package/x402-sign)
   mints offers and receipts that pass it.
-- **Fail your deploy when your door breaks** — the free preflight as a
+- **Inspect an endpoint before deciding what to do** — the free preflight
+  separates observed x402/MPP protocols, unverified advertised terms,
+  structural findings, observation time and coverage gaps. Its top-level
+  verdict remains x402-specific. The [CLI](cli/README.md) and
+  [JavaScript library](x402-preflight/README.md) provide `scvd inspect` and
+  `inspectOne`; check installed help/exports, since source preparation and
+  registry publication are separate. Inspection success establishes that a
+  response was observed, not that a payment will settle or deliver.
+- **Fail your deploy on an x402 readiness failure** — the free preflight as a
   GitHub Action, one probe per door after the deploy step, `not_ready`
   fails the job and `unreachable` does not:
   [`action/preflight`](action/preflight/README.md). The terminal form
@@ -113,6 +125,8 @@ What people arrive here to do, and where each door is:
   discovery, use the [CLI](cli/README.md) or the published
   [corpus client](corpus-client/README.md); both preserve gaps and leave
   signature and timestamp verification explicit.
+  Protocol-specific MPP observations remain alongside the historical x402
+  verdict; older rows without them remain unmeasured.
 - **Score, rank or list x402 doors?** Take the evidence and leave the
   opinion: [scvd.store/scorers](https://scvd.store/scorers) is the
   room for systems that consume this corpus. Pull it, verify it
@@ -193,6 +207,15 @@ What people arrive here to do, and where each door is:
 Every one of these ends in an ed25519-signed receipt or verdict that
 anyone can verify at `/api/verify/{id}` — free, no account, forever.
 
+Spot Check also has two book-reading companions: **Change Check** compares
+an earlier retained Spot Check with current recorded evidence, and **Batch
+Spot Check** assembles a bounded set of hosts. Both retain dates and gaps;
+neither probes a host. Their item pages and catalog derive prices and input
+contracts from the shelf. Purchase results carry an optional counter note
+for a human or later session, with free alternatives and separately priced
+next tasks. Nothing sends a message or buys again automatically.
+[Implementation and demand experiment](docs/SPOT_CHECK_FOLLOW_THROUGH_2026-09.md).
+
 ## Connecting over MCP
 
 The store is a remote MCP server — streamable HTTP, no install, no
@@ -244,14 +267,14 @@ not for connecting to it.)
 ### Tools
 
 Tools are listed free by `tools/list`; the `buy_*` tools
-are x402-paid in-band. Names and one-line summaries below are held
+accept x402 in-band and native MPP when enabled for the item. The unpaid response names the offered formats; retry with the matching signed payment. Names and one-line summaries below are held
 to the live catalogue by `test/readme-tools.spec.ts`; the full
 descriptions and input schemas are what the server sends.
 
 | Tool | What it does |
 | --- | --- |
 | `read_store_guide` | The store's front door as text: the menu with prices, how x402 payment works here, the free shelf. |
-| `preflight_endpoint` | x402 endpoint preflight, free: checks any x402 door's 402 shape before anyone pays it. |
+| `preflight_endpoint` | Free endpoint inspection: observed x402/MPP protocols, advertised terms, structure and gaps; the readiness verdict remains x402-specific. |
 | `check_a2a_card` | Free A2A 0.3.0 card checks, bounded evidence and suggested repairs. Runtime testing and signed rechecks are available in the repair kit. |
 | `check_conformance` | x402 receipt verification and signed-offer verification, free, for any issuer's artifacts. |
 | `verify_artifact` | Verify anything scvd.store has ever signed, by its id, free. |
@@ -499,7 +522,7 @@ facilitator and all current client libraries speak v2.
 | `/conformance` | The conformance desk's own room: what it checks, worked examples |
 | `/corpus` | The corpus in plain language: the census finding, how to verify a round |
 | `/trade` | The trade counter: marketplaces resell the shelf on account by signed webhook, billed on a statement — `TRADE_COUNTER.md` |
-| `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools x402-paid in-band |
+| `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools accept x402 and configured native MPP |
 | `/skill.md` | Agent onboarding in the agentskills.io SKILL.md format |
 | `/menu.json` | Machine-readable catalog |
 | `/api/buy/:item_id` | x402-gated purchases |
@@ -850,16 +873,18 @@ behavior remain separate observations.
 | --- | --- | --- |
 | **x402** | [Conformance desk](https://scvd.store/conformance) · [discovery](https://scvd.store/.well-known/x402) | [x402 records](https://scvd.store/trust#protocol-x402), including x402scan, x402-list and the Bazaar. Current quotes declare accepted checkout rails. |
 | **MPP** | [Context Anchor](https://scvd.store/menu/context_anchor) · [developer documentation](https://scvd.store/developers) | Read-only inspection plus live Context Anchor checkout over HTTP using EVM/USDC on Base; [September 17 observation](research/distribution-2026-09-17/observations/mpp-context-anchor-live.json). The [whole-shelf HTTP extension](docs/MPP_WHOLE_STORE_2026-09-18.md) is merged; each enabled door uses its own minimum, and native MPP support also shipped on [MCP](docs/MPP_MCP_CHECKOUT_2026-09-18.md) and [WebMCP](docs/MPP_WEBMCP_CHECKOUT_2026-09-18.md). Advertised support is separate from paid qualification. [MPPScan listing](https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b) confirmed September 19; registration retained exclusions and parser warnings. Directory submissions and remaining discovery gaps are tracked in [coverage](research/distribution-2026-09-17/PROTOCOL_COVERAGE.md). |
-| **MCP** | [Store MCP](https://scvd.store/mcp) · [verifier MCP](https://scvd.store/mcp/verifier) | [MCP records](https://scvd.store/trust#protocol-mcp), including the published [ChatGPT verifier](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212), [Smithery](https://smithery.ai/servers/seancrecord/scvd-general-store), Glama and other indexes. |
+| **MCP** | [Store MCP](https://scvd.store/mcp) · [verifier MCP](https://scvd.store/mcp/verifier) | [MCP records](https://scvd.store/trust#protocol-mcp), including the published [ChatGPT verifier](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212), [Smithery](https://smithery.ai/servers/seancrecord/scvd-general-store), Glama, [AllthingsPM](https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store), [Enterprise DNA](https://enterprisedna.co/directories/mcp/seancrecord-scvd-general-store-repo/) and [AI Agent Board](https://aiagentboard.org/mcp/store.scvd/general-store). The latter three were read October 1; AI Agent Board also publishes its own dated endpoint check. |
 | **WebMCP** | [Browser registration](https://scvd.store/webmcp.js) | [WebMCP records](https://scvd.store/trust#protocol-webmcp), including WebMCP Directory and Ora. Browser support and origin-trial availability apply. |
 | **ERC-8004** | [Canonical registration and domain acknowledgment](https://scvd.store/.well-known/agent-registration.json) | [Identity records](https://scvd.store/trust#protocol-erc8004): 8004scan, Agentscan, 8004agents, trust8004 and [AgentERC](https://agenterc.com/explore/base/86957) (confirmed September 23); QuickNode and BaseScan identity viewers are identified separately. |
-| **A2A** | [Agent card](https://scvd.store/.well-known/agent-card.json) | [A2A records](https://scvd.store/trust#protocol-a2a), including agent-tools.cloud, Agenstry and the [Global A2A Registry listing](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent) (claimed September 18; directory ownership label). The card declares current capabilities and version. |
+| **A2A** | [Agent card](https://scvd.store/.well-known/agent-card.json) | [A2A records](https://scvd.store/trust#protocol-a2a), including agent-tools.cloud, Agenstry, [APIs.io’s agent-card record](https://apis.io/a2a/scvd-store/) (read October 1; captured-card scope) and the [Global A2A Registry listing](https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent) (claimed September 18; directory ownership label). The card declares current capabilities and version. |
 | **OASF** | [Canonical record](https://scvd.store/agents/general-store) · [domain key](https://scvd.store/.well-known/jwks.json) | [OASF scope](https://scvd.store/trust#protocol-oasf). Public record available; Cisco/Anro publication and remote signature/scan status remain unverified. |
-| **UCP** | [Business profile](https://scvd.store/.well-known/ucp) · [catalog, checkout and order](https://scvd.store/ucp) | [UCP scope](https://scvd.store/trust#protocol-ucp): profile and catalog at the pinned 2026-08-25 release, validated against the vendored schemas (`npm run ucp:conformance`). Checkout and order are built and advertised exactly when the deployment's switch is on; the profile's status block says which items and rails. [UCP Checker report](https://ucpchecker.com/check/scvd.store) published September 19 with a Verified discovery label and schema warnings; no paid checkout or Google approval inferred. [UCP.tools listing](https://ucptools.dev/directory/scvd.store) confirmed September 20; operator-submitted discovery record. [Distribution receipts](research/ucp-distribution-2026-09-19/README.md). |
+| **UCP** | [Business profile](https://scvd.store/.well-known/ucp) · [catalog, checkout and order](https://scvd.store/ucp) | [UCP scope](https://scvd.store/trust#protocol-ucp): profile and catalog at the pinned 2026-08-25 release, validated against the vendored schemas (`npm run ucp:conformance`). Checkout and order are built and advertised exactly when the deployment's switch is on; the profile's status block says which items and rails. [UCP Checker report](https://ucpchecker.com/check/scvd.store) published September 19 with a Verified discovery label and schema warnings; no paid checkout or Google approval inferred. [UCP.tools listing](https://ucptools.dev/directory/scvd.store) confirmed September 20 and re-read October 1; operator-submitted discovery record. [Distribution receipts](research/ucp-distribution-2026-09-19/README.md). |
 | **Skills and plugins** | [Skills index](https://scvd.store/.well-known/agent-skills/index.json) · [Agent Plugins package](plugin.json) | [Skill/plugin records](https://scvd.store/trust#protocol-skills). Listed in [HOL’s Awesome AI Plugins catalog](https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations), confirmed September 19. The same skills and MCP assets underpin host-specific packages. Gallery admission is tracked separately. |
 
 
-Other confirmed discovery records include [WithAI.Top](https://withai.top/tool/scvd-store), read September 23. Listing presence is not an endorsement or service audit. The [September 23 reconciliation](research/distribution-2026-09-23/README.md) records accepted listings, correction requests and unresolved submission status.
+Other confirmed discovery records include [WithAI.Top](https://withai.top/tool/scvd-store), read September 23, and the [APIs.io provider profile](https://apis.io/providers/scvd-store/), read October 1. The Python preflight client also has a [piwheels package record](https://www.piwheels.org/project/scvd-preflight/), read October 1; [package documentation](x402-preflight-py/README.md) gives its scope. Listing presence is not an endorsement or service audit. The [September 23 reconciliation](research/distribution-2026-09-23/README.md) records accepted listings, correction requests and unresolved submission status.
+
+The [October 1 listing read](docs/SPEC_READS.md#2026-10-01--external-directory-and-package-records) records the new links and their limits.
 
 The September 17 [directory reading and submission package](research/distribution-2026-09-17/README.md)
 retains source observations, parser discrepancies and pending requests. A failed
@@ -900,10 +925,10 @@ cover source and package installation.
 publishes the retained September 11 experiment, raw records, reproduction
 instructions and limits. Production checkpoint issuance is parked.
 
-### SCVD Attestation pilot (release candidate)
+### SCVD Attestation pilot
 
 A human-requested, bounded evidence engagement for one public x402 endpoint:
 daily observations and a signed report for a customer or internal review.
-The staged offer, operating steps and scope limits are in
+The offer, operating steps and scope limits are in
 [the pilot runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
 This is endpoint evidence, with no AI-decision compliance certification claim.

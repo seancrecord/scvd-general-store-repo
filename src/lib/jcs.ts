@@ -93,15 +93,18 @@ function canonicalize(value: unknown, ancestors: Set<object>): string {
     ancestors.add(value);
     try {
       if (Array.isArray(value)) {
-        // Array.from visits holes; map skipped them and emitted invalid JSON.
-        return `[${Array.from(value, (entry) =>
-          entry === undefined || typeof entry === "function" || typeof entry === "symbol"
-            ? "null" : canonicalize(entry, ancestors),
-        ).join(",")}]`;
+        // Index access preserves main's hole handling without invoking iterators.
+        const members: string[] = [];
+        for (let index = 0; index < value.length; index += 1) {
+          const entry = value[index];
+          members.push(entry === undefined || typeof entry === "function" || typeof entry === "symbol"
+            ? "null" : canonicalize(entry, ancestors));
+        }
+        return `[${members.join(",")}]`;
       }
       const prototype = Object.getPrototypeOf(value);
       if (prototype !== Object.prototype && prototype !== null) {
-        throw new Error("jcs: expected plain JSON object; convert native values explicitly");
+        throw new Error("jcs: cannot canonicalize a non-plain object; expected plain JSON object, convert native values explicitly");
       }
       const record = value as Record<string, unknown>;
       const members: string[] = [];

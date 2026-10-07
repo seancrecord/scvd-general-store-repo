@@ -35,6 +35,27 @@ that a payment will succeed or that a seller will deliver. These table views
 do not independently verify Bitcoin timestamp proofs.
 `;
 
+const freshnessGuide = `
+## Observation dates and reproducible analysis
+
+Correction prepared September 28, 2026: the initial table projection used the
+round date as each host's observation date. The corrected observations table
+uses the signed host row's \`observed_at\`, empty when unrecorded, and preserves
+the round date separately as \`round_observed_at\`. \`captured_at\` dates the
+snapshot. Older readings can be carried forward into a later round; a new
+snapshot is not a fresh probe of every endpoint. Recorded \`probe_method\` and
+\`battery\` accompany the row; absent values stay unknown. Signed originals
+were not changed by this correction.
+
+[Recompute the findings](https://github.com/seancrecord/scvd-general-store-repo/blob/main/examples/corpus-recompute.ipynb)
+from a repository checkout with Python 3 and Node 22. The notebook fetches the
+originals, verifies their digests, signatures and chain linkage with the existing
+verifier, and separates fresh comparable readings from carried-forward rows.
+[Reuse one listing observation](https://github.com/seancrecord/scvd-general-store-repo/blob/main/examples/README.md#reuse-corpus-evidence)
+with the local adapter. Its output is an unsigned projection linked to a signed
+source, not current readiness or evidence that a payment completed.
+`;
+
 // Refuse an unfamiliar configuration rather than overwrite a keeper's edits.
 export function configureCorpusCard(card, repo) {
   if (typeof repo !== "string" || !/^[\w.-]+\/[\w.-]+$/.test(repo)) throw new Error("invalid_dataset_repository");
@@ -48,7 +69,11 @@ export function configureCorpusCard(card, repo) {
   if (!configured) metadata += '\n' + CONFIG.trimEnd();
   const body = card.slice(end);
   const guide = viewerGuide(repo).trim();
-  return '---\n' + metadata + body + (body.includes(guide) ? '' : '\n\n' + guide + '\n');
+  let output = '---\n' + metadata + body + (body.includes(guide) ? '' : '\n\n' + guide + '\n');
+  // Correct the known legacy sentence; preserve any keeper-authored replacement.
+  output = output.replace('One probe per host per round, at indexer cadence: a door that was down for the minute of the probe reads as unreachable for the week.',
+    'A snapshot can carry earlier host readings forward. Use each host observation date; an unreachable reading describes that attempt, not an entire week.');
+  return output + (output.includes(freshnessGuide.trim()) ? '' : '\n' + freshnessGuide);
 }
 
 const scalar = value => value === undefined || value === null ? '' : String(value);
@@ -74,6 +99,9 @@ export async function buildCorpusViewer(documents, { base, publicKey }) {
       listed_resources: scalar(s.round.listed_resources), coverage_suspect: scalar(s.round.coverage_suspect),
       previous_digest: scalar(s.previous_digest), view_scope: 'Unsigned summary; consult signed snapshot for coverage and gaps. Bitcoin timestamp not verified by this projection.' });
     s.round.hosts.forEach((host, i) => observations.push({ ...source,
+      // Rounds carry older host readings forward. Missing per-host time stays unknown.
+      round_observed_at: source.observed_at, observed_at: scalar(host.observed_at),
+      probe_method: scalar(host.probe_method), battery: scalar(host.battery),
       row_pointer: `/round/hosts/${i}`, host: scalar(host.host), url: scalar(host.url),
       source: scalar(host.source), verdict: scalar(host.verdict),
       failed_json: JSON.stringify(host.failed ?? null), advisories_json: JSON.stringify(host.advisories ?? null),

@@ -1,3 +1,5 @@
+import { readCommerceMonthLedger } from "@/services/commerce-month";
+import { atomicToUsdc } from "@/lib/payments";
 import { bulkGetText } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -6,7 +8,6 @@ import {
   metricsMonth,
   monthsSinceOpening,
   readBountyLedger,
-  readMonthLedger,
   readPorchLedger,
   type MonthLedger,
   type PorchLedger,
@@ -36,6 +37,7 @@ import { readMcpClients } from "@/services/mcp-clients";
 import { deriveMonthlyStates, type MonthReading, type MonthState } from "@/services/monthly-state";
 import { OBSERVATORY_LEDGER_KEY_CAP, OBSERVATORY_PORCH_WRITES_PER_MINUTE } from "@/services/observatory";
 import { computePulse, type PulseWindow } from "@/services/pulse";
+import { monthReclassAdjustments, type MonthReclassAdjustment } from "@/services/reclassify";
 import { readRailCountersByMonth, type RailMonth } from "@/services/rails";
 import type { Env } from "@/types";
 
@@ -68,6 +70,7 @@ export interface GrowthStore {
   organic_402s: number;
   organic_settles: number;
   revenue_usdc: number;
+  house_correction?: MonthReclassAdjustment;
   /** Organic settles by rail off the rail counters; null when the month had none. */
   settles_by_rail: Record<string, number> | null;
   organic_declines: number;
@@ -266,6 +269,7 @@ export interface MonthInputs {
   now: Date;
   porch: PorchLedger;
   ledger: MonthLedger;
+  houseCorrection?: MonthReclassAdjustment;
   clients: Record<string, number>;
   bounty: { paid: number };
   verifyAge: Record<string, number>;
@@ -315,7 +319,17 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
       itemsAskedFor.push({ item, organic_402s: row.challenges, organic_settles: row.settled });
     }
   }
+  for (const [item, row] of Object.entries(ledger.native_mpp?.by_item ?? {})) {
+    if (!row.organic) continue;
+    const found = itemsAskedFor.find(entry => entry.item === item);
+    if (found) found.organic_settles += row.organic;
+    else itemsAskedFor.push({ item, organic_402s: 0, organic_settles: row.organic });
+  }
   itemsAskedFor.sort((a, b) => b.organic_402s - a.organic_402s || b.organic_settles - a.organic_settles || a.item.localeCompare(b.item));
+
+  // Item/rail counters retain their original classification. The monthly
+  // headline uses the same certificate-derived correction as the desk/pulse.
+  organicSettles = Math.max(0, organicSettles - (inputs.houseCorrection?.settles ?? 0));
 
   let settlesByRail: Record<string, number> | null = null;
   if (inputs.rail) {
@@ -329,8 +343,9 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
     organic_visits: porch.organicVisits,
     visits_by_kind: visitsByKind,
     organic_402s: organic402s,
-    organic_settles: organicSettles,
-    revenue_usdc: Math.round(ledger.revenueUsdc * 1_000_000) / 1_000_000,
+    organic_settles: organicSettles + (ledger.native_mpp?.organic ?? 0),
+    revenue_usdc: Math.round((Math.max(0, ledger.revenueUsdc - (inputs.houseCorrection?.usdc ?? 0)) + atomicToUsdc(ledger.native_mpp?.organic_amount_atomic ?? "0")) * 1_000_000) / 1_000_000,
+    ...(inputs.houseCorrection ? { house_correction: inputs.houseCorrection } : {}),
     settles_by_rail: settlesByRail,
     organic_declines: organicDeclines,
     organic_rechecks: organicRechecks,
@@ -414,9 +429,9 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
     funnel: {
       free_argument_uses: argumentUses,
       organic_402s: organic402s,
-      organic_settles: organicSettles,
+      organic_settles: organicSettles + (ledger.native_mpp?.organic ?? 0),
       asks_per_hundred_checks: perHundred(organic402s, argumentUses),
-      settles_per_hundred_checks: perHundred(organicSettles, argumentUses),
+      settles_per_hundred_checks: perHundred(organicSettles + (ledger.native_mpp?.organic ?? 0), argumentUses),
     },
   };
 
@@ -558,9 +573,14 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
   if (!all.includes(current)) all.push(current);
   const wanted = options.months ? all.filter((month) => options.months!.includes(month)) : all;
 
-  const [rails, pulse, states, newFaces, reads] = await Promise.all([
+  const monthLedgers = new Map(all.map(month => [month, readCommerceMonthLedger(env, month)]));
+  const reclassification = monthReclassAdjustments(env).then(reading => {
+    if (reading.truncated) throw new Error("Growth house correction is incomplete");
+    return reading;
+  });
+  const [rails, pulse, states, newFaces, reads, houseCorrections] = await Promise.all([
     readRailCountersByMonth(env).catch(() => [] as RailMonth[]),
-    computePulse(env).catch(() => null),
+    computePulse(env, { now, readMonth: month => monthLedgers.get(month) ?? readCommerceMonthLedger(env, month), readReclassification: () => reclassification }).catch(() => null),
     monthlyStates(env),
     // One payer scan for every month, not one per month.
     readNewFaces(env).catch(() => new Map<string, NewFaces>()),
@@ -568,7 +588,7 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
       all.map(async (month) => {
         const [porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged, instrumentClients] = await Promise.all([
           readPorchLedger(env, month),
-          readMonthLedger(env, month),
+          monthLedgers.get(month)!,
           readMcpClients(env, month),
           readBountyLedger(env, month),
           readVerifyAge(env, month),
@@ -580,6 +600,7 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
         return { month, porch, ledger, clients, bounty, verifyAge, referrers, bellRings, logged, instrumentClients };
       }),
     ),
+    reclassification,
   ]);
   const railByMonth = new Map(rails.map((row) => [row.month, row]));
   const pulseByMonth = new Map((pulse?.months ?? []).filter((w) => w.month).map((w) => [w.month!, w]));
@@ -600,6 +621,7 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
     const thisMonth = organicBySurface(read.porch);
     const month = deriveGrowthMonth({
       ...read,
+      houseCorrection: houseCorrections.months[read.month] ?? { settles: 0, usdc: 0 },
       now,
       rail: railByMonth.get(read.month) ?? null,
       pulse: pulseByMonth.get(read.month) ?? null,

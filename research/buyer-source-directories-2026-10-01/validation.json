@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-01",
+  "red_before_fix": {
+    "new_controls_failed": 4,
+    "existing_plan_binding_passed": 1
+  },
+  "qualification_controls_passed": 90,
+  "all_buyer_controls_passed": 295,
+  "typecheck": "pass",
+  "worker_bundles_and_mpp_sdk_build": "pass",
+  "archived_prompts_unchanged": 8,
+  "native_acquisition": "not launched; draft plan only"
+}

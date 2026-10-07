@@ -698,6 +698,25 @@ export interface Certificate {
    */
   mandate_id?: string;
   /**
+   * THE CITED ARTIFACT, added 2026-10-01. Any item, optional: one
+   * line naming an artifact that lives OUTSIDE this store — the
+   * approval, intent or session receipt the buyer's own runtime
+   * signed before it came here — as `<format>:<reference>`, the
+   * format a short token for the envelope kind (dsse, jws, …) and the
+   * reference the artifact's own id or digest as its issuer spells
+   * it. Recorded verbatim and signed, the same law as purpose: an
+   * unsigned link to an outside approval would be forgeable onto
+   * anyone's receipt. Never fetched, never verified, never resolved
+   * by this store — that is the difference from mandate_id, which
+   * resolves to a record WE hold. What the signature proves: that
+   * the buyer cited this reference at purchase time. Whether the
+   * artifact exists, verifies, or says what the buyer implies is for
+   * its own verifier; the certificate just gives the two chains a
+   * shared link held by a party to neither. Seats, not occupants: no
+   * vendor is named in the schema.
+   */
+  cited_artifact?: string;
+  /**
    * The maker's mark: who chose or made this, for the shelves where a
    * buyer could not otherwise tell. "keeper" a person did it for you,
    * "house" a person authored the pool and a machine drew from it,

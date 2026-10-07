@@ -9,6 +9,7 @@ import { artifactClassForItem } from "@/store/attestation-spec";
 import { MENU_ITEMS } from "@/store";
 import type { MenuItem } from "@/types";
 import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
+import { CITED_ARTIFACT_FIELD } from "@/lib/bazaar-discovery";
 
 /** Fixed views of the existing shelf; no session, cursor storage, or second catalog. */
 export const COMPACT_CATALOG_PAGE_SIZE = 8;
@@ -141,14 +142,23 @@ export function compactItemRow(item: MenuItem, base: string, config?: PurchaseCa
  * each field changes and never touches, rides the 402 body, the MCP
  * shelf and openapi.json's DisclosureBlock, which is where a buyer
  * fills it; a reader of this view learns of it at the quote.
+ *
+ * The cited artifact (2026-10-01) goes the same way, for the same
+ * arithmetic: its one inlined copy put Settlement Attestation 281
+ * bytes over the item contract's 18,000 guard the day it shipped. It
+ * is optional on every item, changes no price and no goods, and is
+ * fully declared where a buyer fills it — the 402 body, every MCP
+ * shelf and openapi.json's CitedArtifact component.
  */
+const COMPACT_OMITTED_INPUTS: ReadonlySet<string> = new Set([...DISCLOSURE_FIELDS, CITED_ARTIFACT_FIELD]);
+
 function compactInputSchema(item: MenuItem): Record<string, unknown> {
   const schema = buyInputSchema(item);
   return {
     type: "object",
     ...schema,
     properties: Object.fromEntries(
-      Object.entries(schema.properties).filter(([name]) => !(DISCLOSURE_FIELDS as readonly string[]).includes(name)),
+      Object.entries(schema.properties).filter(([name]) => !COMPACT_OMITTED_INPUTS.has(name)),
     ),
   };
 }

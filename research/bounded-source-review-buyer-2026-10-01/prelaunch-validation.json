@@ -1,0 +1,25 @@
+{
+  "package_review_flow": "bounded-fetch-v1",
+  "package_source_directories": true,
+  "buyer_setup_guidance": true,
+  "setup_guidance": "standalone-node-v1",
+  "checked_at": "2026-10-01T14:52:52.568Z",
+  "models_budgets_subject_and_freshness_unchanged": true,
+  "published_runtime_verified": true,
+  "verifier_hashes_match": true,
+  "signature_valid": true,
+  "evidence_complete": true,
+  "observations": [
+    {
+      "pointer": "/round/hosts/57",
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-21T02:30:40.084Z"
+    }
+  ],
+  "openapi": {
+    "bytes": 688868,
+    "budget": 700000,
+    "within_budget": true
+  },
+  "limits": "Controller preparation only; published-key consistency does not establish issuer identity. No controller bytes supplied to buyers."
+}

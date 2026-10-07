@@ -163,6 +163,13 @@ export function securityBlock(
  */
 export const BUY_REFUSAL_CODES: readonly DoorError[] = [
   {
+    code: "baseline_unavailable",
+    http: 400,
+    charged: false,
+    means: "the named earlier Spot Check has no valid retained signed original for this host; no comparison or payment was attempted",
+    what_to_do: "Use a Spot Check certificate for the same host whose original is available at /api/spot-checks/{cert_id}. Old certificates without retained originals cannot serve as baselines.",
+  },
+  {
     code: "window_refused", http: 409, charged: false,
     means: "the shop window has nothing to pick (nobody has opened a pack yet), or this wallet picked inside the last twelve hours; the pick was refused before any settle call",
     what_to_do: "Look first: GET /api/paywall/window is free and lists what is on show, each row with its holder. An empty window fills when anyone opens a pack; a window holding only your own pressings fills when somebody else opens one; a locked wallet picks again after twelve hours. Do not retry inside the lock or against your own window; nothing was charged.",
@@ -562,7 +569,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled", "purchase_resolved"] as const).map(
+  ...(["baseline_unavailable", "target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled", "purchase_resolved"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {

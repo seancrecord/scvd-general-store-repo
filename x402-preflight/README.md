@@ -31,6 +31,10 @@ npx scvd-preflight https://door.example/api/paid https://door.example/api/other 
 
 ## Inspect an endpoint (0.3.0)
 
+`inspectOne` requires scvd-preflight 0.3.0 or later. Check npm with
+`npm view scvd-preflight version` before installing for this feature.
+From this checkout, the same export is in `./x402-preflight.js`.
+
 ```js
 import { inspectOne, renderInspectionLines } from "scvd-preflight";
 

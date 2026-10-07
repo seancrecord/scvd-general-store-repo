@@ -32,7 +32,7 @@ for (const network of laborNetworks()) for (const other of ["http", "mcp", "mcp-
       await sourceEnv.ORDERS.put(KV_KEYS.order(order.order_id), JSON.stringify(order));
     }
     const first = await commission(network);
-    const item = items.find(row => row.id === COMMISSION_ITEM_ID)!, args = { ...baseline(item), detail: "SCVD-E2E catalogue capacity" };
+    const item = items.find(row => row.id === COMMISSION_ITEM_ID)!, args = { ...await baseline(item), detail: "SCVD-E2E catalogue capacity" };
     const quote = await call(item, "mcp", args, shelves(item)[0]!);
     const payment = await signLabor(quote.offers.find(offer => offer.network === network)!);
     const second = other === "commission" ? await commission(network) : () => sendLabor(item.id, other, args, payment, crypto.randomUUID());

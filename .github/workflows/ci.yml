@@ -145,7 +145,7 @@ jobs:
       - name: The packages
         run: npm run packages:test
       - name: Corpus publishing and dataset views
-        run: npm run corpus:publish:test
+        run: npm run corpus:publish:test && node --test scripts/corpus-findings.test.mjs scripts/corpus-listing-evidence.test.mjs
       # THE SAME LAW IN THREE LANGUAGES (2026-09-15). A readiness scan
       # found the preflight client published to npm and nowhere else,
       # which is true and is the kind of gap that only closes if the

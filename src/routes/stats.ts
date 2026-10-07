@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { settlementNetworkLabels } from "@/lib/payment-networks";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import {
   computeStatsDiagnosed,
@@ -42,11 +43,12 @@ statsRoutes.get("/stats", async (c) => {
      * ledger moves family settles from organic to house in the totals
      * only and does not know which item they were on, so these rows
      * do not follow it; a shelf item by its id, a penny page by its
-     * path with slashes turned to colons.
+     * path with slashes turned to colons. Native MPP joins separately
+     * with per-item corrections; the response note names that difference.
      */
     till_by_item: books.till_by_item,
     till_by_item_note:
-      "Settles at the till per item, organic and house, every month added, raw: the reclassification ledger (reclassified_house above) is applied to the totals only and cannot be applied per item, so a family settle booked organic before its wallet was listed still sits in that item's organic column here. Never a ranking; the rows are in the till's own order. Published under rule 43 as amended 2026-09-21 with the rest of the counts.",
+      "Settles per item, all time, with x402 and native MPP combined. Legacy x402 rows are raw: later wallet-level house corrections affect totals but cannot be assigned to items. The native MPP rows include their per-item house corrections. Founding purchases without an item counter are absent; these rows need not sum to the corrected headline total. Never a ranking.",
     track_record: trackRecordLine(stats, base),
     house_flag_policy: HOUSE_FLAG_POLICY,
     identity_policy: IDENTITY_POLICY,
@@ -64,7 +66,7 @@ statsRoutes.get("/stats", async (c) => {
     ...(stats.organic_by_rail
       ? {
           rail_split_method:
-            "organic_by_rail divides the organic figure by the chain the money arrived on, from three records covering disjoint sets of sales so that nothing is counted twice. (1) The TILL: the rail is written in the same call that produces the organic count, so every settle has one, including the penny pages that mint no certificate. (2) The CERTIFICATES, for sales settled before the till started recording rails; that walk stops at exactly the instant the till took over. (3) THE STORE'S OWN CONFIGURATION, for anything the first two missed that predates 2026-08-04 — the day the Solana rail was built. Before it this store could accept exactly one network, so a sale from those weeks did not probably settle on Base, it could not have settled anywhere else. base + polygon + solana + rail_not_recorded always equals organic_settlements. What is left in rail_not_recorded can only be a sale from between the second rail opening and the till learning to record rails, that also minted no certificate — a closed set that nothing can join, recoverable by hand from the public receiving wallets against its transaction hash.",
+            `The x402 split combines the till's network counters, certificate-era records before that meter, and documented single-network history and hand placements. Corrected native MPP sales add to Base from their own settlement ledger. ${settlementNetworkLabels().map(row => row.key).join(" + ")} + rail_not_recorded equals organic_settlements when the split is available. rail_not_recorded means the network was not established; it does not establish the sale's age. A contradictory legacy split remains withheld even when native MPP has a valid network reading.`,
         }
       : {}),
     /**

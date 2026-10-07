@@ -3,6 +3,14 @@
 The minor version tracks the vocabulary version; patches fix the
 package, never a definition. Versions are immutable once published.
 
+## 0.22.0 — 2026-10-05
+
+Vocabulary v22: discovery/schema and offer/challenge classes include their
+v3 verdict signals alongside the legacy advisory signals. `defectsBySignal`
+resolves both spellings; TypeScript exposes the optional `verdict_signal`.
+Discovery guidance distinguishes a schema contradiction from an observed
+directory rejection. Historical signed records remain unchanged.
+
 ## 0.21.0 — 2026-09-28
 
 Vocabulary v21: added `receipt-absent-on-paid-response`, a door that

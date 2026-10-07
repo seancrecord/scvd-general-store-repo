@@ -1,3 +1,4 @@
+import { commerceMonthTotals } from "@/services/commerce-month";
 import { renderIndexReading } from "@/pages/admin/index-reading";
 import type { OurDoors } from "@/services/ward-round";
 import type {
@@ -16,7 +17,7 @@ import type { TakeSummary } from "@/services/books-summary";
 import type { FieldWalletReading } from "@/services/field-wallet";
 import type { TillItemCount } from "@/services/stats";
 import { minimumUsdcForPath } from "@/lib/payments";
-import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
+import type { BazaarLedgerEntry, PayerRecord } from "@/types";
 
 /**
  * The desk: analytics front and center, because that's what the
@@ -142,7 +143,6 @@ export interface OfficePageData {
    */
   monthReclass: { settles: number; usdc: number } | null;
   bazaarLedger: BazaarLedgerEntry[];
-  gazetteIssues: GazetteIssue[];
   /** Pending work counts for the strip. */
   work: { orders: number; letters: number; reviews: number; alerts: number | null };
   /**
@@ -252,7 +252,7 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
     <p><small>Rows predating the register keep their own names — old keys are read as
     written, so a historical one-off like <code>workcheck-persona-test</code> still shows
     itself. Only new writes are bucketed, and the exact string always survives per-event
-    under <a href="/admin/item-events">item events</a>.</small></p>
+    in each item's events — <a href="#item-ledger">choose an item in the ledger below</a>.</small></p>
     <details><summary>What each source means</summary><ul>${legend}</ul></details>`;
 }
 
@@ -317,21 +317,21 @@ export function howToReadTheMoneyHtml(
   lastRaise: { at: string; raised: number } | null,
 ): string {
   const tallyState = serialized
-    ? `Since 2026-09-11 every bump goes through one serialized writer (the counter ledger), so a burst of a thousand sales lands as a thousand.`
+    ? `Since 2026-09-11 every bump goes through one serialized writer (the counter ledger), which prevents concurrent increments from overwriting one another.`
     : `<strong style="color:#8c2f1b">This deployment has no counter ledger binding, so bumps are back on KV read-add-write and a burst can lose counts.</strong>`;
   const raiseState = lastRaise
-    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "nothing was short" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.${
+    ? `Last raise ${escapeHtml(lastRaise.at)}: ${lastRaise.raised === 0 ? "no increases reported; check the log for scan coverage" : `${lastRaise.raised} counter${lastRaise.raised === 1 ? "" : "s"} lifted`}.${
         takeReadAt && lastRaise.at > takeReadAt
           ? ` <strong>That raise ran after the reading below was taken; the numbers here predate it.</strong> Press the button above to take them again.`
           : ""
       }`
     : `No raise has run on this deployment yet.`;
   return `<div style="border:1px solid currentColor;padding:0.6em 0.9em;margin:0.5em 0 1em;background:var(--card)">
-    <p style="margin:0 0 0.4em"><strong>Three counts of the same sales live on this desk. They are supposed to agree, and when they do not, the certificates and the per-settle records are right.</strong></p>
+    <p style="margin:0 0 0.4em"><strong>These readings cover different records. Compare the payment system, time window and scan coverage before treating a difference as a missing sale.</strong></p>
     <ol style="margin:0;padding-left:1.4em">
-      <li><strong>Certificates and per-settle records</strong> — one per sale, written when it settled; neither can lose one. <em>The take</em> on the desk and <a href="/admin/buyers">the buyers page</a> count certificates. <strong>This is the true number.</strong></li>
-      <li><strong>Till counters</strong> — the storefront's settle count, the month line above, and the "row says N" on the buyers page. ${tallyState} Every hour the raise lifts any counter still short of its records (organic only, never lowered), so these go up to where they belong on their own. ${raiseState} Detail at <a href="/admin/raise-log">/admin/raise-log</a>.
-        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0 0"><button type="submit">Raise every short counter to its records now</button></form></li>
+      <li><strong>Certificates and per-settle records</strong> — <em>The take</em> and <a href="/admin/buyers">the buyers page</a> count retained certificates. Some paid goods issue no certificate; a delivery can also be missing one. Certificates include native MPP purchases, which have a separate payment ledger from legacy x402 settlements.</li>
+      <li><strong>Till counters</strong> — payment tallies, including the legacy x402 wallet rows shown on the buyers page. ${tallyState} Every hour the raise lifts eligible organic x402 tallies to recorded settlements. It never lowers a tally, adds native MPP sales to legacy rows, or creates missing settlement records. ${raiseState} Detail at <a href="/admin/raise-log">/admin/raise-log</a>.
+        <form method="post" action="/admin/repair/raise-counters" style="margin:0.3em 0 0"><button type="submit">Raise eligible legacy tallies to recorded settlements</button></form></li>
       <li><strong>The take on the desk</strong> — the certificates, counted once an hour and cached (last read ${takeReadAt ? escapeHtml(takeReadAt) : "on the last hourly round"}). Up to an hour behind the shelf; catches up by itself. Counted this second at <a href="/admin/take">/admin/take</a>.</li>
     </ol>
   </div>`;
@@ -604,16 +604,10 @@ function noCertificateHtml(
 function glanceHtml(data: OfficePageData): string {
   const ledger = data.monthLedger;
   const reclass = data.monthReclass;
-  const rawSettles = Object.values(ledger.items).reduce(
-    (sum, row) => sum + row.settled,
-    0,
-  );
-  // The reclassification ledger, applied at read — the same correction
-  // /stats carries, sliced to this month. Raw counters stay as
-  // written; the note under the line shows the move in the open.
-  const organicSettles = Math.max(0, rawSettles - (reclass?.settles ?? 0));
-  const revenueUsdc = Math.max(0, ledger.revenueUsdc - (reclass?.usdc ?? 0));
-  const revenueHouseUsdc = ledger.revenueHouseUsdc + (reclass?.usdc ?? 0);
+  const totals = commerceMonthTotals(ledger, reclass);
+  const organicSettles = totals?.organic;
+  const revenueUsdc = totals?.revenue_usdc;
+  const revenueHouseUsdc = totals?.house_revenue_usdc;
   const organic402s = Object.values(ledger.items).reduce(
     (sum, row) => sum + row.challenges,
     0,
@@ -625,14 +619,15 @@ function glanceHtml(data: OfficePageData): string {
   return `
     <p style="font-size:1.15em">
       <strong>${escapeHtml(ledger.month)} so far:</strong>
-      <strong>$${revenueUsdc.toFixed(2)}</strong> organic revenue
-      <small>(+$${revenueHouseUsdc.toFixed(2)} house)</small> \u00B7
-      <strong>${organicSettles}</strong> organic sale${organicSettles === 1 ? "" : "s"} <small>this month${data.allTime ? `, of ${data.allTime.organic} all-time` : ""}</small> \u00B7
+      <strong>${revenueUsdc === undefined ? "unavailable" : `$${revenueUsdc.toFixed(2)}`}</strong> organic revenue
+      <small>(${revenueHouseUsdc === undefined ? "unavailable" : `+$${revenueHouseUsdc.toFixed(2)}`} house)</small> \u00B7
+      <strong>${organicSettles ?? "unavailable"}</strong> organic sale${organicSettles === 1 ? "" : "s"} <small>this month${data.allTime ? `, of ${data.allTime.organic} all-time` : ""}</small> \u00B7
       <strong>${organic402s}</strong> organic 402s \u00B7
       <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
-      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 porch-to-purchase <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
+      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 organic 402s per porch visit <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
+    <p><small>Monthly sales and revenue include x402 and MPP. The asks, daily trend, sources and conversion tables below cover x402 only.</small></p>
     ${reclassNote}
     ${
       data.allTime
@@ -652,16 +647,16 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
             const conversion =
               row.challenges > 0
                 ? `${Math.round((row.settled / row.challenges) * 100)}%`
-                : ", ";
+                : "—";
             const tiers = Object.entries(row.tiers)
               .map(([tier, count]) => `${tier}:${count}`)
               .join(" ");
-            return `<tr><td>${escapeHtml(item)}</td>
+            return `<tr><td><a href="/admin/events?item=${encodeURIComponent(item)}">${escapeHtml(item)}</a></td>
               <td>${row.challenges}${row.challengesHouse ? ` <small>(+${row.challengesHouse}h)</small>` : ""}${row.challengesInfra ? ` <small>(+${row.challengesInfra}i)</small>` : ""}</td>
               <td>${row.settled}${row.settledHouse ? ` <small>(+${row.settledHouse}h)</small>` : ""}</td>
               <td>${conversion}</td>
               <td>${row.verifies}${row.verifiesHouse ? ` <small>(+${row.verifiesHouse}h)</small>` : ""}${row.verifiesInfra ? ` <small>(+${row.verifiesInfra}i)</small>` : ""}</td>
-              <td>${escapeHtml(tiers || ", ")}</td></tr>`;
+              <td>${escapeHtml(tiers || "—")}</td></tr>`;
           })
           .join("\n");
   const payerLines =
@@ -808,7 +803,7 @@ function porchHtml(porch: PorchLedger): string {
       <tr><th>surface</th><th>kind</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
-    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;
+    <p><strong>Organic 402s per organic porch visit: ${porch.porchToPurchase === null ? "not available" : porch.porchToPurchase}</strong>. This is a ratio of requests, not a purchase conversion rate. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;
 }
 
 /**
@@ -951,18 +946,6 @@ function bazaarHtml(entries: BazaarLedgerEntry[]): string {
     .join("\n");
 }
 
-function rackHtml(issues: GazetteIssue[]): string {
-  if (issues.length === 0) {
-    return "<p>No issues off the press yet.</p>";
-  }
-  return issues
-    .map(
-      (issue) =>
-        `<li>Issue no. ${issue.issue_number}, ${escapeHtml(issue.title)}, ${escapeHtml(issue.date)}, contributors: ${issue.contributors.length > 0 ? issue.contributors.map((contributor) => escapeHtml(contributor.name)).join(", ") : "none named"}</li>`,
-    )
-    .join("\n");
-}
-
 export function renderOfficePage(data: OfficePageData): string {
   const work = data.work;
   const workTotal = work.orders + work.letters + work.reviews;
@@ -1021,8 +1004,8 @@ export function renderOfficePage(data: OfficePageData): string {
   </section>
 
   <section>
-    <h2>The ledger's answers, per item</h2>
-    <p>402s issued vs settled per item, tier picks, wallets. The ledger outranks research.</p>
+    <h2 id="item-ledger">The ledger's answers, per item</h2>
+    <p>402s issued vs settled per item, tier picks, wallets. Choose an item to read its retained events. The ledger outranks research.</p>
     ${ledgerAnswersHtml(data.monthLedger, data.payers)}
   </section>
 
@@ -1082,9 +1065,8 @@ export function renderOfficePage(data: OfficePageData): string {
 
   <section>
     <details>
-      <summary>Bazaar ledger (extension responses) and the Gazette rack (${data.gazetteIssues.length})</summary>
+      <summary>Bazaar ledger (extension responses)</summary>
       <ul>${bazaarHtml(data.bazaarLedger)}</ul>
-      <ul>${rackHtml(data.gazetteIssues)}</ul>
     </details>
   </section>`;
   return renderAdminShell("office", body, data.loadNotes);

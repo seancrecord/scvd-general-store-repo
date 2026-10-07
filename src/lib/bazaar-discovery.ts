@@ -1,3 +1,4 @@
+import { SPOT_HOSTS_DESCRIPTION, SPOT_HOSTS_INPUT_CAP, BASELINE_CERT_PATTERN } from "@/lib/spot-check-terms";
 import { SUBJECT_ADDRESS_PATTERN, TRANSACTION_ID_PATTERN, SPOT_CHECK_HOST_PATTERN, trimmedInputPattern } from "@/lib/purchase-input-syntax";
 import { MANDATE_TEXT_CAP } from "@/lib/mandate-terms";
 import { NAME_CAP } from "@/lib/sanitize";
@@ -23,6 +24,33 @@ import { inputAliasTable, resolveInputRecord } from "@/lib/input-aliases";
 
 /** JSON Schema maxLength counts Unicode code points. */
 export const PURCHASE_PURPOSE_MAX_LENGTH = 280;
+
+/**
+ * THE CITED ARTIFACT (2026-10-01): `<format>:<reference>`, one line.
+ * The format is a short lowercase token for the envelope kind, the
+ * reference is printable ASCII with no whitespace — an id or digest as
+ * its issuer spells it. Printable so the receipt page can show it; no
+ * whitespace so a line is a line. The pattern is the whole validation:
+ * the store never fetches or verifies what it names.
+ */
+export const CITED_ARTIFACT_FIELD = "cited_artifact";
+export const CITED_ARTIFACT_MAX_LENGTH = 160;
+export const CITED_ARTIFACT_PATTERN = /^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$/;
+/**
+ * The one schema object, exported so openapi.json can write it ONCE
+ * as a component and point every paid door at it: inlined, it costs
+ * its bytes twice per door (parameter and request schema) across
+ * thirty-five doors, and the September 12 thinning left no room for
+ * that. The MCP shelves and the Bazaar entry still inline it, because
+ * a tool's inputSchema has no components to point at.
+ */
+export const CITED_ARTIFACT_SCHEMA = {
+  type: "string",
+  maxLength: CITED_ARTIFACT_MAX_LENGTH,
+  pattern: CITED_ARTIFACT_PATTERN.source,
+  description:
+    "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
+} as const;
 
 const AGENT_NAME_SCHEMA = {
   type: "string",
@@ -88,6 +116,11 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       description:
         "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
     },
+    /*
+     * One short line, inlined into every paid door's contract like
+     * purpose: the budget is per byte times thirty-five.
+     */
+    [CITED_ARTIFACT_FIELD]: { ...CITED_ARTIFACT_SCHEMA },
     /**
      * THE DISCLOSURE BLOCK (2026-09-18, lib/disclosure). Six flat
      * optional strings a buyer may fill — model, client, operator,
@@ -262,11 +295,19 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "change_check") {
+    properties["baseline_cert_id"] = { type: "string", pattern: BASELINE_CERT_PATTERN, description: "Certificate ID of an earlier Spot Check for the same host with a retained signed original. Missing originals refuse without charge." };
+    required.push("baseline_cert_id");
+  }
+  if (item.id === "batch_spot_check") {
+    properties["hosts"] = { type: "string", maxLength: SPOT_HOSTS_INPUT_CAP, description: SPOT_HOSTS_DESCRIPTION };
+    required.push("hosts");
+  }
   if (item.id === "research_comparison") {
     properties["urls"] = { type: "string", maxLength: COMPARISON_INPUT_CAP, description: COMPARISON_INPUT_DESCRIPTION };
     required.push("urls");
   }
-  if (item.id === "spot_check") {
+  if (item.id === "spot_check" || item.id === "change_check") {
     properties["host"] = {
       type: "string",
       pattern: trimmedInputPattern(SPOT_CHECK_HOST_PATTERN),
@@ -525,6 +566,8 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
  */
 export function buyInputExample(item: MenuItem): Record<string, unknown> {
   const example: Record<string, unknown> = { agent_name: "friendly-agent" };
+  if (item.id === "change_check") { example["host"] = "your-door.example"; example["baseline_cert_id"] = "cert_your_retained_spot_check"; }
+  if (item.id === "batch_spot_check") example["hosts"] = JSON.stringify(["one.example", "two.example"]);
   if (item.id === "research_comparison") example["urls"] = COMPARISON_EXAMPLE_INPUT;
   if (item.id === "context_anchor") {
     example["summary"] =
@@ -737,6 +780,28 @@ export function missingRequiredInputs(
     const value = supplied[name];
     return value === undefined || value === null || String(value).trim() === "";
   });
+}
+
+/**
+ * Plumbing a request carries that is not an input: the house secret,
+ * the attribution markers and the MCP shelf selector, each booked
+ * elsewhere or not at all.
+ * Left out of the arrived-input names so the books never hint at
+ * where the house secret travels.
+ */
+const NOT_AN_INPUT: ReadonlySet<string> = new Set(["house", "src", "source", "ref", "item_id"]);
+
+/**
+ * THE NAMES OF THE INPUTS A REQUEST BROUGHT (2026-09-30), for the
+ * books: every query parameter or tool argument with a non-blank
+ * value, by name, sorted so two rows with the same shape read the
+ * same. Never a value. See MetricEvent.inputs_present.
+ */
+export function presentInputNames(present: Record<string, unknown>): string[] {
+  return Object.entries(present)
+    .filter(([name, value]) => !NOT_AN_INPUT.has(name) && value !== undefined && value !== null && String(value).trim() !== "")
+    .map(([name]) => name)
+    .sort();
 }
 
 /**

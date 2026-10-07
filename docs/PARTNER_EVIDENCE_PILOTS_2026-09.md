@@ -5,6 +5,32 @@ published service promise. Accountable owner: Sean Record. Research and
 evidence preparation: Codex in this task. Partner owners remain unassigned
 until a counterpart actually agrees; naming a prospect is not an agreement.
 
+## October 2 decision-use update
+
+BiX answered the output-contract question September 28: internal HOLD_PAPER and
+PROMOTE_PAPER become public HOLD and PROMOTE; absent forward profiles yield
+OBSERVE. The October 1 follow-up already supplies a fresh unpaid observation and
+asks which concrete integration/release decision it supports. No reply to that
+question was present in the October 2 read. Hold custom development and a paid
+canary pending that answer; no duplicate outreach. [Sources and limits](ROI_FOLLOWTHROUGH_2026-10-02.md).
+The September 28 status below is retained as a dated record.
+
+## September 28 execution status
+
+The original plan and initial research merged in PR #911. Merit received the
+reproduction note; no reply yet. Salman at BiX accepted the free unpaid check
+and supplied the current endpoint and synthetic inputs. The check is complete
+and its [results note was posted and verified](../research/partner-evidence-2026-09-28/results-outreach.json).
+The output-contract clarification remains unanswered; no paid response,
+decision use or repeat demand is established. Browserbase remains uncontacted.
+
+The keeper subsequently authorized [request-body support and durable pilot invocation](LAUNCH_CHECK_PILOT_INPUTS_2026-09-28.md)
+in the existing Launch Check engine. That implementation and the later evidence
+records are now being packaged for review. No deployed pilot, paid attempt,
+public checkout extension or cold-agent experiment follows from this work.
+Statements below describing the initial candidates are the September 24
+starting position; this dated update records subsequent participation.
+
 ## 1. Outcome
 
 Establish one recurring external use of SCVD evidence: an outside team uses

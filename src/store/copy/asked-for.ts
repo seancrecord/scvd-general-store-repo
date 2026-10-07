@@ -16,7 +16,7 @@ import { VALUE_PROPOSITION } from "@/store/copy/position";
  * the other is the category, which is what gets typed. The identity
  * stays on every storefront sentence (roadmap N2 retired "trust layer"
  * and "verification layer" as LEADS, and that stands). These ride in
- * the machine fields — alternateName, knowsAbout, the guides' vocabulary
+ * the machine fields — knowsAbout, the guides' vocabulary
  * block, the OpenAPI and MCP descriptions — so a question asked in
  * anyone's words still lands here.
  *
@@ -54,8 +54,8 @@ export const STORE_NAMES: readonly string[] = [
   STORE_SERVICE_NAME,
 ];
 
-/** alternateName for the Organization and WebSite nodes: names, then the category phrases. */
-export const ALTERNATE_NAMES: readonly string[] = [...STORE_NAMES, ...ASKED_FOR_NOUNS];
+/** Site and organization aliases are names; category phrases belong in knowsAbout. */
+export const ALTERNATE_NAMES: readonly string[] = STORE_NAMES;
 
 /**
  * THE ASKED-FOR NOUN PER INSTRUMENT. The house names (the Once-Over,
@@ -76,6 +76,8 @@ export const ITEM_ASKED_FOR: Record<string, string> = {
   opening_day: "x402 launch check with a week of signed daily monitoring and a passport page",
   provenance_check: "x402 payTo address history, signed from the public chain",
   spot_check: "what the observatory already knows about an x402 host, signed",
+  change_check: "A signed comparison of a retained original with current recorded observations, dates and gaps",
+  batch_spot_check: "Read existing host records as a signed batch; no live probes or rankings",
   research_comparison: "x402 research provider comparison: payment terms, dated history and shared receiving addresses",
   the_statement: "signed on-chain statement of an agent wallet's activity",
   operator_statement: "signed inflow statement for an x402 receiving address, a month of readings",

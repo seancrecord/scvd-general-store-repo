@@ -1,3 +1,4 @@
+import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
@@ -606,9 +607,8 @@ function freeServicesJsonLd(base: string): string {
    */
   const services = [
       service({
-        name: "x402 endpoint preflight",
-        description:
-          "Send any x402 door's URL and get back what its 402 actually serves: whether it answers a well-formed challenge, whether its payTo can be credited on the rail it named, and what was not checked. One probe, one moment — a shape check, never an uptime claim.",
+        name: "x402 and MPP endpoint inspection",
+        description: ENDPOINT_INSPECTION_DESCRIPTION,
         path: "/api/preflight",
         type: "API endpoint verification",
       }),
@@ -843,7 +843,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
     alternateName: ALTERNATE_NAMES,
     /**
      * THE CATEGORY, IN THE FIELD FOR IT (2026-09-02). alternateName
-     * carries the phrases people type; knowsAbout carries them as
+     * carries the store's names; knowsAbout carries category phrases as
      * topics; subjectOf links what has been written about the store
      * under a byline. The storefront prose does not change: the
      * identity noun stays on every sentence a person reads, and these
@@ -1152,7 +1152,7 @@ ${webmcpOriginTrialTags()}
   <main class="road" data-room="storefront">
 
     <header class="signfront">
-      <p class="tube-line">${COPY.tubeLine}</p>
+      <p class="tube-line">${escapeHtml(STORE_SERVICE_NAME)}<br>${COPY.tubeLine}</p>
       <h1 class="neon"><span class="neon-name">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></span><span class="sr-only"> (${escapeHtml(STORE_SERVICE_NAME)}) — ${escapeHtml(COPY.h1Summary)}</span></h1>
       <div class="light-pool"></div>
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
@@ -1168,6 +1168,8 @@ ${webmcpOriginTrialTags()}
       ${cheapest ? `<a class="door-cta" href="/menu/${escapeHtml(cheapest.id)}">Try ${escapeHtml(cheapest.name)} · ${escapeHtml(priceLabel(cheapest))}</a>` : ''}
       <a class="door-cta" href="/mcp.md">Connect through MCP</a>
     </nav>
+
+    <p class="menu-meta">${escapeHtml(ENDPOINT_INSPECTION_DESCRIPTION)}</p>
 
     <div class="gauges">
       ${patronsGaugeHtml(data.patronCount)}

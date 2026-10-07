@@ -255,7 +255,22 @@ describe("the contract says how to understand and how to pay", () => {
        * money to find out.
        */
       for (const [name, property] of Object.entries(properties)) {
-        if (!property["description"]) {
+        /*
+         * A property may be a reference into components (the cited
+         * artifact, 2026-10-01, by the disclosure block's byte
+         * arithmetic): the description then lives once, on the
+         * component, and resolving it is what a reader does. A
+         * dangling reference is its own failure here, named.
+         */
+        let described: Record<string, unknown> | undefined = property;
+        const ref = property["$ref"];
+        if (typeof ref === "string") {
+          let target: unknown = json;
+          for (const part of ref.slice(2).split("/")) target = (target as Record<string, unknown> | undefined)?.[part];
+          described = target as Record<string, unknown> | undefined;
+          if (!described) problems.push(`${path}: ${name} references ${ref}, which the document does not define`);
+        }
+        if (!described?.["description"]) {
           problems.push(`${path}: ${name} has no description`);
         }
       }

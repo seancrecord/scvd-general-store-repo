@@ -1,0 +1,162 @@
+{
+  "kind": "software validation only; no native acquisition",
+  "source_version": "1.11.0",
+  "runtime_sha256": {
+    "evidence-cli.mjs": "2702e800abc2235091bde67f6a217b1918866dd7a692c1cb9a08e7a1b01aa48a",
+    "evidence-report.js": "8cf58b9b35350a9b217638aeb6ef00e58d08a4db3812189c00b35064ae6c602a",
+    "package.json": "6dc5859739bfd888fa9b46721099d19b6668a7a66ff1f083ae5ed3c8a0407496"
+  },
+  "checks": [
+    {
+      "command": "npm run evidence:test",
+      "state": "pass",
+      "tests": 261,
+      "log": "scvd-draft-identifiers-evidence-final.log"
+    },
+    {
+      "command": "npm run buyer:test",
+      "state": "pass",
+      "tests": 303,
+      "log": "scvd-draft-identifiers-buyer-final.log"
+    },
+    {
+      "command": "npm test -- test/verifier-package.spec.ts",
+      "state": "pass",
+      "tests": 12,
+      "log": "scvd-draft-identifiers-package.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "state": "pass",
+      "log": "scvd-draft-identifiers-typecheck-final.log"
+    },
+    {
+      "command": "npm run build:check",
+      "state": "pass",
+      "log": "scvd-draft-identifiers-build-final.log"
+    },
+    {
+      "command": "npm run docs:check",
+      "state": "pass; advisory findings retained",
+      "log": "scvd-draft-identifiers-docs.log"
+    }
+  ],
+  "red_witnesses": [
+    {
+      "log": "scvd-draft-identifiers-red.log",
+      "failed_tests": 3,
+      "scope": "optional draft check before implementation"
+    },
+    {
+      "log": "scvd-draft-identifiers-boundary-red.log",
+      "failed_tests": 1,
+      "scope": "129-digit display suppression before boundary fix"
+    }
+  ],
+  "attempt_logs": [
+    {
+      "file": "scvd-draft-identifiers-boundary-red.log",
+      "bytes": 1191,
+      "sha256": "3af57c9db2806429710061742ca7787ec544a635b4ca3957e8bd3be7d6ec35a8"
+    },
+    {
+      "file": "scvd-draft-identifiers-build-final.log",
+      "bytes": 4137,
+      "sha256": "1641df9d43f24a0c9c0913635b4d0a1dfc32890243ddee94263d2d81fdec9e05"
+    },
+    {
+      "file": "scvd-draft-identifiers-build.log",
+      "bytes": 4137,
+      "sha256": "1641df9d43f24a0c9c0913635b4d0a1dfc32890243ddee94263d2d81fdec9e05"
+    },
+    {
+      "file": "scvd-draft-identifiers-buyer-final.log",
+      "bytes": 60965,
+      "sha256": "944395f0318891e958266034913f3b90cb07175c4ad5b6bbff047382f1636f46"
+    },
+    {
+      "file": "scvd-draft-identifiers-buyer.log",
+      "bytes": 60991,
+      "sha256": "c5d1b887df17a312236bf836f409223b67d107c466abc419e35aa698b6f9228a"
+    },
+    {
+      "file": "scvd-draft-identifiers-docs.log",
+      "bytes": 9618,
+      "sha256": "860b24f455858c13d006c4f837a0b809084246a589d9ab14b6e917f06c39ac50"
+    },
+    {
+      "file": "scvd-draft-identifiers-evidence-final.log",
+      "bytes": 52423,
+      "sha256": "9d4050046defe0a2842c181462839103b446ce43199387d8daa04aec31e61fda"
+    },
+    {
+      "file": "scvd-draft-identifiers-evidence.log",
+      "bytes": 52203,
+      "sha256": "f43d8e62f60faf96e525ba4cd0c41c1f2dabf5ef7e425867296b50f409d03eb4"
+    },
+    {
+      "file": "scvd-draft-identifiers-focused.log",
+      "bytes": 825,
+      "sha256": "28cf1eca0ae00e607150da8cc3003057bf7b09f5cdb0c93e14305838c7390c98"
+    },
+    {
+      "file": "scvd-draft-identifiers-package.log",
+      "bytes": 493,
+      "sha256": "f63ea25e9e99139b9a55ee094ceec6b47f5a7d5229712d802017e94ef97cf6e1"
+    },
+    {
+      "file": "scvd-draft-identifiers-red.log",
+      "bytes": 2784,
+      "sha256": "8fbf1b62187b6d4d2f3f76b944a93c285a3482e94f2bd2bf2c903407e58d61ec"
+    },
+    {
+      "file": "scvd-draft-identifiers-replay.log",
+      "bytes": 1417,
+      "sha256": "535a79656081d9fdfa58b21ecd113796af7805fb3a668548a388f49d47766cdb"
+    },
+    {
+      "file": "scvd-draft-identifiers-typecheck-final.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    },
+    {
+      "file": "scvd-draft-identifiers-typecheck.log",
+      "bytes": 54,
+      "sha256": "99f6e3315fb43efa64e4d1dd85cb02c01fa511a9fc822319328620f5aa507e75"
+    }
+  ],
+  "limits": "Local checks do not substitute for all four hosted test shards and aggregate check. No registry publication, native adoption or repaired historical score is claimed.",
+  "ci_followup": {
+    "finding": "The source-version label derived into the public guide changed both pinned guide digests. The earlier source-link PR failed hosted CI; the 1.11.0 branch reproduces both stale pins locally.",
+    "baseline_witness": "Restoring only manifest version 1.9.0 reproduces both old pins: 14/14. Intermediate 1.10.0 pins also pass 14/14.",
+    "fix": "Merge the 1.10.0 pin correction, then retain separate 1.11.0 digests without changing or weakening the prose guard.",
+    "logs": [
+      {
+        "file": "scvd-959-shard3-failure.log",
+        "sha256": "9ecd2aab172ac6d3c18bf8789b152f35df055050481d84ff180128a1d1f62170"
+      },
+      {
+        "file": "scvd-draft-identifiers-guide-repro.log",
+        "sha256": "f905acdf69183de5f10752cf088e98aac1084318bc800278e2584ffc3bcdde0b"
+      },
+      {
+        "file": "scvd-guide-version-baseline.log",
+        "sha256": "3e6b96f38e722ff3dce194dcdb3289f2fb8552ce96c47b63947b8dc22b544d00"
+      },
+      {
+        "file": "scvd-guide-version-source-links.log",
+        "sha256": "88bd3ea8db41ab7d4e91a584d916b67b8a9be40fabe7959e67b6642b1355b065"
+      },
+      {
+        "file": "scvd-source-links-guide-green.log",
+        "sha256": "306f5b5dabcfe07286877abced7005152dd9e46d20d30992f97d6afc77fde9f8"
+      }
+    ],
+    "final_guide_check": {
+      "state": "pass",
+      "tests": 14,
+      "log": "scvd-draft-identifiers-guide-green.log",
+      "sha256": "bca98319c2fa02790dd1d93d821dd54d6383b8e1d863347c569c7691f02e663e"
+    }
+  }
+}

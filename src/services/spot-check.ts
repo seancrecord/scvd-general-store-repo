@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { SPOT_CHECK_HOST_PATTERN } from "@/lib/purchase-input-syntax";
 import { signJcs } from "@/lib/jcs";
 import { signMessage } from "@/lib/signing";
@@ -53,7 +54,7 @@ const WHAT_THIS_IS =
   "What the observatory already holds on this host, read from the books at the counter: corpus rounds, verdicts as recorded, when we last actually knocked, our own coverage of the window, and the gaps with their reasons. No request was made to the host — this answer is as fresh as our last round and no fresher, and the timestamps say exactly when that was.";
 
 const WHAT_THIS_IS_NOT =
-  `${NEVER_A_RANKING_SENTENCE} House law. Not a live probe: the free preflight at /api/preflight/v2 knocks on the door right now; this reads the ledger instead. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host.`;
+  `${NEVER_A_RANKING_SENTENCE} House law. Not a live probe: the free preflight at /api/preflight/${PREFLIGHT_VERSION_NEXT} knocks on the door right now; this reads the ledger instead. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host.`;
 
 /** A refusal with a buyer-facing reason; thrown pre-mint, charges nothing. */
 export class SpotCheckRefused extends Error {}

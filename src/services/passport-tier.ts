@@ -385,7 +385,7 @@ export function foldTierIndex(
   }
   const rowsByHost = new Map<string, TierRow[]>();
   const evidenceByHost = new Map<string, (ChainRow | undefined)[]>();
-  const lastObservedByHost = new Map<string, { evidence: ChainRow; at: string }>();
+  const lastObservedByHost = new Map<string, { evidence: ChainRow; at: string | null; sealed_at: string }>();
   for (const record of records) {
     const { snapshot } = record;
     const round = snapshot.round;
@@ -416,7 +416,7 @@ export function foldTierIndex(
       const evidence = evidenceByHost.get(host) ?? [];
       evidence.push(row);
       evidenceByHost.set(host, evidence);
-      if (observed) lastObservedByHost.set(host, { evidence: row!, at: row?.observed_at ?? snapshot.taken_at });
+      if (observed) lastObservedByHost.set(host, { evidence: row!, at: row?.observed_at ?? null, sealed_at: snapshot.taken_at });
     }
   }
   const hosts: TierIndexEntry[] = [];
@@ -431,7 +431,7 @@ export function foldTierIndex(
     const census = lastObservedByHost.get(host) ?? null;
     const refresh = refreshes.get(host) ?? null;
     const refreshIsNewest =
-      refresh !== null && (census === null || refresh.observed_at > census.at);
+      refresh !== null && (census === null || refresh.observed_at > (census.at ?? census.sealed_at));
     const winner = refreshIsNewest ? refresh : census?.evidence;
     const protocol = passportProtocolOf(winner);
     const latest: TierLatest = refreshIsNewest

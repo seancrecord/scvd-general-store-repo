@@ -1,6 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 import { kvPut } from "@/lib/kv-retry";
+import { readOnceInScope } from "@/lib/read-scope";
 
 /**
  * THE POPULATION LAYER — enumeration held apart from observation,
@@ -169,7 +170,7 @@ interface RegisterFile {
   last_known: number;
 }
 
-async function readRegister(env: Env): Promise<RegisterFile> {
+const readRegister = readOnceInScope(async (env: Env): Promise<RegisterFile> => {
   const stored = await env.COUNTERS.get<Partial<RegisterFile>>(
     KV_KEYS.populationRegister,
     "json",
@@ -182,7 +183,7 @@ async function readRegister(env: Env): Promise<RegisterFile> {
         ? stored.last_known
         : Object.values(hosts).filter((record) => !record.gone_at).length,
   };
-}
+});
 
 /**
  * ONE HOST, ONE ENTRY. Lowercase and trim were not enough, and the gap

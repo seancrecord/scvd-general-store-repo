@@ -1,0 +1,88 @@
+{
+  "schema_version": 6,
+  "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+  "spend_usdc": 0,
+  "budgets": {
+    "wall_ms": 240000,
+    "tool_calls": 20,
+    "output_bytes": 4000000,
+    "output_tokens": 2500,
+    "artifact_bytes": 33554432,
+    "artifact_files": 32
+  },
+  "freshness": {
+    "max_age_ms": 1209600000
+  },
+  "capability": {
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+    "setup_guidance": "standalone-node-v1"
+  },
+  "cells": [
+    {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    }
+  ],
+  "purpose": "Prepared assisted evidence condition: source candidate extraction plus recipient saved-draft identifier checks with exact final comparison. Requires a fresh host/context qualification before any native acquisition. Prior cohorts remain closed; existing models, budgets, permissions, freshness policy and semantic acceptance remain unchanged.",
+  "recipient": {
+    "host": "codex",
+    "model": "gpt-5.6-luna",
+    "network": "disabled",
+    "attempts_per_eligible_cell": 1,
+    "input_scope": "all-retained-and-buyer-report",
+    "budgets": {
+      "wall_ms": 180000,
+      "tool_calls": 12,
+      "output_bytes": 4194304,
+      "output_tokens": 1800
+    },
+    "verifier": {
+      "name": "x402-verify",
+      "version": "1.11.0",
+      "files": {
+        "evidence-cli.mjs": "2702e800abc2235091bde67f6a217b1918866dd7a692c1cb9a08e7a1b01aa48a",
+        "evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+        "x402-verify.js": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017",
+        "package.json": "6dc5859739bfd888fa9b46721099d19b6668a7a66ff1f083ae5ed3c8a0407496",
+        "evidence-report.js": "8cf58b9b35350a9b217638aeb6ef00e58d08a4db3812189c00b35064ae6c602a",
+        "payment-identity.js": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74"
+      }
+    }
+  },
+  "package_access": true,
+  "package_review": {
+    "source_commit": "200eabda8d2adc3129ab69fb61f62400537063e2"
+  },
+  "buyer_setup_guidance": true,
+  "package_source_directories": true,
+  "package_review_flow": "bounded-fetch-v1",
+  "evidence_workflow": "sources-and-draft-v1"
+}

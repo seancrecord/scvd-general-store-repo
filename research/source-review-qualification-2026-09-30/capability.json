@@ -1,0 +1,81 @@
+{
+  "schema_version": 2,
+  "plan_sha256": "df54ffc884810bd39b96f4ab87b327cc84cca13c0cb85256a2c1d72cdc5959d8",
+  "instrument_sha256": "ad81a2b05701b7d5ab31858013da2d03849854deae6b4de5c553b27e81aa190f",
+  "host_context_sha256": "fdd1c8d45fd43c58f262d28b0b9bda9d3b7c33922e6045cc2e4255e418f4c5b6",
+  "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+  "probed_at": "2026-09-30T14:16:57.391Z",
+  "hosts": {
+    "codex": {
+      "state": "incomplete",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [],
+      "executed": [
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh"
+      ],
+      "package_report": {
+        "state": "incomplete",
+        "reason": "no completed source inspection",
+        "limits": "Checks retained runtime bytes, generated report and visible command execution; not general package security, hidden host actions or a buyer journey."
+      }
+    },
+    "claude": {
+      "state": "incomplete",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [
+        "curl",
+        "cat",
+        "mkdir",
+        "node"
+      ],
+      "executed": [
+        "ls",
+        "pwd",
+        "node",
+        "node",
+        "ls",
+        "pwd",
+        "printf",
+        "true",
+        "node",
+        "node",
+        "node",
+        "grep",
+        "node"
+      ],
+      "package_report": {
+        "state": "incomplete",
+        "reason": "Agent recorded a voluntary package refusal; not a tool permission denial.",
+        "limits": "Checks retained runtime bytes, generated report and visible command execution; not general package security, hidden host actions or a buyer journey.",
+        "source_review": {
+          "state": "recorded",
+          "decision": "decline",
+          "reason": "Source review of the 6 pinned files (hashes verified, no mismatch) found no red flags: no eval/exec/child_process, no wallet/private-key/sendTransaction/transfer/approve calls, and the only network fetch() is in the unrelated export subcommand, not in verify-source, which the task asked to run. Declining is not based on a safety finding in the code itself, but on this session's tool-call budget: 17 of the allotted 20 calls were already spent working around host-level denials of curl and compound/heredoc shell invocations (only single, non-compound node/plain commands were permitted). Completing the remaining chain safely (npm install, writing evidence/report-original.json, running the installed CLI verify-source command, copying 6 runtime files to evidence/installed/, and validating the generated report) needs at least 4-5 more tool calls, which would exceed the 240-second/20-call limit given for this check. Remaining gap: the installed CLI's actual verify-source behavior and its generated report/signature output were never executed or inspected, so package runtime behavior is unverified beyond static source reading.",
+          "source_commit": "25be137d516d502a536062145058176e91e1ce78",
+          "inspection": "not_established",
+          "limits": "Decision and reasoning are self-reported. No proof of comprehension, safety or verified registry provenance.",
+          "package_attempt_observed": false
+        }
+      }
+    }
+  },
+  "limits": [
+    "Directed package qualification includes a pinned installed report; not unbranded discovery or a buyer journey."
+  ],
+  "recipient": {
+    "state": "pass",
+    "trace_sha256": "0bddba776c800f4dc65364400b3cea8e3f01fda513e3b76ab6361536c99fb6e9",
+    "limits": [
+      "Local retention and cryptography under offline adapter settings; not proof of all possible sandbox escapes or a buyer journey."
+    ]
+  }
+}

@@ -1,7 +1,8 @@
 # SCVD Attestation pilot
 
 Implementation prepared October 7, 2026, following the keeper's “lets do it then.”
-Local release candidate; no production deployment, customer activation or invoice sent.
+Release authorized October 7: “make sure the ui is right but then merge push.”
+Customer activation and invoicing remain separate from releasing the software.
 
 ## The offer
 
@@ -106,8 +107,8 @@ scope and affected issued artifacts remain unestablished.
 ## Release and operating limits
 
 The build is isolated from unrelated work on `codex/scvd-attestation-pilot`.
-No commit, push, PR, production deployment or public announcement was made.
-Run required CI shards before merge. The first customer activation requires the
+The keeper authorized commit, push and merge after UI review. The protected PR
+and its required CI shards gate release; production readback follows deployment. The first customer activation requires the
 ordinary buyer agreement described above; this build does not assert demand.
 
 The watch engine's existing sweep cap and scan behavior remain. Watch-gap alerts
@@ -123,14 +124,16 @@ rule 9 rather than introducing an ongoing payment relationship.
   passed with the existing signing tests. The end-of-term watch check also failed
   before the inclusive stop-boundary repair. The new page acceptance check first
   returned 404, then passed after routing the feature.
-- Final focused run: 11 files and 145 tests passed, covering the pilot, JCS, watch
+- Final integrated focused run: 11 files and 150 tests passed, covering the pilot, JCS, watch
   recovery, coverage, discovery, guide content, OpenAPI size and collector boundary.
 - The independent Node verifier tests passed. Typecheck and the production dry-run
-  bundles passed. Desktop and 390px mobile layouts were inspected in the browser.
+  bundles passed. Desktop and 390px mobile layouts were inspected in the browser. The final UI
+  review also covers fixture-based activation and report screens, readable coverage
+  labels, an early download action and a full-width URL field.
 - A broader local run was interrupted after prolonged timing failures in four
   purchase-recovery files. All 12 reported failed cases passed on isolated rerun.
   This is not a full-suite pass; the required CI shards remain a release gate.
 
-The preview uses a temporary local adapter solely to give the production HTTPS
-redirect an HTTPS request URL. No production transport or authentication rule was
+The preview uses a temporary local adapter to give the production HTTPS redirect
+an HTTPS request URL and render read-only fixture screens with a public test key. No production transport or authentication rule was
 relaxed for previewing. No test initiated a real customer engagement or payment.

@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://scvd.store/mcp",
+    "kind": "sse",
+    "status": "200",
+    "exit": 28,
+    "read_at": "2026-10-01T15:51:21.128541+00:00",
+    "body": "mcp-sse.body",
+    "headers": "mcp-sse.headers"
+  },
+  {
+    "url": "https://scvd.store/mcp/",
+    "kind": "slash",
+    "status": "308",
+    "exit": 0,
+    "read_at": "2026-10-01T15:51:21.601868+00:00",
+    "body": "mcp-slash.body",
+    "headers": "mcp-slash.headers"
+  },
+  {
+    "url": "https://scvd.store/mcp",
+    "kind": "cors",
+    "status": "204",
+    "exit": 0,
+    "read_at": "2026-10-01T15:51:22.280721+00:00",
+    "body": "mcp-cors.body",
+    "headers": "mcp-cors.headers"
+  },
+  {
+    "url": "https://scvd.store/mcp",
+    "kind": "tools",
+    "status": "200",
+    "exit": 0,
+    "read_at": "2026-10-01T15:51:22.412664+00:00",
+    "body": "mcp-tools.body",
+    "headers": "mcp-tools.headers"
+  },
+  {
+    "url": "https://scvd.store/mcp/verifier",
+    "kind": "sse",
+    "status": "200",
+    "exit": 28,
+    "read_at": "2026-10-01T15:51:37.429507+00:00",
+    "body": "mcp-verifier-sse.body",
+    "headers": "mcp-verifier-sse.headers"
+  },
+  {
+    "url": "https://scvd.store/mcp/verifier/",
+    "kind": "slash",
+    "status": "308",
+    "exit": 0,
+    "read_at": "2026-10-01T15:51:38.152597+00:00",
+    "body": "mcp-verifier-slash.body",
+    "headers": "mcp-verifier-slash.headers"
+  },
+  {
+    "url": "https://scvd.store/mcp/verifier",
+    "kind": "cors",
+    "status": "204",
+    "exit": 0,
+    "read_at": "2026-10-01T15:51:38.677815+00:00",
+    "body": "mcp-verifier-cors.body",
+    "headers": "mcp-verifier-cors.headers"
+  },
+  {
+    "url": "https://scvd.store/mcp/verifier",
+    "kind": "tools",
+    "status": "200",
+    "exit": 0,
+    "read_at": "2026-10-01T15:51:38.803585+00:00",
+    "body": "mcp-verifier-tools.body",
+    "headers": "mcp-verifier-tools.headers"
+  }
+]

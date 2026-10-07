@@ -50,7 +50,7 @@ import {
   recordPorchVisit,
   recordVerifyCall,
 } from "@/lib/metrics";
-import { buyInputSchema, missingRequiredInputs, buyerInputRepair, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { buyInputSchema, missingRequiredInputs, buyerInputRepair, presentInputNames, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { resolveInputRecord } from "@/lib/input-aliases";
 import { catalogRecovery, CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
@@ -92,7 +92,7 @@ import {
   usableIdempotencyKey,
 } from "@/lib/idempotency";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
-import { preflightUrl } from "@/services/preflight";
+import { preflightUrl, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { beforeYouPay, readProfile } from "@/services/before-you-pay";
 import { lookAtDoor } from "@/services/look";
 import { checkConformance } from "@/services/conformance";
@@ -455,7 +455,7 @@ function serverCapabilities(): Record<string, unknown> {
 // It was discoverable only by inspecting error.data and guessing
 // right. Its MPP twin was spelled out three times over; the lane we
 // lead with was the lane left implicit.
-const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data['x402/payment-required'], sign one of the accepts, and call again with the payment in _meta['x402/payment'] (retries ride _meta['x402/idempotency-key'], whose suggested value comes back in the same error).__NATIVE__ ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
+const INSTRUCTIONS = `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data['x402/payment-required'], sign one of the accepts, and call again with the payment in _meta['x402/payment'] (retries ride _meta['x402/idempotency-key'], whose suggested value comes back in the same error).__NATIVE__ ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/${PREFLIGHT_VERSION_NEXT}) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. ${ASKED_FOR_SENTENCE} Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`;
 
 /** Methods whose results the modern revision marks cacheable. */
 const CACHEABLE_METHODS = new Set([
@@ -672,7 +672,7 @@ export async function callFreeTool(
      * non-200 comes back as the service's own refusal text, unpaid
      * and uncharged in every sense: this tool is free.
      */
-    const outcome = await preflightUrl(args["url"], c.env);
+    const outcome = await preflightUrl(args["url"], c.env, PREFLIGHT_VERSION_NEXT);
     if (outcome.status !== 200) {
       const body = outcome.body as { error?: string };
       return body.error ?? "The preflight could not run. Try again shortly.";
@@ -927,11 +927,13 @@ async function callPurchaseTool(
     // exactly as there.
     if (refusal.status === 400 && paying) {
       const reason = purchaseInputDeclineReason(item, args, refusal.body);
+      // Same annotation as the HTTP door: the names of the arguments
+      // that arrived, never their values.
       await recordPaymentDecline(
         c.env,
         `/api/buy/${item.id}`,
         reason,
-        mcpSignals(c),
+        { ...mcpSignals(c), inputsPresent: presentInputNames(args) },
       ).catch(() => undefined);
     }
     // Buyer signals (trial): the avoidable 400, counted beside the refusal.

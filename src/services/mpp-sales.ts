@@ -177,8 +177,25 @@ export interface MppSalesTotals extends MppItemSummary {
   by_item: Record<string, MppItemSummary>;
 }
 
+/** Original evidence remains intact; current classification is a separate reading. */
+export interface MppSaleReading extends MppSaleEvidence {
+  effective_house: boolean | null;
+  house_correction?: MppHouseCorrection;
+  classification: "confirmed" | "unavailable";
+}
+
+export function parseMppHouseCorrection(raw: string, sale: MppSaleEvidence): MppHouseCorrection {
+  const correction = JSON.parse(raw) as MppHouseCorrection;
+  if (!correction || correction.id !== sale.id || correction.month !== sale.month || correction.payer !== sale.payer ||
+    correction.amount !== sale.amount || sale.house || typeof correction.reason !== "string" ||
+    !correction.reason.trim() || correction.reason.length > 500 || typeof correction.at !== "string" ||
+    !Number.isFinite(Date.parse(correction.at))) throw new Error("Invalid correction evidence");
+  return { id: sale.id, month: sale.month, payer: sale.payer, amount: sale.amount,
+    at: correction.at, reason: correction.reason };
+}
+
 export interface MppSaleEvidenceListing {
-  rows: MppSaleEvidence[];
+  rows: MppSaleReading[];
   /** Months asked, oldest first: one ledger round trip each. */
   months: string[];
   /** Months whose ledger could not be read; their sales are not in rows and nothing here says how many. */
@@ -206,18 +223,31 @@ export async function readMppSaleEvidence(env: Env, now: Date = new Date()): Pro
   // readMppSales above, and a month that throws answers null here.
   const ledger = env.COUNTER_LEDGER;
   const answers = await Promise.all(months.map((month) =>
-    ledger.get(ledger.idFromName(`${month}/mpp-sales`)).listMppSales().catch(() => null)));
+    ledger.get(ledger.idFromName(`${month}/mpp-sales`)).listMppSalesWithCorrections().catch(() => null)));
   for (const [index, raw] of answers.entries()) {
     if (raw === null) {
       listing.months_unreadable.push(months[index]!);
       continue;
     }
-    for (const text of raw) {
+    for (const evidence of raw) {
       try {
-        const row = JSON.parse(text) as MppSaleEvidence;
+        const row = JSON.parse(evidence.sale) as MppSaleEvidence;
         if (typeof row.id !== "string" || typeof row.payer !== "string" || typeof row.transaction !== "string" ||
           typeof row.amount !== "string" || typeof row.house !== "boolean" || typeof row.month !== "string") throw new Error("shape");
-        listing.rows.push(row);
+        if (!/^[a-f0-9]{64}$/.test(row.id) || row.month !== months[index] || !/^0x[a-f0-9]{40}$/.test(row.payer) ||
+          !/^0x[a-f0-9]{64}$/i.test(row.transaction) || !/^\d+$/.test(row.amount) || BigInt(row.amount) <= 0n ||
+          (row.item !== undefined && !validMppItemKey(row.item))) throw new Error("shape");
+        // Project known fields only: retained data is never an arbitrary response object.
+        const sale: MppSaleEvidence = { id: row.id, month: row.month, payer: row.payer,
+          transaction: row.transaction, amount: row.amount, house: row.house,
+          ...(row.item !== undefined ? { item: row.item } : {}) };
+        try {
+          const correction = evidence.correction === null ? undefined : parseMppHouseCorrection(evidence.correction, sale);
+          listing.rows.push({ ...sale, effective_house: sale.house || !!correction, classification: "confirmed",
+            ...(correction ? { house_correction: correction } : {}) });
+        } catch {
+          listing.rows.push({ ...sale, effective_house: null, classification: "unavailable" });
+        }
       } catch {
         listing.malformed += 1;
       }
@@ -226,20 +256,40 @@ export async function readMppSaleEvidence(env: Env, now: Date = new Date()): Pro
   return listing;
 }
 
+/** One bounded key read per month; corrections and pilot attribution have one owner. */
+export async function readMppSalesMonth(env: Env, month: string): Promise<MppSalesTotals> {
+  const raw = await kvGet(env.COUNTERS, `${MPP_SALES_PREFIX}${month}`);
+  const total: MppSalesTotals = { ...emptyCounts(), by_item: {} };
+  if (raw === null) return total;
+  const row = JSON.parse(raw) as MppSalesSummary;
+  validateMppSalesSummary(row);
+  foldCounts(total, row);
+  for (const [item, counts] of Object.entries(row.by_item ?? {})) {
+    foldCounts(total.by_item[item] ??= emptyCounts(), counts);
+  }
+  const legacy = legacyRemainder(row);
+  validateCounts(legacy);
+  if (legacy.organic + legacy.house > 0) foldCounts(total.by_item[LEGACY_NATIVE_ITEM] ??= emptyCounts(), legacy);
+  return total;
+}
+
 /** Calendar-bounded mirrors, like the legacy till; no scan over all purchases. */
 export async function readMppSales(env: Env): Promise<MppSalesTotals> {
-  const rows = await Promise.all(monthsSinceOpening().map(month => kvGet(env.COUNTERS, `${MPP_SALES_PREFIX}${month}`)));
+  const rows = await Promise.all(monthsSinceOpening().map(month => readMppSalesMonth(env, month)));
   const total: MppSalesTotals = { ...emptyCounts(), by_item: {} };
-  for (const raw of rows) {
-    if (raw === null) continue;
-    const row = JSON.parse(raw) as MppSalesSummary;
-    validateMppSalesSummary(row);
-    foldCounts(total, row);
-    for (const [item, counts] of Object.entries(row.by_item ?? {})) {
-      foldCounts(total.by_item[item] ??= emptyCounts(), counts);
+  // Month rows are already corrected. Sum them without applying corrections again.
+  const add = (target: MppItemSummary, row: MppItemSummary) => {
+    target.organic += row.organic; target.house += row.house;
+    target.organic_amount_atomic = String(BigInt(target.organic_amount_atomic) + BigInt(row.organic_amount_atomic));
+    target.house_amount_atomic = String(BigInt(target.house_amount_atomic) + BigInt(row.house_amount_atomic));
+    if (row.reclassified_house) {
+      target.reclassified_house = (target.reclassified_house ?? 0) + row.reclassified_house;
+      target.reclassified_amount_atomic = String(BigInt(target.reclassified_amount_atomic ?? "0") + BigInt(row.reclassified_amount_atomic ?? "0"));
     }
-    const legacy = legacyRemainder(row);
-    if (legacy.organic + legacy.house > 0) foldCounts(total.by_item[LEGACY_NATIVE_ITEM] ??= emptyCounts(), legacy);
+  };
+  for (const row of rows) {
+    add(total, row);
+    for (const [item, counts] of Object.entries(row.by_item)) add(total.by_item[item] ??= emptyCounts(), counts);
   }
   return total;
 }

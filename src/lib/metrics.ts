@@ -294,6 +294,20 @@ export interface MetricEvent {
    */
   mismatch?: { field: string; we_offered: string; you_sent: string };
   /**
+   * WHAT THE REFUSED REQUEST BROUGHT (2026-09-30, off the decline
+   * desk). A missing-input decline kept the code — which input was
+   * absent — and nothing about what was present, so `node` refused
+   * three times at spot_check on 2026-09-30 could not be told apart as
+   * a stock client retrying the bare door or a caller that had learned
+   * ?url= on twelve doors and carried it to the one that says ?host=.
+   * Those are different fixes. The NAMES of the inputs that arrived,
+   * never the values: a value is the buyer's text and has no place in
+   * the books, and a name is enough to answer the question. Bounded in
+   * count and length. [] is a request that brought nothing; absent is
+   * a row older than this field.
+   */
+  inputs_present?: string[];
+  /**
    * THE QUOTE AND THE DECISION (lib/quote-stamp.ts, 2026-09-21). On a
    * challenge row, the instant this 402 was minted. On a settle or a
    * decline, the instant of the 402 the buyer's echoed terms name, and
@@ -313,6 +327,8 @@ export interface EventSignals extends ChannelSignals, HouseSignals {
   signatureAgent?: string;
   /** The first field disagreement; see MetricEvent.mismatch. */
   mismatch?: { field: string; we_offered: string; you_sent: string };
+  /** Names of the inputs a refused request carried; see MetricEvent.inputs_present. */
+  inputsPresent?: string[];
   /** The quote stamp; see MetricEvent.quoted_at. */
   quotedAt?: string;
 }
@@ -337,6 +353,10 @@ export function mismatchSignal(
     you_sent: show(first.you_sent),
   };
 }
+
+/** How many arrived-input names one row keeps, and how long each may be. */
+export const INPUTS_PRESENT_CAP = 8;
+export const INPUT_NAME_CAP = 40;
 
 function buildEvent(
   env: Env,
@@ -368,6 +388,11 @@ function buildEvent(
   }
   if (signals.payer) {
     event.payer = signals.payer.slice(0, 64);
+  }
+  if (signals.inputsPresent !== undefined) {
+    event.inputs_present = signals.inputsPresent
+      .slice(0, INPUTS_PRESENT_CAP)
+      .map((name) => name.slice(0, INPUT_NAME_CAP));
   }
   if (signals.mismatch) {
     event.mismatch = {
@@ -1113,7 +1138,7 @@ async function recordSettlementKeyed(
   pending.push(raiseFirstOutsideSignature(env, event, "settled"));
   if (signals.payer) {
     pending.push(recordPayerSeen(env, signals.payer));
-    pending.push(recordPayerSettle(env, signals.payer, signals.transaction, event.item, event.at));
+    pending.push(recordPayerSettle(env, signals.payer, signals.transaction, event.item, event.at, event.house));
   } else {
     // Money moved and no wallet came back with it. Counted, so the gap
     // between settle counters and payer rows stays explainable instead
@@ -1129,6 +1154,18 @@ async function recordSettlementKeyed(
  * stays as the cache the desks read; reconcileSettles takes the larger
  * of the two per wallet, and the certificate backfill (payer-repair.ts)
  * seeds history so old wallets are not short from before this existed.
+ *
+ * THE RECORD SAYS WHICH FAMILY (2026-10-02). The till decides house by
+ * four tests (lib/channel.ts isHouseTraffic): the wallet list, the
+ * store's own receiving addresses, a house user-agent, the house
+ * header. The raise (services/counter-raise.ts) reads these records
+ * to lift the ORGANIC tallies and could only ask the first test, so a
+ * settle the till had booked under `paidh` by agent or header was
+ * lifted onto `paid` as well within the hour — two counter settles for
+ * one record, and a books check reading one settlement more than the
+ * payer side with the raise unable to put it back. The flag is written
+ * only when true, so a record without it is organic exactly as every
+ * record before this date was read.
  */
 async function recordPayerSettle(
   env: Env,
@@ -1136,12 +1173,13 @@ async function recordPayerSettle(
   transaction: string | undefined,
   item: string,
   at: string,
+  house: boolean,
 ): Promise<void> {
   const id = transaction ?? `nonce_${Math.random().toString(36).slice(2, 12)}`;
   await kvPut(
     env.COUNTERS,
     KV_KEYS.payerSettle(address, id),
-    JSON.stringify({ item, at, ...(transaction ? { transaction } : {}) }),
+    JSON.stringify({ item, at, ...(transaction ? { transaction } : {}), ...(house ? { house: true } : {}) }),
   );
 }
 
@@ -1305,6 +1343,8 @@ export interface LedgerRow {
 }
 
 export interface MonthLedger {
+  /** Present only on combined commerce reads. Legacy funnel fields remain x402-only. */
+  native_mpp?: import("@/services/mpp-sales").MppSalesTotals;
   month: string;
   items: Record<string, LedgerRow>;
   /** channel -> organic settled count */
@@ -1445,13 +1485,19 @@ const RECONCILIATION_BLIND_SPOT =
 /**
  * Reads its own payer rows rather than taking the desk's list, which
  * is truncated for display: a reconciliation that silently compares
- * against the first fifty wallets is worse than none.
+ * against the first fifty wallets is worse than none. Counter reads
+ * cover each month since opening, but only the three settlement kinds:
+ * unrelated traffic metrics must not consume the sales scan's cap.
  */
 export async function reconcileSettles(
   env: Env,
 ): Promise<SettleReconciliation> {
-  const [metrics, payerKeys, settleKeys] = await Promise.all([
-    listKeys(env.COUNTERS, { prefix: "metric:", cap: METRIC_KEY_CAP }),
+  const [metricLists, payerKeys, settleKeys] = await Promise.all([
+    Promise.all(monthsSinceOpening().flatMap((month) =>
+      ["paid", "paidh", "nopayer"].map((kind) =>
+        listKeys(env.COUNTERS, { prefix: KV_KEYS.metric(month, kind, ""), cap: METRIC_KEY_CAP }),
+      ),
+    )),
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_KEY_CAP }),
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerSettlePrefix(), cap: PAYER_KEY_CAP }),
   ]);
@@ -1465,11 +1511,7 @@ export async function reconcileSettles(
   const [metricValues, payerValues] = await Promise.all([
     bulkGetText(
       env.COUNTERS,
-      metrics.names
-        .filter((name) => {
-          const kind = name.split(":")[2] ?? "";
-          return kind === "paid" || kind === "paidh" || kind === "nopayer";
-        }),
+      metricLists.flatMap((listed) => listed.names),
     ),
     bulkGetJson<PayerRecord>(
       env.COUNTERS,
@@ -1504,7 +1546,7 @@ export async function reconcileSettles(
   }
   const settleRecords = [...settlesByWallet.values()].reduce((sum, n) => sum + n, 0);
   const truncated = [
-    ...(metrics.truncated ? ["metric counters"] : []),
+    ...(metricLists.some((listed) => listed.truncated) ? ["metric counters"] : []),
     ...(payerKeys.truncated ? ["payer rows"] : []),
     ...(settleKeys.truncated ? ["per-settle records"] : []),
   ];
@@ -2042,7 +2084,12 @@ export async function listRecentPorchEvents(
  * and a monthly counter per outcome (house-suffixed like every other
  * counter, so the keeper's own test claims never read as demand).
  */
-export type BountyClaimOutcome = "paid" | "refused" | "error";
+/**
+ * `reissued` (2026-09-29) is a paid claim resent identically and answered
+ * with its original signature again; it is booked so the row exists and
+ * counted apart, so the ledger's paid column stays the money signed away.
+ */
+export type BountyClaimOutcome = "paid" | "reissued" | "refused" | "error";
 
 export async function recordBountyClaim(
   env: Env,

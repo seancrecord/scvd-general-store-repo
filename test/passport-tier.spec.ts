@@ -66,7 +66,7 @@ function round(
     coverage_suspect: false,
     capped: false,
     our_search_presence: true,
-    hosts,
+    hosts: hosts.map(row => ({ ...row, observed_at: `2026-01-${String(n).padStart(2, "0")}T00:00:00.000Z` })),
     ...extra,
   };
 }

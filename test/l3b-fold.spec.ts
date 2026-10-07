@@ -1,7 +1,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  PREFLIGHT_VERSION_NEXT,
+  PREFLIGHT_VERSION_V2,
   preflightUrl,
   runChecks,
 } from "@/services/preflight";
@@ -167,7 +167,7 @@ describe("the fold: v2 counts what v1 only mentions", () => {
     const result = await preflightUrl(
       "https://door.example/api/thing",
       env as never,
-      PREFLIGHT_VERSION_NEXT,
+      PREFLIGHT_VERSION_V2,
     );
     const body = result.body as {
       verdict: string;
@@ -202,7 +202,7 @@ describe("the fold: v2 counts what v1 only mentions", () => {
     const result = await preflightUrl(
       "https://door.example/api/thing",
       env as never,
-      PREFLIGHT_VERSION_NEXT,
+      PREFLIGHT_VERSION_V2,
     );
     const body = result.body as {
       verdict: string;

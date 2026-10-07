@@ -1,12 +1,14 @@
 import test from 'node:test';
+import {sourceCheckCommand} from './lib/buyer-evidence-workflow.mjs';
+import {packageReportFixture,scorePackageReport,packageInstallCommand,packageReportCommand,packageReviewSources,packageInspectionCommand,literalCommandMatches} from './lib/buyer-package-access.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createPublicKey, verify} from 'node:crypto';
-import {validatePlan, buildPrompt, adapter, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
-import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment} from './buyer-cold-isolated.mjs';
+import {validatePlan, buildPrompt, adapter, recipientLaunch, localToolsStatement, HOST_TOOLS, capabilityVectors, buildCapabilityPrompt, commandEvents, scoreCapability, scoreColdRun, hash} from './lib/buyer-cold.mjs';
+import {runCapabilityProbe, runCohort, scoreCohort, childEnvironment, runChild} from './buyer-cold-isolated.mjs';
 import {disabledCodexSkills} from './lib/buyer-host-context.mjs';
 
 test('a proxied launch context passes its route and CA bundle, never an API key or token',()=>{
@@ -365,4 +367,435 @@ test('the full-inventory recipient prompt is frozen before acquisition and remai
   assert.ok(launch.args.includes('sandbox_workspace_write.network_access=false'));assert.ok(launch.args.includes('web_search="disabled"'));assert.ok(!launch.args.includes('--search'));
   assert.deepEqual(launch.budgets,recipientProtocol.budgets);
  }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+function packagePlan(){
+ const p=JSON.parse(fs.readFileSync(new URL('../research/generated-report-buyer-2026-09-28/plan.json',import.meta.url)));
+ // These synthetic installations copy today's source, so pin those bytes in
+ // memory. The historical acquisition plan and its release pins stay untouched.
+ const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
+ p.recipient.verifier.name=pkg.name;p.recipient.verifier.version=pkg.version;
+ for(const file of Object.keys(p.recipient.verifier.files))p.recipient.verifier.files[file]=hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)));
+ p.package_access=true;return p;
+}
+test('directed package access declares one script-disabled pinned installation in prompt and Claude allowlist',()=>{
+ const p=packagePlan();const c=p.cells.find(c=>c.host==='claude');
+ const command=`npm install --ignore-scripts --no-audit --no-fund --prefix ./work/tooling --cache ./work/npm-cache --registry https://registry.npmjs.org ${p.recipient.verifier.name}@${p.recipient.verifier.version}`;
+ assert.ok(buildPrompt(p,c).includes(command));
+ const args=adapter(c,'/tmp/neutral','/tmp/out',p.budgets,undefined,p).args;
+ assert.ok(args[args.indexOf('--allowedTools')+1].includes(`Bash(${command})`));
+ assert.ok(!args[args.indexOf('--allowedTools')+1].includes('Bash(npm *)'));
+});
+test('package access refuses unbranded lanes, missing report runtime and nonboolean opt-ins',()=>{
+ for(const mutate of [p=>p.cells[0].lane='catalogue',p=>delete p.recipient.verifier,p=>p.package_access='yes']){
+  const p=packagePlan();mutate(p);assert.throws(()=>validatePlan(p),/package|directed|report/i);
+ }
+});
+test('package-qualified capability asks for an actual installed report and original runtime bytes',()=>{
+ const p=packagePlan();const text=buildCapabilityPrompt(p,'claude',capabilityVectors(),packageReportFixture());
+ assert.match(text,/installed-report\.md/);assert.match(text,/evidence\/installed/);
+});
+
+function installedReportFixture(){
+ const p=packagePlan(),d=root(),fixture=packageReportFixture();
+ const install=path.join(d,'evidence/installed');fs.mkdirSync(install,{recursive:true});
+ for(const file of Object.keys(p.recipient.verifier.files))fs.copyFileSync(new URL('../verifier/'+file,import.meta.url),path.join(install,file));
+ fs.writeFileSync(path.join(d,'evidence/report-original.json'),JSON.stringify(fixture.original));
+ const result=spawnSync(process.execPath,[path.join(install,'evidence-cli.mjs'),'verify-source',path.join(d,'evidence/report-original.json'),'--public-key',fixture.original.public_key,'--subject',fixture.subject,'--format','markdown','--report-out',path.join(d,'evidence/installed-report.md')],{encoding:'utf8'});
+ assert.equal(result.status,0,result.stderr);
+ const files=[];const walk=dir=>{for(const f of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,f.name);if(f.isDirectory())walk(full);else files.push({file:path.relative(d,full),sha256:hash(fs.readFileSync(full))});}};walk(path.join(d,'evidence'));
+ return {p,d,fixture,run:{retained_artifacts:{state:'complete',files}},commands:[{command:packageInstallCommand(p),outcome:'completed'},{command:packageReportCommand(p,fixture),outcome:'completed'}],cleanup:()=>fs.rmSync(d,{recursive:true,force:true})};
+}
+test('installed report qualification independently reproduces the fixture and every pinned module',()=>{
+ const f=installedReportFixture();try{
+  const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);assert.equal(result.state,'pass',result.reason);
+  assert.equal(result.version,f.p.recipient.verifier.version);
+ }finally{f.cleanup();}
+});
+for(const [name,mutate] of [
+ ['missing installation event',f=>f.commands=[]],
+ ['incomplete capture',f=>f.run.retained_artifacts.state='incomplete'],
+ ['refused installation',f=>f.commands[0].outcome='denied'],
+ ['missing CLI execution',f=>f.commands.pop()],
+ ['echoed installation text',f=>f.commands[0].command='echo '+f.commands[0].command],
+ ['compound installation',f=>f.commands[0].command+=' && echo done'],
+ ['missing report',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(x=>!x.file.endsWith('installed-report.md'))],
+ ['missing runtime module',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(x=>!x.file.endsWith('payment-identity.js'))],
+ ['rehashed forged report',f=>{const row=f.run.retained_artifacts.files.find(x=>x.file.endsWith('installed-report.md'));fs.writeFileSync(path.join(f.d,row.file),'valid: true');row.sha256=hash(Buffer.from('valid: true'));}],
+ ['rehashed changed runtime',f=>{const row=f.run.retained_artifacts.files.find(x=>x.file.endsWith('evidence-report.js'));fs.appendFileSync(path.join(f.d,row.file),'\n// changed');row.sha256=hash(fs.readFileSync(path.join(f.d,row.file)));}],
+ ['another fixture',f=>f.fixture=packageReportFixture()],
+])test(`installed report qualification refuses ${name}`,()=>{
+ const f=installedReportFixture();try{mutate(f);assert.notEqual(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');}finally{f.cleanup();}
+});
+test('generic capability success cannot substitute for required installed-report qualification',()=>{
+ const f=probeFixture();try{
+  const score=scoreCapability('claude',f.run,f.d,f.vectors,f.reference,packagePlan(),packageReportFixture());
+  assert.equal(score.local_check.state,'pass');assert.equal(score.package_report.state,'incomplete');assert.equal(score.state,'incomplete');
+ }finally{f.cleanup();}
+});
+
+test('source review requires an explicit package plan and immutable source commit',()=>{
+ for(const review of [true,{}, {source_commit:'main'}, {source_commit:'a'.repeat(40),extra:true}]){
+  assert.throws(()=>validatePlan({...packagePlan(),package_review:review}),/review|commit/i);
+ }
+ const p=packagePlan();delete p.package_access;p.package_review={source_commit:'a'.repeat(40)};
+ assert.throws(()=>validatePlan(p),/review|package/i);
+});
+test('source-review opt-in cannot pass on installation and a generated report alone',()=>{
+ const f=installedReportFixture();try{
+  f.p.package_review={source_commit:'a'.repeat(40)};
+  assert.notEqual(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+ }finally{f.cleanup();}
+});
+test('source-review prompt offers inspection and an explicit decision before installation',()=>{
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};
+ const text=buildCapabilityPrompt(p,'claude',capabilityVectors(),packageReportFixture());
+ assert.match(text,/package-review\.json/);assert.match(text,/decline/);assert.match(text,/before.*install/i);
+ assert.match(text,/raw\.githubusercontent\.com.*a{40}/);
+ assert.doesNotMatch(buildPrompt(packagePlan(),p.cells[0]),/package-review\.json/);
+});
+
+function reviewedReportFixture(){
+ const f=installedReportFixture();f.p.package_review={source_commit:'a'.repeat(40)};
+ f.retain=(file,data)=>{
+  const p=path.join(f.d,file);fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,data);
+  f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>r.file!==file);
+  f.run.retained_artifacts.files.push({file,sha256:hash(fs.readFileSync(p))});
+ };
+ for(const row of packageReviewSources(f.p))f.retain(row.file,fs.readFileSync(new URL('../verifier/'+path.basename(row.file),import.meta.url)));
+ f.retain('evidence/package-review.json',JSON.stringify({decision:'proceed',reason:'Reviewed source as text; remaining trust in the runtime and controller pin is explicit.'}));
+ f.commands.unshift({command:packageInspectionCommand(f.p),outcome:'completed'});return f;
+}
+test('source inspection runs as data only and preserves complete pinned bytes',()=>{
+ const f=reviewedReportFixture();try{
+  const result=spawnSync('/bin/sh',['-c',packageInspectionCommand(f.p)],{cwd:f.d,encoding:'utf8',maxBuffer:f.p.budgets.output_bytes});
+  assert.equal(result.status,0,result.stderr);
+  for(const row of packageReviewSources(f.p))assert.ok(result.stdout.includes(fs.readFileSync(path.join(f.d,row.file),'utf8')));
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+  fs.appendFileSync(path.join(f.d,'evidence/source/evidence-cli.mjs'),'\nthrow Error("must never execute");');
+  const bad=spawnSync('/bin/sh',['-c',packageInspectionCommand(f.p)],{cwd:f.d,encoding:'utf8'});
+  assert.notEqual(bad.status,0);assert.match(bad.stderr,/source hash mismatch/);assert.equal(bad.stdout,'');
+ }finally{f.cleanup();}
+});
+for(const [name,mutate] of [
+ ['missing source',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>!r.file.endsWith('source/payment-identity.js'))],
+ ['rehashed changed source',f=>f.retain('evidence/source/evidence-report.js','different bytes')],
+ ['missing decision',f=>f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>!r.file.endsWith('package-review.json'))],
+ ['empty reason',f=>f.retain('evidence/package-review.json','{"decision":"proceed","reason":""}')],
+ ['missing inspection',f=>f.commands.shift()],
+ ['denied inspection',f=>f.commands[0].outcome='denied'],
+ ['inspection after install',f=>f.commands.push(f.commands.shift())],
+ ['echoed inspection',f=>f.commands[0].command='echo '+f.commands[0].command],
+])test(`source-review gate refuses ${name}`,()=>{
+ const f=reviewedReportFixture();try{mutate(f);assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'incomplete');}finally{f.cleanup();}
+});
+test('a declined source review is retained without inventing a command denial or qualification pass',()=>{
+ const f=reviewedReportFixture();try{
+  f.retain('evidence/package-review.json','{"decision":"decline","reason":"I do not want to inspect or execute this package."}');f.commands=[];
+  f.run.retained_artifacts.files=f.run.retained_artifacts.files.filter(r=>r.file==='evidence/package-review.json');
+  const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);
+  assert.equal(result.state,'incomplete');assert.equal(result.source_review.decision,'decline');
+  assert.equal(result.source_review.inspection,'not_established');assert.equal(result.source_review.package_attempt_observed,false);
+  assert.match(result.reason,/voluntary.*not a tool permission denial/);
+  f.commands=[{command:packageInstallCommand(f.p),outcome:'completed'}];
+  assert.match(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).reason,/conflicts/);
+ }finally{f.cleanup();}
+});
+test('source review preserves the same narrow permissions and offline recipient',()=>{
+ const p=packagePlan(),c=p.cells.find(c=>c.host==='claude');
+ const old=adapter(c,'/tmp/neutral','/tmp/out',p.budgets,undefined,p);
+ p.package_review={source_commit:'a'.repeat(40)};
+ assert.deepEqual(adapter(c,'/tmp/neutral','/tmp/out',p.budgets,undefined,p),old);
+ const prompt=buildPrompt(p,c);assert.match(prompt,/untrusted text/);assert.match(prompt,/not a safety audit/);
+ for(const row of packageReviewSources(p)){assert.ok(prompt.includes(row.url));assert.equal(row.sha256,p.recipient.verifier.files[path.basename(row.file)]);}
+});
+test('source inspection accepts real quoted shell wrappers but not a compound command',()=>{
+ const f=reviewedReportFixture();try{
+  const cmd=packageInspectionCommand(f.p);
+  for(const quote of [s=>JSON.stringify(s),s=>"'"+s.replaceAll("'","'\"'\"'")+"'"]){
+   const wrapped='/bin/sh -lc '+quote(cmd);
+   const run=spawnSync('/bin/sh',['-c',wrapped],{cwd:f.d,encoding:'utf8',maxBuffer:f.p.budgets.output_bytes});
+   assert.equal(run.status,0,run.stderr);
+   f.commands[0].command=wrapped;
+   assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+  }
+  f.commands[0].command=cmd+' && echo inspected';
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'incomplete');
+ }finally{f.cleanup();}
+});
+test('inspection never executes even hash-matching code and refuses escaped or oversized files',()=>{
+ const f=reviewedReportFixture(),outside=root();try{
+  const file='evidence/source/payment-identity.js';const malicious='require("node:fs").writeFileSync("executed-marker", "unexpected")';
+  f.retain(file,malicious);f.p.recipient.verifier.files['payment-identity.js']=hash(Buffer.from(malicious));
+  const inspect=()=>spawnSync('/bin/sh',['-c',packageInspectionCommand(f.p)],{cwd:f.d,encoding:'utf8',maxBuffer:f.p.budgets.output_bytes});
+  assert.equal(inspect().status,0);assert.equal(fs.existsSync(path.join(f.d,'executed-marker')),false);
+  fs.writeFileSync(path.join(outside,'source'),malicious);fs.unlinkSync(path.join(f.d,file));fs.symlinkSync(path.join(outside,'source'),path.join(f.d,file));
+  const escaped=inspect();assert.notEqual(escaped.status,0);assert.match(escaped.stderr,/source escaped workspace/);
+  f.p.budgets.artifact_bytes=1;
+  const bounded=inspect();assert.notEqual(bounded.status,0);assert.match(bounded.stderr,/source exceeds read bound/);
+ }finally{f.cleanup();fs.rmSync(outside,{recursive:true,force:true});}
+});
+test('source inspection recognizes the retained native mixed-quote wrapper',()=>{
+ const observed=JSON.parse(fs.readFileSync(new URL('./fixtures/buyer-source-review-command.json',import.meta.url)));
+ const f=reviewedReportFixture();try{
+  f.p.package_review.source_commit=observed.source_commit;
+  // Keep the historical command pair verbatim as a parser regression. For
+  // today's synthetic installation, replace only its now-different byte pins.
+  assert.equal(literalCommandMatches(observed.actual,observed.expected),true);
+  const historical=JSON.parse(fs.readFileSync(new URL('../research/generated-report-buyer-2026-09-28/plan.json',import.meta.url)));
+  const currentPins=text=>Object.entries(historical.recipient.verifier.files).reduce((value,[file,digest])=>value.replaceAll(digest,f.p.recipient.verifier.files[file]),text);
+  assert.equal(packageInspectionCommand(f.p),currentPins(observed.expected));
+  f.commands[0].command=currentPins(observed.actual);
+  const result=scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands);
+  assert.equal(result.state,'pass',result.reason);
+ }finally{f.cleanup();}
+});
+test('literal matching rejects expansion, operators and extra execution without evaluating input',()=>{
+ const expected='node --input-type=module -e \'console.log("ok")\'';
+ assert.equal(literalCommandMatches(expected,expected),true);
+ assert.equal(literalCommandMatches('n\'o\'de --input-type=module -e \'console.log("ok")\'',expected),true);
+ for(const bad of [
+  'echo '+expected,expected+'; true',expected+' && true',expected+' | cat',expected+' > result',expected+'\ntrue',
+  'ENV=x '+expected,'$(echo node) --input-type=module -e \'console.log("ok")\'',
+  '`echo node` --input-type=module -e \'console.log("ok")\'',
+  'node --input-type=module -e "${CODE}"', 'node --input-type=module -e $\'console.log("ok")\'',
+  '/bin/sh -lc '+JSON.stringify(expected+'; true'),
+  '/bin/sh -lc '+JSON.stringify(expected)+' extra',
+  '/bin/sh -lc '+JSON.stringify('/bin/sh -lc '+JSON.stringify(expected)),
+  expected+' # comment',expected+"'",expected+'\\',
+  'node* --input-type=module -e \'console.log("ok")\'',
+ ])assert.equal(literalCommandMatches(bad,expected),false,bad);
+});
+
+
+test('setup guidance rejects unknown conditions and pre-capability schemas',()=>{
+ for(const value of [true, null, 'standalone-node', {}, ['standalone-node-v1']]){
+  const p=structuredClone(plan);p.capability.setup_guidance=value;
+  assert.throws(()=>validatePlan(p),/setup guidance/i);
+ }
+ assert.throws(()=>validatePlan({...plan,schema_version:3,capability:{...plan.capability,setup_guidance:'standalone-node-v1'}}),/setup guidance/i);
+});
+
+test('setup guidance names available native tools and standalone file operations only when opted in',()=>{
+ const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';
+ validatePlan(p);
+ const vectors=capabilityVectors();
+ for(const host of ['claude','codex']){
+  const old=buildCapabilityPrompt(plan,host,vectors),guided=buildCapabilityPrompt(p,host,vectors);
+  assert.ok(guided.endsWith(old),'qualification task, vectors and budgets remain byte-identical');
+  const prefix=guided.slice(0,-old.length);
+  assert.match(prefix,/standalone-node-v1/);
+  assert.match(prefix,/node -e/);
+  assert.match(prefix,/writeFileSync/);
+  assert.match(prefix,/mkdirSync/);
+  assert.match(prefix,/heredocs/);
+  assert.match(prefix,/truncated/);
+  assert.doesNotMatch(prefix,/crypto\.verify|SPKI|302a3005|signature.*true|decision.*proceed/i);
+  if(host==='claude'){
+   assert.match(prefix,/WebSearch, WebFetch, Bash/);
+   assert.match(prefix,/No separate Write or Edit tool/);
+   const launch=adapter(plan.cells[1],'/tmp/neutral','/tmp/out',budgets).args;
+   assert.equal(launch[launch.indexOf('--tools')+1],HOST_TOOLS.claude.tools.join(','));
+  }
+ }
+});
+
+test('setup guidance changes neither buyer prompts nor execution permissions',()=>{
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};
+ const guided=structuredClone(p);guided.capability.setup_guidance='standalone-node-v1';
+ for(const cell of p.cells){
+  assert.equal(buildPrompt(guided,cell),buildPrompt(p,cell));
+  const context={codex:{disabled_skills:[]}};
+  assert.deepEqual(adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,guided),adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,p));
+ }
+ assert.deepEqual(guided.budgets,p.budgets);
+ assert.deepEqual(guided.recipient,p.recipient);
+});
+
+
+test('buyer setup guidance requires explicit true and the qualified setup condition',()=>{
+ for(const value of [false,null,'standalone-node-v1',{},1]){
+  const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';p.buyer_setup_guidance=value;
+  assert.throws(()=>validatePlan(p),/buyer setup/i);
+ }
+ const missing=structuredClone(plan);missing.buyer_setup_guidance=true;
+ assert.throws(()=>validatePlan(missing),/buyer setup/i);
+});
+
+test('buyer setup guidance shares qualified instructions while preserving task and permissions',()=>{
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};p.capability.setup_guidance='standalone-node-v1';
+ const guided=structuredClone(p);guided.buyer_setup_guidance=true;validatePlan(guided);
+ const vectors=capabilityVectors(),fixture=packageReportFixture();
+ const recipientContext={codex:{disabled_skills:[]}};
+ assert.deepEqual(recipientLaunch(guided,'/tmp/offline','/tmp/out',recipientContext),recipientLaunch(p,'/tmp/offline','/tmp/out',recipientContext));
+ for(const cell of p.cells){
+  const before=buildPrompt(p,cell),after=buildPrompt(guided,cell);
+  assert.notEqual(after,before);
+  assert.ok(after.endsWith(before),'buyer question, constraints, source review and budgets are unchanged');
+  const prefix=after.slice(0,-before.length);
+  const bare=structuredClone(p);delete bare.capability.setup_guidance;
+  const qualification=buildCapabilityPrompt(p,cell.host,vectors,fixture),oldQualification=buildCapabilityPrompt(bare,cell.host,vectors,fixture);
+  assert.equal(prefix,qualification.slice(0,-oldQualification.length));
+  assert.match(prefix,/mkdirSync/);assert.match(prefix,/multiple permitted operations within one Node program/);
+  assert.equal(buildCapabilityPrompt(guided,cell.host,vectors,fixture),qualification,'no second qualification hint');
+  const context={codex:{disabled_skills:[]}};
+  assert.deepEqual(adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,guided),adapter(cell,'/tmp/neutral','/tmp/out',p.budgets,context,p));
+ }
+});
+
+test('buyer setup guidance does not give unbranded lanes a service identity or a verdict',()=>{
+ const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';p.buyer_setup_guidance=true;
+ for(const cell of [p.cells[0],{...p.cells[0],lane:'intent_search',entry:null}]){
+  const text=buildPrompt(p,cell);assert.match(text,/standalone-node-v1/);
+  assert.doesNotMatch(text,/scvd|preflight_endpoint|check_conformance|302a3005|signature.*true/i);
+ }
+});
+
+test('buyer setup guidance cannot reuse a qualification from the old buyer condition',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const p=structuredClone(plan);p.capability.setup_guidance='standalone-node-v1';
+  const probe=path.join(d,'probe');await runCapabilityProbe(p,probe);
+  p.buyer_setup_guidance=true;
+  await assert.rejects(runCohort(p,path.join(d,'buyers'),{capability:probe}),/different plan/);
+  assert.equal(fs.existsSync(path.join(d,'buyers')),false);
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+
+function directoryPlan(){
+ const p=packagePlan();p.package_review={source_commit:'a'.repeat(40)};p.package_source_directories=true;return p;
+}
+test('source directory setup requires explicit true and reviewed package access',()=>{
+ for(const value of [false,null,'true',{},1]){
+  const p=directoryPlan();p.package_source_directories=value;
+  assert.throws(()=>validatePlan(p),/source director/i);
+ }
+ const p=directoryPlan();delete p.package_review;
+ assert.throws(()=>validatePlan(p),/source director/i);
+});
+test('source directory setup declares only derived empty parents without changing permissions or offline prompts',()=>{
+ const p=directoryPlan(),old=structuredClone(p);delete old.package_source_directories;
+ const dirs=[...new Set(packageReviewSources(p).map(r=>path.posix.dirname(r.file)))].sort();
+ const statement=` The runner prepared empty source-review directories: ${JSON.stringify(dirs)}. No source files or verification results are preloaded.`;
+ const vectors=capabilityVectors(),fixture=packageReportFixture(),context={codex:{disabled_skills:[]}};
+ for(const cell of p.cells){
+  const buyer=buildPrompt(p,cell),capability=buildCapabilityPrompt(p,cell.host,vectors,fixture);
+  assert.ok(buyer.includes(statement));assert.ok(capability.includes(statement));
+  assert.equal(buyer.replace(statement,''),buildPrompt(old,cell));
+  assert.equal(capability.replace(statement,''),buildCapabilityPrompt(old,cell.host,vectors,fixture));
+  assert.deepEqual(adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,p),adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,old));
+ }
+ assert.deepEqual(recipientLaunch(p,'/tmp/w','/tmp/o',context),recipientLaunch(old,'/tmp/w','/tmp/o',context));
+});
+test('source directory setup reaches the child as empty folders and records them only for the opted-in run',async()=>{
+ const d=root();try{
+  for(const enabled of [true,false]){
+   const cwd=path.join(d,String(enabled)),output=path.join(d,String(enabled)+'-out');fs.mkdirSync(cwd);fs.mkdirSync(output);
+   const p=directoryPlan();if(!enabled)delete p.package_source_directories;
+   const dirs=[...new Set(packageReviewSources(p).map(r=>path.posix.dirname(r.file)))].sort();
+   const script=`const fs=require('node:fs');console.log(JSON.stringify(${JSON.stringify(dirs)}.map(p=>({path:p,exists:fs.existsSync(p),files:fs.existsSync(p)?fs.readdirSync(p):null}))));`;
+   const result=await runChild(process.execPath,['-e',script],{cwd,output,prompt:'',host:'codex',budgets:p.budgets,plan:p});
+   assert.equal(result.runtime.state,'completed');
+   const observed=JSON.parse(fs.readFileSync(path.join(output,'events.jsonl'),'utf8'));
+   assert.deepEqual(observed,dirs.map(p=>({path:p,exists:enabled,files:enabled?[]:null})));
+   assert.deepEqual(result.prepared_source_directories,enabled?dirs:undefined);
+  }
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+test('source directory setup refuses symlinked or populated destinations before launching a child',async()=>{
+ const d=root();try{
+  for(const kind of ['symlink','populated']){
+   const cwd=path.join(d,kind),output=path.join(d,kind+'-out');fs.mkdirSync(cwd);fs.mkdirSync(output);fs.mkdirSync(path.join(cwd,'evidence'));
+   const dest=path.join(cwd,'evidence/source');
+   if(kind==='symlink'){const elsewhere=path.join(d,'elsewhere');fs.mkdirSync(elsewhere);fs.symlinkSync(elsewhere,dest,'dir');}
+   else{fs.mkdirSync(dest);fs.writeFileSync(path.join(dest,'existing.txt'),'keep');}
+   const p=directoryPlan();
+   await assert.rejects(runChild(process.execPath,['-e','process.stdout.write("launched")'],{cwd,output,prompt:'',host:'codex',budgets:p.budgets,plan:p}),/source director/i);
+   assert.equal(fs.existsSync(path.join(output,'events.jsonl')),false);
+   if(kind==='populated')assert.equal(fs.readFileSync(path.join(dest,'existing.txt'),'utf8'),'keep');
+  }
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+test('source directory setup cannot reuse qualification from an unprepared workspace',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const p=directoryPlan();delete p.package_source_directories;
+  const probe=path.join(d,'probe');await runCapabilityProbe(p,probe);p.package_source_directories=true;
+  await assert.rejects(runCohort(p,path.join(d,'buyers'),{capability:probe}),/different plan/);
+  assert.equal(fs.existsSync(path.join(d,'buyers')),false);
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+
+function boundedReviewPlan(){const p=directoryPlan();p.package_review_flow='bounded-fetch-v1';return p;}
+function boundedReviewFixture(){
+ const d=root(),p=boundedReviewPlan();fs.mkdirSync(path.join(d,'evidence/source'),{recursive:true});
+ const files=Object.fromEntries(packageReviewSources(p).map(r=>[r.url,fs.readFileSync(new URL('../verifier/'+path.posix.basename(r.file),import.meta.url),'utf8')]));
+ const fake=path.join(d,'fetch.mjs');
+ const configure=(mode='ok')=>fs.writeFileSync(fake,`import fs from 'node:fs';const files=${JSON.stringify(files)};globalThis.fetch=async(url,options)=>{if(!(url in files)||options.redirect!=='error')throw Error('unexpected fetch');fs.appendFileSync('fetches.jsonl',JSON.stringify({url,redirect:options.redirect})+'\\n');return new Response(${JSON.stringify(mode)}==='bad-hash'?'tampered':${JSON.stringify(mode)}==='oversize'?'x'.repeat(5000000):files[url],{status:${mode==='http-error'?503:200}});};`);
+ configure();
+ const inspect=()=>spawnSync('/bin/sh',['-c',packageInspectionCommand(p)],{cwd:d,env:{...process.env,NODE_OPTIONS:'--import='+fake},encoding:'utf8',maxBuffer:p.budgets.output_bytes});
+ return {d,p,files,configure,inspect,cleanup:()=>fs.rmSync(d,{recursive:true,force:true})};
+}
+test('bounded source review requires its explicit version and prepared review directories',()=>{
+ for(const value of [true,false,null,'bounded-fetch',{},1]){const p=boundedReviewPlan();p.package_review_flow=value;assert.throws(()=>validatePlan(p),/review flow/i);}
+ const p=boundedReviewPlan();delete p.package_source_directories;assert.throws(()=>validatePlan(p),/review flow/i);
+});
+test('bounded source review fetches exact pinned files and prints accountable previews within its declared bound',()=>{
+ const f=boundedReviewFixture();try{
+  const result=f.inspect();assert.equal(result.status,0,result.stderr);
+  const rows=result.stdout.trim().split('\n').map(JSON.parse);assert.equal(rows.length,packageReviewSources(f.p).length);
+  const prompt=buildCapabilityPrompt(f.p,'claude',capabilityVectors(),packageReportFixture());
+  const budget=Number(prompt.match(/at most (\d+) UTF-8 output bytes/)[1]);assert.ok(Buffer.byteLength(result.stdout)<=budget);
+  assert.match(prompt,/saved workspace files/);assert.match(prompt,/host-managed/);assert.match(prompt,/remaining review gaps/);
+  for(const row of rows){const bytes=fs.readFileSync(path.join(f.d,row.file));assert.equal(hash(bytes),f.p.recipient.verifier.files[path.posix.basename(row.file)]);assert.equal(row.sha256,hash(bytes));assert.equal(row.source_bytes,bytes.length);assert.equal(row.displayed_utf8_bytes,Buffer.byteLength(row.untrusted_source_prefix));assert.equal(row.omitted_bytes,bytes.length-row.displayed_utf8_bytes);assert.ok(row.omitted_bytes>0);assert.ok(bytes.toString().startsWith(row.untrusted_source_prefix));}
+  const requests=fs.readFileSync(path.join(f.d,'fetches.jsonl'),'utf8').trim().split('\n').map(JSON.parse);assert.deepEqual(requests.map(r=>r.url),packageReviewSources(f.p).map(r=>r.url));
+  const second=f.inspect();assert.notEqual(second.status,0);assert.match(second.stderr,/already exists/);assert.equal(fs.readFileSync(path.join(f.d,'fetches.jsonl'),'utf8').trim().split('\n').length,requests.length);
+ }finally{f.cleanup();}
+});
+for(const mode of ['bad-hash','oversize','http-error'])test(`bounded source review refuses ${mode} without a successful inspection display`,()=>{
+ const f=boundedReviewFixture();try{f.configure(mode);const result=f.inspect();assert.notEqual(result.status,0);assert.equal(result.stdout,'');assert.match(result.stderr,mode==='bad-hash'?/hash mismatch/:mode==='oversize'?/read bound/:/HTTP 503/);}finally{f.cleanup();}
+});
+test('bounded source review refuses a symlinked parent before fetching anything',()=>{
+ const f=boundedReviewFixture(),outside=root();try{
+  fs.rmdirSync(path.join(f.d,'evidence/source'));fs.symlinkSync(outside,path.join(f.d,'evidence/source'),'dir');
+  const result=f.inspect();assert.notEqual(result.status,0);assert.match(result.stderr,/escaped workspace/);assert.equal(fs.existsSync(path.join(f.d,'fetches.jsonl')),false);assert.deepEqual(fs.readdirSync(outside),[]);
+ }finally{f.cleanup();fs.rmSync(outside,{recursive:true,force:true});}
+});
+test('bounded source review changes no adapter permissions or offline recipient and needs fresh qualification',async()=>{
+ const p=boundedReviewPlan(),old=structuredClone(p);delete old.package_review_flow;const context={codex:{disabled_skills:[]}};
+ for(const cell of p.cells)assert.deepEqual(adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,p),adapter(cell,'/tmp/w','/tmp/o',p.budgets,context,old));
+ assert.deepEqual(recipientLaunch(p,'/tmp/w','/tmp/o',context),recipientLaunch(old,'/tmp/w','/tmp/o',context));
+ const d=root(),savedPath=process.env.PATH;try{process.env.PATH='';const probe=path.join(d,'probe');await runCapabilityProbe(old,probe);await assert.rejects(runCohort(p,path.join(d,'buyers'),{capability:probe}),/different plan/);assert.equal(fs.existsSync(path.join(d,'buyers')),false);}finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('bounded source review preserves hostile Unicode source as data and enforces a cumulative download cap',()=>{
+ const f=boundedReviewFixture();try{
+  const row=packageReviewSources(f.p).find(r=>r.file.endsWith('payment-identity.js'));
+  const source='\ufeff'+`require("node:fs").writeFileSync("executed-marker","bad");`+'😀\t'.repeat(1000);
+  f.files[row.url]=source;f.p.recipient.verifier.files['payment-identity.js']=hash(Buffer.from(source));f.configure();
+  const result=f.inspect();assert.equal(result.status,0,result.stderr);assert.equal(fs.existsSync(path.join(f.d,'executed-marker')),false);
+  const display=result.stdout.trim().split('\n').map(JSON.parse).find(r=>r.file===row.file);
+  assert.ok(source.startsWith(display.untrusted_source_prefix));assert.equal(display.displayed_utf8_bytes,Buffer.byteLength(display.untrusted_source_prefix));assert.deepEqual(fs.readFileSync(path.join(f.d,row.file)),Buffer.from(source));
+ }finally{f.cleanup();}
+ const limited=boundedReviewFixture();try{
+  limited.p.budgets.artifact_bytes=50000;const result=limited.inspect();assert.notEqual(result.status,0);assert.match(result.stderr,/read bound/);assert.equal(result.stdout,'');
+ }finally{limited.cleanup();}
+});
+
+test('assisted online qualification cannot pass on the old installed report alone',()=>{
+ const f=installedReportFixture();try{
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+  f.p.evidence_workflow='sources-and-draft-v1';
+  const command=sourceCheckCommand(f.p,f.fixture);
+  assert.ok(buildCapabilityPrompt(f.p,'claude',capabilityVectors(),f.fixture).includes(command));
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'incomplete');
+  const install=path.join(f.d,'work/tooling/node_modules/x402-verify');fs.mkdirSync(install,{recursive:true});
+  for(const file of Object.keys(f.p.recipient.verifier.files))fs.copyFileSync(path.join(f.d,'evidence/installed',file),path.join(install,file));
+  const result=spawnSync('/bin/sh',['-c',command],{cwd:f.d,encoding:'utf8'});assert.equal(result.status,0,result.stderr);
+  for(const file of ['evidence/source-index.json','evidence/source-candidates.json'])f.run.retained_artifacts.files.push({file,sha256:hash(fs.readFileSync(path.join(f.d,file)))});
+  f.commands.push({command,outcome:'completed'});
+  assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
+ }finally{f.cleanup();}
 });

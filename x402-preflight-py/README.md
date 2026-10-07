@@ -17,6 +17,12 @@ money.
 pip install scvd-preflight
 ```
 
+Package records: [PyPI](https://pypi.org/project/scvd-preflight/) and
+[piwheels](https://www.piwheels.org/project/scvd-preflight/). The piwheels
+project page was checked October 1, 2026; it indexes the Python client and
+links to PyPI. Listing presence does not establish installation or runtime
+compatibility on a particular device.
+
 ## Use
 
 ```python

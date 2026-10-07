@@ -45,9 +45,131 @@ Keeper authorized proceeding with the bounded pilot. Implementation is prepared
 on `codex/scvd-attestation-pilot`: human request page, public unsigned specimen,
 keeper-activated 30-day endpoint watch, signed report with per-day gaps and offline
 verification. The $300 offer uses manual invoicing after final delivery and no
-automatic renewal. JCS input-boundary repair is included. This is local work, not
-a deployed product or evidence of customer demand. [Offer and operating runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+automatic renewal. JCS input-boundary repair is included. Keeper authorized UI
+review, push and merge October 7; required CI gates release. This is not evidence
+of customer demand. [Offer and operating runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
 
+## October 6 — artifact discovery
+
+**Artifact discovery, local follow-through October 6:** Once-Over reports now
+have readable dated pages at their existing URLs; published research gains
+corpus-hub and sitemap links, with withdrawals visible in search metadata.
+Signed bytes and default JSON are preserved. [Scope and validation](docs/ARTIFACT_DISCOVERY_2026-10.md).
+Release prepared on an isolated branch from current main; 121 focused checks,
+typecheck and bundle checks pass. Full CI gates merge; no change to build order.
+
+## October 5 — R2 read failures
+
+- [x] Prepare the keeper-requested local repair: bounded transient R2 read retries,
+  an honest corpus-index fallback, and shared email windows with per-route alarm
+  records preserved. [Scope and validation](docs/R2_READ_RESILIENCE_2026-10.md).
+- [ ] Release this isolated repair through a PR, pass all required CI shards,
+  and verify production. The local patch does not establish live recovery.
+
+## October 5 — release verification
+
+S8 #975 and L13 #972 merged October 2 with all required checks green; both
+merged-commit Worker builds succeeded. [Live readback and remaining gaps](research/release-verification-2026-10-05/README.md):
+HTTP, MCP and WebMCP show a discovery contradiction changing v2 `ready` to v3
+`not_ready`; the new census contains v3 rows. A live offer contradiction was
+not exercised. Public inflow readers preserve the old week as not measured;
+a new L13 reading and the one-settlement accounting reconciliation remain open.
+Authenticated checks are deferred by the keeper. Stale current-version links,
+the free report's battery explanation and repair mappings are corrected locally,
+pending release; they do not change scoring or old signed records.
+
+## October 2 — S8 v3 readiness
+
+Keeper approved making discovery/schema and offer/challenge contradictions affect
+readiness. Merged and deployed in #975: free v3, new paid
+audits and new census rows use one scoring recipe. v1/v2 scoring and stored
+signed bytes remain unchanged. Optional extensions stay optional; missing
+resource descriptions and paid Tier B surface reads remain advisory. The October 5
+entry records live verification and its remaining limits. [Scope and validation](docs/S8_V3_READINESS_2026-10-02.md).
+
+## October 2 — ROI follow-through
+
+[Evidence and scope](docs/ROI_FOLLOWTHROUGH_2026-10-02.md).
+Accounting #967 is merged and the live metric scan is complete; the remaining
+one-settlement difference still needs transaction evidence. CLI 0.5.0 is already
+published and fresh-install checks pass. Skill 3.19.3 is published, receipt #971 merged;
+scanner disagreement is retained. HF host-date tables and both previews pass
+public readback. BiX answered the enum question; the existing October 1 follow-up
+awaits a named decision before further custom work. S8 v3 was subsequently approved; see the October 2 S8 entry.
+L13 merged in [#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972); the public reader is verified deployed, while a first current admin reading remains open.
+
+## October 2 — counter housekeeping
+
+Keeper-requested, four items from one sitting at `/admin/counter`. Every
+admin form now returns to the page it was pressed on (referer, kept inside
+the office; the old fixed page is the fallback) instead of the desk. The
+mailbox takes a tick per letter and one bulk press: the standing reply
+(`standingLetterReply`, signed per letter through the same path as a
+hand-typed answer, prices read off the shelf), with or without filing, or
+filing alone. The tip jar takes a bulk reject and keeps rejected tips out
+of sight, counted. Shelves on the retired register (the drawer, the grudge
+shelf) fold under "Closed shelves" with no stocking form; what is still on
+them stays readable and pressable. `test/counter-housekeeping.spec.ts` is
+red without each half. No public surface changed.
+
+Second sweep the same day, keeper's "go ahead and do all those": letters
+are read on sight when the counter opens (the Mark read button and its
+route are gone); the five Gazette admin routes with no form behind them
+are removed, the services and the public rack untouched, and the rack
+files under Keeper's files instead of riding the desk's glance; the
+confession drawer's approve button says no press is running; an empty
+commission ledger folds; "Buyer signals" drops "(trial)" from the nav.
+
+## October 2 — the raise asks the till who is family
+
+The books check read ATTENTION: the counters one settlement over the
+derived payer purchases, and the raise unable to close it. Found in code,
+not in the live records (no authenticated read was taken): the till books
+a settle as house by four tests (wallet list, our own receiving addresses,
+a house user-agent, the house header) and writes one per-settle record
+either way; the hourly raise asked only the wallet list, so a settle
+booked under `paidh` by agent or header was lifted onto `paid` as well —
+one record, two counter settles, and nothing lowers. The record now
+carries `house: true` when the till booked it so; the raise skips flagged
+records and asks the till's own wallet question for the rest, and reports
+`house_records`. No counter, record or row was changed. A flagless record
+from before this date that was booked house by agent or header keeps its
+one historic lift; the keeper's LOOK is on the desk.
+`test/counter-raise-house.spec.ts` showed the lift before the fix.
+
+## October 1 — admin accounting clarity
+
+Keeper-requested wording correction: distinguish certificate purchases from
+legacy x402 payer tallies, explain the raise's scope, and label a capped
+reconciliation INCOMPLETE rather than PASS. Counter and repair logic unchanged.
+The follow-up now reads only paid, house-paid and unattributed counters for
+every month since opening, so unrelated traffic metrics cannot consume the
+sales scan cap. Regression demonstrated before the fix; 25 focused tests and
+type checking pass. [Implementation and remaining live acceptance](docs/ACCOUNTING_COMPARISON_2026-10-01.md).
+October 2: #967 is merged and the authenticated metric scan is complete. The
+remaining one-settlement difference needs transaction evidence; no records or
+counters were repaired.
+
+## September 30 — Spot Check product and handoff experiment
+
+Keeper-directed: build both proposed additions now and learn from demand,
+rather than waiting to select one. Change Check and Batch Spot Check reuse
+the existing books, signing, checkout and recovery. Research Comparison and
+The Good Buyer remain the existing products and are surfaced conditionally.
+Optional counter notes support a human conversation or a later agent session;
+no automatic messages, scheduled purchases or new payment authority.
+Implementation, starting prices, evidence boundaries and validation:
+[experiment record](docs/SPOT_CHECK_FOLLOW_THROUGH_2026-09.md).
+Release through the protected PR after CI; production demand remains unmeasured.
+
+## October 1 — unpaid observation scope
+
+Keeper-authorized repair following DELX's evidence request:
+[scope and validation record](docs/OBSERVATION_SCOPE_2026-10.md).
+Outreach and passports distinguish unpaid challenge checks from settlement
+and delivery; missing request dates remain unknown rather than inheriting
+snapshot dates. The linked record tracks validation; the keeper authorized
+the PR merge. Existing signed historical artifacts retain their original bytes.
 
 ## September 28 — AEO readability, release approved
 
@@ -56,13 +178,24 @@ a deployed product or evidence of customer demand. [Offer and operating runbook]
 - [x] Expand the portfolio audit: six Perplexity questions, three Google AI Overviews and two completed Gemini answers (one additional Gemini error retained as unmeasured), eight SCVD npm manifests, three language source guides and existing protocol/digest surfaces. [Findings and limits](research/aeo-2026-09-28/PORTFOLIO.md).
 - [x] Reproduce the Hugging Face loader failure; verify all ten mirrored snapshot signatures/digests and chain continuity; prepare explicitly configured unsigned tables. Both card configurations load locally (24,913 host rows / ten rounds). Timestamp proofs were not independently checked in this pass.
 - [x] Replace obsolete SDK/UCP/MPP denials in shared developer/agent copy; index existing libraries and language guides from package metadata. Wire future corpus drops to rebuild the viewer tables.
-- [ ] Publish the reviewed corpus viewer repair through the existing workflow (`hf_only` and `refresh_viewer`), then qualify the public viewer and both public dataset configurations.
+- [x] Publish the reviewed corpus viewer repair through the existing workflow (`hf_only` and `refresh_viewer`); run 36474411847 completed and both public configurations loaded. The subsequent host-date correction also passes the October 2 public readback below.
 - [x] Run the existing eight-family browser hand check; [bounded results](research/aeo-2026-09-28/README.md), with missing engines/results retained.
 - [x] Reuse the existing item evidence summary in markdown and single-item JSON; move the HTML summary before the long description. Regression demonstrated red, then 35 focused tests, typecheck and bundle checks passed.
 - [x] Validate the combined patch: 837 full-suite files passed, 15,610 tests passed / one skipped; corpus publisher checks, typecheck, bundle and claims checks passed.
-- [ ] Release `codex/aeo-answer-readability` (keeper approved September 28); no production visibility improvement claimed before the next hand check.
-- [ ] Complete ChatGPT with a working searched-answer session; retain the October 15 checkpoint and existing question-page decision gate.
+- [x] Release `codex/aeo-answer-readability` (keeper approved September 28): PR #926 merged. No production visibility improvement claimed before the next hand check.
+- [ ] Complete ChatGPT with a working searched-answer session; retain the October 15 checkpoint (scheduled at 09:00 America/New_York) and existing question-page decision gate.
 - [ ] Repeat the expanded job-specific questions across the other engines with fixed modes; separate UCP merchant integration from third-party profile validation. Existing weekly brief and partner evidence remain the distribution work, not new duplicate programs.
+
+## September 28 — competitive choice and corpus reuse
+
+Keeper requested the comparison and corpus analysis first, then partner and
+asset reuse. [Working record](research/competitive-corpus-2026-09-28/README.md).
+
+- [x] Prepare the job-specific competitive comparison from pinned primary sources; distinguish native SDK/TCK coverage from SCVD's supported evidence workflow.
+- [x] Authenticate the existing corpus and derive catalog agreement, freshness and strictly comparable changes. Repaired notebook executes against the public chain.
+- [x] Prepare one historical listing record, a local authenticated adapter and a follow-on packet for the existing Merit workstream. Not sent; partner use remains unmeasured.
+- [x] Connect existing SDKs, corpus, notebook, verifier and brief in root/examples documentation; inspect the three article link paths and prepare the HF card correction and reproduction links.
+- [x] Release through #942 and read back the HF projection on October 2: regenerated tables and both previews pass; immutable signed fields match. Outer timestamp/citation metadata differs, so whole-envelope byte equality is not claimed. No duplicate publication or outreach campaign. [Readback](docs/ROI_FOLLOWTHROUGH_2026-10-02.md).
 
 
 ## September 23 batch — completed steps and release gates
@@ -129,7 +262,7 @@ this section is always the queue and nothing else.
 | --- | --- | --- | --- |
 | R1 | **Research Comparison — release prepared, 2026-09-24.** Package the existing preflight and Look history into a paid comparison of two to four research endpoints. | Keeper-approved reuse prompted by Coinbase agent research purchases; learn from production use. | Signed atomic terms grouped by network and asset, dated host coverage, same-endpoint network changes, shared receivers with limits, partial gaps and retained paid recovery. Standard catalog/MCP/x402 discovery. Checks and scope: `docs/RESEARCH_COMPARISON_2026-09.md`; [release PR #912](https://github.com/seancrecord/scvd-general-store-repo/pull/912) records CI and deployed readback. External indexing and the paid qualification remain separately observed steps. |
 | VQ4 | **Historical evidence follow-through — September 23 archive search complete; original-report gaps remain.** Reconcile signed bindings with original evidence and explicit gaps. | The frozen September 9 cohort has its own proof-check record; the original private capture is now unavailable at its known paths. A new cohort cannot replace its denominator. | The new capture verifies 418 certificates and 41 immutable reports. All 277 signed catalog commitments now have exact source-derived preimages; 141 certificates have no signed saw. Of 59 report bindings beyond the immutable inventory, 16 signed reports and four bundles verify, six unsigned projections and three opaque anchors match, two empty-bundle bindings remain distinct, and 28 remain unresolved. Equal unresolved counts do not prove identity with the old cohort. September 23: six retained hashes rechecked; seven local archive roots searched, zero exact recoveries from 28 targets. The bounded search is complete; VQ4 remains input-blocked ([record](research/historical-evidence-2026-09-23/README.md)). Remaining: original saved deliveries or older archives; newer authorization-keyed stores are unproven sources for these older gaps. No fresh Bitcoin proof verification in this pass. Results, tooling and validation: `docs/HISTORICAL_EVIDENCE_2026-09-15.md`; prior results: `docs/EVIDENCE_RETENTION_FOLLOWTHROUGH_2026-09.md`. |
-| TR3 | **Generated reports shipped; buyer acceptance remains open.** The [new September 28 cohort](research/generated-report-buyer-2026-09-28/REPORT.md) records **2 complete / 4, 2 failed journeys**. All eight sessions finish within budget and all four recipient explanations pass. One buyer omits signed originals and asserts absent retry protection from an unobserved field; another expands one verified snapshot into a month-wide conclusion. | #929 merged and `x402-verify` 1.9.0 is published, source-matched and provenance-verified. Both Codex buyers used generated reports. Frozen Claude permissions lack ordinary npm installation; this is an instrument limitation, not a clean cross-host adoption test. The earlier September 28 **1/4**, September 24 **2/4**, September 23 **0/4** and September 20 **1/4** records remain unchanged. VQ4 remains input-blocked. | Two complete journeys per required host/lane remain required. Next qualify a bounded installed-report acquisition path available to both adapters, with a failing-before-fix capability control, then a separately frozen cohort. Preserve original budgets, zero spend, fourteen-day observation policy and every attempt. No retries/rescoring; merchant/platform qualification remains downstream. |
+| TR3 | **Source workflow qualifies; buyer acceptance remains open.** The [October 1 bounded-review cohort](research/bounded-source-review-buyer-2026-10-01/REPORT.md) records **0 complete / 4, 3 reporting failures, 1 incomplete**. Three buyers and all three eligible recipients completed. Both Codex originals verify; one buyer capped, one recipient mistyped a digest. Claude misread snapshot-index coverage or inferred a shared-address cause; one recipient also misattributed a buyer claim. | All three capabilities passed under the explicit bounded source-acquisition condition. Frozen host context held through recipients; source assistance, voluntary install decisions and partial review remain disclosed. Prior cohorts and scores are unchanged. | Two complete journeys per required host/lane remain required. The snapshot-selection helper and saved-draft identifier check are published in x402-verify 1.11.0. The [explicit harness condition](research/assisted-evidence-workflow-2026-10-01/README.md) is prepared; next qualify it afresh before acquisition. Existing prose alone has not closed the gap. Preserve every attempt, original budgets, zero spend and fourteen-day policy. No retry, rescore or gate bypass. VQ4 remains input-blocked; merchant/platform qualification stays downstream. |
 | TR-D | **Protocol-organized discovery and consumer plugin corrections implemented.** [September 17 follow-through](research/distribution-2026-09-17/README.md) groups confirmed records and SCVD links across the README, trust page/JSON and agent guide; UCP was planned at the time of that record and has since shipped (checkout live September 19, see PS9). Four ERC-8004 index records and the existing community A2A Directory source listing are added, with explorer views separate. Removes contributor instructions from Gemini and contributor Chrome DevTools from Claude customer installs; developer browser configuration remains explicitly available. Reconciles DISTRIBUTION, the registry drawer, keeper entries and plugin submission preparation. Regression demonstrated red before the fix; listings tests, typecheck and bundle pass. [Release PR #778](https://github.com/seancrecord/scvd-general-store-repo/pull/778) holds the integration and required CI record. [Admission reconciliation](research/distribution-admission-2026-09-16/README.md) retains existing requests. | External admission progresses independently of buyer qualification. | Cursor publisher application submitted September 17 with limitations disclosed: both MCP servers loaded and free preflight passed, but skills were not exposed in CLI and desktop qualification is outstanding. Normal Agent mode, the documented local-plugin path and a portable-only control also omitted the skills from the model-visible catalog. Resolve native desktop discovery without assuming a packaging defect; [receipt](research/distribution-2026-09-17/observations/cursor-host-qualification.json). Copilot #3255 was rejected September 24 as not a fit for the repository; its passing automated gates did not establish admission. [September 24 follow-through](research/roadmap-followthrough-2026-09-24/README.md) confirms all 39 discovery signals, 18 other open requests and published Tab 0.11.2 in npm/MCP. The September 23 listing repairs and September 24 portable package refresh are merged; do not rebuild them. External replies and publication follow-through remain distinct from deferred native buyer/host qualification. 8004scan #51 filed. Gemini 0.60.0 fresh install discovered both skills and connected MCP; [gallery version 0.2.4](https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo) was confirmed September 18 with MCP and Skills labels. Gemini execution is skipped at keeper request after the retired consumer-login gate; remote OASF discovery remains unverified. Antigravity preview packaging now reuses the same skills and maps remote MCP into its current format; [native host qualification](registry/antigravity/README.md) remains to be built and checked. [Expanded protocol coverage](research/distribution-2026-09-17/PROTOCOL_COVERAGE.md) records failed A2A API submissions, Context Anchor MPP activation and remaining discovery prerequisites and UCP platform intake. Kiro native Power qualification completed September 18: both skills and MCP servers were exposed and one free preflight completed. Cline native execution passed September 18 after sign-in: verification skill loaded and a free preflight returned not_ready / L1. Cursor Directory content is repaired; native skill discovery remains open. [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md) separates these results from admission. Keeper completed the OpenAI skill update; remaining signing/publication actions are on KEEPER_LIST. [Public release record](research/takeoff-postmerge-2026-09-17/REPORT.md). |
 | TR-M | **Merchant proof flow using the same buyer/evidence engine.** | After the buyer flow is dependable. | Dated, independently verifiable proof of the tested transaction with published gaps; no general sellability warranty. |
 | TR-P | **Platform consumption of the proven evidence contract.** | After buyer and merchant flows. | An outside consumer handles versions, failures and freshness and verifies the same primitives independently. |
@@ -149,6 +282,118 @@ retains all originals and eight verbatim private Markdown reports across 404
 hash-checked files. Recipient freshness policy works in all four reviewed
 handoffs; buyer acquisition and final interpretation remain the open gate.
 No causal improvement or native challenge-header-option adoption is claimed.
+
+**TR3 package access, September 30 (qualification closed; buyer gate not met):**
+[The directed-only repair](docs/BUYER_PACKAGE_ACCESS_2026-09-28.md) merged in #932.
+[The retained qualification](research/package-access-qualification-2026-09-30/REPORT.md)
+records Codex installed-report pass, Claude package check incomplete after a
+voluntary refusal, and offline capability pass. No npm attempt or npm permission
+denial was observed in Claude; its own `commands_denied` field disagrees with
+its trace. Battery operation was keeper-approved; concurrent test-process
+samples are disclosed. No buyer cohort launched, no attempt was repeated, and
+the prior 2/4 buyer result is unchanged. Next investigate existing package
+inspectability/provenance and distinguish voluntary refusal from tool denial;
+a future qualification requires a separate frozen plan and stated change.
+
+**TR3 source review, September 30 (implementation and separate qualification):**
+[The opt-in source-review step](docs/BUYER_PACKAGE_SOURCE_REVIEW_2026-09-30.md)
+provides immutable source URLs and a proceed/decline receipt. The [closed native
+qualification](research/source-review-qualification-2026-09-30/REPORT.md) records
+both online package checks incomplete and offline capability pass; no buyers
+launched. Codex's completed workflow hit a command-recognition defect, repaired
+after closure with the retained command as a failing regression. Claude declined
+on its estimated remaining call budget after source inspection. Original scores,
+budgets and host gates remain unchanged. The repair is not a native pass; setup
+friction and a new separately frozen qualification remain before buyers.
+
+**TR3 qualification setup, September 30 (separate acquisition closed):**
+[Qualification-only setup guidance](docs/BUYER_QUALIFICATION_SETUP_2026-09-30.md)
+addresses the observed unavailable-Write and compound-command waste. All three
+[separately frozen qualification gates](research/setup-guidance-buyer-2026-09-30/REPORT.md)
+passed. The new buyer cohort is **0 complete / 4, 1 failed interpretation,
+3 incomplete**: both Codex buyers verified originals, Claude r1 made unsupported
+absence claims, and Claude r2 reached the call cap. A changed Codex CLI and
+environment blocked every offline recipient before launch; no guard was bypassed.
+Seven native message exports preserve the six finals and one stopped buyer's
+last message. Next address buyer setup overhead and signed-original acquisition,
+then freeze a changed experiment with a stable qualified host context. Earlier
+attempts remain closed and preserved.
+
+**TR3 buyer setup, September 30 (new condition prepared):**
+[The explicit buyer setup condition](docs/BUYER_SETUP_GUIDANCE_2026-09-30.md)
+reuses qualification's tool instructions in buyer sessions without changing
+permissions, budgets, tasks or old prompts. All 290 buyer controls pass; seven
+archived prompts reproduce exactly. No new native qualification or cohort is
+claimed. Signed-original selection remains a distinct observed gap, despite
+existing guidance being present in the retained response. Freeze changed
+conditions under a stable qualified host context before further acquisition.
+
+**TR3 buyer setup qualification, October 1 (closed; buyer gate not met):**
+[The separate record](research/buyer-setup-qualification-2026-10-01/REPORT.md)
+uses merged #950 (`2095e2d4`), fresh public/package checks and the same budgets.
+Codex online and offline capability pass; Claude reaches 21 observed calls
+against the 20-call cap after six missing-directory downloads and six repeated
+fetches. Installation succeeded, but no installed CLI report or completed
+final remains. No buyers launched. The new buyer-only prefix was not exercised;
+the qualification prompt was unchanged. All three traces and two native finals
+plus one last message are archived. External test overlap is disclosed; no
+native timing interruption. No retry, rescore or budget increase. Next candidate:
+explicitly prepare empty source-review parent directories, derived from existing
+paths, as a separately frozen condition. Not implemented here. Signed-original
+acquisition/interpretation stays separate; TR3 acceptance remains open.
+
+**TR3 empty source directories, October 1 (implemented; qualification closed):**
+[The explicit condition](docs/BUYER_SOURCE_DIRECTORIES_2026-10-01.md)
+creates only empty parents derived from the pinned review-source paths before
+online qualification and buyers. Agents still fetch, review and decide; no
+source bytes, answers, permissions or budgets are added. Old prompts remain
+byte-identical, offline recipients unchanged, and new qualification is required.
+The [separate qualification](research/source-directories-qualification-2026-10-01/REPORT.md)
+passes Codex and offline capability, but Claude reaches 21 observed calls / 20 cap
+after compound-command refusals and source inspection. Source downloads succeeded;
+no installed CLI report or buyer launch. Same-session host output was read outside
+the neutral workspace; its exact bytes are captured, and the boundary breach is
+disclosed. Review inspection output and host isolation before another changed
+experiment; no retry, relaxed gate or native buyer benefit claimed.
+
+**TR3 bounded source review, October 1 (new explicit condition):**
+[The reviewed fetch flow](docs/BUYER_BOUNDED_SOURCE_REVIEW_2026-10-01.md)
+combines only pinned public-source acquisition and hash checks into one bounded
+step, displays partial previews with omitted-byte counts, and directs further
+reads to saved workspace files. No source execution, preloaded answer, review
+decision, permission or budget increase. Old prompts and offline recipients are
+unchanged. This reduces prescribed oversized output; it does not claim new
+filesystem enforcement. The [separate acquisition](research/bounded-source-review-buyer-2026-10-01/REPORT.md) passed all three capability gates, then scored **0 complete / 4, 3 reporting failures, 1 incomplete**. Three eligible recipients completed without host drift. Ten verbatim reports and all originals are archived; no retry or earlier rescore. Native setup and reporting errors remain distinct from the passing source workflow.
+
+**TR3 assisted evidence condition, October 1 (harness integration):**
+The [prepared condition and validation](research/assisted-evidence-workflow-2026-10-01/README.md)
+pin published verifier 1.11.0, exercise candidate extraction in online capability
+qualification and exercise draft checking in offline capability qualification.
+Recipients retain exact draft/final text; independent replay and byte comparison
+refuse missing, altered or divergent evidence. Earlier prompts remain unchanged;
+seven closed plans reproduce identical before/after buyer, capability and recipient
+prompts with their retained runtime. No new native run or changed denominator.
+Fresh host-context freeze and qualification remain required before acquisition.
+No additional npm release is needed. Buyer, merchant and platform acceptance stay open.
+
+**TR3 draft identifiers, October 1 (source implementation):**
+[An optional saved-draft check](docs/BUYER_DRAFT_IDENTIFIERS_2026-10-01.md)
+compares long hexadecimal tokens against identifiers from fresh verification,
+retaining unknown values, omitted display counts and the draft hash. Controller
+replay catches the recorded shortened digest while the original signature stays
+valid. It does not check prose, identifier roles, short/split values or a later
+final answer. Source 1.11.0 is not publication or native acceptance; no frozen
+prompt, budget, original or score changes. Interpretation gaps remain open.
+
+**TR3 candidate originals, October 1 (source implementation):**
+[The offline source-link command](docs/BUYER_SOURCE_LINKS_2026-10-01.md)
+extracts candidate originals from a saved snapshot index or exact-URL host-history
+hints, retaining unsigned status, unknown subject presence, pagination gaps and
+omitted-link counts. It neither fetches nor verifies anything. Four controls
+failed before implementation; archived-input replay finds the original links
+without changing old results. Version 1.10.0 is source preparation, not npm
+publication or buyer acceptance. Recipient identifier rewriting remains a
+separate gap; no new native cohort is claimed.
 
 **TR3 nested-row guidance, September 23:** the existing host-history scope
 explanation names `snapshot.round.hosts`, exact URL matching including queries,
@@ -246,7 +491,7 @@ time; draft copy goes in chat, not on a flag.
 | --- | --- | --- | --- |
 | CV1 | **Seller declarations — declared against observed.** Spec at `docs/SELLER_DECLARATIONS_2026-09.md`, PROPOSED 2026-09-10 as the third of four moves toward a corpus a buyer must check. A seller proves control by either existing standing-note lane and declares where the host pays; every host history and the look carry a match line (`match`, `mismatch`, `not_captured`, `not_probed`, `no_declaration`) with its rows, and the weekly changes feed lists hosts whose line moved, with the denominator. Digests only on every derived view. | Two-sided reason to consult the record: sellers register to protect their buyers from a hijacked door; buyers check because a mismatch is decisive. Rule 43: a line on a row at a date, never a status. | Waits on two KEEPER_LIST rulings (free forever; a declaration is an ask). Acceptance in the spec. |
 | CV2 | **Federation — a second observer's row.** Spec at `docs/FEDERATION_2026-09.md`, PROPOSED 2026-09-10, the fourth move and the slowest. A stranger's signed observation, verified through the conformance desk, held at its own tier in the week's snapshot on the crowd-walk precedent, listed on the host history beside ours with no count of agreement anywhere. | A crawler's output is ours; a standard's output is anyone's (OBSERVATORY §8). Build on a trigger: a named party asks to submit rows, or a bounty walker asks for their own signature. | Waits on one KEEPER_LIST ruling (inside the chain or beside it). Acceptance in the spec. |
-| S8-v3 | **The v3 fold (S8 PR 2).** `discovery-info-fails-schema` and `offer-contradicts-challenge` fold into a preflight v3 verdict; `AUDIT_CRITERIA_VERSION` and `CENSUS_BATTERY` move together; dated `/criteria` note; nothing resigned. His yes / no / later, on the advisory rows the census has read so far; no calendar gate (a dated wait an agent had written here was struck 2026-09-03: "i dont wait i decide yes/no/later"). | The fold is a battery decision made on evidence, the way L3b went into v2. | Version constants moved together; `test/battery-inside-the-bytes` holds all three producers equal; a v2 `ready` issued before the fold keeps its meaning. |
+| PAP1 | **Personal Agent Protocol v0.1 — read, then decide.** Meta and Sierra announced October 6 an OAuth-session standard for consumer personal agents reaching businesses, with Genesys, Instinct, Rocket, Shopify, Stripe and Walmart; a v0.1 specification is promised later in October. The announcement read and the position taken are in `docs/SPEC_READS.md` (2026-10-07) and the spec watch row `personal-agent-protocol`. No build: the store has no accounts to scope, its free instruments already answer the guest tier cold, and it does not claim a protocol with no text. | The one in-flight item this touches is the pending Muse connector submission: Muse is Meta's personal agent and this is Meta's standard for reaching businesses. For the observatory, scoped sessions become checkable artifacts once implementations exist. | Trigger: the v0.1 text is published. Then: a dated SPEC_READS entry on the specification itself, the spec watch source moved to the spec URL, a protocol-screen row if a repository with merges exists, and the Muse terms re-read against the text. Any change to `/auth.md` or the `/developers` protocol list needs that read first and a keeper decision after it. |
 
 ---
 
@@ -266,9 +511,13 @@ The public releases are `x402-verify@1.4.0` and installed skill `3.17.0`;
 fresh registry installs pass, with all package/skill payload bytes matching.
 [Release closeout and continuation instructions](docs/PACKAGE_SKILL_HANDOFF_2026-09-17.md)
 record CI, publication PR #772, retained reader failures and qualification limits.
-PS5 has a published inventory and a transport increment merged in #920;
-its package publication and activation gates remain open. PS6 inspection is
-built and tested locally; [implementation and limits](docs/ENDPOINT_INSPECTION_2026-09-28.md).
+PS5 has a published inventory and the transport increment merged in #920
+is included in the source-matched 1.9.0 release; its outside qualification
+remains deferred. PS6 inspection merged in
+#928 with all required CI checks passing; its HTTP/MCP schema is verified live.
+PS7's remaining guide and summary integration merged in #933;
+all required CI checks passed and the deployed guides were verified September 29 UTC;
+[implementation and release limits](docs/MPP_PORTFOLIO_INTEGRATION_2026-09-28.md).
 Outside adoption and offline retention remain unmeasured.
 
 | # | Build / decision | Completion gate |
@@ -278,11 +527,11 @@ Outside adoption and offline retention remain unmeasured.
 | PS3 | **Shipped, September 17.** Packaged quickstart, independent fixture/key provenance, scope guidance and Node WebCrypto typing. [Implementation](docs/VERIFIER_DEVELOPER_ACTIVATION_2026-09.md). | Public npm install matches all 24 packed files and produces four expected outcomes in JavaScript/strict TypeScript. Revised Codex cohort 7/8 strict, Claude 8/8, separate path correction 2/2; original failures retained, not a replacement clean Codex cohort. |
 | PS4 | **Shipped, September 17.** Skill 3.17.0: 78-line entry, ten references, generated ClawHub payload, graph guards and whole-tree fingerprint. [Implementation](docs/SKILL_PROGRESSIVE_DISCLOSURE_2026-09.md). | Normal public installation preserves all 11 payload files; complete tree matches source. Original task cohorts old 5/7, new 6/7, none 4/7; integrated correction 6/7; separate final date/MPP check 2/2. No replacement clean seven-case or general reliability claim. Newer main safety/recovery guidance retained; publication bookkeeping and install evidence ride PR #772. |
 | PS5 | One justified verifier interoperability increment. The capability inventory half is built 2026-09-19: `CAPABILITIES` and `runtimeCapabilities()` in `x402-verify` 1.7.0 ([published and registry-verified September 19](research/subject-acceptance-2026-09-19/REPORT.md)), held to the dispatch, the declarations and the README by `verifier/capabilities.test.mjs`, and printed by `scvd-evidence capabilities`. Ed25519 x402 JWS-envelope support for `x402-verify` 1.8.0 merged in #920 on September 28 after all CI shards passed; [scope and qualification](research/verifier-ps5-2026-09-28/README.md). The merged implementation is now included in published 1.9.0 (1.8.0 was not separately published); [source-matched release receipt](research/generated-report-buyer-2026-09-28/release.json). Buyer/model qualification remains deferred per keeper direction; TR3 reporting runs do not satisfy that gate. | Selected combination passes independent vectors and activation checks; capability inventory agrees with implementation and runtime. |
-| PS6 | **Build complete; tested locally, September 28.** Additive inspection on the existing hosted preflight and canonical MCP/WebMCP tool; `inspectOne` in prepared `scvd-preflight` 0.3.0 and `scvd inspect` in prepared `scvd-cli` 0.4.0. [Contract, tests and release limits](docs/ENDPOINT_INSPECTION_2026-09-28.md). Unmerged and unpublished; buyer/model qualification deferred per keeper direction. | Reachability, protocol sets, unverified term summaries, structural findings and gaps stay separate. Synthetic response replay agrees across library, CLI, HTTP and MCP; existing x402 verdicts and deploy-gate exits preserved. Full merge CI and release readback remain. |
-| PS7 | Remaining MPP package/distribution integration. | Reconcile V3 first; only remaining deltas built, mixed histories preserved, MPP-only is not globally called broken. Existing V3 implementation does not wait on this phase. |
-| PS8 | Conditional signer addition. | Named issuer workflow and independent qualification; otherwise defer. |
-| PS9 | **Overtaken, September 19.** The bounded read-only inspection experiment was superseded by implementation: UCP checkout is live and transacting. The store serves the catalog, checkout and order capabilities over the pinned REST transport, advertises them in `/.well-known/ucp` exactly when Complete settles, and completed a real paid purchase on Base ([qualification record](research/ucp-launch-2026-09-19/)). What remains of this row is the same question one layer out — whether the *inspection* instruments should speak UCP — and it is not waiting on a decision about the store's own support. | Superseded. The go decision was made by shipping; the evidence is the recorded qualification run, validated by `npm run ucp:conformance`. |
-| PS10 | Internal extraction decision. | Two demonstrated consumers justify shared primitives, or record that no extraction is useful. The UCP implementation landing does not force a rewrite or block this decision. |
+| PS6 | **Merged in [#928](https://github.com/seancrecord/scvd-general-store-repo/pull/928), September 28.** Additive inspection on hosted preflight and canonical MCP/WebMCP; `inspectOne` in prepared `scvd-preflight` 0.3.0 and `scvd inspect` in prepared `scvd-cli` 0.4.0. [Contract and release limits](docs/ENDPOINT_INSPECTION_2026-09-28.md). All required CI checks passed; public HTTP/MCP inspection schemas agree. | Reachability, protocol sets, unverified terms, structural findings and gaps stay separate; x402 verdicts and deploy-gate exits preserved. Registry publication and fresh registry installs remain separate. Buyer/model qualification deferred per keeper direction; no new live-browser registration claim. |
+| PS7 | **Merged and deployed in [#933](https://github.com/seancrecord/scvd-general-store-repo/pull/933), September 29 UTC.** Reconciled V3/PS6 and implemented the remaining MPP guidance and summary deltas. [Inventory, checks and release state](docs/MPP_PORTFOLIO_INTEGRATION_2026-09-28.md). Hosted skill 3.19.3 is live; registry publication remains separate. | MPP-only summaries explicitly scope the x402 verdict; mixed readings, historical gaps and signed bytes preserved. All four CI test shards and `check` passed. Public general and focused guides were read back; the focused skill matched source exactly. Buyer/model qualification remains deferred. |
+| PS8 | **Deferred after trigger review, September 29.** No concrete new issuer integration is recorded in the roadmap, keeper decisions or package handoff. | Reopen for a named issuer workflow needing an independently qualified verifier combination. Existing signer support is not expanded for feature symmetry. |
+| PS9 | **Closed by keeper decision, September 29; moved to DONE below.** UCP checkout superseded the proposed experiment. | Review how existing protocol capabilities are reported and discovered; no new UCP inspection implementation is implied. |
+| PS10 | **Decision complete, September 29: no additional extraction now.** [Consumer review and rationale](docs/PROTOCOL_REPORTING_REVIEW_2026-09-29.md#ps10--no-additional-extraction-now). | Existing shared probe/schema/catalog and guarded library/CLI reader cover the demonstrated reuse. Preserve distinct fetch, evidence and checkout semantics. All 12 existing reader tests pass; no runtime change. |
 
 **Maintenance:** a reproduced standalone MCP-starter compatibility defect
 may take a small serial repair slot without waiting for PS8–PS10. Hosted
@@ -290,7 +539,29 @@ MCP is not rebuilt. Tab, corpus client and defects expand only for a
 demonstrated workflow or necessary conformance/vocabulary maintenance.
 Keeper copy/publication actions are filed when the release is concrete.
 
+**MCP-starter maintenance — source released in #947, September 30.** The old
+starter rejected modern discovery and omitted required forwarding headers.
+Prepared 0.2.0 restores modern/legacy compatibility, explicit version refusal
+and cancellation; independent SDK subprocess checks preserve the legacy path.
+[Evidence and limits](research/mcp-starter-compatibility-2026-09-30/README.md).
+Hosted MCP was not changed. Required CI passed and the source merged; package
+publication and native-host qualification remain outstanding. Buyer qualification
+stays deferred.
+
 ---
+
+## PROTOCOL REPORTING AND DISCOVERY REVIEW — September 29, serial
+
+Keeper-requested follow-through after closing the superseded UCP experiment.
+PS8 is deferred on its trigger; PS10 closes with the no-extraction decision.
+Review existing capabilities in this order, one stage at a time. Detailed
+inventory and completion gates: [review plan](docs/PROTOCOL_REPORTING_REVIEW_2026-09-29.md).
+Buyer/model qualification remains deferred.
+
+| # | Review | Completion gate |
+| --- | --- | --- |
+| PR1 | **Reporting fixes released in #947, #958 and #963.** [Changes and checks](docs/ADMIN_REPORTING_FIXES_2026-09-29.md). | Full CI and merged-commit builds passed for both releases. [Public readback](research/protocol-reporting-release-2026-10-01/README.md) verifies shared reporting scopes and unchanged old signed history. [Authenticated review](research/admin-reporting-live-2026-10-01/README.md) covers twelve report pages at the stated depth. Growth house corrections, desk event links, instrument month navigation and funnel wording are released. The final ward wording correction merged in #963 with all required checks and merged-commit builds passing. Post-deployment admin readback remains pending. Phone-width production layout and latency remain unmeasured. [Release evidence](research/reporting-publication-2026-10-01/README.md). |
+| PR4 | **Source corrections released; publication workflows and GitHub metadata update completed October 1.** [Audit](research/listing-review-2026-09-30/README.md), [follow-through and remaining hands](research/reporting-publication-2026-10-01/README.md). | Store MCP 0.2.4 is verified active/latest with exact source-manifest parity. All four npm releases are independently verified public/latest; tarball integrity and every packed file match source. Initial processing-delay reads are retained separately. GitHub About/topics are updated and verified. Agent Finder #34 has a validated refresh patch but needs the owning cv-scvd account; the connected account cannot push to its fork. Existing MCPpedia/mcp.so corrections await maintainers. No duplicate outreach or new admission claim; unreadable venues remain unverified. |
 
 ## LATER — option value, demand-tagged
 
@@ -319,12 +590,13 @@ porch `ring_bell`, WebMCP conformance instrument.
 | L1 | Phase 4 `/agent/v1`, `find_endpoints`, `@scvd/agent` | Nothing is asking. Free desks already have MCP tools. |
 | L2 | Phase 5 chips, `@scvd/launch-check`, first `cross_ref` consumer | 5.2 pricing is ⚑. 5.1 partly live as `/corpus/diff.json`. |
 | L3 | Additional protocol inspection beyond the shipped MPP reader (AP2 / ACP / UCP as demanded) | Reconcile V3 and PS7/PS9 first; MPP census and paid-audit reading are already implemented. A named intake and the remaining rail/intake ruling govern expansion. Parser, not a new till. ACP merchant checkout stays read-only; UCP no longer does — this store's UCP checkout settles as of September 19, which is a till it runs rather than a till it reads. |
-| L4 | Directory / facilitator QA as a *report we already run* | Sell the weekly brief (S1) to a named directory. Do not build a second census. **Research execution started 2026-09-24:** [Partner Evidence Pilot Plan](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md), keeper-requested; Merit reproduction, seller qualification and Browserbase compatibility dossiers prepared. No new renderer/payment path promoted to a build: first establish partner use. Any report assembly must preserve exact endpoint/method matching and the unsigned-versus-signed evidence boundary. |
+| L4 | Directory / facilitator QA as a *report we already run* | Sell the weekly brief (S1) to a named directory. Do not build a second census. **Research execution started 2026-09-24:** [Partner Evidence Pilot Plan](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md), keeper-requested; Merit reproduction, seller qualification and Browserbase compatibility dossiers prepared. **September 28:** BiX accepted the free check; unsigned POST results were sent. Keeper-approved [pilot request-body support and durable invocation](docs/LAUNCH_CHECK_PILOT_INPUTS_2026-09-28.md) are implemented locally in the existing Launch Check engine and recovery store, with exact inputs retained as signed fingerprints and offline controls. Public checkout integration and any deployment or paid attempt remain separate. BiX clarified the output enum September 28. The October 1 follow-up already asks which integration/release decision the observation supports; wait for that answer before custom work or a paid canary. No new renderer or SKU. Partner decision use and repeat demand remain unproven. Any report assembly must preserve exact endpoint/method matching and the unsigned-versus-signed evidence boundary. |
 | L5 | Corpus slices as paid history / API | Free public summaries stay free. Paid = convenience and history, not a score. Demand tag. |
 | L8 | Parked tickets: none. | Checked 2026-09-02: the seven numbers this row carried (#83, #70, #71, #68, #80, #57, #58) are August pull requests, all merged, and the tracker holds no open issue. The row stays so the next parked ticket has a place to land. |
 | L9 | Solana parity gaps 3 to 5; scoped Tab follow-through | Gap 1 and the observatory shipped September 2; gap 2 (Solana bounty claims, Base payout) shipped September 5. Gap 3 is the Solana Launch Check; gaps 4 and 5 remain blocked under the recorded payout/screening constraints in SOLANA_PARITY.md. Recheck those constraints before any build. Tab work needs a named remaining workflow, reconciled with the package maintenance lane; the old "leftovers" label is not a build specification. |
 | L10 | Card family, cheap `/check/{host}`, D5 patronage sell-up | Demand / ink. |
 | L12 | Sponsored bounties: an operator pays to post their door on the board | Demand tag: an operator asks. Honest only if loud — public bounty, disclosed finder wallets, corpus flags the settles bounty-driven never organic. The quiet version is the wash trading we called out. Do it that way or not at all. |
+| L13 | **Merged and deployed October 2 ([#972](https://github.com/seancrecord/scvd-general-store-repo/pull/972)); public reader verified October 5, first current admin reading deferred.** The existing inflow census adds canonical EIP-3009 authorization-paired transfer count and exact USDC amount, with separate no-pair and unread counts. Matching requires transaction/block identity and adjacent log positions. Counts only; no addresses or hosts. Admin/public readers preserve older readings as not measured. [Implementation and limits](docs/ROI_FOLLOWTHROUGH_2026-10-02.md). | Measures settlement mechanism over the existing window and addresses. Corrects the earlier inference: EIP-3009 alone does not prove x402 use, an agent or a sale; no pair does not prove a plain transfer. The stale Almanac research tag is not demand or our own measurement. Solana remains outside this EVM-only read. |
 
 ---
 
@@ -361,10 +633,14 @@ tool catalog.
 Closed rows, kept for the record. Nothing here is a queue.
 
 | # | Task | Why it was built | Acceptance, as met |
+| --- | --- | --- | --- |
+| PR3 | **Site discovery and slimmer guides released and verified October 1.** [Discovery release](research/protocol-reporting-release-2026-10-01/README.md), [guide release](research/guide-release-2026-10-01/README.md). | Make implemented protocol capabilities discoverable with exact scope, and keep payment instructions readable across canonical and alternate developer URLs. | #947 and #951 merged after required CI. Live discovery guidance agrees; developer guide is 24,499 characters, all three aliases match, all 52 sections survive intact and the full guide preserves the immediately preceding deployment’s bytes. Merged-source guide checks passed. New AEO visibility and buyer qualification are separate observations, not implied by this closeout. |
+| PR2 | **Public reporting repaired, released and verified October 1.** [Source review](research/public-reporting-2026-09-30/README.md), [release/readback](research/protocol-reporting-release-2026-10-01/README.md). | Separate x402 funnel scope from combined x402/native MPP sales and preserve signed history. | #947 merged after all required CI passed; live rail/stats/pulse scopes agree. July and August signed bytes, digests, signatures and keys match the pre-release baseline and verify independently. Dated JSON links and historical scope notes work. Future combined-month fields are covered by tests; no new sealed month was present or forced during readback. |
+| PS10 | **Shared-code review complete, September 29: no new extraction.** [Decision and concrete consumers](docs/PROTOCOL_REPORTING_REVIEW_2026-09-29.md#ps10--no-additional-extraction-now). | Close the conditional decision after PS6/PS7 without inventing a public core or merging different protocol semantics. | Shared engine, schema and catalog already exist; the standalone reader copy is byte-guarded. All 12 reader tests pass. No runtime source changed. |
+| PS9 | **UCP experiment closed, September 29, keeper decision.** Superseded by the shipped business profile, catalog, checkout and order capabilities. | The September 19 implementation and paid Base purchase already answered the store-support question; do not rebuild an experiment. | [Existing qualification](research/ucp-launch-2026-09-19/) retained. This closes the proposed experiment, not a claim of third-party UCP inspection or qualification on every rail/product. Follow-through is an audit of reporting, site discovery and listings. |
 | AC1 | **auth-capture, read against the desk — September 28.** The scout reported x402 `auth-capture` merged as a fourth core scheme (a six-op lifecycle: authorize, charge, capture, void, refund, reclaim). Re-read on main: both spec files are byte-identical to the 2026-09-14 pin, the preflight already lists the family and R4 already checked every verdict against it, so nothing on the free instrument moved. What could not speak was the paid settlement attestation: under the escrow flow the hash a buyer holds is an `authorize` into the AuthCaptureEscrow singleton (live on Base; bytecode read), so the desk answered INSUFFICIENT_MATCH with a `none` binding and no words for why. Battery `settlement-attestation-v5` names the contact in a signed `auth_capture` field (legs, contract role, deployment, direction, source citation); status and binding never move for it. R7 ruled and built the same day: `schemes` counted beside `networks` on the trajectory and the weekly brief. | His "okay do it" and "for r7 we add the scheme" on the 09-28 read. A true reading that cannot say why it is true sends a buyer to the wrong conclusion. | `test/attestation-auth-capture.spec.ts` (authorize leg stays INSUFFICIENT_MATCH and names the escrow; capture leg SETTLED with the escrow as source; v1.0 and v1.1 told apart on Base and Polygon; exact transfer carries no field under v5; the field sits inside both signatures and its removal breaks them; declaration page says what v5 signs and does not read). Trajectory and brief specs count `schemes`. Red witnessed on all before the change. Lifecycle observation itself is AC2, LATER. |
 | MB1 | **The mailbox reaches a person, and the board buys the walk the probe cannot make.** DONE 2026-09-28, on the keeper's "all go" off two questions: how does a correspondent get a reply (they polled a pickup URL, or never saw it), and what the store does with bounty reports ("paying people to check doors I'm already checking"). (1) `reply_to` on `POST /api/letter` and follow-ups: each signed reply is mailed to the address with the keeper copied and Reply-To set to him, through the same Resend wire the alarms use (`src/lib/keeper-mail.ts`); the keeper is mailed when a letter or follow-up lands; the address is stored on the record, shown only in the back room, never served; every send fails open and writes its outcome beside the reply. (2) `bountyCandidates` offers not_ready doors the round read a price at, ahead of ready never-walked ones, with the failed checks on the row as `house_said` — 127 of the board's 130 settlements had been at doors the house already called ready. (3) Crowd-walked rows on every host history (`crowd_walks` on the JSON, page and markdown twin, with the note on whose fact each field is) and on every preflight report as `paid_walks_on_record`, read off the latest sealed round, an unreachable reading included. (4) Vocabulary v21: `receipt-absent-on-paid-response`, detectable paid, its signal stated as the walkers' claim at the crowd-walked tier and nothing stronger; named beside the board's count and on any crowd row whose report asserts it. | A signed reply nobody is told about is a reply to an agent only; the board's two informative cells held one row each because the list never offered a door the probe was unsure of; seven reports said the receipt was absent and the register had no word for it. | `test/letters-mail.spec.ts` (kept and never served, refused with the reason, mailed to them cc the keeper with the pickup URL inside, no wire without an address, dead wire leaves the signed reply standing and the box says MAIL FAILED, key unset says so, an address on a follow-up, the arrival nudge both ways); `test/bounty-batch.spec.ts` (a priced not-ready door offered first with `house_said`, an unpriced one still out); `test/crowd-walks-on-record.spec.ts` (rows on the history with the class only where the report asserts it, empty not absent, all three representations, the preflight's rows for the host it knocked on including unreachable, absent when no round reads, the register entry, the class beside the count); `test/packages.spec.ts` at 0.21.0. Each shown red without its source. |
 | CC1 | **Agent calling card — built locally September 24; not deployed.** Guided input choices, one configured Node download, explicit local key setup and public-directory lifecycle, signed receiver observations, bounded payment hints and optional private reports. | Keeper requests, “laright lets build it,” then “do that then” for one complete path into production learning. No paid demand or production compatibility inferred. | Generated download exercised end to end against an isolated local Worker, including independent receipt verification, consented report retention and revocation. Operator readout, field/retention disclosures and integration limits: `calling-card/README.md`. Existing directory observation remains the optional paid artifact; no paid SKU, other-site acceptance or payment guarantee added. |
-| --- | --- | --- | --- |
 | VQ5-R | **OpenAPI budget recurrence — DONE September 23, released in #900.** Reused nine schemas and aligned the production fixture; the served document is 687,898 bytes with 12,102 bytes of warning headroom. The September 10 VQ5 release remains a separate historical completion. | The keeper identified repeated budget escapes hidden by smaller fixtures. Restored measured headroom without raising the limit or changing payment contracts. | Full PR suite and both production builds passed. The public document retains all 185 paths, its expanded contract equals the pre-release capture, and all 20 frozen schema use sites agree. Production UTF-8 size and the existing live-door checks pass; local production and representative-growth guards were shown red before green. The six-door sweep's remaining Edge-token warning stays on KEEPER_LIST. [Release evidence and limits](research/roadmap-release-2026-09-23/README.md). |
 | CT1 | **The Paywall — released September 12; guide follow-through DONE September 23 in #900.** Built to the handoff, then to the first-pass plan in full, then dark-teamed (six holes found by attacking it, all fixed and pinned). Season One, *Summer of 402 · Oak City*: 63 cards + 4 Events + Cairn, the Keeper and CV one of one each, Roger Sterling, 402 Payment Required and five Models from the keeper's second reading; a post button on every card, binder and the window; the binder as a collection checklist; Rooms and Instruments earned by the action, never pulled; `pack` $0.99 on the plan's odds table and `window_pick` $0.49 moving one of the last five pressings between binders under a twelve-hour lock; one common a day off the bell and two packs for a Regular; dupes burn into pack credit behind a signed challenge; Conditions clear on the fix; Doors cap at their observation count; draws by HMAC over a daily seed committed at once and revealed the morning after; SVG face with a real QR strip and the same face as PNG rendered in the Worker with one OFL font, PNG share sheet, `/p/{id}` unfurls; `/design`, binders, `read_binder` and `look_in_window`. Paper: `docs/CARD_TABLE_2026-09.md`. | The keeper's handoff and first-pass plan (rule 19: desk reasoning, named). Every row that gated it was ruled by the keeper on 2026-09-12: rule 22 ("the first"), rule 41 ("no lawyer"), rule 7 ("they look good"), the OpenAPI budget (thinned, not raised), the Ally anonymized, the holder perks built as credit rather than price. | `test/cards.spec.ts`: the set is whole and every cite answers; nothing earned or Keeper is on a wheel; the odds sum to the wheels and slot 5 alone carries a Condition; the seed commits and reveals honestly; the draw is deterministic, lands at the published rate, steps past caps; a pack buys, recomputes, verifies and unfurls; idempotency returns the same pack; the bell presses to the wallet that rang; the guestbook and a fortune earn their Rooms and a hello earns nothing; the window moves a pressing and the lock refuses above the settle line; Double Charge clears on an idempotent purchase; twenty commons burn and redeem behind a signed challenge; the QR is well-formed. The old unbuilt list was stale: wallet streaks, holder credit, all Conditions, PNG faces and CSS motion are implemented. Missions/promotions remain outside the first build; Season Two is held and NFTs are outside v1. September 23 corrected the machine-readable `/design` guide that still denied the live streak. The card tests and full PR suite passed; both production builds succeeded and the JSON/Markdown release readback matches the live reward constants. [Retained release evidence](research/roadmap-release-2026-09-23/README.md). |
 | VQ8 | **Adoption and latency follow-through — released and production-qualified September 10, PR #621; closing records recovered September 23.** Typed free previews and registry-verified Defects, MCP starter and preflight. | Keeper prioritized adoption and measurement. | Integrated CI passed 641 files / 10,899 tests, one skip; both production builds passed. All 32 unique previews for the then-current 33 products passed. Repeat latency answered 33/33 requests; no causal speedup or global p95 claimed. Exact release-branch records now retained in `research/adoption-latency-2026-09-10/`; [scope and recovery](docs/ADOPTION_AND_LATENCY_2026-09.md#release-acceptance-recovered-september-23). |
@@ -442,7 +718,7 @@ Closed rows, kept for the record. Nothing here is a queue.
 | L7 | **The preflight Action: the door check in somebody else's deploy.** DONE 2026-09-02 as `action/preflight/` (`action.yml`, one dependency-free `preflight.mjs`, its own offline tests in CI): `uses: seancrecord/scvd-general-store-repo/action/preflight@main` with `urls`, one POST to `/api/preflight/v2` per door, every check printed by name, the store's JSON kept as a report file, a job summary table, outputs `verdicts` / `worst` / `report_path`. The CLI's exit law kept: `not_ready` fails the job, `unreachable` does not unless `fail_on` says so in writing, a refused URL fails loudly because nothing was probed, a 429 names the wait. Scoped to the store's own battery, not a second verifier: x402-verify stays the library for artifacts. | The row asked for a GitHub Action that fails their deploy; the instrument existed at three doors and none of them lived where a deploy runs. | Offline tests pin every exit code; the manifest installs nothing; DISTRIBUTION.md carries the how and the press that is his. |
 | L6 | **The look: what this store holds about one door, free.** DONE 2026-09-02 as `POST /api/look/v1` and the `look_at_door` MCP tool (`src/services/look.ts`, `src/routes/look.ts`): the free preflight's one live probe (v2, same limiter, every refusal inherited) folded with everything the signed chain holds about the host — rounds probed out of rounds since first sighting, the passport tier with its fraction and rows, the last probed round with its failed checks and the catalog's agreement, the passport decision, the shared-wallet fact — and one comparison, `now_against_held`, stated as same / changed / no_prior / not_comparable with both sides named. The held half is derived once per host and held in KV for the depth's hold. Never a score; no threshold SKU. On the atlas, the routing table, how-it-works, the lifecycle table, the guide, WebMCP, and under the surface contract; `test/look.spec.ts`. | An agent with a URL in one hand and a wallet in the other asked two tools and a per-host fetch for one question. The inventory existed; one door now serves it. | No key on the artifact reads as a score; counts travel with denominators; the guide digest re-taken; every free-door surface carries it. |
 | S6 | **menu.json / atlas answer shopping agents.** DONE 2026-09-02: `src/lib/shopping-fields.ts`, one derivation for both surfaces — `when` per item is the routing table (`scvd://when`, `ROUTES`) reversed, free instrument first where the counter names one; `sample_url` from the specimen roster (`SAMPLES`); `verify` the one pattern `/api/verify/{cert_id}`, now also the source of the item page's verify line. The atlas's paid doors gain `buy_url`, `listing_url` and the three fields. No new typed category list: delete `ROUTES` or `SAMPLES` and the fields go empty. `test/shopping-fields.spec.ts` holds both surfaces to the same derivation and the item's typed `sample_url` to the roster. | Shopping agents need transactional data. We had it in three places. One derivation. | No new typed category list; both surfaces agree with each other and with their sources. |
-| S8 | **Cross-surface consistency.** Designed 2026-09-02: `docs/S8_CROSS_SURFACE_2026-09.md`; the four decisions ruled the same day. PR 1 DONE 2026-09-02: Tier A as three advisories (`discovery-info-fails-schema`, `resource-description-absent`, `offer-contradicts-challenge`), `placement-mismatch` naming the field that moved, vocabulary v8, the `two-surfaces` practice door and fixture, `test/cross-surface-tier-a.spec.ts` walking every own door's served 402 first. PR 3 DONE 2026-09-02: the catalog column (`src/services/catalog-agreement.ts`) on every probed row and `catalog_agreement` on the round, frozen onto the long walk's roster, surfaced on `/corpus/host/{host}.json` and the brief, `our_doors.catalog_differs` for ourselves, the keeper alerted once per change of the differing set; `test/catalog-agreement.spec.ts`. PR 4 DONE 2026-09-02: Tier B as the `surfaces` section on the paid `service_audit` always, same price (`src/services/surface-reads.ts`): llms.txt by the ruled code-span convention, the OpenAPI document's payment fields with the well-known fallback, the challenge's resource URL compared rail by rail, and a bookend 402 that turns a contradiction into `moving`; four states, counts with their denominator, never the verdict; MCP tools/list named as not read; vocabulary v9 `surface-contradicts-challenge`, paid-detectable; the guide's own "Prices, by the convention" section derived from the shelf and held to it by `test/surface-reads.spec.ts`. Three tiers by what the truth costs; eight legitimate differences named so none prints as a contradiction. What remains is PR 2, the v3 fold, on the SOON row. | The thread handed us the design and we were bitten by it ourselves (the ClawHub prices). Nobody on x402-list computes it. | Advisories and rows land without moving a verdict; a fixture with two honest surfaces that disagree is reported with its denominator; the fold waits on dated evidence. |
+| S8 | **Cross-surface consistency.** Designed 2026-09-02: `docs/S8_CROSS_SURFACE_2026-09.md`; the four decisions ruled the same day. PR 1 DONE 2026-09-02: Tier A as three advisories (`discovery-info-fails-schema`, `resource-description-absent`, `offer-contradicts-challenge`), `placement-mismatch` naming the field that moved, vocabulary v8, the `two-surfaces` practice door and fixture, `test/cross-surface-tier-a.spec.ts` walking every own door's served 402 first. PR 3 DONE 2026-09-02: the catalog column (`src/services/catalog-agreement.ts`) on every probed row and `catalog_agreement` on the round, frozen onto the long walk's roster, surfaced on `/corpus/host/{host}.json` and the brief, `our_doors.catalog_differs` for ourselves, the keeper alerted once per change of the differing set; `test/catalog-agreement.spec.ts`. PR 4 DONE 2026-09-02: Tier B as the `surfaces` section on the paid `service_audit` always, same price (`src/services/surface-reads.ts`): llms.txt by the ruled code-span convention, the OpenAPI document's payment fields with the well-known fallback, the challenge's resource URL compared rail by rail, and a bookend 402 that turns a contradiction into `moving`; four states, counts with their denominator, never the verdict; MCP tools/list named as not read; vocabulary v9 `surface-contradicts-challenge`, paid-detectable; the guide's own "Prices, by the convention" section derived from the shelf and held to it by `test/surface-reads.spec.ts`. Three tiers by what the truth costs; eight legitimate differences named so none prints as a contradiction. PR 2, the v3 fold, was approved and implemented October 2; see the dated entry above. | The thread handed us the design and we were bitten by it ourselves (the ClawHub prices). Nobody on x402-list computes it. | Advisories and rows land without moving a verdict; a fixture with two honest surfaces that disagree is reported with its denominator; the fold waits on dated evidence. |
 | S10 | **The Operator's Statement.** DONE 2026-09-02 as `operator_statement`, $21, a 30-day term (his name, price and cadence): the statement's engine on a receiving address, four signed chain reads a day stitched into one block range on the hourly sweep (`src/services/operator-statement.ts`), distinct payers and the largest payer's transfers and USDC as counts beside the totals, the passes we miss counted against us, `the_next_month` on the history and never a renewal; `test/operator-statement.spec.ts`. | Revenue attestation from a party that isn't them. Built, mis-sold at ninety-nine cents to agents; now sold to operators at a cadence. | Cadence term item; payer count and concentration re-derive from the passes; pointer, not renewal. |
 | S11 | **The AURa walk as a report.** DONE 2026-09-02 as `aura_walk`, The Aura Walk. Status corrected 2026-09-06: price and current capacity are in `src/store/menu.ts`; copy inked 09-03 and the original cap superseded by the keeper's 09-04 ruling. Human queue, a week's promise and a waitlist. The cold-agent pass in `AGENT_UX.md`, mirrored by `src/store/aura-walk.ts`, runs by the keeper's hand on the buyer's named door; the completed order carries every transcript. His model rule remains Claude Sonnet 5 or Opus 5 by default, weaker models on request in `detail`. | The method is already published; this is a commission with transcripts, not a new capacity or pricing decision. | `test/aura-walk.spec.ts` holds the method and entry points together. |
 | S9 | **Named exclusions on the demand numbers.** DONE 2026-09-02: `exclusions` on `/corpus/wallet-facts.json` (house wallets with who and since, house agents, the crawler table) and `src/store/exclusions.ts`, the dated register whose newest row pins both table sizes — `test/named-exclusions.spec.ts` fails a change without its row. Publish, by name and wallet where known, which indexers, scanners and house wallets are excluded from the organic counts (`house-wallets.json` already holds the why), and write a dated row when an exclusion changes a published number. | Their mechanism is more rigorous than our published bot-vs-organic split. One derivation from a file we keep. | `/corpus/wallet-facts.json` carries the list; a change writes a dated row. |

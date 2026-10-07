@@ -1,6 +1,6 @@
 import { readBuyerSignals, type BuyerSignals } from "@/services/buyer-signals";
 import { readDisclosureCensus, type DisclosureCensus } from "@/services/disclosure-census";
-import { readDeclines } from "@/lib/declines";
+import { isNoiseFloor, readDeclines, type DeclineReport } from "@/lib/declines";
 import { isInfrastructureUserAgent } from "@/lib/channel";
 import { readMonthLedger } from "@/lib/metrics";
 import { observeSurfaces } from "@/services/observatory";
@@ -159,7 +159,55 @@ function rangeText(range: [number, number | null] | null): string {
   return range[1] === null ? `${range[0]}ms or more` : `${range[0]}–${range[1]}ms`;
 }
 
-function hungUp(signals: BuyerSignals | null, declines: Awaited<ReturnType<typeof readDeclines>> | null, paid: DisclosureCensus | null, window: CountedWindow): DraftSection {
+/**
+ * THE DECLINE DESK, READ UNFILTERED AND NARROWED HERE (2026-09-29).
+ * The 2026-09-28 release asked the desk for the window by date, which
+ * is the one thing the desk does expensively: a filter lifts its scan
+ * from 3,000 rows to 40,000 (lib/declines.ts FILTERED_SCAN_CAP) so a
+ * keeper looking for one client can reach back through a month of
+ * corpus reads. On the admin desk that walk ran on every load of
+ * /admin/open-for-business and the page never came back. The issue
+ * wants a week of declines, and the decline index is newest-first
+ * with every key a decline, so the unfiltered read reaches a week
+ * with room to spare; the rows are narrowed by date here, house and
+ * machinery left out exactly as the desk leaves them out, and the
+ * reach says whether the scan got past the window's first day.
+ */
+export interface WindowDeclines {
+  outside_count: number;
+  by_reason: Record<string, number>;
+  /** How far the scan reached: the whole index, past the window's first day, or short of it (a floor). */
+  reach: "index_complete" | "past_window" | "capped";
+  /** Always false here: the desk was read without a filter. Kept so a test can say so. */
+  filtered: boolean;
+}
+
+export function declinesInWindow(report: Pick<DeclineReport, "declines" | "index_complete" | "oldest_row_seen" | "filter">, window: CountedWindow): WindowDeclines {
+  const from = `${window.from}T00:00:00.000Z`;
+  const before = new Date(Date.parse(`${window.to}T00:00:00Z`) + 86_400_000).toISOString();
+  const by_reason: Record<string, number> = {};
+  let outside_count = 0;
+  for (const row of report.declines) {
+    if (row.at < from || row.at >= before) continue;
+    if (row.house || isNoiseFloor(row)) continue;
+    outside_count += 1;
+    by_reason[row.reason] = (by_reason[row.reason] ?? 0) + 1;
+  }
+  const reach = report.index_complete ? "index_complete" : report.oldest_row_seen !== null && report.oldest_row_seen <= from ? "past_window" : "capped";
+  return { outside_count, by_reason, reach, filtered: Boolean(report.filter) };
+}
+
+export async function readWindowDeclines(env: Env, window: CountedWindow): Promise<WindowDeclines> {
+  return declinesInWindow(await readDeclines(env), window);
+}
+
+const REACH_NOTE: Record<WindowDeclines["reach"], string> = {
+  index_complete: "index read to its end",
+  past_window: "scan reached past the window",
+  capped: "scan capped; a floor",
+};
+
+function hungUp(signals: BuyerSignals | null, declines: WindowDeclines | null, paid: DisclosureCensus | null, window: CountedWindow): DraftSection {
   const span = windowSpan(window);
   const refusals = signals ? sum(signals.refusal) : 0;
   const byReason: Record<string, number> = {};
@@ -190,7 +238,7 @@ function hungUp(signals: BuyerSignals | null, declines: Awaited<ReturnType<typeo
     numbers.push({ label: "purchases that bought a worked example as-is", value: sum(signals.examples) });
   }
   if (declines) {
-    numbers.push({ label: `payments presented and declined (outside, ${span})`, value: declines.outside_count, note: declines.index_complete ? "index read to its end" : "scan capped; a floor" });
+    numbers.push({ label: `payments presented and declined (outside, ${span})`, value: declines.outside_count, note: REACH_NOTE[declines.reach] });
   }
   const rows = [
     ...(signals ? top(signals.refusal) : []),
@@ -478,12 +526,11 @@ export async function draftOpenForBusiness(env: Env, now: Date = new Date(), pul
     const changes = await attempt("the week's changes", unread, () => weekChanges(env, week, now, pulls));
     return emptyDraft(week, window, now, changes, unread);
   }
-  // The decline desk is scanned by date, not by period key: the window's days, and no earlier.
-  const dayAfter = new Date(Date.parse(`${window.to}T00:00:00Z`) + 86_400_000).toISOString();
   const [signals, paid, declines, ledger, surfaces, pulse, clients, corpus, changes] = await Promise.all([
     attempt("buyer signals", unread, () => readBuyerSignals(env, week)),
     attempt("disclosure census", unread, () => readDisclosureCensus(env, "paid", week)),
-    attempt("decline desk", unread, () => readDeclines(env, undefined, { since: `${window.from}T00:00:00.000Z`, before: dayAfter })),
+    // Unfiltered on purpose: a date filter is the desk's 40,000-row walk (readWindowDeclines above).
+    attempt("decline desk", unread, () => readWindowDeclines(env, window)),
     attempt("week ledger", unread, () => readMonthLedger(env, week)),
     attempt("porch surfaces", unread, () => observeSurfaces(env, week)),
     attempt("pulse", unread, () => computePulse(env)),

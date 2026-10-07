@@ -1,0 +1,133 @@
+{
+  "kind": "offline controller replay, not a native buyer run or rescore",
+  "cli_sha256": "1066a9d8dd052f46f6ea142e89cd5173048ff39c3700ac35b2274c6bfe7e4d68",
+  "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+  "results": [
+    {
+      "archive": "bounded-source-review-buyer-2026-10-01",
+      "file": "buyers/claude-directed-r1/evidence/scvd/corpus-index-page1.json",
+      "source_sha256": "3d34a3ba567e7cdea57bdd5a266e4bbecf8983d045cc5c8bc30220339c590448",
+      "exit_code": 0,
+      "reading": {
+        "format": "scvd-evidence-sources/v1",
+        "input_kind": "corpus_index",
+        "authenticated": false,
+        "source_sha256": "3d34a3ba567e7cdea57bdd5a266e4bbecf8983d045cc5c8bc30220339c590448",
+        "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+        "subject_presence": "not_checked",
+        "candidates": [
+          {
+            "url": "https://scvd.store/corpus/1.json",
+            "sequence": 1,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/2.json",
+            "sequence": 2,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/3.json",
+            "sequence": 3,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/4.json",
+            "sequence": 4,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/5.json",
+            "sequence": 5,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/6.json",
+            "sequence": 6,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/7.json",
+            "sequence": 7,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/8.json",
+            "sequence": 8,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/9.json",
+            "sequence": 9,
+            "metadata_status": "metadata_available"
+          },
+          {
+            "url": "https://scvd.store/corpus/10.json",
+            "sequence": 10,
+            "metadata_status": "metadata_available"
+          }
+        ],
+        "candidate_links": 10,
+        "invalid_links": 0,
+        "duplicate_links": 0,
+        "unselected_rows": 0,
+        "omitted_candidates": 0,
+        "pagination": {
+          "has_more": false,
+          "next_url": null,
+          "state": "page_end_claimed"
+        },
+        "scope": "Unsigned discovery hints from this saved response only, not verified observations or evidence of subject absence. Index entries name snapshots, not merchants. Exact host-history URL hints can be missing, stale or false. Pagination claims do not establish archive completeness. Inspect candidate URLs before fetching; retain each chosen original and separately establish its issuer key, then verify its exact subject and observation date. No links were fetched and no signature, truth, freshness, continuity, identity, settlement or delivery was checked."
+      }
+    },
+    {
+      "archive": "bounded-source-review-buyer-2026-10-01",
+      "file": "buyers/codex-directed-r2/evidence/history-host.json",
+      "source_sha256": "0fe42fd1610c652885a7e7383040601fb738e9150c55ed71283e99825f0d3e6d",
+      "exit_code": 0,
+      "reading": {
+        "format": "scvd-evidence-sources/v1",
+        "input_kind": "host_history",
+        "authenticated": false,
+        "source_sha256": "0fe42fd1610c652885a7e7383040601fb738e9150c55ed71283e99825f0d3e6d",
+        "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+        "subject_presence": "not_checked",
+        "candidates": [
+          {
+            "url": "https://scvd.store/corpus/4.json",
+            "sequence": 4,
+            "metadata_status": null
+          },
+          {
+            "url": "https://scvd.store/corpus/5.json",
+            "sequence": 5,
+            "metadata_status": null
+          },
+          {
+            "url": "https://scvd.store/corpus/7.json",
+            "sequence": 7,
+            "metadata_status": null
+          },
+          {
+            "url": "https://scvd.store/corpus/8.json",
+            "sequence": 8,
+            "metadata_status": null
+          },
+          {
+            "url": "https://scvd.store/corpus/10.json",
+            "sequence": 10,
+            "metadata_status": null
+          }
+        ],
+        "candidate_links": 5,
+        "invalid_links": 0,
+        "duplicate_links": 0,
+        "unselected_rows": 3,
+        "omitted_candidates": 0,
+        "pagination": null,
+        "scope": "Unsigned discovery hints from this saved response only, not verified observations or evidence of subject absence. Index entries name snapshots, not merchants. Exact host-history URL hints can be missing, stale or false. Pagination claims do not establish archive completeness. Inspect candidate URLs before fetching; retain each chosen original and separately establish its issuer key, then verify its exact subject and observation date. No links were fetched and no signature, truth, freshness, continuity, identity, settlement or delivery was checked."
+      }
+    }
+  ],
+  "limits": "The helper extracts links from old retained unsigned inputs. It does not authenticate those inputs, fetch replacement originals, prove complete history or repair any earlier buyer result."
+}

@@ -210,13 +210,14 @@ async function look(body: Record<string, unknown>): Promise<{ status: number; bo
 }
 
 describe("the look carries the reproduction", () => {
-  it("compares with the last probed row by default and cites it with the row's own digest", async () => {
+  it("compares the current battery with the last v2 row without rewriting its citation", async () => {
     await seedRound([{ host: "looked.example", verdict: "not_ready", failed: ["signable-accepts"], battery: "preflight-v2" }], 1, "2026-W34");
     await seedRound([{ host: "looked.example", verdict: "ready", battery: "preflight-v2" }], 2, "2026-W35");
     stubDoor(ready402);
     const { status, body } = await look({ url: DOOR });
     expect(status).toBe(200);
-    expect(body.reproduce.class).toBe("same");
+    expect(body.reproduce.class).toBe("instrument_moved");
+    expect(body.reproduce.battery_same).toBe(false);
     expect(body.reproduce.compared_with.week).toBe("2026-W35");
     expect(body.reproduce.compared_with.digest).toBe("2".repeat(64));
     expect(body.reproduce.cite.json.cites).toBe(`${BASE}/corpus/2.json`);
@@ -230,7 +231,8 @@ describe("the look carries the reproduction", () => {
     await seedRound([{ host: "looked.example", verdict: "ready", battery: "preflight-v2" }], 2, "2026-W35");
     stubDoor(ready402);
     const moved = await look({ url: DOOR, since: "2026-W34" });
-    expect(moved.body.reproduce.class).toBe("moved");
+    expect(moved.body.reproduce.class).toBe("instrument_moved");
+    expect(moved.body.reproduce.battery_same).toBe(false);
     expect(moved.body.reproduce.asked_for).toBe("2026-W34");
     expect(moved.body.reproduce.failed_cleared).toEqual(["signable-accepts"]);
     const none = await look({ url: DOOR, since: "2026-W40" });
@@ -282,9 +284,9 @@ describe("the cite box is one shape on every row surface", () => {
     expect(out.cite?.text).toContain(`observed ${observed}`);
   });
 
-  it("keeps publication dates for snapshot citations and legacy rows without an observation date", () => {
+  it("keeps publication dates for snapshots and unknown dates for legacy host rows", () => {
     const row = round("2026-W34", 1);
-    expect(citeRow(BASE, { host: "looked.example", ...row }).json.observed_at).toBe(row.taken_at);
+    expect(citeRow(BASE, { host: "looked.example", ...row }).json.observed_at).toBeNull();
     expect(citeRow(BASE, { ...row, observed_at: "2026-08-17T12:00:00.000Z" }).json.observed_at).toBe(row.taken_at);
   });
 

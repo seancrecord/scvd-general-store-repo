@@ -1,0 +1,62 @@
+{
+  "recordedAt": "2026-09-28T19:50:21.577229+00:00",
+  "baseCommit": "4365135593193f8f01d4769f724e32aac8c2430b",
+  "status": "PS7 built and tested locally; uncommitted, unmerged and unpublished. No buyer/model qualification.",
+  "red": {
+    "command": "npm test -- test/look.spec.ts",
+    "failed": 2,
+    "passed": 15,
+    "failure": "MPP-only and mixed response headlines lacked explicit x402 scope."
+  },
+  "green": {
+    "command": "npm test -- test/look.spec.ts test/reproduce.spec.ts test/mpp-census.spec.ts test/passport-mpp.spec.ts test/mpp-surface-reads.spec.ts test/endpoint-inspection.spec.ts test/skill-parity.spec.ts test/installed-skill.spec.ts test/skill-bundle-freshness.spec.ts test/agent-skills-index.spec.ts test/claim-chain.spec.ts test/oasf-record.spec.ts",
+    "passed": 121,
+    "files": 12
+  },
+  "skillCheck": {
+    "command": "npm run skill:build && npm run skill:check",
+    "passed": 4,
+    "treeSha256": "b0cedc1e5402896c44c76edaf53dcf33e70b04bcd94fb70825855ea846a26ab9"
+  },
+  "typecheck": "npm run typecheck passed",
+  "build": "npm run build:check passed",
+  "preparedSkillVersion": "3.19.3",
+  "retainedPublicationReceipt": "3.19.2",
+  "noChanges": [
+    "payment behavior",
+    "package payloads",
+    "historical signed bytes",
+    "x402 verdict values and exit rules"
+  ],
+  "guideFingerprintReview": {
+    "command": "npm test -- test/llms-modular.spec.ts",
+    "before": {
+      "passed": 12,
+      "failed": 2
+    },
+    "reversingOnlyPS7Wording": {
+      "passed": 14,
+      "failed": 0,
+      "result": "Both prior fingerprints reproduced."
+    },
+    "afterReviewedPinUpdate": {
+      "passed": 14,
+      "failed": 0
+    }
+  },
+  "additionalGuards": [
+    "npm run audit passed within existing warning budget",
+    "npm run claims passed with zero unbound claims",
+    "npm run chains:check passed"
+  ],
+  "fullPrecommit": {
+    "command": "npm run typecheck && npm test",
+    "files": 848,
+    "passed": 15713,
+    "failed": 2,
+    "skipped": 1,
+    "durationSeconds": 1051.19,
+    "failures": "Only the two intentional guide fingerprint changes; reviewed and corrected with 14/14 focused tests passing.",
+    "finalTypecheck": "passed"
+  }
+}

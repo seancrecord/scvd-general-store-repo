@@ -21,7 +21,25 @@ export async function writeManagedOrder(env: Env, order: OrderRecord, mutation?:
 
 export async function currentOrder(env: Env, orderId: string, listed: OrderRecord | null): Promise<OrderRecord | null> {
   if (listed && !listed.managed_order) return listed;
-  if (!env.PAID_RECOVERIES && !listed) return null;
+  /*
+   * NO COORDINATOR TO ASK (2026-10-02). The doors Worker has no Durable
+   * Object bindings, by design (doors/wrangler.jsonc), and its unpaid
+   * knock on a labor door counts the bench through here. The first
+   * coordinated labor order to sit open on that bench made every count
+   * throw "Order coordinator unavailable", and /api/buy/aura_walk and
+   * /api/buy/the_collab answered 500 for eight hours while the MCP
+   * door, which runs in the store, quoted them fine.
+   *
+   * The KV row IS the coordinator's publication — writeOrder puts it
+   * inside the object's own gate on every state change — so a reader
+   * with no binding reads what the coordinator last published rather
+   * than guessing or throwing. Only a quote is minted on this reading;
+   * a knock that pays is handed to the store, whose admission runs
+   * against the coordinator itself. "Coordinated order missing" below
+   * stays what it was: a binding that answers with nothing is a real
+   * inconsistency, and this is not that.
+   */
+  if (!env.PAID_RECOVERIES) return listed;
   const state = await coordinator(env, orderId).readOrder();
   if (!state && listed?.managed_order) throw new Error("Coordinated order missing");
   return state?.order ?? listed;

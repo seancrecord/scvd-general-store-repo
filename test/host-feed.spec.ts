@@ -54,6 +54,7 @@ async function seedRound(sequence: number, week: string, takenAt: string, previo
           host: "moving.example",
           url: "https://moving.example/api/x",
           verdict,
+          observed_at: takenAt,
           failed: verdict === "ready" ? [] : ["402_shape"],
           advisories: [],
         },

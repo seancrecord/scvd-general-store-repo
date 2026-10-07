@@ -57,3 +57,34 @@ export function renderEvidenceReport(result, maxBytes = EVIDENCE_REPORT_MAX_BYTE
   if (new TextEncoder().encode(report).length > Math.min(maxBytes, EVIDENCE_REPORT_MAX_BYTES)) throw new Error("report_too_large");
   return report;
 }
+
+// This is deliberately a lexical guard, not a parser of the agent's claims.
+// Recompute references in verify-source; never trust a buyer-supplied report
+// as the reference set, and never replace the draft to make this check pass.
+export async function checkDraftIdentifiers(bytes, references, verified) {
+  const draft = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  const reading = {
+    format: "scvd-draft-identifiers/v1", draft_sha256: await evidenceDigest(bytes),
+    status: "no_candidates", prose_verified: false, candidates: 0, matched: 0,
+    unrecognized: 0, unchecked: 0, omitted: 0, readings: [],
+    scope: "Lexical comparison only: whole ASCII hexadecimal tokens of at least 48 digits, optionally prefixed 0x, against identifiers computed or used by this verification. Matching does not check labels, roles, negation, dates, interpretation, issuer identity or prose correctness. Short, split and non-hexadecimal identifiers are outside coverage. Unrecognized means absent from this reference set, not necessarily false. Inspect the saved draft; no text was rewritten. This check applies only to the draft bytes named by draft_sha256, not a later final answer.",
+  };
+  const known = new Map();
+  for (const [field, value] of Object.entries(references)) {
+    if (typeof value !== "string" || !/^[a-f0-9]{48,128}$/i.test(value)) continue;
+    const key = value.toLowerCase();
+    known.set(key, [...(known.get(key) ?? []), field]);
+  }
+  for (const match of draft.matchAll(/(?:^|[^A-Za-z0-9_])((?:0x)?[a-f0-9]{48,})(?![A-Za-z0-9_])/gi)) {
+    const token = match[1], value = token.replace(/^0x/i, "").toLowerCase();
+    const fields = verified ? known.get(value) ?? [] : [];
+    const status = !verified ? "unchecked" : fields.length ? "matched" : "unrecognized";
+    reading.candidates++; reading[status]++;
+    // Scan every token even when display is full: omitted text cannot hide a
+    // mismatch behind a successful early prefix. Never print huge tokens.
+    if (reading.readings.length < 32) reading.readings.push({ value: value.length <= 128 ? token : null, length: value.length, status, reference_fields: fields.slice(0, 4), omitted_reference_fields: Math.max(0, fields.length - 4) });
+    else reading.omitted++;
+  }
+  reading.status = !verified ? "verification_failed" : !reading.candidates ? "no_candidates" : reading.unrecognized ? "needs_review" : "all_candidates_recognized";
+  return reading;
+}

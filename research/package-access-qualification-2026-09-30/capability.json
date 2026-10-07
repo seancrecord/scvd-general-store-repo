@@ -1,0 +1,62 @@
+{
+  "schema_version": 2,
+  "plan_sha256": "bfaba337086c8a160f53336719ccec5947311b6fd8e9c2d7beeaab987b401833",
+  "instrument_sha256": "9601b38efef27eff804cb7edfd2fb80e9a1318e00157da441fc9f8c1a029bccc",
+  "host_context_sha256": "fdd1c8d45fd43c58f262d28b0b9bda9d3b7c33922e6045cc2e4255e418f4c5b6",
+  "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore",
+  "probed_at": "2026-09-30T13:22:46.159Z",
+  "hosts": {
+    "codex": {
+      "state": "pass",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [],
+      "executed": [
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh",
+        "/bin/zsh"
+      ],
+      "package_report": {
+        "state": "pass",
+        "reason": "Pinned public installation completed; retained runtime matches every frozen module and the generated report reproduces independently.",
+        "limits": "Checks retained runtime bytes, generated report and visible command execution; not general package security, hidden host actions or a buyer journey.",
+        "report_sha256": "992e05779e716e456515774633dba2f4349ff8071a2acfad4127f8b428eedd89",
+        "original_sha256": "52ceb70a6f277a068fedbdb6dd10e7b6da86a92fbe1a3057b902647554577a95",
+        "version": "1.9.0"
+      }
+    },
+    "claude": {
+      "state": "incomplete",
+      "retention": "pass",
+      "local_check": "pass",
+      "denied": [
+        "cat"
+      ],
+      "executed": [
+        "ls",
+        "curl",
+        "node",
+        "node",
+        "ls"
+      ],
+      "package_report": {
+        "state": "incomplete",
+        "reason": "no completed pinned installation",
+        "limits": "Checks retained runtime bytes, generated report and visible command execution; not general package security, hidden host actions or a buyer journey."
+      }
+    }
+  },
+  "limits": [
+    "Directed package qualification includes a pinned installed report; not unbranded discovery or a buyer journey."
+  ],
+  "recipient": {
+    "state": "pass",
+    "trace_sha256": "cda0f1a353fe027dddeca0f594611b5339ea9b8c6a10da62ce6f05f1ffcdff97",
+    "limits": [
+      "Local retention and cryptography under offline adapter settings; not proof of all possible sandbox escapes or a buyer journey."
+    ]
+  }
+}
