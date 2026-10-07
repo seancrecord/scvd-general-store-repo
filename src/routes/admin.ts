@@ -1,3 +1,4 @@
+import { adminEvidencePilotRoutes } from "@/routes/admin-evidence-pilot";
 import { Hono } from "hono";
 import { adminPurchaseRoutes } from "@/routes/admin-purchases";
 import { basicAuth } from "hono/basic-auth";
@@ -316,7 +317,7 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 // Applied before authentication so refusals also cannot be cached.
-for (const path of ["/admin/purchases", "/admin/purchases/*"]) adminRoutes.use(path, async (c, next) => {
+for (const path of ["/admin/purchases", "/admin/purchases/*", "/admin/evidence-pilot", "/admin/evidence-pilot/*"]) adminRoutes.use(path, async (c, next) => {
   c.header("Cache-Control", "no-store");
   c.header("Vary", "Authorization, Accept");
   await next();
@@ -327,6 +328,7 @@ for (const path of ["/admin/purchases", "/admin/purchases/*"]) adminRoutes.use(p
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 adminRoutes.route("/admin/purchases", adminPurchaseRoutes);
+adminRoutes.route("/admin/evidence-pilot", adminEvidencePilotRoutes);
 
 /**
  * THE SIGNING DESK — POST /admin/wba/sign (2026-09-04).

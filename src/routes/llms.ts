@@ -1,3 +1,4 @@
+import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { nativeCheckoutGuide, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { ucpGuideParagraph } from "@/lib/ucp/launch";
@@ -356,6 +357,9 @@ whether the catalog's copy agreed with the door, and whether the door
 answered now the way the last signed round saw it. Never a score, never
 a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
+
+For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
+${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
 
 For anyone who runs a door: ${base}/operators is the shelf from your
 side, in the order a launch happens — before you launch, the week you

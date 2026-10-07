@@ -1,3 +1,4 @@
+import { evidencePilotRoutes } from "@/routes/evidence-pilot";
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
 import { whereToLookNext } from "@/lib/store-links";
 import { signalStore } from "@/services/signal-store";
@@ -184,6 +185,7 @@ for (const middleware of edgeMiddleware) {
   app.use("*", middleware);
 }
 
+app.route("/", evidencePilotRoutes);
 app.route("/", storefrontRoutes);
 app.route("/", developerRoutes);
 app.route("/", deprecationRoutes);

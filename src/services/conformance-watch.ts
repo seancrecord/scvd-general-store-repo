@@ -1,3 +1,4 @@
+import type { EVIDENCE_PILOT } from "@/store/evidence-pilot";
 import { canonicalAddress } from "@/lib/addresses";
 import { publishWatch, retainWatch, signWatchCommission, WATCH_SPACING_MS, type WatchCommission, type WatchPurchase } from "@/services/watch-recovery";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -91,6 +92,8 @@ export interface ConformancePass {
 }
 
 export interface ConformanceWatchRecord {
+  /** Explicit concierge term; normal seven-day purchases keep their terms. */
+  pilot?: typeof EVIDENCE_PILOT;
   commission?: WatchCommission;
   watch_id: string;
   /** The buyer's own endpoint. Consent is the purchase itself. */

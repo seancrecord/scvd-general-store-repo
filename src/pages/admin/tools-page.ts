@@ -90,6 +90,7 @@ function shutterCondition(state: ShutterState | null): string {
 export function renderToolsPage(data: ToolsPageData): string {
   const body = `
   <section>
+    <p><a href="/admin/evidence-pilot">Start an agreed SCVD Attestation pilot</a></p>
     <p><small>Downloads moved to <a href="/admin/files">keeper's files</a>;
     test levers to <a href="/admin/testing">the test drawer</a>. This
     shelf is for running the store.</small></p>

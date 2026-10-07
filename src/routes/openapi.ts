@@ -6432,6 +6432,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
           parameters: [pathParam("watch_id", "From the purchase response; starts watch_.")],
         },
       },
+      "/api/evidence-pilot/sample": {
+        get: freeOp("Illustrative SCVD Attestation report", "Unsigned partial report using a reserved nonexistent endpoint. No real observation or signature is asserted."),
+      },
+      "/api/evidence-pilot/{watch_id}": {
+        get: { ...freeOp("Export a signed endpoint evidence report", "Public report for an agreed bounded pilot. Includes signed daily readings, per-day gaps, criteria changes, canonical payload and signature. Not AI-decision or legal-compliance certification. Accept text/html for a readable report, application/json for the signed export."),
+          parameters: [pathParam("watch_id", "The cwatch_pilot_ id returned when the keeper commissions the agreed pilot.")] },
+      },
       "/api/conformance-watch/{watch_id}": {
         get: {
           ...returns(

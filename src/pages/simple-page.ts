@@ -78,6 +78,8 @@ export interface SimplePageOptions {
   extraCss?: string;
   /** Body class, so extraCss can scope itself to this room only. */
   bodyClass?: string;
+  /** Keep the full room directory available without crowding a focused offer. */
+  collapseNavigation?: boolean;
   /**
    * INERT MARKUP APPENDED AFTER THE PAPER — today, the browser till's
    * JSON island and its <script src> tag (see lib/till-shelf.ts).
@@ -224,7 +226,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
     <header>
       <p class="est">${escapeHtml(STORE_METADATA.name)} \u2022 ${escapeHtml(STORE_METADATA.location)}</p>
       <h1>${escapeHtml(options.title)}</h1>
-      ${roomsNav(options.path)}
+      ${options.collapseNavigation ? `<details class="room-directory"><summary>Explore the store</summary>${roomsNav(options.path)}</details>` : roomsNav(options.path)}
     </header>
     ${options.bodyHtml}
     ${goDeeperSection(options.path)}

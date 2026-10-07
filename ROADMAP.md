@@ -39,6 +39,16 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 7 — SCVD Attestation pilot
+
+Keeper authorized proceeding with the bounded pilot. Implementation is prepared
+on `codex/scvd-attestation-pilot`: human request page, public unsigned specimen,
+keeper-activated 30-day endpoint watch, signed report with per-day gaps and offline
+verification. The $300 offer uses manual invoicing after final delivery and no
+automatic renewal. JCS input-boundary repair is included. This is local work, not
+a deployed product or evidence of customer demand. [Offer and operating runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+
+
 ## September 28 — AEO readability, release approved
 
 - [x] Update the [hand-check protocol](docs/AEO_HAND_CHECK.md) and [run template](docs/AEO_HAND_CHECK_RUN_TEMPLATE.md): preserve legacy prompts; cover the portfolio; freeze modes and eligibility; retain failures, source provenance and repeat waves. Documentation update only; no new observations or automation.

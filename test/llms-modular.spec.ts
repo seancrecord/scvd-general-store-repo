@@ -1157,8 +1157,10 @@ const BASE = "https://scvd.store";
 // Integrated with the AEO SDK/protocol corrections on 2026-09-28. Restoring
 // only declined.ts to origin/main reproduced both main pins (14/14 passed);
 // these pins preserve both that correction and main's purchase-template clause.
+// 2026-10-07: add the bounded SCVD Attestation offer to the index.
+// Only its proposition, price, free-first line and URL were added to the guide.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "f4cd06837967f5bc7d8c69c97fdc575be9bb0484dff5660a26d68b51572ce241";
+  "bc5f947566ac67d8f5dc51b66dd5ff2d098e9e0e3a5ea6d4acfa67dffc4c6380";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1255,7 +1257,7 @@ describe("nothing was rewritten", () => {
       // buy_url_template with the slots filled, never at the bare door.
       // Verified the way this file asks: with that clause alone reverted,
       // 1ac33b17 reproduced, and this copy reproduces the new one.
-      "bb11e5d52d458e2389190a3bd3553c6267588c3190726ab7f56a5baa9d8e3177",
+      "91ab0818832df9df411ee996927ee3b867cef46b0b85d3fc6d779c6170e0c15b",
     );
   });
 

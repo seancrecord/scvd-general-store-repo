@@ -26,6 +26,14 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **SCVD Attestation pilot, October 7 — first customer hands.** The bounded offer
+  is prepared locally after your go-ahead. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+  Once released and a buyer agrees the public endpoint, price and start time,
+  activate from `/admin/evidence-pilot`; hand over and verify the final report
+  before invoicing. No prospect was contacted, customer activated or invoice sent.
+  Implementation and release status live on ROADMAP, not this desk.
+
+
 - **auth-capture, 2026-09-28 — your "okay do it" and "for r7 we add the
   scheme".** Both rulings are recorded: R7 is done in
   `research/protocol-screen/rulings.json` (the trajectory and the
