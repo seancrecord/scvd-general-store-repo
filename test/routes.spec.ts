@@ -1,3 +1,4 @@
+import { reportCatalog } from "@/services/reports";
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import type { Env } from "@/types";
@@ -46,8 +47,12 @@ describe("the storefront", () => {
     // The Gazette left the map 2026-09-03 (retired; Room.in_sitemap).
     expect(xml).not.toContain(`<loc>${BASE}/gazette</loc>`);
     expect(xml).toContain(`<loc>${BASE}/corpus</loc>`);
-    // The API stays off the sitemap; llms.txt is its map.
-    expect(xml).not.toContain("/api/");
+    // Published reports have readable pages at their existing API URLs.
+    // Keep every other API door off the human sitemap.
+    const apiPages = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)]
+      .map(match => new URL(match[1]!).pathname)
+      .filter(path => path.startsWith("/api/"));
+    expect(apiPages.sort()).toEqual(reportCatalog().map(report => report.path).sort());
   });
 
   it("serves the complete guide, shelf and all, at llms-full.txt", async () => {
