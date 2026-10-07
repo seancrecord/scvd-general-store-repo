@@ -51,6 +51,21 @@ repository, no partner documentation beyond the quotes in the post. Nothing
 about Stripe's role in the payments extension, or any relation to MPP, was
 stated anywhere read; the overlap is conjecture and is not recorded as a fact.
 
+## 2026-10-06 — durable artifact pages and discovery
+
+Read Google's [sitemap guidance](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)
+and [canonicalization guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls):
+sitemaps identify preferred canonical URLs, discovery is not guaranteed indexing,
+and lastmod should describe a real significant update rather than request time.
+Read Schema.org's [Report](https://schema.org/Report) definition and inherited
+publication-date, encoding and creativeWorkStatus properties. These support dated
+report pages and visible withdrawal metadata, not a claim to search rich results.
+
+The keeper's Cairn search ranking was not independently reproduced, and the web
+reader could not open Cairn's reports path. No attribution of ranking gains to
+signatures, sitemap inclusion or the proposed change is established. Local scope
+and validation: [artifact discovery](ARTIFACT_DISCOVERY_2026-10.md).
+
 ## 2026-10-01 — document discovery and reader compatibility
 
 Follow-up read for the keeper-approved HTML and browser changes:

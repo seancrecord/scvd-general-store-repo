@@ -7,6 +7,7 @@ import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { deriveWalletFacts, type WalletFacts } from "@/services/operator-facts";
 import { listCorpus } from "@/services/corpus";
+import { reportCatalog } from "@/services/reports";
 import { sendAlert } from "@/lib/alerts";
 import { R2ReadUnavailable } from "@/lib/r2-read";
 import type { HonoEnv } from "@/types";
@@ -48,6 +49,7 @@ function landingJson(base: string) {
     every_door_listed: `${base}/doors.json`,
     per_host: `${base}/corpus/host/{host}.json`,
     weekly_brief: `${base}/corpus/brief`,
+    reports: reportCatalog().map(report => ({ ...report, url: `${base}${report.path}` })),
     as_time: `${base}/corpus/trajectory.json`,
     since_diff: `${base}/corpus/diff.json?since={week}`,
     latest: `${base}/corpus/latest.json`,
@@ -135,6 +137,10 @@ function landingHtml(base: string, facts: WalletFacts | null | undefined): strin
       <p class="menu-desc">${escapeHtml(CENSUS_FINDING)}</p>
       <p class="menu-desc">${escapeHtml(CENSUS_WHY_IT_MATTERS)}</p>
       <p class="menu-desc">The rounds since then track the same population week over week: newly failing hosts, newly fixed ones, flappers, and hosts leaving or rejoining the discovery list — with every coverage caveat recorded inside the round it applies to.</p>
+    </section>
+    <section>
+      <h2>Published research reports</h2>
+      <ul>${reportCatalog().map(report => `<li><a href="${escapeHtml(report.path)}">${escapeHtml(report.title)}</a> — published ${escapeHtml(report.published)}${report.withdrawn ? `. Withdrawn ${escapeHtml(report.withdrawn.at)}; retained for the record, not a current finding` : ""}.</li>`).join("\n")}</ul>
     </section>
     <section>
       <h2>Reading it</h2>
