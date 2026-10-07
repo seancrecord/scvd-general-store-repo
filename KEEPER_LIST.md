@@ -26,13 +26,6 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- **SCVD Attestation pilot, October 7 — first customer hands.** The bounded offer
-  is prepared and release authorized after your go-ahead. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
-  Once released and a buyer agrees the public endpoint, price and start time,
-  activate from `/admin/evidence-pilot`; hand over and verify the final report
-  before invoicing. No prospect was contacted, customer activated or invoice sent.
-  Implementation and release status live on ROADMAP, not this desk.
-
 - **Python public-route access — fixed October 7, broader scope approved.**
   Browser Integrity Check is disabled on `scvd.store` except `/admin` paths.
   Real Python reads the homepage, discovery documents and MCP catalogue;
@@ -40,6 +33,13 @@ build, it is on the roadmap.
   controls retain their prior responses. No regression in those checks;
   longer-term traffic/cost effects are unmeasured. No further approval is
   pending. [Rule, evidence and scope](docs/PYTHON_CLIENT_ACCESS_2026-10.md).
+
+- **SCVD Attestation pilot, October 7 — first customer hands.** The bounded offer
+  is prepared and release authorized after your go-ahead. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+  Once released and a buyer agrees the public endpoint, price and start time,
+  activate from `/admin/evidence-pilot`; hand over and verify the final report
+  before invoicing. No prospect was contacted, customer activated or invoice sent.
+  Implementation and release status live on ROADMAP, not this desk.
 
 - **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
   authenticated checks for now. The L13 code and public reader are released;
@@ -1966,6 +1966,20 @@ what you ruled and what is still yours to look at.
   (attic). Write who appears. Google still blank for
   `scvd.store` / "SCVD general store." No new `/x402/`
   tree.
+  **October 6 read:** Google returns the homepage and other pages for
+  `site:scvd.store`, but neither `scvd store` nor `scvd general store`
+  returned the domain as an ordinary first-page result. Outside listings
+  supply the latter query's AI Overview sources. The live root www/HTTP
+  redirects now work. LOOK: use the owning Search Console account for
+  indexed canonical, crawl and branded-query performance; the account
+  available to this read had no accessible property. [Evidence and
+  limits](research/seo-brand-2026-10-06/README.md). The historical “blank”
+  wording above must not be read as current total deindexing.
+  **October 7 follow-through:** the authorized local presentation/metadata
+  repair and audit are recorded in the same evidence note. Merge/deploy
+  authorized later October 7; Search Console measurement remains a LOOK.
+  LOOK still needs the account owning Search Console so Google's selected
+  canonical, recrawl and brand-query performance can actually be measured.
 - **Indexability LOOK (dump 22).** `robots.txt` already
   allows and points at the sitemap. Titles, meta, OG,
   canonicals are derived from rooms. Confirm we are

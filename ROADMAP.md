@@ -39,6 +39,16 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 7 — branded search
+
+Keeper-requested local repair: visible homepage identity/service summary,
+selective snippet exclusions, shared canonical/social metadata, and corrected
+Organization identity/report relations. A bounded public-page SEO audit and
+offline CI checks now cover regressions. [Implementation, checks and release
+measurement](research/seo-brand-2026-10-06/README.md#october-7--local-repair-authorized-by-the-keeper).
+Merge/deploy authorized October 7; isolated release validation is recorded in
+the linked note. Ranking effect remains unmeasured.
+
 ## October 7 — SCVD Attestation pilot
 
 Keeper authorized proceeding with the bounded pilot. Implementation is prepared

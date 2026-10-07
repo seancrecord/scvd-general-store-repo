@@ -109,6 +109,10 @@ html { overflow-x: clip; }
   }
 }
 .neon-sub { color: var(--neon); }
+.store-intro { position: relative; z-index: 2; max-width: 560px; margin: 1.2rem auto 0; }
+.store-name { margin: 0; font-size: 1.05rem; letter-spacing: 0.04em; color: var(--teal); }
+.store-name a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--teal-dim); }
+.store-summary { margin: 0.65rem 0 0; font-size: 1rem; line-height: 1.6; color: var(--night-text); }
 .flicker { animation: tube 6s infinite; }
 .flicker-slow { animation: tube 13s infinite; animation-delay: 2.5s; }
 @keyframes tube {

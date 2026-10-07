@@ -142,12 +142,12 @@ describe("external records are records, not endorsements", () => {
     }
   });
 
-  it("feeds sameAs from the same list, so the two cannot disagree", async () => {
+  it("keeps external records discoverable in the homepage structured data", async () => {
     const page = await (
       await SELF.fetch(BASE, { headers: { Accept: "text/html" } })
     ).text();
     for (const record of EXTERNAL_RECORDS) {
-      expect(page, `${record.url} is in the trust doc but not in sameAs`).toContain(
+      expect(page, `${record.url} is in the trust doc but not on the homepage`).toContain(
         record.url,
       );
     }

@@ -138,6 +138,8 @@ jobs:
       # Saturday workflow runs the live half.
       - name: The listings, offline
         run: npm run listings:test
+      - name: The SEO audit instrument, offline
+        run: npm run seo:test
       # THE PACKAGES (roadmap C5): scvd-preflight, scvd-corpus-client,
       # scvd-defects and scvd-mcp-starter, each zero-dependency, each
       # tested on Node's own runner against a server that is not the
