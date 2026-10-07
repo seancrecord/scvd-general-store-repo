@@ -34,8 +34,9 @@ main branch; publication of the code must include it.
   Organization award or rating, and article URLs do not become sameAs identities.
 - Existing independently authored reporting retains its separate inventory and
   metadata. It is not repackaged as a testimonial in the new section.
-- `/index.md`, `/agents.md`, `/llms.txt` and `/llms-full.txt` inherit the same
-  article facts and dated recognition through the existing shared copy.
+- `/index.md`, `/agents.md` and `/llms-full.txt` inherit the same article facts
+  and dated recognition through shared copy. `/llms.txt` retains all article
+  links and the dated recognition, linking to full author/date/evidence details.
 - Source read: [October 7 entry](../../docs/SPEC_READS.md#2026-10-07--writing-and-recognition-discovery).
 
 ## Follow-up: author identity and article destinations

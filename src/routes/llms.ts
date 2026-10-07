@@ -51,7 +51,7 @@ import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
 import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
-import { askedForBlock, writingDiscoveryText, WRITING_HEADING, WRITING_DISCLOSURE, writerRecognitionText } from "@/store/copy/asked-for";
+import { askedForBlock, writingDiscoveryText, WRITING_HEADING, WRITING_DISCLOSURE, WRITTEN_ABOUT, writerRecognitionText } from "@/store/copy/asked-for";
 import {
   CLI_INSTALL,
   CLI_PACKAGE,
@@ -2196,7 +2196,7 @@ export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig
 
   // The short index links to the bylines; the full guide retains their facts.
   const indexSections = kept.map((section) => section.text).join("").replace(writingDiscoveryText(),
-    `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${writerRecognitionText()} Articles, authors, dates and evidence: ${base}/#writing-recognition.`);
+    `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${WRITTEN_ABOUT.map((piece) => `[${piece.where}](${piece.url})`).join("; ")}. ${writerRecognitionText()} Authors, dates and evidence: ${base}/#writing-recognition.`);
 
   return `${preamble}${buyerQuickStart(base)}
 
