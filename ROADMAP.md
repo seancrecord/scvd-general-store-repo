@@ -51,6 +51,12 @@ of customer demand. [Offer and operating runbook](docs/SCVD_ATTESTATION_PILOT_20
 
 ## October 6 — artifact discovery
 
+**October 7 growth-period correction:** `/admin/growth` keeps the open month's
+counts visible but withholds hypothesis verdicts, instrument deltas and demand
+rise/fall lists until UTC month close. `/corpus/month` labels month-to-date readings
+and describes the latest available week on HTML, JSON and markdown.
+[Scope and regression coverage](docs/GROWTH_LEDGER_2026-09.md). No feature-order change.
+
 **Artifact discovery, local follow-through October 6:** Once-Over reports now
 have readable dated pages at their existing URLs; published research gains
 corpus-hub and sitemap links, with withdrawals visible in search metadata.

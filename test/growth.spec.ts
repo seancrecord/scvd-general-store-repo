@@ -4,6 +4,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { metricsMonth, monthsSinceOpening, readMonthLedger, recordPorchVisit, type PorchLedger } from "@/lib/metrics";
 import { REFERRER_HOST_CAP, readReferrerCensus, recordReferrerHost } from "@/lib/referrer-census";
 import { readBellRings, ringBell } from "@/services/bell";
+import { renderGrowthPage } from "@/pages/admin/growth-page";
 import {
   computeGrowth,
   deriveGrowthMonth,
@@ -104,11 +105,61 @@ describe("the two counters that were missing", () => {
 });
 
 describe("one month, derived", () => {
+  it.each([
+    ["2026-10-06T12:00:00.000Z", false],
+    ["2026-10-31T23:59:59.999Z", false],
+    ["2026-11-01T00:00:00.000Z", true],
+  ])("uses the UTC month boundary for the verdict and header at %s", async (at, complete) => {
+    const month = "2026-10";
+    const reading = { listed: 17692, probed: 3000, payable: 2092, not_payable: 908, unreachable: 0, offers_seen: 3000 };
+    const derived = deriveGrowthMonth(inputs({
+      month,
+      now: new Date(at),
+      porch: porch({ "mcp:tool:preflight_endpoint": { organic: 12 }, corpus: { organic: 40 } }),
+      previous: new Map([["mcp:tool:preflight_endpoint", 50], ["corpus", 30]]),
+      state: {
+        artifact: "monthly_state", name: "The state of x402", month,
+        weeks: [], batteries: [], closing: { ...reading, week: "2026-W40" },
+        door_weeks: { ...reading, rounds: 1 }, defects: [], networks: {},
+        our_gaps: { not_probed_door_weeks: 0, observer_degraded_ticks: 0, coverage_suspect_weeks: 0 },
+        what_this_is_not: "", how_to_rederive: "",
+      },
+      hypothesisBefore: {
+        market: { week: "2026-W39", listed: 15170, payable: 2213 },
+        settles: 114, new_faces: 14, returning_faces: 1, checks: 0,
+      },
+    }, await ledgerFor("2026-01")));
+    expect(derived.hypothesis.against_us).toBe(complete);
+    const instrument = derived.free_instruments.by_instrument.find((r) => r.surface === "mcp:tool:preflight_endpoint")!;
+    expect(instrument.organic).toBe(12);
+    expect(instrument.previous).toBe(50);
+    expect(instrument.delta).toBe(complete ? -38 : null);
+    expect(derived.demand.risers.length).toBe(complete ? 1 : 0);
+    expect(derived.demand.fallers.length).toBe(complete ? 1 : 0);
+    const html = renderGrowthPage({
+      computed_at: at, months: [derived], porch_counting_since: "2026-07-01", doors_logged_since: "2026-07-01",
+      floors: { porch_writes_per_minute: 1, ledger_key_cap: 1, note: "" },
+      what_this_is: "", what_this_is_not: "",
+    });
+    if (complete) {
+      expect(html).toContain(`<th>${month}</th>`);
+      expect(derived.hypothesis.reading).toContain("OUR SETTLES DID NOT");
+    } else {
+      expect(html).toContain(`<th>${month}<br><small>month to date`);
+      expect(html).toContain("No verdict until the month closes");
+      expect(html).not.toContain("OUR SETTLES DID NOT");
+      expect(html).not.toContain("Rose most");
+      expect(html).not.toContain("Fell most");
+      expect(html).toContain("Movement comparisons wait until the month closes");
+    }
+  });
+
   it("finds a surface new only when no earlier month had it, and the largest moves against the month before", async () => {
     const ledger = await ledgerFor("2026-01");
     const month = deriveGrowthMonth(
       inputs(
         {
+          now: new Date("2026-10-01T00:00:00.000Z"),
           porch: porch({
             "mcp:tool:preflight_endpoint": { organic: 12, "organic:mcp": 12 },
             "catalog-search": { organic: 3, "organic:direct": 3 },

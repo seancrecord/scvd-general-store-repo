@@ -1,4 +1,5 @@
 import { Hono, type Context } from "hono";
+import { metricsMonth } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
@@ -22,7 +23,7 @@ function readingRow(label: string, r: MonthReading): string {
   return `<tr><th>${escapeHtml(label)}</th><td>${r.listed}</td><td>${r.probed}</td><td>${r.payable}</td><td>${r.not_payable}</td><td>${r.unreachable}</td><td>${r.offers_seen}</td></tr>`;
 }
 
-function stateHtml(state: MonthState): string {
+function stateHtml(state: MonthState, monthComplete: boolean): string {
   const defects =
     state.defects.length === 0
       ? `<p class="menu-desc">No failed checks recorded on the probed doors this month.</p>`
@@ -38,21 +39,22 @@ function stateHtml(state: MonthState): string {
     .join(" · ");
   const last = state.against_the_last;
   return `<section>
+    ${monthComplete ? "" : '<p class="menu-desc"><strong>Month to date.</strong> This month is still open; further signed weeks can change these counts.</p>'}
     <p class="menu-desc"><strong>${escapeHtml(state.month)}</strong>, read from ${state.weeks.length} signed week${state.weeks.length === 1 ? "" : "s"} (${state.weeks
       .map((week) => `<a href="/corpus/round/${escapeHtml(week.week)}">${escapeHtml(week.week)}</a>`)
       .join(", ")})${state.batteries.length ? `, verdicts under ${state.batteries.map((battery) => `<code>${escapeHtml(battery)}</code>`).join(" and ")}` : ""}.</p>
-    <p class="menu-desc">At month end (week ${escapeHtml(state.closing.week)}): <strong>${state.closing.listed} doors named</strong> by the discovery feeds, <strong>${state.closing.probed} knocked on</strong>, <strong>${state.closing.payable} answered with a challenge a buyer could pay</strong>, ${state.closing.not_payable} answered with one a buyer could not pay as served, ${state.closing.unreachable} did not answer.</p>
-    ${networks ? `<p class="menu-meta">Doors per chain at month end, from the offers' own declarations: ${networks}.</p>` : ""}
+    <p class="menu-desc">At the latest available week (${escapeHtml(state.closing.week)}): <strong>${state.closing.listed} doors named</strong> by the discovery feeds, <strong>${state.closing.probed} knocked on</strong>, <strong>${state.closing.payable} answered with a challenge a buyer could pay</strong>, ${state.closing.not_payable} answered with one a buyer could not pay as served, ${state.closing.unreachable} did not answer.</p>
+    ${networks ? `<p class="menu-meta">Doors per chain at the latest available week, from the offers' own declarations: ${networks}.</p>` : ""}
   </section>
   <section>
     <h2>The month in two readings</h2>
     <table border="1" cellpadding="6">
       <tr><th></th><th>named</th><th>probed</th><th>payable</th><th>not payable</th><th>unreachable</th><th>offers seen</th></tr>
-      ${readingRow(`closing week ${state.closing.week}`, state.closing)}
+      ${readingRow(`latest available week ${state.closing.week}`, state.closing)}
       ${readingRow(`door-weeks over ${state.door_weeks.rounds} round${state.door_weeks.rounds === 1 ? "" : "s"}`, state.door_weeks)}
       ${last ? readingRow(`the month before, ${last.month}, closing week ${last.closing.week}`, last.closing) : ""}
     </table>
-    <p class="menu-meta">Two kinds of number, kept apart: the closing week is the state at month end; door-weeks are every round's counts summed, so a door probed in four rounds counts four. Nothing here is divided into a share.${last ? " The month before is beside this one as a reading, and the direction is yours to read." : " This is the first month on the chain; there is nothing before it to set beside."}</p>
+    <p class="menu-meta">Two kinds of number, kept apart: the closing reading is the latest available signed week in this month; door-weeks are every round's counts summed, so a door probed in four rounds counts four. Nothing here is divided into a share.${last ? " The month before is beside this one as a reading, and the direction is yours to read." : " This is the first month on the chain; there is nothing before it to set beside."}</p>
   </section>
   <section>
     <h2>Defects, by name</h2>
@@ -102,9 +104,11 @@ async function serveMonth(c: Context<HonoEnv>, month: string | undefined, stable
         )
       : c.json(body, status);
   }
+  // Completion is read at request time, outside the cached corpus derivation.
+  const monthComplete = state.month < metricsMonth();
   const monthCite = { base, what: "state of x402, month", which: state.month, observed_at: state.closing.week, url: `${base}/corpus/month/${state.month}` };
   if (!html) {
-    const payload = { ...state, months_held: known_months, corrections: CORRECTIONS_POINTER, ...citeBlock(monthCite) };
+    const payload = { ...state, month_complete: monthComplete, months_held: known_months, corrections: CORRECTIONS_POINTER, ...citeBlock(monthCite) };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
       base,
@@ -120,10 +124,10 @@ async function serveMonth(c: Context<HonoEnv>, month: string | undefined, stable
   const path = stable ? `/corpus/month/${state.month}` : "/corpus/month";
   return c.html(
     renderSimplePage({
-      title: `The state of x402, by month — ${state.month}: ${state.closing.payable} of ${state.closing.probed} probed doors payable at month end`,
-      description: `The x402 corpus for ${state.month}: ${state.closing.listed} doors named, ${state.closing.probed} probed, ${state.closing.payable} payable and ${state.closing.not_payable} not at month end, over ${state.weeks.length} signed week${state.weeks.length === 1 ? "" : "s"}; defects by name; the month before beside it. Not a ranking.`,
+      title: `The state of x402, by month — ${state.month}: ${state.closing.payable} of ${state.closing.probed} probed doors payable at the latest available week`,
+      description: `The x402 corpus for ${state.month}: ${state.closing.listed} doors named, ${state.closing.probed} probed, ${state.closing.payable} payable and ${state.closing.not_payable} not at the latest available week, over ${state.weeks.length} signed week${state.weeks.length === 1 ? "" : "s"}; defects by name; the month before beside it. Not a ranking.`,
       path,
-      bodyHtml: `${stateHtml(state)}
+      bodyHtml: `${stateHtml(state, monthComplete)}
       ${citeHtml(monthCite, escapeHtml)}
       <section>
         <p class="menu-meta">Months held: ${known_months.map((m) => (m === state.month ? `<strong>${escapeHtml(m)}</strong>` : `<a href="/corpus/month/${escapeHtml(m)}">${escapeHtml(m)}</a>`)).join(", ")}. This month at an address that never changes: <a href="/corpus/month/${escapeHtml(state.month)}">/corpus/month/${escapeHtml(state.month)}</a>. JSON at the same URL with <code>Accept: application/json</code>.</p>
