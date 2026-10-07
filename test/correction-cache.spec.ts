@@ -40,6 +40,34 @@ beforeEach(async () => {
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe("standing correction input cache", () => {
+  it("does not fetch cache pages a complete inventory says are absent", async () => {
+    await row(0); await row(30_000_000); await row(60_000_000);
+    const get = vi.spyOn(bindings.CORPUS_R2!, "get");
+    await run(1);
+    expect(get.mock.calls.filter(([key]) => key.startsWith("internal/correction-pages/"))).toHaveLength(0);
+    expect(await scan()).toMatchObject({ kv_keys_read: 1, cached_pages: 0, complete: false });
+    get.mockClear();
+    await run(1);
+    expect(get.mock.calls.filter(([key]) => key.startsWith("internal/correction-pages/"))).toHaveLength(1);
+    expect(await scan()).toMatchObject({ kv_keys_read: 1, cached_pages: 1, complete: false });
+    get.mockClear();
+    expect((await run(1))[0]).toMatchObject({ recorded_organic: 3, complete: true });
+    expect(get.mock.calls.filter(([key]) => key.startsWith("internal/correction-pages/"))).toHaveLength(2);
+  });
+
+  it.each(["truncated", "continuation"])("does not infer missing cache pages from a %s cleanup listing", async (kind) => {
+    await row(0);
+    await run();
+    const bucket = bindings.CORPUS_R2!;
+    const page = await bucket.list({ prefix: "internal/correction-pages/" });
+    if (kind === "continuation") await bucket.put("internal/correction-page-cleanup.json", JSON.stringify({ cursor: "continuation" }));
+    vi.spyOn(bucket, "list").mockResolvedValue(kind === "truncated"
+      ? { ...page, objects: [], truncated: true, cursor: "next" }
+      : { ...page, objects: [], truncated: false });
+    expect((await run(0))[0]).toMatchObject({ recorded_organic: 1, complete: true });
+    expect(await scan()).toMatchObject({ kv_keys_read: 0, cached_pages: 1, complete: true });
+  });
+
   it("matches the full recount across slices, including late events, then reads zero KV event values", async () => {
     // Key times span several slices; event times form one cross-slice walk.
     for (let n = 0; n < 4; n++) await row(n * 20_000_000, {
