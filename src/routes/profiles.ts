@@ -1,6 +1,7 @@
 import { deriveTier, tierInputFromHistory, type TierReading } from "@/services/passport-tier";
 import { PASSPORT_PROTOCOL_RULE } from "@/services/passport-protocol";
 import { Hono } from "hono";
+import { withReadScope } from "@/lib/read-scope";
 import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
@@ -87,11 +88,15 @@ async function viewOf(
   };
 }
 
-profilesRoutes.get("/profiles", async (c) => {
+profilesRoutes.get("/profiles", (c) => withReadScope(async () => {
   const base = c.env.STORE_BASE_URL;
   const now = new Date();
   const all = await listTrustProfiles(c.env);
-  const views = await Promise.all(all.map((p) => viewOf(c, p, now)));
+  // Expired profiles have their own pages, but cannot appear on this index.
+  // The remaining hosts share the archive and population read for this request;
+  // parallel cold reads used to download and parse those same inputs per host.
+  const active = all.filter((p) => p.record.expires > now.toISOString());
+  const views = await Promise.all(active.map((p) => viewOf(c, p, now)));
   // The consent line: the INDEX names only in-term, ready-side hosts.
   const listed = views.filter(
     (v) => v.in_term && v.latest_verdict === "ready",
@@ -165,7 +170,7 @@ profilesRoutes.get("/profiles", async (c) => {
       bodyHtml,
     }),
   );
-});
+}));
 
 profilesRoutes.get("/profiles/:host", async (c) => {
   const rawHost = c.req.param("host").trim().toLowerCase();
