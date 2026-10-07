@@ -63,7 +63,9 @@ its locked dependencies installed afresh. All nine focused suites pass there
 The initial shared-worktree run exposed two unregistered checkout recovery
 paths in unrelated, uncommitted OpenAPI work. They are not part of this PR;
 the clean-main feature-registration check passes. Full CI remains required
-before merge.
+before merge. CI caught the older blanket exclusion of `/api/` URLs from
+the sitemap; its replacement permits exactly the published report catalog and
+continues to exclude every other API door.
 
 Primary-source read: [October 6 entry in SPEC_READS](SPEC_READS.md#2026-10-06--durable-artifact-pages-and-discovery).
 Prepared for release through a focused pull request. Search-engine indexing and

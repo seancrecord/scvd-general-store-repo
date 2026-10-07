@@ -20,8 +20,8 @@ import { reportCatalog } from "@/services/reports";
  * robots.txt and sitemap.xml. The store has no pages to hide:
  * crawlers are welcome on every public surface (they book as
  * infrastructure in the porch log, which is their proper column).
- * The sitemap covers human-readable rooms only, the API speaks
- * llms.txt, menu.json, and OpenAPI, which are better maps anyway.
+ * The sitemap covers human-readable rooms and published report pages.
+ * Machine-only API doors use llms.txt, menu.json and OpenAPI.
  */
 export const siteMetaRoutes = new Hono<HonoEnv>();
 
