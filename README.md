@@ -447,6 +447,11 @@ npm run deploy     # or let the Git-connected deploy push to scvd.store
 Deploys are Git-connected to the `scvd.store` custom domain — merge to main
 and Cloudflare handles the rest.
 
+`npm run seo:check` audits a bounded sample of public HTML pages, robots and
+sitemap membership; it does not measure Google indexing or ranking.
+`npm run seo:test` checks that instrument offline and runs in CI.
+[Brand-search findings, preview instructions and measurement limits](research/seo-brand-2026-10-06/README.md).
+
 ## How paying works here (the x402 flow, protocol v2)
 
 No accounts, no API keys, no cart, and nothing a buyer must say about

@@ -36,6 +36,7 @@ No submission or runtime qualification was performed in this pass.
 | What needs implementation or host qualification? | [ROADMAP](ROADMAP.md), especially TR-D. |
 | What do we submit? | [Registry drawer](registry/README.md), including the [plugin submission packet](registry/plugin-submissions.md). |
 | Which paths can crawlers find? | [Findability inventory](scripts/lib/findability.mjs), checked by `npm run findability:check`. Presence is not admission. |
+| Do public pages retain their search metadata? | `npm run seo:check` audits a bounded sample; [brand-search repair and dated evidence](research/seo-brand-2026-10-06/README.md). A passing audit does not measure Google ranking. |
 | Are existing listings stale or disappearing? | `npm run listings:check`; [weekly workflow](.github/workflows/listings-check.yml); [recorded baselines](docs/listings/). Baselines already exist, dated September 12. |
 | Who have we contacted about citations? | [Scorers register](registry/scorers-outreach.json); its [table](registry/scorers-outreach.md) is generated. `note_sent` refers to the scorers note, not any issue or submission. |
 | What evidence supports this pass? | [September 17 findings and receipts](research/distribution-2026-09-17/README.md), [prior admission reconciliation](research/distribution-admission-2026-09-16/README.md), and [spec readings](docs/SPEC_READS.md). |
