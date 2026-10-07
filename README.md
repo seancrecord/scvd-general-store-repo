@@ -41,8 +41,9 @@ verification of x402 endpoints, payments and receipts. Before an
 agent pays an x402 endpoint, we check that it can be paid. After it
 pays, we check the signed receipt. Over time we watch endpoints and
 publish a dated, signed corpus. Sellers use it to prove a door works;
-buyers use it before spending. Every artifact is signed, expires, and
-names what we did not see. Not escrow, not a rating, not a guarantee.**
+buyers use it before spending. Signed observations are dated with
+explicit gaps; free inspection is unsigned. Not escrow, not a rating,
+not a guarantee.**
 
 Three paths, in that order. Before you pay: preflight any x402 door,
 free, at [scvd.store/api/preflight/v1](https://scvd.store/api/preflight/v1).

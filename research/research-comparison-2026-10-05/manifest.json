@@ -1,0 +1,15 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "agentcash-discovery.json": "d7de31fdec74baaadb6dea24dd8bbd47bb459d43986dbe1d97dae3120d395b13",
+    "catalog.json": "9e57b71a7d2390c17f3e956f3054604204f12dd0d88ddf218f980f32637bb713",
+    "coinbase-validation.json": "35720108f4a0b7cf58fcc93820e4f969fda65b4ff042f5cf2dad1876ef0c50e5",
+    "http-valid-input-quote.json": "f0583e6b06223f799ad1d42feac138897ac44f16e42d85238544010bef5291e1",
+    "mcp-quote.json": "6100d5cfe88a09eaf8f1213dae7f453d6e57ddf82e52b1d45e7eab393efbb3af",
+    "mcp-valid-input-quote-retry.json": "e6d5740a3662e2cf2e5aeea00d8c31a4bc9df0f452457844e6a7ba867c5120b0",
+    "mcp-valid-input-quote.json": "168bab6cfd39cde8c80414c53779566e91e7a275992e1be542b1bb1a10fd3d5c",
+    "openapi.json": "cce4cc35fdb4772239729bcc7ad1d840bebe26e77962f484e09038114f465924",
+    "quote.json": "00099cfb635c4080387481d002e104e22c209a5c73df18ed470a4d68286675cc",
+    "unbranded-search.json": "21945420258f05e8a3398142deb7dda8a9611d6ad17e3c9e55454898903c548f"
+  }
+}

@@ -2890,3 +2890,13 @@ carry explicit modern probes. Neither establishes modern native-host adoption.
 Read the current primary [Bazaar extension](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/bazaar.md), Schema Validation: info is validated against its declared schema before cataloging. Read the [offer/receipt extension](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/extension-offer-and-receipt.md), sections 2 and 4.1: the extension is optional and offers match accepts by payload fields, not array position. The shorter guessed offer-receipt.md URL was unavailable; the canonical document above was reachable.
 
 These reads support promoting the existing bounded comparisons into a new battery; they do not establish actual directory ingestion, signature validity or payment completion. The schema reader supports only its documented keyword subset and bounded depth. The offer reader compares decoded JWS terms, not all signature formats. Both old batteries retain their scoring. [Implementation](S8_V3_READINESS_2026-10-02.md).
+
+## 2026-10-05 — Research Comparison discovery closeout
+
+Re-read [Coinbase seller discovery](https://docs.cdp.coinbase.com/x402/seller/get-discovered):
+validation is unpaid and separate from settlement-triggered indexing. The live
+validator returned `valid: true`, simulation `accepted`, and an active index
+entry for the exact Research Comparison route. AgentCash origin discovery
+recognizes its price and x402/MPP protocols; the retained unbranded first page
+still has no SCVD row. [Evidence and limits](../research/research-comparison-2026-10-05/README.md).
+No payment, wallet access, organic demand or curation was established.

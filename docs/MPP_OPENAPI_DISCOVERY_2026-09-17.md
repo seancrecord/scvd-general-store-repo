@@ -53,12 +53,14 @@ the local result does not establish production behavior or indexing.
 
 ## External boundaries
 
-- Official catalog [PR #991](https://github.com/tempoxyz/mpp/pull/991) is pending
-  maintainer review and lists only Context Anchor.
+- Official catalog [PR #991](https://github.com/tempoxyz/mpp/pull/991) closed
+  unmerged October 2 because intake moved to MPPScan. SCVD already registered
+  there September 19; [October 7 reading](../research/distribution-2026-10-07/README.md)
+  records the existing listing and remaining refresh.
 - [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209) separately
   reports the runtime parser mapping EVM/Base to `tempo:8453` and dropping
   `methodDetails.decimals`. Adding the metadata does not fix that parser.
-- MPPScan registration was qualified against the live shelf on 2026-09-18 ([receipt](../research/distribution-2026-09-18/mppscan-live-check.json)); the press is the keeper's, [drafted here](../registry/mppscan-submission.md).
+- MPPScan registration was qualified against the live shelf on 2026-09-18 ([receipt](../research/distribution-2026-09-18/mppscan-live-check.json)); registration completed September 19 ([receipt](../research/erc8004-followthrough-2026-09-19/mppscan-registration.json)). The earlier [draft](../registry/mppscan-submission.md) is historical; do not repeat registration.
 - The HTTP shelf expansion is covered by #790 and the final metadata tests.
   MCP/WebMCP, other networks/assets and broader live paid qualification remain separate.
 
