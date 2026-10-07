@@ -1195,11 +1195,14 @@ const BASE = "https://scvd.store";
 // 2026-10-06: scvd-defects source 0.22.0 changes only its derived package
 // label. Restoring only defects/package.json to 0.21.0 reproduced both
 // previous pins (14/14 tests); the intended version produces this pair.
-// 2026-10-07: bounded Attestation pilot paragraph. Removing only that paragraph
-// reproduced both current main pins (14/14). The full offer now lives at the
-// counter section, with a short pointer in the index to preserve its reading budget.
+// 2026-10-07: narrow the shared signature/expiry claim to signed observations
+// and explicitly name unsigned inspection. Before changing position.ts, both
+// prior pins passed (14/14); this one-sentence source change yields this pair.
+// 2026-10-07: joined the bounded pilot offer and index pointer to main's
+// unsigned-inspection wording. Removing only the two pilot paragraphs
+// reproduced main's pins (14/14); these pins cover both intentional changes.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "fd9bcd94c97615b6cc9d2396c3f92cd18888be80e02f689afc5eb0be2f594fe2";
+  "b9b0afaae1782ac77388d268b72b7224051ff560de01270a17008a5c692a6bcd";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1302,7 +1305,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "48c8a3ec59815184e6a8768934629a77855c3b7ef793b29d5d7a8c580298d6f7",
+      "6fe76fa3dd0415c7d892f171efa56c8ed0f5984dd51832bf5311a41a753ddade",
     );
   });
 

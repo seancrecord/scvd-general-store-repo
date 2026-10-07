@@ -1,0 +1,90 @@
+{
+  "bugs": {
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/issues"
+  },
+  "dist": {
+    "shasum": "7c239b48cae3b7a7b3dccf0a6782e3886971fb47",
+    "tarball": "https://registry.npmjs.org/scvd-defects/-/scvd-defects-0.22.0.tgz",
+    "fileCount": 31,
+    "integrity": "sha512-+AS0xveRKo3hdH2NuMxXaS1NdboC0PlZijhW+T6Ayymg4zIyWXHvlyvDHFs9IT1SWrqwPElfDrv0s4JgrMYOww==",
+    "signatures": [
+      {
+        "sig": "MEYCIQC1FSbLOmmukfVFNG5RvB+kiRaJAlbI+nYmTElA/i+sxwIhAMOsgyLdXJBhEn0gn6CgzFchdM4n3X8maSl8hplxbOYz",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "sig": "MEUCIQD0jzlF5dLtjiYSxE6M2ydS/Qdu1zlpJZZVs0SErIDCLwIgWX58jiVIxMnmhd3UxKymdxxuOKC76F73YN9Fs4zntsQ=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-defects@0.22.0",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 128586
+  },
+  "main": "./defects.js",
+  "name": "scvd-defects",
+  "type": "module",
+  "types": "./defects.d.ts",
+  "author": {
+    "name": "scvd.store"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./defects.d.ts",
+      "default": "./defects.js"
+    },
+    "./defects.json": "./defects.json",
+    "./settlement-response": {
+      "types": "./settlement-response.d.ts",
+      "default": "./settlement-response.js"
+    }
+  },
+  "gitHead": "384978f8da37c63cb041f3152ead8cf6c528eeee",
+  "license": "MIT",
+  "_npmUser": {
+    "name": "scvd-store",
+    "email": "sean@recordcreativeco.com"
+  },
+  "homepage": "https://scvd.store/defects",
+  "keywords": [
+    "x402",
+    "defects",
+    "vocabulary",
+    "conformance",
+    "fixtures",
+    "402",
+    "agent-payments",
+    "evidence",
+    "settlement",
+    "x402-settle-response"
+  ],
+  "repository": {
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "type": "git",
+    "directory": "defects"
+  },
+  "_npmVersion": "10.9.9",
+  "description": "scvd.store's x402 defect vocabulary as data: every class with what it asserts, what falsifies it, whether an unpaid probe can see it, and both halves of the remediation \u2014 plus recorded 402 door fixtures to test a client against, and settlement-response fi",
+  "directories": {},
+  "maintainers": [
+    {
+      "name": "scvd-store",
+      "email": "sean@recordcreativeco.com"
+    }
+  ],
+  "_nodeVersion": "22.23.3",
+  "_hasShrinkwrap": false,
+  "_npmOperationalInternal": {
+    "tmp": "tmp/scvd-defects_0.22.0_1791399157370_0.5297689642348866",
+    "host": "s3://npm-registry-packages-npm-production"
+  },
+  "_id": "scvd-defects@0.22.0",
+  "version": "0.22.0"
+}

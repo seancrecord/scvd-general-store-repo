@@ -1,0 +1,346 @@
+{
+  "observed_at": "2026-10-05T19:46:39.780019+00:00",
+  "url": "https://scvd.store/api/buy/research_comparison",
+  "request_body": null,
+  "status": 402,
+  "headers": {
+    "content-type": "application/json",
+    "www-authenticate": "Payment id=\"Qk5QFKyYmDWEukc11LB6tPgx-7NDxu7OQp8z5QwaxOY\", realm=\"scvd.store\", method=\"evm\", intent=\"charge\", request=\"eyJhbW91bnQiOiIxMDAwMCIsImN1cnJlbmN5IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwibWV0aG9kRGV0YWlscyI6eyJjaGFpbklkIjo4NDUzLCJjcmVkZW50aWFsVHlwZXMiOlsiYXV0aG9yaXphdGlvbiJdLCJkZWNpbWFscyI6Nn0sInJlY2lwaWVudCI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCJ9\", expires=\"2026-10-05T19:51:40.038Z\", opaque=\"eyJfbXBweF9zY29wZSI6Ii9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJwdXJjaGFzZV9rZXkiOiJzY3ZkLXN1Z2dlc3RlZC1yZXNlYXJjaF9jb21wYXJpc29uLTI5ODUzODI2IiwicmVxdWVzdF9kaWdlc3QiOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0\"",
+    "payment-required": "eyJ4NDAyVmVyc2lvbiI6MiwiZXJyb3IiOiJQYXltZW50IHJlcXVpcmVkIiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9zY3ZkLnN0b3JlL2FwaS9idXkvcmVzZWFyY2hfY29tcGFyaXNvbiIsImRlc2NyaXB0aW9uIjoiUmVzZWFyY2ggQ29tcGFyaXNvbi4gUkVRVUlSRVMgP3VybHM9IG9uIHRoZSBwYWlkIHJlcXVlc3Qg4oCUIGEgc2lnbmVkIHJlcXVlc3Qgd2l0aG91dCBpdCBpcyByZWZ1c2VkIGJlZm9yZSB0aGUgZ2F0ZSBhbmQgbm8gbW9uZXkgbW92ZXMuIE9uZSBzaWduZWQgY29tcGFyaXNvbjogbGl2ZSBhdG9taWMgcGF5bWVudCB0ZXJtcywgZGF0ZWQgaG9zdCBoaXN0b3J5IGFuZCBnYXBzLCBzYW1lLWVuZHBvaW50IG5ldHdvcmsgY2hhbmdlcywgc2hhcmVkIHJlY2VpdmVycyBhbmQgbGltaXRzLiBObyByZXNlYXJjaCBxdWFsaXR5IG9yIG93bmVyc2hpcCB2ZXJkaWN0LiBGdWxsIGxpc3Rpbmc6IGh0dHBzOi8vc2N2ZC5zdG9yZS9tZW51L3Jlc2VhcmNoX2NvbXBhcmlzb24uIE1DUCB0b29sOiBidXlfcmVzZWFyY2hfY29tcGFyaXNvbi4iLCJtaW1lVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24iLCJzZXJ2aWNlTmFtZSI6IlNDVkQgR2VuZXJhbCBTdG9yZSIsInRhZ3MiOlsieDQwMiIsInNpZ25lZC1hcnRpZmFjdHMiLCJ2ZXJpZmljYXRpb24iLCJhdHRlc3RhdGlvbiIsImNvbmZvcm1hbmNlIl0sImljb25VcmwiOiJodHRwczovL3NjdmQuc3RvcmUvZmF2aWNvbi5zdmcifSwiYWNjZXB0cyI6W3sic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhbW91bnQiOiIxMDAwMCIsImFzc2V0IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwicGF5VG8iOiIweEREMzUwOTc2QjhjZkZjNjU5MzhDMDQ2NGQzOUEyQzc4QkUwNzliZDAiLCJtYXhUaW1lb3V0U2Vjb25kcyI6MzAwLCJleHRyYSI6eyJuYW1lIjoiVVNEIENvaW4iLCJ2ZXJzaW9uIjoiMiIsImFzc2V0VHJhbnNmZXJNZXRob2QiOiJlaXAzMDA5IiwicXVvdGVkQXQiOiIyMDI2LTEwLTA1VDE5OjQ2OjQwLjAyOFoifX0seyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6MTM3IiwiYW1vdW50IjoiMTAwMDAiLCJhc3NldCI6IjB4M2M0OTljNTQyY0VGNUUzODExZTExOTJjZTcwZDhjQzAzZDVjMzM1OSIsInBheVRvIjoiMHhERDM1MDk3NkI4Y2ZGYzY1OTM4QzA0NjRkMzlBMkM3OEJFMDc5YmQwIiwibWF4VGltZW91dFNlY29uZHMiOjMwMCwiZXh0cmEiOnsibmFtZSI6IlVTRCBDb2luIiwidmVyc2lvbiI6IjIiLCJhc3NldFRyYW5zZmVyTWV0aG9kIjoiZWlwMzAwOSIsInF1b3RlZEF0IjoiMjAyNi0xMC0wNVQxOTo0Njo0MC4wMjhaIn19LHsic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjQyMTYxIiwiYW1vdW50IjoiMTAwMDAiLCJhc3NldCI6IjB4YWY4OGQwNjVlNzdjOGNDMjIzOTMyN0M1RURiM0E0MzIyNjhlNTgzMSIsInBheVRvIjoiMHhERDM1MDk3NkI4Y2ZGYzY1OTM4QzA0NjRkMzlBMkM3OEJFMDc5YmQwIiwibWF4VGltZW91dFNlY29uZHMiOjMwMCwiZXh0cmEiOnsibmFtZSI6IlVTRCBDb2luIiwidmVyc2lvbiI6IjIiLCJhc3NldFRyYW5zZmVyTWV0aG9kIjoiZWlwMzAwOSIsInF1b3RlZEF0IjoiMjAyNi0xMC0wNVQxOTo0Njo0MC4wMjhaIn19LHsic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjQ4MCIsImFtb3VudCI6IjEwMDAwIiwiYXNzZXQiOiIweDc5YTAyNDgyYTg4MGJjZTNmMTNlMDlkYTk3MGRjMzRkYjRjZDI0ZDEiLCJwYXlUbyI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCIsIm1heFRpbWVvdXRTZWNvbmRzIjozMDAsImV4dHJhIjp7Im5hbWUiOiJVU0RDIiwidmVyc2lvbiI6IjIiLCJhc3NldFRyYW5zZmVyTWV0aG9kIjoiZWlwMzAwOSIsInF1b3RlZEF0IjoiMjAyNi0xMC0wNVQxOTo0Njo0MC4wMjhaIn19LHsic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoic29sYW5hOjVleWt0NFVzRnY4UDhOSmRUUkVwWTF2enFLcVpLdmRwIiwiYW1vdW50IjoiMTAwMDAiLCJhc3NldCI6IkVQakZXZGQ1QXVmcVNTcWVNMnFOMXh6eWJhcEM4RzR3RUdHa1p3eVREdDF2IiwicGF5VG8iOiJER3hjUHJBSEw5WU0zaFc3aVh1SEZKbXI4N1pyNkFNQTRqQ1lIQnB1dk1nRSIsIm1heFRpbWVvdXRTZWNvbmRzIjozMDAsImV4dHJhIjp7ImZlZVBheWVyIjoiQkVOckxvVWJuZHhvTk1VUzVKWEFwR010TnlrTGpGWFhpeE10cER3RFI5U1AiLCJxdW90ZWRBdCI6IjIwMjYtMTAtMDVUMTk6NDY6NDAuMDI4WiJ9fV0sImV4dGVuc2lvbnMiOnsiYmF6YWFyIjp7ImluZm8iOnsiaW5wdXQiOnsidHlwZSI6Imh0dHAiLCJxdWVyeVBhcmFtcyI6eyJhZ2VudF9uYW1lIjoiZnJpZW5kbHktYWdlbnQiLCJ1cmxzIjoiW1wiaHR0cHM6Ly9yZXNlYXJjaC1hLmV4YW1wbGUvcXVvdGVcIixcImh0dHBzOi8vcmVzZWFyY2gtYi5leGFtcGxlL3F1b3RlXCJdIn0sIm1ldGhvZCI6IkdFVCJ9LCJvdXRwdXQiOnsidHlwZSI6Impzb24iLCJleGFtcGxlIjp7Im1lc3NhZ2UiOiJQbGVhc3VyZSBkb2luZyBidXNpbmVzcy4gSGVyZSdzIHlvdXIgZ29vZHMsIHdhcm0gb2ZmIHRoZSBzaGVsZi4iLCJpdGVtX2lkIjoicmVzZWFyY2hfY29tcGFyaXNvbiIsImRlbGl2ZXJhYmxlIjoiPHRoZSBSZXNlYXJjaCBDb21wYXJpc29uIGl0c2VsZiwgYXMgdGV4dD4iLCJwYWlkX3VzZGMiOjAuMDEsInRpcF91c2RjIjowLCJwYXRyb25fbnVtYmVyIjo0MSwiYmFkZ2VfdXJsIjoiaHR0cHM6Ly9zY3ZkLnN0b3JlL2JhZGdlcy80MS5zdmciLCJjZXJ0aWZpY2F0ZSI6eyJjZXJ0X2lkIjoiPGNlcnRfICsgMTIgY2hhcnMsIG1pbnRlZCB3aGVuIHRoaXMgcHVyY2hhc2Ugc2V0dGxlcz4iLCJpdGVtIjoicmVzZWFyY2hfY29tcGFyaXNvbiIsInBhdHJvbl9udW1iZXIiOjQxLCJkYXRlIjoiMjAyNi0wNy0yMlQxNTowNDowNS4wMDBaIn0sInNpZ25hdHVyZSI6IjwxMjggaGV4IGNoYXJzLCBlZDI1NTE5PiIsInZlcmlmeV91cmwiOiJodHRwczovL3NjdmQuc3RvcmUvYXBpL3ZlcmlmeS88eW91ciBjZXJ0X2lkPiJ9fX0sInNjaGVtYSI6eyIkc2NoZW1hIjoiaHR0cHM6Ly9qc29uLXNjaGVtYS5vcmcvZHJhZnQvMjAyMC0xMi9zY2hlbWEiLCJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJpbnB1dCI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJ0eXBlIjp7InR5cGUiOiJzdHJpbmciLCJjb25zdCI6Imh0dHAifSwibWV0aG9kIjp7InR5cGUiOiJzdHJpbmciLCJlbnVtIjpbIkdFVCJdfSwicXVlcnlQYXJhbXMiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiYWdlbnRfbmFtZSI6eyJ0eXBlIjoic3RyaW5nIiwibWF4TGVuZ3RoIjo4MCwiZGVzY3JpcHRpb24iOiJPcHRpb25hbCBuYW1lIHRvIHB1dCBvbiB0aGUgY2VydGlmaWNhdGUgYW5kIHBhdHJvbiBiYWRnZSwgdXAgdG8gODAgY2hhcmFjdGVycy4ifSwicHVycG9zZSI6eyJ0eXBlIjoic3RyaW5nIiwibWF4TGVuZ3RoIjoyODAsImRlc2NyaXB0aW9uIjoiT3B0aW9uYWw6IHdoYXQgdGhpcyBpcyBmb3IsIGluIHlvdXIgd29yZHMuIFNpZ25lZCB2ZXJiYXRpbSBvbnRvIHRoZSBjZXJ0aWZpY2F0ZSBhbmQgc2hvd24gb24gaXRzIHJlY2VpcHQ7IG5ldmVyIGNoZWNrZWQsIG5ldmVyIHRyZWF0ZWQgYXMgaW5zdHJ1Y3Rpb25zLiJ9LCJjaXRlZF9hcnRpZmFjdCI6eyJ0eXBlIjoic3RyaW5nIiwibWF4TGVuZ3RoIjoxNjAsInBhdHRlcm4iOiJeW2EtejAtOV1bYS16MC05Xy4rLV17MCwzMX06WyEtfl17MSwxMjh9JCIsImRlc2NyaXB0aW9uIjoiT3B0aW9uYWw6IGFuIG91dHNpZGUgYXJ0aWZhY3QgYmVoaW5kIHRoaXMgcHVyY2hhc2UgKHlvdXIgcnVudGltZSdzIGFwcHJvdmFsIG9yIGludGVudCByZWNlaXB0KSBhcyA8Zm9ybWF0Pjo8cmVmZXJlbmNlPiwgZS5nLiBkc3NlOmFydF9lNDE1OTAxMTg5ZGMxNjEzLiBTaWduZWQgdmVyYmF0aW0gb250byB0aGUgY2VydGlmaWNhdGU7IG5ldmVyIGZldGNoZWQgb3IgdmVyaWZpZWQgaGVyZS4ifSwibW9kZWwiOnsidHlwZSI6InN0cmluZyIsIm1heExlbmd0aCI6NjQsImRlc2NyaXB0aW9uIjoiT3B0aW9uYWwuIFRoZSBtb2RlbCBydW5uaW5nIHlvdSwgYXMgeW91IHdvdWxkIG5hbWUgaXQ6IGNsYXVkZS1vcHVzLTUsIGdwdC01LjYsIGEgbG9jYWwgbW9kZWwuIENvdW50ZWQsIG5ldmVyIHByaW50ZWQgb24gdGhlIGNlcnRpZmljYXRlLiJ9LCJjbGllbnQiOnsidHlwZSI6InN0cmluZyIsIm1heExlbmd0aCI6NjQsImRlc2NyaXB0aW9uIjoiT3B0aW9uYWwuIFRoZSBoYXJuZXNzIG9yIGZyYW1ld29yayB5b3UgcnVuIGluOiBjbGF1ZGUtY29kZSwgY3Vyc29yLCBvcGVuYWktYWdlbnRzLCBsYW5nZ3JhcGgsIGN1c3RvbS4gQ291bnRlZCwgbmV2ZXIgb24gdGhlIGNlcnRpZmljYXRlLiJ9LCJvcGVyYXRvciI6eyJ0eXBlIjoic3RyaW5nIiwibWF4TGVuZ3RoIjoxMjAsImRlc2NyaXB0aW9uIjoiT3B0aW9uYWwuIFdobyBydW5zIHlvdTogYSBuYW1lLCBoYW5kbGUsIGNvbXBhbnkgb3IgVVJMLiBTdG9yZWQgYXMgeW91ciBjbGFpbSwgbWFya2VkIHVudmVyaWZpZWQsIG5ldmVyIHB1Ymxpc2hlZCwgbmV2ZXIgb24gdGhlIGNlcnRpZmljYXRlLiJ9LCJvcGVyYXRvcl9raW5kIjp7InR5cGUiOiJzdHJpbmciLCJlbnVtIjpbInNvbG8iLCJjb21wYW55IiwicmVzZWFyY2giLCJzZWxmIl0sImRlc2NyaXB0aW9uIjoiT3B0aW9uYWwuIHNvbG86IG9uZSBwZXJzb24gcnVucyB5b3UuIGNvbXBhbnk6IGEgdGVhbSBkb2VzLiByZXNlYXJjaDogYSBzdHVkeS4gc2VsZjogeW91IGFjdCBmb3IgeW91cnNlbGYuIn0sImNhbWVfZnJvbSI6eyJ0eXBlIjoic3RyaW5nIiwibWF4TGVuZ3RoIjoxNjAsImRlc2NyaXB0aW9uIjoiT3B0aW9uYWwuIFdoZXJlIHlvdSBsZWFybmVkIHRoaXMgZG9vciBleGlzdHM6IGEgVVJMLCBhIGRpcmVjdG9yeSwgYSBza2lsbCBuYW1lLCBtZW1vcnksIGFub3RoZXIgYWdlbnQuIFJlZmVycmVycyBuZXZlciByZWFjaCB1czsgdGhpcyBkb2VzLiJ9LCJwcmlvcl9jZXJ0X2lkIjp7InR5cGUiOiJzdHJpbmciLCJtYXhMZW5ndGgiOjY0LCJkZXNjcmlwdGlvbiI6Ik9wdGlvbmFsLiBBIGNlcnRfIGlkIGZyb20gYW4gZWFybGllciBwdXJjaGFzZSBoZXJlLiBBIHBheWVyIG1hdGNoIHdpdGggdGhpcyBwYXltZW50IG1hcmtzIHlvdSBhIHJldHVybmluZyBidXllcjsgbm8gYWNjb3VudCBuZWVkZWQuIn0sInVybHMiOnsidHlwZSI6InN0cmluZyIsIm1heExlbmd0aCI6NDExNCwiZGVzY3JpcHRpb24iOiJKU09OLWVuY29kZWQgYXJyYXkgb2YgMuKAkzQgZGlzdGluY3QgcHVibGljIEhUVFBTIFVSTHMgKDEwMjQgY2hhcmFjdGVycyBlYWNoKSwgZm9yIHVuYXV0aGVudGljYXRlZCBHRVQgcGF5bWVudCBjaGFsbGVuZ2VzLiBObyBjcmVkZW50aWFscywgZnJhZ21lbnRzLCBzZWNyZXRzIG9yIHByaXZhdGUgcHJvbXB0czsgbm8gcmVzZWFyY2ggcHVyY2hhc2VkLiJ9fSwicmVxdWlyZWQiOlsidXJscyJdfX0sInJlcXVpcmVkIjpbInR5cGUiLCJtZXRob2QiXSwiYWRkaXRpb25hbFByb3BlcnRpZXMiOmZhbHNlfSwib3V0cHV0Ijp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7InR5cGUiOnsidHlwZSI6InN0cmluZyJ9LCJleGFtcGxlIjp7InR5cGUiOiJvYmplY3QifX0sInJlcXVpcmVkIjpbInR5cGUiXX19LCJyZXF1aXJlZCI6WyJpbnB1dCJdfX0sInJlcXVpcmVkLWlucHV0cyI6eyJxdWVyeVBhcmFtcyI6WyJ1cmxzIl0sIm5vdGUiOiJUaGlzIGRvb3IgY2Fubm90IGJlIHNlcnZlZCB3aXRob3V0ID91cmxzPS4gQXNraW5nIHRoZSBwcmljZSB3aXRob3V0IHRoZW0gaXMgZnJlZTsgUEFZSU5HIHdpdGhvdXQgdGhlbSBpcyByZWZ1c2VkIGJlZm9yZSB0aGUgZ2F0ZSBhbmQgbm8gbW9uZXkgbW92ZXMsIHNvIGFkZCB0aGVtIHRvIHRoZSByZXRyeSB0aGF0IGNhcnJpZXMgeW91ciBzaWduYXR1cmUuIiwicmV0cnlfdXJsX3RlbXBsYXRlIjoiaHR0cHM6Ly9zY3ZkLnN0b3JlL2FwaS9idXkvcmVzZWFyY2hfY29tcGFyaXNvbj91cmxzPTx1cmxzPiIsInByaWNlX2Rpc2NvdmVyeV91cmwiOiJodHRwczovL3NjdmQuc3RvcmUvbWVudS9yZXNlYXJjaF9jb21wYXJpc29uP3ZpZXc9Y29tcGFjdCJ9LCJvZmZlci1yZWNlaXB0Ijp7ImluZm8iOnsib2ZmZXJzIjpbeyJmb3JtYXQiOiJqd3MiLCJhY2NlcHRJbmRleCI6MCwic2lnbmF0dXJlIjoiZXlKaGJHY2lPaUpGWkVSVFFTSXNJbXRwWkNJNkltUnBaRHAzWldJNmMyTjJaQzV6ZEc5eVpTTnJaWGt0TWlKOS5leUoyWlhKemFXOXVJam94TENKeVpYTnZkWEpqWlZWeWJDSTZJbWgwZEhCek9pOHZjMk4yWkM1emRHOXlaUzloY0drdlluVjVMM0psYzJWaGNtTm9YMk52YlhCaGNtbHpiMjRpTENKelkyaGxiV1VpT2lKbGVHRmpkQ0lzSW01bGRIZHZjbXNpT2lKbGFYQXhOVFU2T0RRMU15SXNJbUZ6YzJWMElqb2lNSGc0TXpNMU9EbG1RMFEyWlVSaU5rVXdPR1kwWXpkRE16SkVOR1kzTVdJMU5HSmtRVEF5T1RFeklpd2ljR0Y1Vkc4aU9pSXdlRVJFTXpVd09UYzJRamhqWmtaak5qVTVNemhETURRMk5HUXpPVUV5UXpjNFFrVXdOemxpWkRBaUxDSmhiVzkxYm5RaU9pSXhNREF3TUNJc0luWmhiR2xrVlc1MGFXd2lPakUzT1RFeU1qazVNREI5LlE1NDNqa0Z1QkQ4QV9MS3dXNDdsTzRFdWlVVDFQOEtaR21aRk9pX0x0RElfUzM5Rjh5d0tkTHpqRHdmcjlRSmpqcV9tWFo3c3VuUmJMNlpNREZJMERRIn0seyJmb3JtYXQiOiJqd3MiLCJhY2NlcHRJbmRleCI6MSwic2lnbmF0dXJlIjoiZXlKaGJHY2lPaUpGWkVSVFFTSXNJbXRwWkNJNkltUnBaRHAzWldJNmMyTjJaQzV6ZEc5eVpTTnJaWGt0TWlKOS5leUoyWlhKemFXOXVJam94TENKeVpYTnZkWEpqWlZWeWJDSTZJbWgwZEhCek9pOHZjMk4yWkM1emRHOXlaUzloY0drdlluVjVMM0psYzJWaGNtTm9YMk52YlhCaGNtbHpiMjRpTENKelkyaGxiV1VpT2lKbGVHRmpkQ0lzSW01bGRIZHZjbXNpT2lKbGFYQXhOVFU2TVRNM0lpd2lZWE56WlhRaU9pSXdlRE5qTkRrNVl6VTBNbU5GUmpWRk16Z3hNV1V4TVRreVkyVTNNR1E0WTBNd00yUTFZek16TlRraUxDSndZWGxVYnlJNklqQjRSRVF6TlRBNU56WkNPR05tUm1NMk5Ua3pPRU13TkRZMFpETTVRVEpETnpoQ1JUQTNPV0prTUNJc0ltRnRiM1Z1ZENJNklqRXdNREF3SWl3aWRtRnNhV1JWYm5ScGJDSTZNVGM1TVRJeU9Ua3dNSDAuSnRkaW9tQ2dxbVJVR0JZZnBudUlzYzI4UG1scl9zMHBGRGw3V3hmRmhRRnZQYlBzLVZTLTE5VXZ0OG9YUUtBWFZLcVpYeUFEXzF6aFNlUzN2Yk8zQncifSx7ImZvcm1hdCI6Imp3cyIsImFjY2VwdEluZGV4IjoyLCJzaWduYXR1cmUiOiJleUpoYkdjaU9pSkZaRVJUUVNJc0ltdHBaQ0k2SW1ScFpEcDNaV0k2YzJOMlpDNXpkRzl5WlNOclpYa3RNaUo5LmV5SjJaWEp6YVc5dUlqb3hMQ0p5WlhOdmRYSmpaVlZ5YkNJNkltaDBkSEJ6T2k4dmMyTjJaQzV6ZEc5eVpTOWhjR2t2WW5WNUwzSmxjMlZoY21Ob1gyTnZiWEJoY21semIyNGlMQ0p6WTJobGJXVWlPaUpsZUdGamRDSXNJbTVsZEhkdmNtc2lPaUpsYVhBeE5UVTZOREl4TmpFaUxDSmhjM05sZENJNklqQjRZV1k0T0dRd05qVmxOemRqT0dORE1qSXpPVE15TjBNMVJVUmlNMEUwTXpJeU5qaGxOVGd6TVNJc0luQmhlVlJ2SWpvaU1IaEVSRE0xTURrM05rSTRZMlpHWXpZMU9UTTRRekEwTmpSa016bEJNa00zT0VKRk1EYzVZbVF3SWl3aVlXMXZkVzUwSWpvaU1UQXdNREFpTENKMllXeHBaRlZ1ZEdsc0lqb3hOemt4TWpJNU9UQXdmUS5GUFhsUmZDT0ZaQlNyTVE2ZjY5NjJFWTVFTHVqek80bEdvOGVEeEFWcWRNeWNEYkVlZWFSaGhUS0oxd0YwdXZOanhUNGVybDk0aGdJd2hFLWtuSEdEZyJ9LHsiZm9ybWF0IjoiandzIiwiYWNjZXB0SW5kZXgiOjMsInNpZ25hdHVyZSI6ImV5SmhiR2NpT2lKRlpFUlRRU0lzSW10cFpDSTZJbVJwWkRwM1pXSTZjMk4yWkM1emRHOXlaU05yWlhrdE1pSjkuZXlKMlpYSnphVzl1SWpveExDSnlaWE52ZFhKalpWVnliQ0k2SW1oMGRIQnpPaTh2YzJOMlpDNXpkRzl5WlM5aGNHa3ZZblY1TDNKbGMyVmhjbU5vWDJOdmJYQmhjbWx6YjI0aUxDSnpZMmhsYldVaU9pSmxlR0ZqZENJc0ltNWxkSGR2Y21zaU9pSmxhWEF4TlRVNk5EZ3dJaXdpWVhOelpYUWlPaUl3ZURjNVlUQXlORGd5WVRnNE1HSmpaVE5tTVRObE1EbGtZVGszTUdSak16UmtZalJqWkRJMFpERWlMQ0p3WVhsVWJ5STZJakI0UkVRek5UQTVOelpDT0dObVJtTTJOVGt6T0VNd05EWTBaRE01UVRKRE56aENSVEEzT1dKa01DSXNJbUZ0YjNWdWRDSTZJakV3TURBd0lpd2lkbUZzYVdSVmJuUnBiQ0k2TVRjNU1USXlPVGt3TUgwLlp1U3lHZ2JIS01LbTFOM3VsaWRuZVpuUXk2V25Tc3E4U0xJMWhiZW1Ya25xanhQWVQteU01TmhsVU5iSmJ3MWlaVUdNclpQVHFZZmtYMmpHTTdWNEFBIn0seyJmb3JtYXQiOiJqd3MiLCJhY2NlcHRJbmRleCI6NCwic2lnbmF0dXJlIjoiZXlKaGJHY2lPaUpGWkVSVFFTSXNJbXRwWkNJNkltUnBaRHAzWldJNmMyTjJaQzV6ZEc5eVpTTnJaWGt0TWlKOS5leUoyWlhKemFXOXVJam94TENKeVpYTnZkWEpqWlZWeWJDSTZJbWgwZEhCek9pOHZjMk4yWkM1emRHOXlaUzloY0drdlluVjVMM0psYzJWaGNtTm9YMk52YlhCaGNtbHpiMjRpTENKelkyaGxiV1VpT2lKbGVHRmpkQ0lzSW01bGRIZHZjbXNpT2lKemIyeGhibUU2TldWNWEzUTBWWE5HZGpoUU9FNUtaRlJTUlhCWk1YWjZjVXR4V2t0MlpIQWlMQ0poYzNObGRDSTZJa1ZRYWtaWFpHUTFRWFZtY1ZOVGNXVk5NbkZPTVhoNmVXSmhjRU00UnpSM1JVZEhhMXAzZVZSRWRERjJJaXdpY0dGNVZHOGlPaUpFUjNoalVISkJTRXc1V1UwemFGYzNhVmgxU0VaS2JYSTROMXB5TmtGTlFUUnFRMWxJUW5CMWRrMW5SU0lzSW1GdGIzVnVkQ0k2SWpFd01EQXdJaXdpZG1Gc2FXUlZiblJwYkNJNk1UYzVNVEl5T1Rrd01IMC5BNzE5RDBfQXpILUlmYmVfWFpfUmh3WjJlRXc3OTF6aHhmLW1uMERsUFk0NlFkZERIcGhiem9jSTE2aUJLSEY2WDB2VnZma0NrQkYxWGNlUy1RQy1BUSJ9XX19fX0="
+  },
+  "response_sha256": "2de07e7bd266678885b8ff326490dae3135835932263e35086bd299de72e3fc5",
+  "body": {
+    "error": "A penny for the doors side by side, dated and signed. The blanks stay visible. You decide where to buy.",
+    "note": "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign one of the accepts and retry with the PAYMENT-SIGNATURE header; the v1 X-PAYMENT header is honoured too.",
+    "item_id": "research_comparison",
+    "min_price_usdc": 0.01,
+    "pricing": "fixed",
+    "required_params": [
+      "urls"
+    ],
+    "input_aliases": {
+      "urls": [
+        "url"
+      ]
+    },
+    "input_contract_url": "https://scvd.store/menu/research_comparison?view=compact",
+    "required_params_note": "This one needs ?urls= on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves. Supply it unsigned first and the same URL validates it before offering terms.",
+    "want_something_else": "Can't pay, or want something we don't stock? POST https://scvd.store/api/request, the keeper reads every one on Sundays.",
+    "buyer_guidance": {
+      "price_effect": {
+        "minimum_usdc": 0.01,
+        "higher_payment": "not_offered",
+        "higher_payment_changes_scope": false,
+        "scope": "The named item and its declared inputs; a tip does not add scope, priority or human time."
+      },
+      "free_alternative": {
+        "url": "https://scvd.store/api/look/v1",
+        "method": "POST",
+        "payment_required": false,
+        "paid_adds": "One signed, certificate-bound comparison of the supplied endpoints, with matching-asset quote groups and shared receiving addresses. The free Look reads one endpoint per call.",
+        "body_template": {
+          "url": "{endpoint_url}"
+        }
+      },
+      "production": {
+        "kind": "instant_fulfillment",
+        "authorship": "See the artifact; no additional authorship or authoring date is asserted here."
+      },
+      "evidence": {
+        "signs": "The supplied endpoint set, observation window, per-endpoint preflight reports, advertised atomic terms, host history with dates and coverage, same-endpoint network comparisons, shared receiving-address matches, gaps and limits. SHA-256 of observation.signed_payload is bound into the purchase certificate as attests; observation.signature_jcs also covers the RFC 8785 canonical record.",
+        "does_not_prove": "Research accuracy, freshness, licensing or suitability for a trade; common ownership or common underlying sources; complete market coverage; final variable costs; settlement or delivery success. An advertised address match is not an identity verdict. No ranking, recommendation or Coinbase endorsement.",
+        "spec_url": "https://scvd.store/attestation",
+        "criteria_url": "https://scvd.store/criteria",
+        "version_source": "Use the criteria/spec version and evidence fields inside the delivered artifact when present; the live criteria page can change.",
+        "verify_url_template": "https://scvd.store/api/verify/{id}",
+        "verification_payment_required": false,
+        "corrections_url": "https://scvd.store/corrections",
+        "report_error": {
+          "method": "POST",
+          "url": "https://scvd.store/api/letter",
+          "payment_required": false,
+          "body_field": "letter",
+          "include": "Artifact ID or verification URL, disputed field, reproducible evidence and expected result. Keep purchase-status tokens private."
+        },
+        "limit": "A valid signature establishes signed bytes and signer identity, not the truth of an observation. Correction requests are reviewed by the keeper."
+      },
+      "recovery": {
+        "status_tool": "check_purchase",
+        "requires_status_token": true,
+        "how": "If a response supplies recovery.status_url and status_token, read that URL with Authorization: Bearer <status_token> for free. Save these privately. Otherwise retry the original payment and inputs with the original idempotency key.",
+        "no_new_payment": "Do not sign a new payment merely to find out whether the first one delivered.",
+        "scope": "Purchase-status handles exist on recorded catalog purchases; an order URL is the pickup for commissioned work."
+      },
+      "credit": {
+        "rate": 0.05,
+        "cash_out_floor_atomic": "1000000",
+        "balance_cap_atomic": "25000000",
+        "idle_expiry_days": 90,
+        "currency": "USDC",
+        "changes_checkout_price": false,
+        "proof_of_accrual": "store_credit in the successful fulfillment response",
+        "eligibility": "Organic certificate purchases; house wallets excluded. Accrual can be unavailable or capped. Publication-only payments do not accrue.",
+        "cash_out_wallet_kind": "EVM EOA",
+        "cash_out_network": "eip155:8453",
+        "balance_url_template": "https://scvd.store/api/credit/{evm_wallet}",
+        "terms_url": "https://scvd.store/credit",
+        "redemption": {
+          "challenge_url": "https://scvd.store/api/credit/challenge",
+          "redeem_url": "https://scvd.store/api/credit/redeem",
+          "method": "POST",
+          "requires_wallet_signature": true,
+          "automatic": false
+        },
+        "rail_limit": "The current balance and cash-out API accepts EVM addresses only; do not infer Solana cash-out support."
+      }
+    },
+    "hand_rolling_url": "https://scvd.store/try#hand-rolling",
+    "payload_template": {
+      "x402Version": 2,
+      "accepted": {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": "10000",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+        "maxTimeoutSeconds": 300,
+        "extra": {
+          "name": "USD Coin",
+          "version": "2",
+          "assetTransferMethod": "eip3009",
+          "quotedAt": "2026-10-05T19:46:40.028Z"
+        }
+      },
+      "payload": {
+        "signature": "<0x + 130 hex \u2014 your EIP-712 signature over the authorization below>",
+        "authorization": {
+          "from": "<0x + 40 hex \u2014 the wallet holding the USDC>",
+          "to": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "value": "10000",
+          "validAfter": "0",
+          "validBefore": "1791229900",
+          "nonce": "<0x + 64 hex \u2014 32 random bytes, never reused>"
+        }
+      }
+    },
+    "payload_template_note": "Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL \u2014 standard base64 alphabet, one unbroken line (`base64 -w0` from a shell: GNU base64 wraps at 76 columns by default and curl sends only the first line). Everything else is already correct for THIS challenge and should not be rebuilt \u2014 `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), the chainId of the accepted entry's own network (eip155:8453 \u2192 8453, eip155:137 \u2192 137), and verifyingContract = accepted.asset \u2014 details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template covers the EVM rails (eip155:*) only.",
+    "spec_note": "Task: Compare payment terms, dated host history and shared receiving addresses before an agent buys research from a set of x402 endpoints. Returns: One signed comparison: live atomic payment terms, dated host history and gaps, same-endpoint network changes, shared receivers and limits. No research quality or ownership verdict. Price: $0.01 USDC (x402 v2; network from the current quote). Latency: delivered in the purchase response, same request. Verify: GET /api/verify/{id} \u2014 free, unlimited, forever (live sample: cert_4dww28dx5j). Constraints: JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased.; Partial observations are delivered at the fixed price with gaps counted; if every live probe is refused or the instrument fails, no settlement is attempted; An unreachable probe is a reading of our network path, not proof that a provider is down; Atomic amounts compare only within the same network and asset; no token decimals, dollar conversion, variable final cost or research quality inferred; Shared receiving addresses do not establish common ownership or common research sources; Submitted URLs and the signed comparison are retained for purchase recovery, not added to the public corpus or shared with partners; Never a ranking, and never a verdict without its derivation and denominator beside it..",
+    "spec": {
+      "capability": "One signed comparison: live atomic payment terms, dated host history and gaps, same-endpoint network changes, shared receivers and limits. No research quality or ownership verdict.",
+      "why_use": "one signed comparison of your research endpoints: atomic quotes, dated host history, gaps and shared receivers. Individual preflight and history reads are free; the purchase adds assembly, signature and certificate binding. No research content is evaluated.",
+      "inputs": {
+        "properties": {
+          "agent_name": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+          },
+          "purpose": {
+            "type": "string",
+            "maxLength": 280,
+            "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions."
+          },
+          "cited_artifact": {
+            "type": "string",
+            "maxLength": 160,
+            "pattern": "^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$",
+            "description": "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here."
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional. The model running you, as you would name it: claude-opus-5, gpt-5.6, a local model. Counted, never printed on the certificate."
+          },
+          "client": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional. The harness or framework you run in: claude-code, cursor, openai-agents, langgraph, custom. Counted, never on the certificate."
+          },
+          "operator": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Optional. Who runs you: a name, handle, company or URL. Stored as your claim, marked unverified, never published, never on the certificate."
+          },
+          "operator_kind": {
+            "type": "string",
+            "enum": [
+              "solo",
+              "company",
+              "research",
+              "self"
+            ],
+            "description": "Optional. solo: one person runs you. company: a team does. research: a study. self: you act for yourself."
+          },
+          "came_from": {
+            "type": "string",
+            "maxLength": 160,
+            "description": "Optional. Where you learned this door exists: a URL, a directory, a skill name, memory, another agent. Referrers never reach us; this does."
+          },
+          "prior_cert_id": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional. A cert_ id from an earlier purchase here. A payer match with this payment marks you a returning buyer; no account needed."
+          },
+          "urls": {
+            "type": "string",
+            "maxLength": 4114,
+            "description": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased."
+          }
+        },
+        "required": [
+          "urls"
+        ]
+      },
+      "outputs": {
+        "delivery": "delivered in the purchase response, same request",
+        "always_included": [
+          "signed certificate (ed25519)",
+          "sequential patron number",
+          "badge_url",
+          "verify_url"
+        ]
+      },
+      "verification": {
+        "verify_url": "https://scvd.store/api/verify/{id}",
+        "cost": "free, unlimited, forever",
+        "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+        "key_history": "https://scvd.store/.well-known/scvd-signing-key",
+        "sample_artifact_id": "cert_4dww28dx5j",
+        "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+        "certificate_binds": [
+          "cert_id",
+          "item",
+          "patron_number",
+          "date",
+          "paid_usdc",
+          "asset",
+          "network",
+          "payer",
+          "settlement_tx"
+        ],
+        "certificate_binds_note": "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet \u2014 chain-verifiable, unlike a chosen name \u2014 and settlement_tx is the on-chain transaction, so this certificate and an explorer for the settlement network are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+        "rights": "https://scvd.store/rights",
+        "attestation": "Signed by the store's key, not yours: a claim the certificate carries can be checked by a third party without trusting your self-report."
+      },
+      "constraints": [
+        "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased.",
+        "Partial observations are delivered at the fixed price with gaps counted; if every live probe is refused or the instrument fails, no settlement is attempted",
+        "An unreachable probe is a reading of our network path, not proof that a provider is down",
+        "Atomic amounts compare only within the same network and asset; no token decimals, dollar conversion, variable final cost or research quality inferred",
+        "Shared receiving addresses do not establish common ownership or common research sources",
+        "Submitted URLs and the signed comparison are retained for purchase recovery, not added to the public corpus or shared with partners",
+        "Never a ranking, and never a verdict without its derivation and denominator beside it."
+      ],
+      "price": {
+        "amount_usdc": 0.01,
+        "pricing": "fixed",
+        "tiers_usdc": [
+          0.01
+        ],
+        "currency": "USDC",
+        "network": "Choose an accepts[].network from the current PAYMENT-REQUIRED quote",
+        "protocol": "x402 v2"
+      }
+    },
+    "sample_url": "https://scvd.store/samples/research-comparison.json",
+    "sample": {
+      "url": "https://scvd.store/samples/research-comparison.json",
+      "kind": "delivery_outline",
+      "price": "free",
+      "live_observation": false
+    },
+    "guarantee": "Guaranteed: signature validity forever; verification free forever; price as displayed; delivery format as specified. Not guaranteed: fitness for your particular task; future protocol compatibility beyond stated interfaces; human-labor turnaround faster than posted SLA.",
+    "idempotency": {
+      "suggested_key": "scvd-suggested-research_comparison-29853826",
+      "how": "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. A repeat returns your ORIGINAL purchase when available, or its pending status \u2014 no settlement, no second charge.",
+      "optional": "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. An unresolved purchase or unavailable admission record refuses another settlement.",
+      "not_a_secret": "This value is derived from the item, the current minute and a digest of the request body when there is one, so anyone can compute it \u2014 that is fine and deliberate. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet and by what was asked for (path, query, body), so echoing this key only ever reaches your own earlier purchase of this exact request, never somebody else's and never a different one of yours.",
+      "stable_for_seconds": 60,
+      "replay_ttl_seconds": 86400,
+      "replay_horizon": "The ORIGINAL result is served from cache for 24 hours after the first sale. Past that, a repeat with the same key is not a cached replay; the original signed payment can still retrieve retained goods or their status, and a fresh key is a deliberate second purchase."
+    },
+    "amount_check": {
+      "usdc": [
+        0.01
+      ],
+      "atomic": [
+        "10000"
+      ],
+      "these_are_the_same_number": "The PAYMENT-REQUIRED header and the accepts array carry ATOMIC units: USDC has 6 decimals, so 5000 atomic is $0.005 and $5000 would be 5000000000 atomic. If you read an amount and it looks a million times too large, you are holding atomic units and should not convert twice.",
+      "before_you_sign": "Check the amount you are about to sign against the usdc list above. This is the only step in this flow where a mistake does not bounce: a signature over the wrong amount is still a VALID signature, so nothing here will catch it for you. Every other error \u2014 bad field, malformed payload, wrong network \u2014 is refused before money moves."
+    },
+    "house_rule": "Nothing from this store can act without your decision, and we never ask for credentials, keys, or wallet secrets. Anything that does either is not us.",
+    "store_links": {
+      "store": {
+        "name": "SCVD General Store",
+        "homepage": "https://scvd.store",
+        "llms_txt": "https://scvd.store/llms.txt",
+        "agents_md": "https://scvd.store/agents.md",
+        "menu_json": "https://scvd.store/menu.json",
+        "openapi_json": "https://scvd.store/openapi.json",
+        "skill_md": "https://scvd.store/skill.md",
+        "developers": "https://scvd.store/developers",
+        "verify_url_template": "https://scvd.store/api/verify/{id}",
+        "signing_key": "https://scvd.store/.well-known/scvd-signing-key",
+        "preflight": "https://scvd.store/api/preflight/v1",
+        "conformance_desk": "https://scvd.store/api/conformance/v1"
+      },
+      "next": [],
+      "derivation": "next is derived, never typed: items that share a use_when recipe with this one (menu.json use_when), the deeper rung of the room this path belongs to, the settlement observation for the transaction just settled, and the instrument this host's own tier picks. In derivation order, then the catalogue's order; never by price, never by sales, never a ranking. store is the same roster on every envelope this store serves."
+    },
+    "verification": {
+      "check_these_before_you_pay": "Every field in this block is checkable before you sign anything, from this response and public URLs, without asking us. The key fingerprint here should match the one served at signing_key_url; the sample artifact is a live one you can verify to see what you would be getting. Nothing here costs a request you are not already making.",
+      "verify_url": "https://scvd.store/api/verify/{id}",
+      "key_fingerprint": "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "signing_key_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "sample_artifact_id": "cert_4dww28dx5j",
+      "sample_verify_url": "https://scvd.store/api/verify/cert_4dww28dx5j",
+      "identity_policy": "This wallet, this domain, and 2 signing keys \u2014 1 retired, each kept published forever with its dates and the signed announcement that retired it. A key change here is announced before the new key signs anything and the announcement is signed by the outgoing key; nothing is ever quietly swapped. Full history at /.well-known/scvd-signing-key, policy at /attestation."
+    },
+    "wallet_safety": {
+      "standfirst": "Two mechanisms protect your wallet from your own bugs, both free, both live on every paid door.",
+      "idempotency": {
+        "what": "Send an Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP), 16-128 characters, treated as a secret. A repeat of the same key for the same item from the same wallet inside 24 hours returns the ORIGINAL cached result when available, marked idempotent_replay: true. Pending purchases return status. Neither path submits a new settlement \u2014 no second charge.",
+        "why": "The chain refuses to settle the same authorization twice, but a retry loop signs a FRESH authorization each pass \u2014 without a key, every loop is an honest second charge. With one, new purchases admit a single payment and retain its recovery path.",
+        "honest_edges": "The response cache lasts 24 hours; new purchase-key claims persist beyond it. Concurrent fresh authorizations with the same key share one purchase. Pending or unreadable admission stops settlement and returns status when available. Keys under 16 characters are treated as absent. Keep the original payment and key while its outcome is unresolved. An original signed payment can retrieve retained goods or status after expiry without its key; missing evidence still needs Claims or keeper resolution."
+      },
+      "claims": {
+        "what": "Context reset mid-order? Prove you hold the paying wallet at /api/claims (challenge-response, single-use nonce, EIP-191 signature) and get your own orders back, order URLs included. No sessions, nothing to have saved.",
+        "why": "A two-hour human job outlives many context windows. The key that signed your payments is the key that recovers them \u2014 a bare address gets nothing, so nobody can enumerate your purchases."
+      }
+    },
+    "extensions": {
+      "offer-receipt": {
+        "info": {
+          "offers": [
+            {
+              "format": "jws",
+              "acceptIndex": 0,
+              "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwicGF5VG8iOiIweEREMzUwOTc2QjhjZkZjNjU5MzhDMDQ2NGQzOUEyQzc4QkUwNzliZDAiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjE3OTEyMjk5MDB9.Q543jkFuBD8A_LKwW47lO4EuiUT1P8KZGmZFOi_LtDI_S39F8ywKdLzjDwfr9QJjjq_mXZ7sunRbL6ZMDFI0DQ"
+            },
+            {
+              "format": "jws",
+              "acceptIndex": 1,
+              "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6MTM3IiwiYXNzZXQiOiIweDNjNDk5YzU0MmNFRjVFMzgxMWUxMTkyY2U3MGQ4Y0MwM2Q1YzMzNTkiLCJwYXlUbyI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCIsImFtb3VudCI6IjEwMDAwIiwidmFsaWRVbnRpbCI6MTc5MTIyOTkwMH0.JtdiomCgqmRUGBYfpnuIsc28Pmlr_s0pFDl7WxfFhQFvPbPs-VS-19Uvt8oXQKAXVKqZXyAD_1zhSeS3vbO3Bw"
+            },
+            {
+              "format": "jws",
+              "acceptIndex": 2,
+              "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NDIxNjEiLCJhc3NldCI6IjB4YWY4OGQwNjVlNzdjOGNDMjIzOTMyN0M1RURiM0E0MzIyNjhlNTgzMSIsInBheVRvIjoiMHhERDM1MDk3NkI4Y2ZGYzY1OTM4QzA0NjRkMzlBMkM3OEJFMDc5YmQwIiwiYW1vdW50IjoiMTAwMDAiLCJ2YWxpZFVudGlsIjoxNzkxMjI5OTAwfQ.FPXlRfCOFZBSrMQ6f6962EY5ELujzO4lGo8eDxAVqdMycDbEeeaRhhTKJ1wF0uvNjxT4erl94hgIwhE-knHGDg"
+            },
+            {
+              "format": "jws",
+              "acceptIndex": 3,
+              "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NDgwIiwiYXNzZXQiOiIweDc5YTAyNDgyYTg4MGJjZTNmMTNlMDlkYTk3MGRjMzRkYjRjZDI0ZDEiLCJwYXlUbyI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCIsImFtb3VudCI6IjEwMDAwIiwidmFsaWRVbnRpbCI6MTc5MTIyOTkwMH0.ZuSyGgbHKMKm1N3ulidneZnQy6WnSsq8SLI1hbemXknqjxPYT-yM5NhlUNbJbw1iZUGMrZPTqYfkX2jGM7V4AA"
+            },
+            {
+              "format": "jws",
+              "acceptIndex": 4,
+              "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJzb2xhbmE6NWV5a3Q0VXNGdjhQOE5KZFRSRXBZMXZ6cUtxWkt2ZHAiLCJhc3NldCI6IkVQakZXZGQ1QXVmcVNTcWVNMnFOMXh6eWJhcEM4RzR3RUdHa1p3eVREdDF2IiwicGF5VG8iOiJER3hjUHJBSEw5WU0zaFc3aVh1SEZKbXI4N1pyNkFNQTRqQ1lIQnB1dk1nRSIsImFtb3VudCI6IjEwMDAwIiwidmFsaWRVbnRpbCI6MTc5MTIyOTkwMH0.A719D0_AzH-Ifbe_XZ_RhwZ2eEw791zhxf-mn0DlPY46QddDHphbzocI16iBKHF6X0vVvfkCkBF1XceS-QC-AQ"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

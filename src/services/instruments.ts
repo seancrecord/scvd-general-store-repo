@@ -4,7 +4,7 @@ import { kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
 import type { MetricEvent } from "@/lib/metrics";
 import { walkerKey } from "@/lib/walkers";
 import { clientKey, type InstrumentClients } from "@/lib/client-census";
-import { invertedTimestamp } from "@/lib/kv-keys";
+import { eventPrefixes } from "@/lib/event-range";
 import { isCensusedInstrument } from "@/lib/instrument-roster";
 import { isNoiseFloor } from "@/lib/declines";
 import type { Observatory, SurfaceCount } from "@/services/observatory";
@@ -246,22 +246,10 @@ export interface DaySample {
 }
 
 export const DAY_SAMPLE_CAP = 8000;
-/** The inverted timestamp has 13 digits; a 6-digit prefix is a 10^7 ms slice, about 2.8 hours. */
-const SLICE_MS = 10_000_000;
-const SLICE_PREFIX_DIGITS = 6;
-
-/** The `evt:` key prefixes whose slices intersect the UTC day, newest slice first. */
+/** The `evt:` key prefixes whose slices intersect the UTC day, newest first. */
 export function dayEventPrefixes(day: string): string[] {
   const start = Date.parse(`${day}T00:00:00.000Z`);
-  if (!Number.isFinite(start)) return [];
-  const end = start + 86_400_000 - 1;
-  const first = Math.floor(Number(invertedTimestamp(end)) / SLICE_MS);
-  const last = Math.floor(Number(invertedTimestamp(start)) / SLICE_MS);
-  const prefixes: string[] = [];
-  for (let slice = first; slice <= last; slice += 1) {
-    prefixes.push(`evt:${String(slice).padStart(SLICE_PREFIX_DIGITS, "0")}`);
-  }
-  return prefixes;
+  return eventPrefixes(start, start + 86_400_000 - 1);
 }
 
 export async function readDayEvents(env: Env, day: string, cap = DAY_SAMPLE_CAP): Promise<MonthEvents> {
