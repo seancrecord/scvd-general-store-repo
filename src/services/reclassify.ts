@@ -1,5 +1,7 @@
 import { inferChannel } from "@/lib/channel";
-import { isWalkedAsk, walkerKey, walkersAmong } from "@/lib/walkers";
+import { walkerKey, widestWalk, WALK_MIN_ITEMS, type Touch } from "@/lib/walkers";
+import { EVENT_TTL_SECONDS } from "@/lib/event-range";
+import { cachedCorrectionPages, correctionScan, type CorrectionScan, type CorrectionEvent } from "@/services/correction-cache";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
@@ -19,9 +21,12 @@ import { kvGet, kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
  * the number it replaced.
  *
  * SO THE WALK MOVED TO THE CLOCK. Nothing renders while this runs, so
- * it can read every row there is. bulkGetJson fetches 100 keys per
- * subrequest, so twenty thousand rows cost about two hundred — well
- * inside the budget of a scheduled invocation.
+ * the scheduled pass lists retained keys and reuses unchanged pages from
+ * R2. Bulk KV reads charge per KEY, not per call: the old hourly scan
+ * repeatedly bought 200,000 reads and still stopped before the end.
+ * A bounded value-read budget now warms cached input pages over successive
+ * passes. Classification still runs afresh over every available input;
+ * an incomplete warm-up or scan never publishes a month correction.
  *
  * WHY IT RECURS INSTEAD OF RUNNING ONCE. The fix for a stale number is
  * never "run the script and move on"; that is how three weeks pass and
@@ -46,7 +51,7 @@ import { kvGet, kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
  * the answer from expiring quietly.
  */
 
-/** Bounded far above any real month, so a runaway list cannot spin. */
+/** Legacy reference recount bound; the scheduled cache has a separate read budget. */
 const MAX_PAGES = 200;
 const LIST_PAGE = 1000;
 
@@ -100,6 +105,8 @@ export interface CorrectionSet {
   computed_at: string;
   /** ISO month -> correction. */
   months: Record<string, MonthCorrection>;
+  /** Actual scheduled read work, including cache warm-up or incomplete scans. */
+  scan?: CorrectionScan;
 }
 
 /** Every stored correction, one read. Null before the first walk. */
@@ -118,6 +125,20 @@ export async function readCorrection(
   return set?.months[month] ?? null;
 }
 
+/** Reference recount, also usable without the optional R2 binding. */
+async function* uncachedCorrectionPages(env: Env, scan: CorrectionScan): AsyncGenerator<CorrectionEvent[]> {
+  let cursor: string | undefined;
+  scan.complete = false;
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const listed = await kvList(env.COUNTERS, { prefix: "evt:", limit: LIST_PAGE, ...(cursor ? { cursor } : {}) });
+    const names = listed.keys.map(k => k.name);
+    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+    yield [...values.values()].filter((v): v is MetricEvent => v !== null);
+    if (listed.list_complete) { scan.complete = true; return; }
+    cursor = listed.cursor;
+  }
+}
+
 /**
  * Walks every event row, groups by month, and stores one correction
  * per month. Returns what it wrote, newest month first.
@@ -125,6 +146,7 @@ export async function readCorrection(
 export async function recomputeCorrections(
   env: Env,
   now: Date = new Date(),
+  options: { cache?: boolean; readBudget?: number } = {},
 ): Promise<MonthCorrection[]> {
   const months = new Map<
     string,
@@ -134,24 +156,17 @@ export async function recomputeCorrections(
       rows: number;
       movers: Map<string, number>;
       /** Outside rows still organic by name, kept for the behaviour pass. */
-      candidates: Pick<MetricEvent, "kind" | "house" | "user_agent" | "item" | "at">[];
+      candidates: Map<string, { rows: number; touches: Touch[] | null }>;
     }
   >();
 
-  let cursor: string | undefined;
-  let pages = 0;
-  let complete = false;
-  while (pages < MAX_PAGES) {
-    const listed = await kvList(env.COUNTERS, {
-      prefix: "evt:",
-      limit: LIST_PAGE,
-      ...(cursor ? { cursor } : {}),
-    });
-    pages += 1;
-    const names = listed.keys.map((k) => k.name);
-    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
-    for (const name of names) {
-      const event = values.get(name);
+  const scan = correctionScan();
+  const pages = options.cache
+    ? cachedCorrectionPages(env, now, scan, options.readBudget)
+    : uncachedCorrectionPages(env, scan);
+  for await (const events of pages) {
+    const changed = new Set<{ rows: number; touches: Touch[] | null }>();
+    for (const event of events) {
       if (!event || event.kind !== "challenge" || event.house) {
         continue;
       }
@@ -161,7 +176,7 @@ export async function recomputeCorrections(
         corrected: 0,
         rows: 0,
         movers: new Map<string, number>(),
-        candidates: [],
+        candidates: new Map(),
       };
       bucket.rows += 1;
       // Only rows the books CALLED organic are in scope: this measures
@@ -179,27 +194,28 @@ export async function recomputeCorrections(
           bucket.movers.set(ua, (bucket.movers.get(ua) ?? 0) + 1);
         } else {
           bucket.corrected += 1;
-          bucket.candidates.push({
-            kind: event.kind,
-            house: event.house,
-            user_agent: event.user_agent,
-            item: event.item,
-            at: event.at,
-          });
+          const ua = walkerKey(event);
+          const candidate = bucket.candidates.get(ua) ?? { rows: 0, touches: [] };
+          candidate.rows += 1;
+          candidate.touches?.push({ item: event.item, at: Date.parse(event.at) });
+          bucket.candidates.set(ua, candidate);
+          changed.add(candidate);
         }
       }
       months.set(month, bucket);
     }
-    if (listed.list_complete) {
-      complete = true;
-      break;
+    // Check all touches together, including page/slice boundaries and delayed
+    // event timestamps. Once qualified, only the UA's total count is needed.
+    for (const candidate of changed) {
+      if (candidate.touches && widestWalk(candidate.touches) >= WALK_MIN_ITEMS) {
+        candidate.touches = null;
+      }
     }
-    cursor = listed.cursor;
   }
 
   const computedAt = now.toISOString();
   const written: MonthCorrection[] = [];
-  const set: CorrectionSet = { computed_at: computedAt, months: {} };
+  const set: CorrectionSet = { computed_at: computedAt, months: {}, ...(options.cache ? { scan } : {}) };
   for (const [month, bucket] of months) {
     /**
      * THE BEHAVIOUR PASS. Over the rows the table left organic, find
@@ -207,13 +223,9 @@ export async function recomputeCorrections(
      * asks too. Same rule as the census, imported, so the two pages
      * name the same walkers.
      */
-    const walkers = walkersAmong(bucket.candidates);
-    const byWalker = new Map<string, number>();
-    for (const row of bucket.candidates) {
-      if (!isWalkedAsk(row, walkers)) continue;
-      const ua = walkerKey(row);
-      byWalker.set(ua, (byWalker.get(ua) ?? 0) + 1);
-    }
+    const byWalker = new Map([...bucket.candidates.entries()]
+      .filter(([, candidate]) => candidate.touches === null)
+      .map(([ua, candidate]) => [ua, candidate.rows]));
     const movedByBehaviour = [...byWalker.values()].reduce((a, b) => a + b, 0);
     const byName = bucket.recorded - bucket.corrected;
     const correction: MonthCorrection = {
@@ -232,7 +244,10 @@ export async function recomputeCorrections(
         .slice(0, 10),
       rows_read: bucket.rows,
       computed_at: computedAt,
-      complete,
+      // A month whose beginning has aged past event retention cannot be a
+      // complete month correction, even when every surviving key was read.
+      complete: scan.complete && (!options.cache ||
+        Date.parse(`${month}-01T00:00:00.000Z`) >= now.getTime() - EVENT_TTL_SECONDS * 1000),
     };
     set.months[month] = correction;
     written.push(correction);

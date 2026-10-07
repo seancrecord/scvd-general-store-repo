@@ -5,7 +5,7 @@ import { webmcpOriginTrialTags } from "@/pages/storefront-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { ardLinkTags } from "@/lib/ard-catalog";
 import { PAPER_CSS } from "@/pages/paper-css";
-import { STORE_METADATA } from "@/store";
+import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store";
 import { ROOMS, isUnlistedRoom } from "@/store/rooms";
 import { jsonLdScript, webPageJsonLd } from "@/lib/jsonld";
 import { verificationMetaTags } from "@/store/site-verification";
@@ -79,6 +79,8 @@ export interface SimplePageOptions {
   extraCss?: string;
   /** Body class, so extraCss can scope itself to this room only. */
   bodyClass?: string;
+  /** Keep the full room directory available without crowding a focused offer. */
+  collapseNavigation?: boolean;
   /**
    * INERT MARKUP APPENDED AFTER THE PAPER — today, the browser till's
    * JSON island and its <script src> tag (see lib/till-shelf.ts).
@@ -114,7 +116,7 @@ function roomsNav(current?: string): string {
       ? `<strong>${escapeHtml(room.name)}</strong>`
       : `<a href="${room.path}">${escapeHtml(room.name)}</a>`,
   );
-  return `<nav class="rooms"><a class="nav-home" href="/">Front of the store</a>${entries.join("")}</nav>`;
+  return `<div data-nosnippet><nav class="rooms"><a class="nav-home" href="/">${escapeHtml(STORE_SERVICE_NAME)} — Front of the store</a>${entries.join("")}</nav></div>`;
 }
 
 /**
@@ -213,9 +215,12 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta name="description" content="${description}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
+  <meta property="og:site_name" content="${escapeHtml(STORE_SERVICE_NAME)}">${options.path ? `\n  <meta property="og:url" content="${SITE_ORIGIN}${escapeHtml(options.path)}">` : ""}
   <meta property="og:type" content="website">
   <meta property="og:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${title}">
+  <meta name="twitter:description" content="${description}">
   <meta name="twitter:image" content="${escapeHtml(options.ogImage ?? `${SITE_ORIGIN}/og.png`)}">${verificationMetaTags()}${canonical}${robots}${machineMap}${markdownAlt}${feedAlt}${webmcp}
   ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
@@ -225,7 +230,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
     <header>
       <p class="est">${escapeHtml(STORE_METADATA.name)} \u2022 ${escapeHtml(STORE_METADATA.location)}</p>
       <h1>${escapeHtml(options.title)}</h1>
-      ${roomsNav(options.path)}
+      ${options.collapseNavigation ? `<details class="room-directory"><summary>Explore the store</summary>${roomsNav(options.path)}</details>` : roomsNav(options.path)}
     </header>
     ${options.bodyHtml}
     ${relatedWritingHtml(options.path)}

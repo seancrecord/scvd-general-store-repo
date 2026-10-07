@@ -1,0 +1,28 @@
+[
+  {
+    "id": 37669598111,
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/37669598111",
+    "head_sha": "384978f8da37c63cb041f3152ead8cf6c528eeee",
+    "head_branch": "main",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-07T18:48:04Z",
+    "updated_at": "2026-10-07T18:48:23Z",
+    "dry_run": true,
+    "package": "scvd-defects",
+    "version": "0.22.0"
+  },
+  {
+    "id": 37669852883,
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/37669852883",
+    "head_sha": "384978f8da37c63cb041f3152ead8cf6c528eeee",
+    "head_branch": "main",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-07T18:50:07Z",
+    "updated_at": "2026-10-07T18:50:25Z",
+    "dry_run": false,
+    "package": "scvd-defects",
+    "version": "0.22.0"
+  }
+]

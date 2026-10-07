@@ -1,0 +1,23 @@
+{
+  "method": "Two bounded public registry reads after a successful workflow; retained rather than overwritten by later success.",
+  "attempts": [
+    {
+      "name": "scvd-defects",
+      "version": "0.22.0",
+      "source_commit": "1a6f70f06e83a5358b6f0eb50e560f9976491d0e",
+      "read_at": "2026-10-07T18:51:00.347371+00:00",
+      "status": "failed",
+      "error": "Command '['curl', '--fail', '--silent', '--show-error', '--location', '--max-time', '35', 'https://registry.npmjs.org/scvd-defects/0.22.0']' returned non-zero exit status 56."
+    },
+    {
+      "name": "scvd-defects",
+      "version": "0.22.0",
+      "source_commit": "1a6f70f06e83a5358b6f0eb50e560f9976491d0e",
+      "read_at": "2026-10-07T18:52:32.556913+00:00",
+      "status": "failed",
+      "error": "Command '['curl', '--fail', '--silent', '--show-error', '--location', '--max-time', '35', 'https://registry.npmjs.org/scvd-defects/0.22.0']' returned non-zero exit status 56."
+    }
+  ],
+  "fresh_install_initial": "npm ETARGET: No matching version found for scvd-defects@0.22.0 at 2026-10-07T18:52:29Z.",
+  "later_cached_install": "A repeat install using the first cache still returned ETARGET at 18:54:14 UTC after exact-version metadata was available. A new cache with --prefer-online succeeded; no republication."
+}

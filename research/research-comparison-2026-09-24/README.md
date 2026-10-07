@@ -1,5 +1,9 @@
 # Research Comparison release and discovery — September 24, 2026
 
+Historical preparation record. [October 5 closeout](../research-comparison-2026-10-05/README.md)
+records the September 24 merge, passing CI and current public discovery.
+The preparation-stage statements below describe that earlier observation window.
+
 Status: [release PR #912](https://github.com/seancrecord/scvd-general-store-repo/pull/912),
 integrated with main `eedbcb56`, the documentation-only `dee13f08` update,
 and Calling Card/buyer-cohort main at `553ede01`;

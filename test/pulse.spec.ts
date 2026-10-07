@@ -457,7 +457,7 @@ describe("the correction walk's own age rides the pulse (2026-09-02)", () => {
     const after = (await (await SELF.fetch(`${BASE}/pulse.json`)).json()) as Record<string, unknown>;
     expect(String(after["crawler_correction_computed_at"])).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     const page = await (await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })).text();
-    expect(page).toContain("The correction walk last completed at");
+    expect(page).toContain("The correction walk last ran at");
   });
 });
 
@@ -487,5 +487,29 @@ describe("known machinery shows its two halves", () => {
     expect(july?.known_machinery_by_user_agent).toBe(1);
     expect(july?.known_machinery_by_behaviour).toBe(4);
     expect(july?.known_machinery).toBe(5);
+  });
+});
+
+
+describe("partial correction progress", () => {
+  it("publishes the scan budget and never labels a partial pass completed", async () => {
+    const previous = await testEnv.COUNTERS.get("metric:corrections");
+    try {
+      const scan = { kv_keys_read: 20_000, keys_listed: 200_000, list_pages: 250, cached_pages: 0, complete: false };
+      await testEnv.COUNTERS.put("metric:corrections", JSON.stringify({
+        computed_at: "2026-10-07T12:00:00.000Z", months: {}, scan,
+      }));
+      const pulse = await computePulse(testEnv);
+      expect(pulse.crawler_correction_complete).toBe(false);
+      expect(pulse.crawler_correction_scan).toEqual(scan);
+      const response = await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } });
+      expect(response.status).toBe(200);
+      const html = await response.text();
+      expect(html).toContain("The scan is incomplete; partial months are withheld.");
+      expect(html).not.toContain("walk last completed");
+    } finally {
+      if (previous === null) await testEnv.COUNTERS.delete("metric:corrections");
+      else await testEnv.COUNTERS.put("metric:corrections", previous);
+    }
   });
 });

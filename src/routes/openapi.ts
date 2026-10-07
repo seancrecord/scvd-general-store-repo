@@ -4956,6 +4956,33 @@ const WATCH_HISTORY_SCHEMA: OpenApiObject = {
 };
 
 /** A conformance watch's week. Same contract, daily rather than hourly. */
+const EVIDENCE_PILOT_REPORT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["type", "watch_id", "url", "generated_at", "window", "terms", "commission", "coverage", "days", "changes", "observations", "limitations"],
+  properties: {
+    type: { type: "string", const: "scvd.endpoint-evidence-report.v1" },
+    watch_id: { type: "string" }, url: { type: "string" }, generated_at: { type: "string", format: "date-time" },
+    window: { type: "object", required: ["started_at", "ends_at", "complete"], properties: {
+      started_at: { type: "string", format: "date-time" }, ends_at: { type: "string", format: "date-time" }, complete: { type: "boolean" },
+    } },
+    terms: { type: "object", description: "The agreed bounded offer and billing terms." },
+    commission: { anyOf: [WATCH_COMMISSION_REF, { type: "null" }] },
+    coverage: { type: "object", required: ["elapsed_days", "days_with_conformance_checks", "days_without_conformance_checks", "denominator"], properties: {
+      elapsed_days: { type: "integer" }, days_with_conformance_checks: { type: "integer" }, days_without_conformance_checks: { type: "integer" }, denominator: { type: "string" },
+    } },
+    days: { type: "array", items: { type: "object", description: "Completed 24-hour slot: day, from, until, attempts, conformance_checks, gap and outcomes." } },
+    changes: { type: "array", items: { type: "object", description: "Comparable-reading change: at, previous_at and kind (checks_changed or criteria_changed)." } },
+    observations: { type: "array", items: { type: "object", description: "Original readings and signed_payload; the unsigned sample omits signatures and keys." } },
+    limitations: { type: "array", items: { type: "string" } },
+  },
+};
+const EVIDENCE_PILOT_REPORT_REF = { $ref: "#/components/schemas/EvidencePilotReport" };
+const EVIDENCE_PILOT_EXPORT_SCHEMA: OpenApiObject = {
+  type: "object", required: ["report", "signed_payload", "sha256", "signature", "public_key", "how_to_verify"],
+  properties: { report: EVIDENCE_PILOT_REPORT_REF, signed_payload: { type: "string" }, sha256: { type: "string" },
+    signature: { type: "string" }, public_key: { type: "string" }, how_to_verify: { type: "string" } },
+};
+
 const CONFORMANCE_WATCH_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["watch_id", "url", "started_at", "ends_at", "complete", "summary", "passes", "how_to_verify"],
@@ -6189,6 +6216,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         Problem: PROBLEM_SCHEMA,
         DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
         WatchCommission: WATCH_COMMISSION_SCHEMA,
+        EvidencePilotReport: EVIDENCE_PILOT_REPORT_SCHEMA,
         OrderReceipt: ORDER_RECEIPT_SCHEMA,
         PaymentRequiredChallenge: PAYMENT_REQUIRED_SCHEMA,
         /*
@@ -6507,6 +6535,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           parameters: [pathParam("watch_id", "From the purchase response; starts watch_.")],
         },
+      },
+      "/api/evidence-pilot/sample": {
+        get: returns(freeOp("Illustrative SCVD Attestation report", "Unsigned partial report using a reserved nonexistent endpoint. No real observation or signature is asserted."), { type: "object", required: ["sample", "note", "report"], properties: { sample: { type: "boolean", const: true }, note: { type: "string" }, report: EVIDENCE_PILOT_REPORT_REF } }),
+      },
+      "/api/evidence-pilot/{watch_id}": {
+        get: { ...returns(freeOp("Export a signed endpoint evidence report", "Public report for an agreed bounded pilot. Includes signed daily readings, per-day gaps, criteria changes, canonical payload and signature. Not AI-decision or legal-compliance certification. Accept text/html for a readable report, application/json for the signed export."), EVIDENCE_PILOT_EXPORT_SCHEMA),
+          parameters: [pathParam("watch_id", "The cwatch_pilot_ id returned when the keeper commissions the agreed pilot.")] },
       },
       "/api/conformance-watch/{watch_id}": {
         get: {

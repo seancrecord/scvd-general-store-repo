@@ -1195,10 +1195,17 @@ const BASE = "https://scvd.store";
 // 2026-10-06: scvd-defects source 0.22.0 changes only its derived package
 // label. Restoring only defects/package.json to 0.21.0 reproduced both
 // previous pins (14/14 tests); the intended version produces this pair.
-// 2026-10-07: dated keeper bylines and recognition in askedForBlock.
-// Restoring only askedForBlock to main reproduced both prior digests (14/14).
+// 2026-10-07: narrow the shared signature/expiry claim to signed observations
+// and explicitly name unsigned inspection. Before changing position.ts, both
+// prior pins passed (14/14); this one-sentence source change yields this pair.
+// 2026-10-07: joined the bounded pilot offer and index pointer to main's
+// unsigned-inspection wording. Removing only the two pilot paragraphs
+// reproduced main's pins (14/14); these pins cover both intentional changes.
+// 2026-10-07: keeper writing adds attribution, dates and retained ranking evidence.
+// Restoring only askedForBlock to main 55d8da1c reproduced both old pins
+// (14/14 tests). The short index links to the complete evidence separately.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "2918899797995a3658c129a33759d51422b693c427837d902a2c01feeffed6e0";
+  "ef0c0c5ba918205ad92b9b81c5570962a9539477dbac23216732f7d12da98f1a";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1301,7 +1308,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "b6ad7df9f9cda92cfb657d1c2063edc2b23c6e8ebfb07d473b1586d968d9b2e2",
+      "397d616e345c1f6c9e38dd2edbd39e618b15f56466fd5c700e7b7177a0e81b00",
     );
   });
 

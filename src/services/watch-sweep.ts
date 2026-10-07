@@ -116,7 +116,7 @@ export async function sweepWatches<
       report.unreadable += 1;
       continue;
     }
-    if (now > Date.parse(record.ends_at)) {
+    if (now >= Date.parse(record.ends_at)) {
       report.ended += 1;
       continue;
     }

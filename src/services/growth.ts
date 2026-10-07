@@ -113,6 +113,7 @@ export interface GrowthInstrumentRow {
   per_day: number | null;
   /** The month before's organic count; null when this is the first month read. */
   previous: number | null;
+  /** Month-to-month change; null until this month closes or without a previous month. */
   delta: number | null;
   /** Distinct user-agents in the month's client census; null before the census existed (2026-09-11). A floor on software, never on people. */
   distinct_clients: number | null;
@@ -179,7 +180,7 @@ export interface GrowthLogged {
 
 export interface GrowthMonth {
   month: string;
-  /** Whole UTC days of the month elapsed at the reading, for per-day figures. */
+  /** UTC calendar days touched, including the current partial day, for per-day figures. */
   days_elapsed: number;
   store: GrowthStore;
   agents: GrowthAgents;
@@ -299,6 +300,7 @@ export interface MonthInputs {
  */
 export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
   const { month, now, porch, ledger, previous } = inputs;
+  const monthComplete = month < metricsMonth(now);
 
   // ── store ──────────────────────────────────────────────────────
   const visitsByKind = emptyKinds();
@@ -413,7 +415,7 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
       organic,
       per_day: days > 0 ? Number((organic / days).toFixed(1)) : null,
       previous: before,
-      delta: before === null ? null : organic - before,
+      delta: !monthComplete || before === null ? null : organic - before,
       distinct_clients: census ? census.distinct : null,
       top_clients: census ? census.top.slice(0, 3) : [],
     });
@@ -439,7 +441,7 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
   const thisMonth = organicBySurface(porch);
   const newSurfaces: GrowthDemand["new_surfaces"] = [];
   const deltas: SurfaceDelta[] = [];
-  if (previous) {
+  if (previous && monthComplete) {
     const union = new Set([...thisMonth.keys(), ...previous.keys()]);
     for (const surface of union) {
       const organic = thisMonth.get(surface) ?? 0;
@@ -490,6 +492,7 @@ export function deriveGrowthMonth(inputs: MonthInputs): GrowthMonth {
     checks: freeInstruments.funnel.free_argument_uses,
   };
   const hypothesis = deriveHypothesis({
+    monthComplete,
     now: side,
     before: inputs.hypothesisBefore,
     declines: store.organic_declines,

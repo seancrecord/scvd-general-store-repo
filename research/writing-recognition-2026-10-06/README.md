@@ -85,3 +85,18 @@ The browser blocked access to `/admin/referrals` (`ERR_BLOCKED_BY_CLIENT`). No
 private analytics baseline was retrieved. The measurement plan records existing
 counters and their limitations; future results must be read from an accessible
 admin session and the owner's Search Console property.
+
+## Integrated release checks
+
+Merged main `55d8da1c` into the release branch, preserving its newer guide and
+metadata. Restoring only `askedForBlock()` to that main reproduced both existing
+guide fingerprints (14/14 tests); the writing paragraph is the only full-guide
+change from this task. The short AI index links to complete writing evidence
+instead of repeating every article summary, keeping the existing reading budget.
+The operational guide explicitly permits the author and recognition source URLs.
+
+The earlier CI run caught the index overflow and new outbound source URLs.
+After these fixes, 74 tests across seven focused suites pass, including both
+reading-budget guards, writing discovery, brand search, trust records and guide
+fingerprints. Typecheck and all production bundle checks pass. Full CI still
+gates merge; the six supplied listing URLs are included in this same release.

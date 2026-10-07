@@ -1,5 +1,29 @@
 # The growth ledger — plan, and what shipped against it
 
+## October 6 correction — unfinished months
+
+The hypothesis compared the current month's running settlements with the
+previous month's complete total and could declare failure six days into October.
+The local repair keeps both counts visible, labels the open month as month to
+date through its final day, and withholds either verdict until the UTC calendar
+month closes. The JSON carries `hypothesis.month_complete`; the injected reading
+clock determines it. Closed-month comparisons retain their existing behavior.
+Regression tests cover lower, equal and higher running counts and the UTC closing
+boundary.
+
+The October 7 follow-through also withholds instrument deltas and demand's rise/fall
+lists while the month is open; raw counts, prior counts, new surfaces and item asks
+remain available. The daily averages explicitly include the current partial UTC day.
+The public monthly corpus page now says latest available week, labels the open month,
+and includes `month_complete` in its JSON and markdown. Its completion flag is derived
+at request time so the corpus cache cannot keep a closed month marked open.
+
+Adjacent checks: the instruments desk compares two dated readings within the same
+month, so its deltas are valid; Pulse and Observatory show monthly counts without
+issuing the growth verdict. No matched-day historical comparison or projection is
+inferred from monthly totals. The public wording correction is dated October 7 on
+the corrections ledger.
+
 Written 2026-09-11 against HEAD of `claude/modest-brown-q0x5zx`. The
 keeper's question: the office has monthly metrics, but is anyone
 tracking GROWTH — across the free tools, the pages, the doors agents

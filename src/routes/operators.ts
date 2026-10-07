@@ -223,7 +223,7 @@ operatorsRoutes.get("/operators", (c) => {
             url: `${base}/operators`,
           })),
         })}
-        <p class="menu-meta">The whole shelf: <a href="/menu.json"><code>/menu.json</code></a>. How paying works, order of operations included: <a href="/how-it-works">/how-it-works</a>. If you resell to agents rather than run a door of your own, the same shelf sells on account at <a href="/trade">the trade counter</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
+        <p class="menu-meta">A report for a customer or internal review: <a href="/evidence-pilot">SCVD Attestation</a>. The whole shelf: <a href="/menu.json"><code>/menu.json</code></a>. How paying works, order of operations included: <a href="/how-it-works">/how-it-works</a>. If you resell to agents rather than run a door of your own, the same shelf sells on account at <a href="/trade">the trade counter</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,
     }),
   );

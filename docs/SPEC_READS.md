@@ -1,5 +1,22 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-07 — keeper-supplied discovery placements
+
+Opened the six public listing pages supplied by the keeper: ChatGPT, Deside,
+MCP Harbor, Electra Index, makememoneynomistakes.ai and Agora by openforallofus.
+Also opened Deside's Opening Day item and read the official MCP registry's
+latest `store.scvd/general-store` record. [Source URLs, exact observations and
+limits](../research/discovery-presence-2026-10-07/README.md).
+
+All listings were readable in the browser; five were unavailable to the web
+reader. ChatGPT's version 2.0.0 and App/Skill presence close the earlier listing
+publication uncertainty, not installed-content/runtime qualification. Electra's
+local/remote/version conflict is preserved. The agent index's verdict and empty
+clean-job history are its method's outputs. Agora's October 5 handshake/tool-list
+reading is an instrument observation, not a peer verification. No submissions,
+external edits, purchases or third-party checker execution were performed.
+
+
 ## 2026-10-07 — writing and recognition discovery
 
 Follow-up read the same day: Google's [AI features guidance](https://developers.google.com/search/docs/appearance/ai-features),
@@ -24,6 +41,31 @@ dates were read in the same task's earlier article review. The October 6 Web3
 placement is supported by the keeper's supplied screenshot, not an assertion
 that the live list still has that order. [Retained image, scope and validation](../research/writing-recognition-2026-10-06/README.md).
 
+## 2026-10-07 — brand-search presentation repair
+
+Applied Google's [snippet controls](https://developers.google.com/search/docs/appearance/snippet)
+to decorative and visitor text using supported `div` exclusions, and its
+[site-name guidance](https://developers.google.com/search/docs/appearance/site-names)
+to keep visible, WebSite and Open Graph names consistent. The existing title,
+service description and unlisted-room policy are retained.
+[Organization guidance](https://developers.google.com/search/docs/appearance/structured-data/organization)
+describes `sameAs` as identity references; reports and directory observations
+remain separately discoverable as `subjectOf`. These are semantic and
+presentation repairs, not demonstrated ranking factors in this case.
+[Local changes, verification and remaining measurement](../research/seo-brand-2026-10-06/README.md#october-7--local-repair-authorized-by-the-keeper).
+
+## 2026-10-06 — Google brand-search diagnosis
+
+Read Google's [AI features guidance](https://developers.google.com/search/docs/appearance/ai-features),
+[URL Inspection documentation](https://support.google.com/webmasters/answer/9012289),
+[canonicalization](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls),
+[snippet controls](https://developers.google.com/search/docs/appearance/snippet),
+[site names](https://developers.google.com/search/docs/appearance/site-names), and
+[site operator limits](https://developers.google.com/search/docs/monitor-debug/search-operators/all-search-site).
+Google indexed the store but the two tested brand queries preferred outside
+listings. Homepage/robots/canonical/root redirects passed the live checks;
+owner Search Console access and the precise ranking cause remain unestablished.
+[Dated findings and limits](../research/seo-brand-2026-10-06/README.md).
 
 ## 2026-10-07 — Personal Agent Protocol announcement
 
@@ -2845,6 +2887,15 @@ Source hashes, validation and release limits: [PS6 record](../research/endpoint-
 and [implementation](ENDPOINT_INSPECTION_2026-09-28.md). Buyer/model qualification
 was excluded by keeper direction.
 
+## 2026-10-07 — JCS input boundary
+
+RFC 8785 sections 3.1 and 3.2.2.2 read October 6 for the pilot prerequisite:
+<https://www.rfc-editor.org/rfc/rfc8785.html>. Inputs must be adapted to I-JSON;
+lone surrogates must terminate canonicalization. The local canonicalizer accepted
+invalid Unicode and mishandled native JavaScript values; regression tests now
+pin its explicit input contract. Valid JSON preimages remain unchanged. Gaps:
+no inventory of historical issued artifacts containing invalid Unicode; no claim
+of production exploitation. [Implementation scope](SCVD_ATTESTATION_PILOT_2026-10.md).
 ### 2026-09-30 — reporting discovery and structured-data review
 
 Read Google's [structured-data introduction](https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data),
@@ -2889,3 +2940,13 @@ carry explicit modern probes. Neither establishes modern native-host adoption.
 Read the current primary [Bazaar extension](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/bazaar.md), Schema Validation: info is validated against its declared schema before cataloging. Read the [offer/receipt extension](https://raw.githubusercontent.com/x402-foundation/x402/main/specs/extensions/extension-offer-and-receipt.md), sections 2 and 4.1: the extension is optional and offers match accepts by payload fields, not array position. The shorter guessed offer-receipt.md URL was unavailable; the canonical document above was reachable.
 
 These reads support promoting the existing bounded comparisons into a new battery; they do not establish actual directory ingestion, signature validity or payment completion. The schema reader supports only its documented keyword subset and bounded depth. The offer reader compares decoded JWS terms, not all signature formats. Both old batteries retain their scoring. [Implementation](S8_V3_READINESS_2026-10-02.md).
+
+## 2026-10-05 — Research Comparison discovery closeout
+
+Re-read [Coinbase seller discovery](https://docs.cdp.coinbase.com/x402/seller/get-discovered):
+validation is unpaid and separate from settlement-triggered indexing. The live
+validator returned `valid: true`, simulation `accepted`, and an active index
+entry for the exact Research Comparison route. AgentCash origin discovery
+recognizes its price and x402/MPP protocols; the retained unbranded first page
+still has no SCVD row. [Evidence and limits](../research/research-comparison-2026-10-05/README.md).
+No payment, wallet access, organic demand or curation was established.

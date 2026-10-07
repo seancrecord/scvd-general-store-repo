@@ -1,5 +1,6 @@
 import { SELF, env } from "cloudflare:test";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { monthlyStateRoutes } from "@/routes/monthly-state";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { takeCorpusSnapshot } from "@/services/corpus";
 import { monthOf, statesFromPoints } from "@/services/monthly-state";
@@ -124,6 +125,30 @@ async function clearCorpus(): Promise<void> {
 
 describe("the page", () => {
   beforeEach(clearCorpus);
+
+  it("labels an open month on HTML, JSON and markdown, and closes it without a new snapshot", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-10-06T12:00:00.000Z"));
+      await seedWeek("2026-W40", [hostRow("a.test", "ready")]);
+      const read = (accept: string) => monthlyStateRoutes.request(`${BASE}/corpus/month/2026-10`, { headers: { Accept: accept } }, testEnv);
+      const body = await (await read("application/json")).json() as { month_complete: boolean; closing: unknown };
+      expect(body.month_complete).toBe(false);
+      const html = await (await read("text/html")).text();
+      expect(html).toContain("Month to date");
+      expect(html).not.toContain("At month end");
+      expect(html).toContain("latest available week");
+      const markdown = await (await read("text/markdown")).text();
+      expect(markdown).toContain("## Month complete\n\nfalse");
+      vi.setSystemTime(new Date("2026-11-01T00:00:00.000Z"));
+      const closed = await (await read("application/json")).json() as { month_complete: boolean; closing: unknown };
+      expect(closed.month_complete).toBe(true);
+      expect(closed.closing).toEqual(body.closing);
+      expect(await (await read("text/html")).text()).not.toContain("Month to date");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
   it("says so when the chain holds no month yet, at one URL for a person and a machine", async () => {
     const body = (await (await SELF.fetch(`${BASE}/corpus/month`, { headers: { Accept: "application/json" } })).json()) as Record<string, unknown>;

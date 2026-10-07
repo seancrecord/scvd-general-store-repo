@@ -101,9 +101,18 @@ describe("writing discovery", () => {
     expect(org).not.toHaveProperty("aggregateRating");
   });
 
+  it("links the short index to complete writing evidence within its reading budget", async () => {
+    const body = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    expect(body).toContain(`${BASE}/#writing-recognition`);
+    expect(body).toContain("Written by the keeper");
+    expect(body).toMatch(/2026-10-06.*keeper.*#1.*Web3/);
+    const { LLMS_INDEX_CHARACTER_BUDGET } = await import("@/store/reader-limits");
+    expect(body.length).toBeLessThan(LLMS_INDEX_CHARACTER_BUDGET);
+  });
+
   it("carries the same article facts through the existing markdown and agent doors", async () => {
     const { subjects } = await home();
-    for (const path of ["/index.md", "/agents.md", "/llms.txt", "/llms-full.txt"]) {
+    for (const path of ["/index.md", "/agents.md", "/llms-full.txt"]) {
       const response = await SELF.fetch(`${BASE}${path}`);
       expect(response.status, path).toBe(200);
       const body = await response.text();

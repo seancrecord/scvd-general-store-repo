@@ -1,8 +1,32 @@
 # SCVD distribution: channels and records
 
+## October 7 listing reconciliation
+
+[Six public placements checked](research/discovery-presence-2026-10-07/README.md):
+ChatGPT's existing verifier entry is refreshed; Deside, MCP Harbor, Electra Index,
+makememoneynomistakes.ai and Agora by openforallofus are added to the canonical
+external records under their relevant protocols. Deside's host page and the
+Opening Day item were both read. Agora's dated handshake observation is an
+instrument record; directory presence is not a purchase or delivery result.
+
+ChatGPT now visibly lists version 2.0.0 with both App and Skill sections.
+Electra's version/transport fields conflict with the official MCP registry;
+the agent index's verdict and empty clean-job record remain attributed to its
+method. [Read details and limits](research/discovery-presence-2026-10-07/README.md).
+These additions are prepared locally; public SCVD surfaces update on release.
+
+
 Content review added September 30, 2026; prior dated admission records retained. Start here to find the record; human actions
 stay in [KEEPER_LIST](KEEPER_LIST.md#directory-and-listings-press-is-yours-rule-30),
 builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
+
+## October 7 package follow-through
+
+`scvd-defects` 0.22.0 is published and public/latest. All 31 packed files match
+reviewed source, fresh JavaScript/strict TypeScript consumers pass, and npm
+verifies its registry signature and provenance attestation. The initial
+processing delay is retained; no repeat publication is needed.
+[Release receipt](research/defects-release-2026-10-07/README.md).
 
 ## October 1 listing additions
 
@@ -28,6 +52,7 @@ No submission or runtime qualification was performed in this pass.
 | What needs implementation or host qualification? | [ROADMAP](ROADMAP.md), especially TR-D. |
 | What do we submit? | [Registry drawer](registry/README.md), including the [plugin submission packet](registry/plugin-submissions.md). |
 | Which paths can crawlers find? | [Findability inventory](scripts/lib/findability.mjs), checked by `npm run findability:check`. Presence is not admission. |
+| Do public pages retain their search metadata? | `npm run seo:check` audits a bounded sample; [brand-search repair and dated evidence](research/seo-brand-2026-10-06/README.md). A passing audit does not measure Google ranking. |
 | Are existing listings stale or disappearing? | `npm run listings:check`; [weekly workflow](.github/workflows/listings-check.yml); [recorded baselines](docs/listings/). Baselines already exist, dated September 12. |
 | Who have we contacted about citations? | [Scorers register](registry/scorers-outreach.json); its [table](registry/scorers-outreach.md) is generated. `note_sent` refers to the scorers note, not any issue or submission. |
 | What evidence supports this pass? | [September 17 findings and receipts](research/distribution-2026-09-17/README.md), [prior admission reconciliation](research/distribution-admission-2026-09-16/README.md), and [spec readings](docs/SPEC_READS.md). |
@@ -78,7 +103,7 @@ ERC-8004 follow-through: [September 23 closeout and resume triggers](research/er
 | Protocol | SCVD entry point | Distribution state at this reading |
 | --- | --- | --- |
 | x402 | [Conformance desk](https://scvd.store/conformance) · [discovery](https://scvd.store/.well-known/x402) | Confirmed directory records remain in the public trust source. A successful listing does not prove a purchase or settlement. |
-| MPP | [Context Anchor](https://scvd.store/menu/context_anchor) · [Developers](https://scvd.store/developers) | Context Anchor MPP is live: September 17 unsigned GET advertised EVM charge / Base / 1 USDC alongside x402. That dated read covered the pilot. The [whole-shelf HTTP extension](docs/MPP_WHOLE_STORE_2026-09-18.md) is merged; the [directory metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) follows its enabled door set. The [native MCP extension](docs/MPP_MCP_CHECKOUT_2026-09-18.md) is now merged in #804; WebMCP native MPP support also merged in #813; client packages retain their documented scope. That source change is separate from a live paid qualification. MPPScan qualification found a Base-network parser mismatch, reported as [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209); registration completed September 19; parser report remains open. Official directory [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted with generation, types, build and 34 focused tests passing; review pending. see [coverage](research/distribution-2026-09-17/PROTOCOL_COVERAGE.md). MPPScan: the live shelf was qualified with the pinned discovery package on September 18 ([receipt](research/distribution-2026-09-18/mppscan-live-check.json)); [registration completed September 19](https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b): 193 of 195 resources accepted, two URL templates excluded after 404 probes, one endpoint skipped and nonblocking schema/payment warnings retained. [Receipt](research/erc8004-followthrough-2026-09-19/mppscan-registration.json). |
+| MPP | [Context Anchor](https://scvd.store/menu/context_anchor) · [Developers](https://scvd.store/developers) | Context Anchor MPP is live: September 17 unsigned GET advertised EVM charge / Base / 1 USDC alongside x402. That dated read covered the pilot. The [whole-shelf HTTP extension](docs/MPP_WHOLE_STORE_2026-09-18.md) is merged; the [directory metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md) follows its enabled door set. The [native MCP extension](docs/MPP_MCP_CHECKOUT_2026-09-18.md) is now merged in #804; WebMCP native MPP support also merged in #813; client packages retain their documented scope. That source change is separate from a live paid qualification. MPPScan qualification found a Base-network parser mismatch, reported as [Merit #1209](https://github.com/Merit-Systems/x402scan/issues/1209); registration completed September 19; parser report remains open. Official directory [PR #991](https://github.com/tempoxyz/mpp/pull/991) closed unmerged October 2 because intake moved to MPPScan; this is not an admission or implementation rejection. The [October 7 readback](research/distribution-2026-10-07/README.md) confirms the existing MPPScan page but finds three current purchase routes absent from its rendered list; release the shared signature-scope copy correction before refreshing the existing entry; do not resubmit. See [coverage](research/distribution-2026-09-17/PROTOCOL_COVERAGE.md). MPPScan: the live shelf was qualified with the pinned discovery package on September 18 ([receipt](research/distribution-2026-09-18/mppscan-live-check.json)); [registration completed September 19](https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b): 193 of 195 resources accepted, two URL templates excluded after 404 probes, one endpoint skipped and nonblocking schema/payment warnings retained. [Receipt](research/erc8004-followthrough-2026-09-19/mppscan-registration.json). |
 | MCP | [Store](https://scvd.store/mcp) · [verifier](https://scvd.store/mcp/verifier) | Both official registry entries match their source manifests in the [fresh registry response](research/distribution-2026-09-17/observations/mcp-registry-refresh.json). The old republish instructions are closed. [GitHub curated-registry onboarding](https://github.com/github/github-mcp-server/discussions/1257#discussioncomment-18487205) requested; admission pending. |
 | WebMCP | [Browser tools](https://scvd.store/webmcp.js) | Existing directory records are grouped publicly. A fresh Chrome session returned 14 registered tools; execution of each tool was not tested. Existing [catalog PR #41](https://github.com/webmachinelearning/awesome-webmcp/pull/41#issuecomment-5719818436) received a scope correction. |
 | ERC-8004 | [Registration and domain acknowledgment](https://scvd.store/.well-known/agent-registration.json) | SCVD observed on 8004scan, Agentscan, 8004agents, trust8004 and QuickNode. Indexer parsing conflicts are preserved. [8004scan issue #51](https://github.com/alt-research/8004scan-issue-tracker/issues/51) and [trust8004 issue #1](https://github.com/trust8004/requests-issues/issues/1) filed. Canonical registration/OASF/A2A consistency passed September 18. [AgentERC](https://agenterc.com/explore/base/86957) is now indexed: operator confirmed September 19 and the public Base identity/services were verified September 23; HOL ingestion report sent September 19 after exact-identity and domain searches returned HTTP 200/zero hits with a working control. These are query results, not a proven cause. Agentscan taxonomy and AgentRanking availability remain unresolved. [September 18 evidence](research/erc8004-followthrough-2026-09-18/README.md) · [September 19 receipt](research/erc8004-followthrough-2026-09-19/README.md). |
@@ -91,7 +116,7 @@ ERC-8004 follow-through: [September 23 closeout and resume triggers](research/er
 
 | Destination | Existing asset / observed status | Admission route or remaining gate |
 | --- | --- | --- |
-| OpenAI / ChatGPT | [Verifier plugin published](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212); keeper reports the skill update completed September 17 | Upload/update task closed; review and publication status of that update have not been independently checked; [packet](registry/openai-plugin-verifier-submission.md). GitHub changes do not update uploaded skills. |
+| OpenAI / ChatGPT | [Verifier plugin published](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212); public version 2.0.0 with App and Skill sections read October 7 | Updated listing and skill presence confirmed; installed skill/source equality and ChatGPT execution remain untested in this pass. [Packet](registry/openai-plugin-verifier-submission.md) · [dated read](research/discovery-presence-2026-10-07/README.md). GitHub changes do not update uploaded skills. |
 | Awesome Copilot | Root Agent Plugins package submitted as [#3255](https://github.com/github/awesome-copilot/issues/3255); 0.2.4 automated skill/manifest/install gates passed at immutable pin `e7f6c068` | Rejected September 24 as not a fit for the repository; issue closed. Automated gates did not establish admission. No resubmission planned without materially changed fit. |
 | GitHub Agent Finder | [PR #34](https://github.com/github/agentfinder-catalog/pull/34) already includes both skills plus MCP/plugin entries | Existing review; [drawer](registry/agentfinder/README.md). Tab's previous registry-version blocker is cleared; it is not thereby in this PR. |
 | Cursor | [Cursor Directory listing](https://cursor.directory/plugins/scvd-general-store-repo) was updated September 18: current name/description/keywords, both skills, and pinned Tab configuration. [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md). Official publisher application **submitted September 17; review pending**. [Receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json). | Both MCP servers loaded and free preflight passed in Cursor CLI. Both skills remained absent in normal Agent mode and a portable-only control; [recheck](research/distribution-2026-09-17/observations/cursor-agent-mode-recheck.json). Native desktop qualification remains. Marketplace acceptance is unverified. |

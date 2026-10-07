@@ -47,11 +47,9 @@ import { signMessage } from "@/lib/signing";
  * omitted, never null). But a non-finite number (NaN, Infinity) throws
  * instead of becoming null: a signature over "null" where a number was
  * meant is a signature over a lie, and no artifact this store mints
- * should ever contain one. The same rule covers any object that is not
- * plain data (a Date, a URL, a boxed primitive, a Map, a Set, a typed
- * array, since 2026-10-06): the input must already BE JSON data —
- * timestamps arrive as ISO strings — and anything else throws rather
- * than being coerced on the way into a signature.
+ * should ever contain one. Native objects (including Date and boxed
+ * primitives) must be converted explicitly before this boundary. Invalid
+ * Unicode and cycles are refused; existing valid JSON keeps its bytes.
  */
 
 /** The day dual-emit began; artifacts minted earlier carry no JCS signature. */
@@ -64,63 +62,63 @@ export const JCS_DISCIPLINE = "RFC8785" as const;
 export const JCS_SIGNATURE_COVERS =
   "The RFC 8785 (JCS) canonicalization of the same fields the primary signature covers — sorted keys, ECMAScript number and string serialization, no whitespace. Verify with any RFC 8785 implementation and the same ed25519 public key. Additive since 2026-08-18: artifacts minted earlier carry only the primary signature.";
 
+function jsonString(value: string): string {
+  // JSON.parse accepts lone surrogates; RFC 8785 does not, including
+  // in property names. Do not silently repair signed Unicode data.
+  for (let i = 0; i < value.length; i++) {
+    const unit = value.charCodeAt(i);
+    if (unit >= 0xd800 && unit <= 0xdbff) {
+      const next = value.charCodeAt(++i);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) throw new Error("jcs: invalid Unicode");
+    } else if (unit >= 0xdc00 && unit <= 0xdfff) {
+      throw new Error("jcs: invalid Unicode");
+    }
+  }
+  return JSON.stringify(value);
+}
+
 export function jcsCanonicalize(value: unknown): string {
-  if (value === null || typeof value === "boolean" || typeof value === "string") {
-    return JSON.stringify(value);
-  }
+  return canonicalize(value, new Set<object>());
+}
+
+function canonicalize(value: unknown, ancestors: Set<object>): string {
+  if (typeof value === "string") return jsonString(value);
+  if (value === null || typeof value === "boolean") return JSON.stringify(value);
   if (typeof value === "number") {
-    if (!Number.isFinite(value)) {
-      // JSON.stringify would quietly write "null"; a canonicalizer in
-      // a signing path must never improvise a different value.
-      throw new Error("jcs: non-finite number cannot be canonicalized");
-    }
+    if (!Number.isFinite(value)) throw new Error("jcs: non-finite number cannot be canonicalized");
     return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) {
-    // Indexed, not map/join: map() skips a hole and join() renders it
-    // as nothing, so a sparse array came out "[1,,3]" — not JSON, and
-    // bytes no other RFC 8785 implementation can reproduce (found
-    // 2026-10-06; no caller had ever passed one). Inside arrays JSON
-    // puts null where stringify would, holes included; RFC 8785
-    // inherits that (arrays keep their positions).
-    const members: string[] = [];
-    for (let index = 0; index < value.length; index += 1) {
-      const entry = value[index];
-      members.push(
-        entry === undefined || typeof entry === "function" || typeof entry === "symbol"
-          ? "null"
-          : jcsCanonicalize(entry),
-      );
-    }
-    return `[${members.join(",")}]`;
   }
   if (typeof value === "object") {
-    // Plain data only. A Date, a URL, a boxed primitive, a Map, a Set, a
-    // typed array: Object.keys sees nothing (or the wrong thing) on any
-    // of them, and this branch used to sign "{}" where the primary
-    // signature's serializer, JSON.stringify, honours toJSON and writes
-    // the ISO string — two signatures over different bytes, on a path
-    // typed Record<string, unknown> where the compiler cannot see it
-    // (found 2026-10-06; no caller had ever passed one). RFC 8785 is
-    // defined over JSON data, so a value that is not already JSON data
-    // is refused here, the same way a non-finite number is, rather
-    // than coerced on the way into a signature.
-    const prototype: unknown = Object.getPrototypeOf(value);
-    if (prototype !== Object.prototype && prototype !== null) {
-      throw new Error("jcs: cannot canonicalize a non-plain object (Date, URL, boxed primitive, Map, Set, typed array); pass JSON data");
-    }
-    const record = value as Record<string, unknown>;
-    // Default sort() compares UTF-16 code units — RFC 8785's exact rule.
-    const keys = Object.keys(record).sort();
-    const members: string[] = [];
-    for (const key of keys) {
-      const entry = record[key];
-      if (entry === undefined || typeof entry === "function" || typeof entry === "symbol") {
-        continue;
+    if (ancestors.has(value)) throw new Error("jcs: cyclic input");
+    ancestors.add(value);
+    try {
+      if (Array.isArray(value)) {
+        // Index access preserves main's hole handling without invoking iterators.
+        const members: string[] = [];
+        for (let index = 0; index < value.length; index += 1) {
+          const entry = value[index];
+          members.push(entry === undefined || typeof entry === "function" || typeof entry === "symbol"
+            ? "null" : canonicalize(entry, ancestors));
+        }
+        return `[${members.join(",")}]`;
       }
-      members.push(`${JSON.stringify(key)}:${jcsCanonicalize(entry)}`);
+      const prototype = Object.getPrototypeOf(value);
+      if (prototype !== Object.prototype && prototype !== null) {
+        throw new Error("jcs: cannot canonicalize a non-plain object; expected plain JSON object, convert native values explicitly");
+      }
+      const record = value as Record<string, unknown>;
+      const members: string[] = [];
+      // Default sort compares UTF-16 code units, exactly as RFC 8785 requires.
+      for (const key of Object.keys(record).sort()) {
+        const name = jsonString(key);
+        const entry = record[key];
+        if (entry === undefined || typeof entry === "function" || typeof entry === "symbol") continue;
+        members.push(`${name}:${canonicalize(entry, ancestors)}`);
+      }
+      return `{${members.join(",")}}`;
+    } finally {
+      ancestors.delete(value);
     }
-    return `{${members.join(",")}}`;
   }
   throw new Error(`jcs: cannot canonicalize a ${typeof value}`);
 }

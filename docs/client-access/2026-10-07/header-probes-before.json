@@ -1,0 +1,50 @@
+{
+  "base": "https://scvd.store",
+  "taken_at": "2026-10-07T00:50:33.120Z",
+  "verdict": "unmet",
+  "note": "Python-urllib/3.11: 403 (Ray a468e98d7b302552-IAD)",
+  "rows": [
+    {
+      "userAgent": "node",
+      "status": 200,
+      "contentType": "text/plain;charset=UTF-8",
+      "ray": "a468e98d7c6d0c9f-IAD",
+      "bytes": 27676
+    },
+    {
+      "userAgent": null,
+      "status": 200,
+      "contentType": "text/plain;charset=UTF-8",
+      "ray": "a468e98d7f2b28bb-IAD",
+      "bytes": 27676
+    },
+    {
+      "userAgent": "Googlebot",
+      "status": 200,
+      "contentType": "text/plain;charset=UTF-8",
+      "ray": "a468e98d78637560-IAD",
+      "bytes": 27676
+    },
+    {
+      "userAgent": "GPTBot",
+      "status": 200,
+      "contentType": "text/plain;charset=UTF-8",
+      "ray": "a468e98d899e07fb-IAD",
+      "bytes": 27676
+    },
+    {
+      "userAgent": "PerplexityBot",
+      "status": 200,
+      "contentType": "text/plain;charset=UTF-8",
+      "ray": "a468e98d7f724f8b-IAD",
+      "bytes": 27676
+    },
+    {
+      "userAgent": "Python-urllib/3.11",
+      "status": 403,
+      "contentType": "text/plain; charset=UTF-8",
+      "ray": "a468e98d7b302552-IAD",
+      "bytes": 17
+    }
+  ]
+}

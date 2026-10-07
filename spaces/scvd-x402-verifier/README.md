@@ -20,7 +20,7 @@ tags:
 
 # SCVD x402 Verifier
 
-scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.
+scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Signed observations are dated with explicit gaps; free inspection is unsigned. Not escrow, not a rating, not a guarantee.
 
 This Space is the store's **read-only verifier door** (`https://scvd.store/mcp/verifier`) with a Gradio face and an MCP endpoint. Five tools, each one call to the door, each answer the store's own and unmodified:
 

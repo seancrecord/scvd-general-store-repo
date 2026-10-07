@@ -27,7 +27,7 @@ function record(entries: Record<string, number>): string {
 
 function monthHead(months: GrowthMonth[]): string {
   return `<tr><th></th>${months
-    .map((m) => `<th>${escapeHtml(m.month)}${m.days_elapsed < 28 ? `<br><small>${m.days_elapsed}d</small>` : ""}</th>`)
+    .map((m) => `<th>${escapeHtml(m.month)}${!m.hypothesis.month_complete ? `<br><small>month to date · day ${m.days_elapsed} (UTC)</small>` : ""}</th>`)
     .join("")}</tr>`;
 }
 
@@ -118,7 +118,7 @@ function instrumentsHtml(months: GrowthMonth[]): string {
       ${row("asks per 100 argument-carrying checks", months, (m) => n(m.free_instruments.funnel.asks_per_hundred_checks))}
       ${row("settles per 100 argument-carrying checks", months, (m) => n(m.free_instruments.funnel.settles_per_hundred_checks))}
     </table>
-    <p><small>Sales include x402 and MPP; price asks cover x402. Three counts in a row, not a journey: nothing here ties one caller's check to that caller's purchase. <a href="/admin/instruments">The instruments desk</a> does the nearest thing by user-agent inside a window. A dash means the line did not exist that month; the roster's logged-since date is beside each name. Per-day divides by the days the line existed in that month.</small></p>
+    <p><small>Sales include x402 and MPP; price asks cover x402. Three counts in a row, not a journey: nothing here ties one caller's check to that caller's purchase. <a href="/admin/instruments">The instruments desk</a> does the nearest thing by user-agent inside a window. A dash means the line did not exist that month; the roster's logged-since date is beside each name. Per-day divides by the UTC calendar days the line existed, including today's partial day. Month-to-month deltas wait until the month closes.</small></p>
     <table border="1" cellpadding="4">
       ${monthHead(months)}
       ${lines || `<tr><td colspan="${months.length + 1}">no free instrument has been used yet</td></tr>`}
@@ -185,10 +185,12 @@ function demandHtml(months: GrowthMonth[]): string {
     .map((m) => {
       const fresh = m.demand.new_surfaces.map((s) => `<code>${escapeHtml(s.surface)}</code> ${s.organic} <small>(${s.kind})</small>`).join(", ") || "none";
       const items = m.demand.items_asked_for.map((i) => `<code>${escapeHtml(i.item)}</code> ${i.organic_402s} asked / ${i.organic_settles} settled`).join(", ") || "none";
-      return `<h3>${escapeHtml(m.month)}</h3>
+      return `<h3>${escapeHtml(m.month)}${m.hypothesis.month_complete ? "" : " — month to date"}</h3>
       <p><strong>New this month</strong> — organic use, and none in any earlier month: ${fresh}.</p>
-      <p><strong>Rose most</strong> against the month before: ${deltaList(m.demand.risers)}.</p>
-      <p><strong>Fell most</strong>: ${deltaList(m.demand.fallers)}.</p>
+      ${m.hypothesis.month_complete
+        ? `<p><strong>Rose most</strong> against the month before: ${deltaList(m.demand.risers)}.</p>
+      <p><strong>Fell most</strong>: ${deltaList(m.demand.fallers)}.</p>`
+        : "<p>Movement comparisons wait until the month closes.</p>"}
       <p><strong>Items asked for</strong>: ${items}.</p>`;
     })
     .join("");
@@ -230,8 +232,9 @@ function hypothesisHtml(months: GrowthMonth[]): string {
   return `<section>
     <h2>The hypothesis: do we grow with the market</h2>
     <p><small>The claim the store is run on, with the receipts that would refute it. The market's row is the signed
-    corpus's closing week; ours is the ledger's. They are never divided into one another — a share would need a
-    denominator the store does not have.</small></p>
+    corpus's latest week in each month; ours is the ledger's total for that month. The current month is still
+    accumulating; the verdict waits until it closes. They are never divided into one another — a share would
+    need a denominator the store does not have.</small></p>
     <table border="1" cellpadding="4">
       ${monthHead(months)}
       ${row("<strong>the market</strong> — doors listed", months, (m) => market(m, (r) => `<strong>${r.listed}</strong>`))}
@@ -300,7 +303,7 @@ function x402Html(months: GrowthMonth[]): string {
     <table border="1" cellpadding="4">
       ${monthHead(months)}
       ${row("signed rounds in the month", months, (m) => reading(m, (x) => String(x!.rounds)))}
-      ${row("doors listed (closing week)", months, (m) => reading(m, (x) => String(x!.closing.listed)))}
+      ${row("doors listed (latest available week)", months, (m) => reading(m, (x) => String(x!.closing.listed)))}
       ${row("doors probed", months, (m) => reading(m, (x) => String(x!.closing.probed)))}
       ${row("payable", months, (m) => reading(m, (x) => `<strong>${x!.closing.payable}</strong>`))}
       ${row("not payable", months, (m) => reading(m, (x) => String(x!.closing.not_payable)))}
@@ -308,7 +311,7 @@ function x402Html(months: GrowthMonth[]): string {
       ${row("offers seen", months, (m) => reading(m, (x) => String(x!.closing.offers_seen)))}
       ${row("<small>&nbsp;&nbsp;defects, door-weeks</small>", months, (m) => `<small>${defects(m)}</small>`)}
     </table>
-    <p><small>The closing week's reading, off the same signed chain <a href="/corpus/month">/corpus/month</a> serves. Never a ranking; no host is named. A month with no signed week is not measured, which is not the same as zero.</small></p>
+    <p><small>The latest available week's reading in each month, off the same signed chain <a href="/corpus/month">/corpus/month</a> serves. The open month can still gain weeks. Never a ranking; no host is named. A month with no signed week is not measured, which is not the same as zero.</small></p>
   </section>`;
 }
 

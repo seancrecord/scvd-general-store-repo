@@ -1,3 +1,4 @@
+import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
@@ -50,7 +51,7 @@ import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
 import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
-import { askedForBlock } from "@/store/copy/asked-for";
+import { askedForBlock, writingDiscoveryText, WRITING_HEADING, WRITING_DISCLOSURE, writerRecognitionText } from "@/store/copy/asked-for";
 import {
   CLI_INSTALL,
   CLI_PACKAGE,
@@ -215,6 +216,9 @@ named human. Your operator can read every receipt.
 
 ## At the counter
 
+${EVIDENCE_PILOT.name}: ${base}${EVIDENCE_PILOT.path}.
+${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
+
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
 \`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
 works whether or not you bought the thing. A live one to try right
@@ -352,6 +356,8 @@ whether the catalog's copy agreed with the door, and whether the door
 answered now the way the last signed round saw it. Never a score, never
 a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
+
+For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
 
 For anyone who runs a door: ${base}/operators is the shelf from your
 side, in the order a launch happens — before you launch, the week you
@@ -2173,7 +2179,7 @@ ${others}
  * The preamble, the two sections a reader needs before anything else,
  * a map of the area files, and nothing else. Under our
  * local 30,000-character reading budget with room to spare, and every
- * sentence in it is the same sentence it was yesterday.
+ * area section retains its full prose. Writing references link to their evidence.
  */
 export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   const { preamble, sections } = splitGuide(storeGuideText(base, paymentConfig));
@@ -2188,9 +2194,13 @@ export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig
       }\n  ${area.blurb}`,
   ).join("\n\n");
 
+  // The short index links to the bylines; the full guide retains their facts.
+  const indexSections = kept.map((section) => section.text).join("").replace(writingDiscoveryText(),
+    `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${writerRecognitionText()} Articles, authors, dates and evidence: ${base}/#writing-recognition.`);
+
   return `${preamble}${buyerQuickStart(base)}
 
-${kept.map((section) => section.text).join("")}## The rest of this file, by area
+${indexSections}## The rest of this file, by area
 
 This is the index. The store's full prose is long on purpose — the
 evidence is the product — so it is served in one document at

@@ -1,0 +1,1497 @@
+{
+  "mirrors": {
+    "base": "https://scvd.store",
+    "read_at": "2026-10-07T16:25:21.484Z",
+    "sixty_words_probe": "before an agent pays an x402 endpoint, we check that it can be paid.",
+    "mirrors": [
+      {
+        "url": "https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://apis.io/providers/scvd-store/",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://apis.io/a2a/scvd-store/",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://enterprisedna.co/directories/mcp/seancrecord-scvd-general-store-repo/",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://aiagentboard.org/mcp/store.scvd/general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://agenterc.com/explore/base/86957",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://withai.top/tool/scvd-store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://ucptools.dev/directory/scvd.store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://ucpchecker.com/check/scvd.store",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://github.com/sing1ee/a2a-directory#readme",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://8004scan.io/agents/base/86957",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://agentscan.info/agents/0711e5ab-eca5-42cc-a7ca-38b433689d56",
+        "status": 0,
+        "generation": "unreachable",
+        "error": "This operation was aborted"
+      },
+      {
+        "url": "https://8004agents.ai/base/agent/86957",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://trust8004.xyz/agents/8453%3A86957",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://robinsaige.com/s/store.scvd/general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://crosspeel.com/endpoints/scvd-store/",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://publishyoursaas.com/listing/scvd-store",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://aitoolscapital.com/tools/scvd-general-store/",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://agenstry.com/agents/scvd.store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://agenstry.com/mcp/store.scvd/general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://mcpfind.org/servers/store-scvd-general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA",
+        "status": 200,
+        "generation": "august"
+      },
+      {
+        "url": "https://www.zero.xyz/c/scvd-signature-agent-card-15cd521c",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://neuronto.com/ard-publishers/scvd.store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://wellknownhq.com/d/scvd.store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://github.com/seancrecord/scvd-general-store-repo",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://mcppedia.org/s/store-scvd-general-store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://www.getmcp.es/servers/general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://lightnow.ai/servers/store.scvd/general-store/versions",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://mcplookup.com/server/store.scvd/general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://socketcat.com/servers/store.scvd/general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://tracevero.com/mcp/store-scvd-general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://signal402.com/services/scvd-store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
+        "status": 200,
+        "generation": "july"
+      },
+      {
+        "url": "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+        "status": 404,
+        "generation": "unreachable"
+      },
+      {
+        "url": "https://agentpluginsdirectory.com/plugins/scvd-general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://agentic.market/services/scvd-store",
+        "status": 200,
+        "generation": "july"
+      },
+      {
+        "url": "https://mcpservers.org/servers/seancrecord/scvd-general-store-repo",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://glama.ai/mcp/connectors/store.scvd/general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://mcpindex.ai/server/store-scvd-general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://agent-tools.cloud/services/scvd-store-bazaar",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://agent-tools.cloud/a2a/agents/scvd-evidence-agent",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://x402.fuchss.app/provider/scvd.store",
+        "status": 200,
+        "generation": "july"
+      },
+      {
+        "url": "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+        "status": 402,
+        "generation": "unreachable"
+      },
+      {
+        "url": "https://agentcatalog.com/publishers/scvd.store?q=",
+        "status": 200,
+        "generation": "august"
+      },
+      {
+        "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://github.com/seancrecord/scvd-general-store-repo/issues/188#issuecomment-5555985899",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://stillosdigitalholdings.com/notary/trust",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://probe402.com/grade?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fsmall_blessing",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://webmcpdirectory.com/tool/scvd-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://webmcp.ora.ai/scvd.store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://directory.ora.ai/scvd.store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://ora.ai/score/scvd.store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://partners.circle.com/partner/scvdstore",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://www.getdrio.com/mcp/store-scvd-general-store",
+        "status": 503,
+        "generation": "unreachable"
+      },
+      {
+        "url": "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
+        "status": 200,
+        "generation": "july"
+      },
+      {
+        "url": "https://verifymcp.io/servers/store-scvd-general-store/scvd",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://verifymcp.io/servers/store-scvd-tab/scvd-tab",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://mcpbeat.com/mcp-servers/scvd/general-store/",
+        "status": 403,
+        "generation": "unreachable"
+      },
+      {
+        "url": "https://mcpbeat.com/mcp-servers/scvd/tab/",
+        "status": 403,
+        "generation": "unreachable"
+      },
+      {
+        "url": "https://catalog.agentage.io/mcp/store-scvd-general-store",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://catalog.agentage.io/mcp/store-scvd-tab",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://mcpservers.org/servers/scvd-store-llms-txt",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://mcp-marketplace.io/server/store-scvd-general-store",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://deepwiki.com/seancrecord/scvd-general-store-repo",
+        "status": 429,
+        "generation": "unreachable"
+      },
+      {
+        "url": "https://cursor.directory/plugins/scvd-general-store-repo",
+        "status": 429,
+        "generation": "unreachable"
+      },
+      {
+        "url": "https://smithery.ai/servers/seancrecord/scvd-general-store",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://mcp.so/servers/scvd-store",
+        "status": 200,
+        "generation": "current"
+      },
+      {
+        "url": "https://x.com/keeper_scvd",
+        "status": 200,
+        "generation": "september"
+      },
+      {
+        "url": "https://www.linkedin.com/showcase/scvd-general-store/",
+        "status": 200,
+        "generation": "unknown"
+      },
+      {
+        "url": "https://www.crunchbase.com/organization/scvd-general-store",
+        "status": 403,
+        "generation": "unreachable"
+      }
+    ],
+    "regressions": [
+      {
+        "url": "https://agenstry.com/agents/scvd.store",
+        "was": "current",
+        "now": "september"
+      },
+      {
+        "url": "https://mcppedia.org/s/store-scvd-general-store",
+        "was": "september",
+        "now": "unknown"
+      },
+      {
+        "url": "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+        "was": "unknown",
+        "now": "unreachable"
+      },
+      {
+        "url": "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+        "was": "september",
+        "now": "unreachable"
+      },
+      {
+        "url": "https://deepwiki.com/seancrecord/scvd-general-store-repo",
+        "was": "august",
+        "now": "unreachable"
+      }
+    ],
+    "advances": [
+      {
+        "url": "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
+        "was": "unreachable",
+        "now": "unknown"
+      },
+      {
+        "url": "https://agent-tools.cloud/services/scvd-store-bazaar",
+        "was": "july",
+        "now": "current"
+      },
+      {
+        "url": "https://mcpservers.org/servers/scvd-store-llms-txt",
+        "was": "unknown",
+        "now": "current"
+      },
+      {
+        "url": "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+        "was": "unreachable",
+        "now": "unknown"
+      }
+    ]
+  },
+  "versions": {
+    "read_at": "2026-10-07T16:25:36.344Z",
+    "shelf": {
+      "state": "read",
+      "paid_count": 38,
+      "ids": [
+        "spot_check",
+        "settlement_attestation",
+        "small_blessing",
+        "change_check",
+        "settlement_reconciliation",
+        "daily_fortune",
+        "the_confession",
+        "batch_spot_check",
+        "research_comparison",
+        "attestation_bundle",
+        "the_mandate",
+        "the_case_file",
+        "window_pick",
+        "hello",
+        "good_buyer",
+        "signature_agent_card",
+        "the_statement",
+        "luckies",
+        "pack",
+        "coffees_for_closers",
+        "bitcoin_anchor",
+        "context_anchor",
+        "passport_refresh",
+        "graffiti_on_a_train",
+        "a2a_repair_kit",
+        "standing_watch",
+        "service_audit",
+        "conformance_watch",
+        "onpage_audit",
+        "launch_check",
+        "opening_day",
+        "provenance_check",
+        "recurring_patronage",
+        "trust_profile",
+        "operator_statement",
+        "certificate_of_patronage",
+        "aura_walk",
+        "the_collab"
+      ]
+    },
+    "reads": {
+      "mcp_registry_store": {
+        "state": "read",
+        "version": "0.2.4",
+        "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
+        "status": "active",
+        "versions_listed": 6
+      },
+      "mcp_registry_tab": {
+        "state": "read",
+        "version": "0.11.2",
+        "description": "Every tool a builder signs up for, on one tab: trials, burn, price drift. Local JSONL, zero deps.",
+        "status": "active",
+        "versions_listed": 5
+      },
+      "npm": {
+        "scvd-cli": {
+          "state": "read",
+          "version": "0.5.0",
+          "description": "The official command line for scvd.store: inspect x402/MPP endpoints, check signed offers and receipts, read the observation corpus, and verify store artifacts. Zero dependencies; no account or key.",
+          "published_at": "2026-10-02T14:54:56.959Z"
+        },
+        "scvd-tab": {
+          "state": "read",
+          "version": "0.11.2",
+          "description": "The Tab: an MCP server that keeps the running account of every tool a builder signs up for — trial deadlines, burn, price drift, and what each signup demanded of a human. Local JSONL, append-only, zero dependencies; nothing leaves the file without deliber",
+          "published_at": "2026-09-24T15:07:45.468Z"
+        },
+        "x402-verify": {
+          "state": "read",
+          "version": "1.11.0",
+          "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: compact JWS or x402 JWS envelopes (EdDSA/Ed25519), did:web resolution, local revision-1 schema checks, explicit result statuses, and optional anchored key history.",
+          "published_at": "2026-10-01T16:50:25.563Z"
+        },
+        "x402-sign": {
+          "state": "read",
+          "version": "1.0.3",
+          "description": "Zero-dependency signer for x402 Signed Offers & Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s, generate your did:web document, refuse partial commitments. The issuing half of x402-verify.",
+          "published_at": "2026-09-10T16:06:54.129Z"
+        },
+        "scvd-preflight": {
+          "state": "read",
+          "version": "0.3.1",
+          "description": "Zero-dependency client for scvd.store: inspect observed x402/MPP protocols, advertised terms and gaps, or run the x402 preflight deploy gate. No payment or signature verification during endpoint inspection.",
+          "published_at": "2026-10-01T16:40:05.260Z"
+        },
+        "scvd-corpus-client": {
+          "state": "read",
+          "version": "0.1.0",
+          "description": "Zero-dependency reader for scvd.store's signed x402 corpus: the weekly census, the fresh set, one host's readiness history, the month, the feeds and the diff, as the store serves them. The scvd CLI's library half.",
+          "published_at": "2026-09-10T16:47:12.092Z"
+        },
+        "scvd-defects": {
+          "state": "read",
+          "version": "0.21.0",
+          "description": "scvd.store's x402 defect vocabulary as data: every class with what it asserts, what falsifies it, whether an unpaid probe can see it, and both halves of the remediation — plus recorded 402 door fixtures to test a client against, and settlement-response fi",
+          "published_at": "2026-10-01T16:37:14.534Z"
+        },
+        "scvd-mcp-starter": {
+          "state": "read",
+          "version": "0.2.0",
+          "description": "A zero-dependency stdio MCP adapter for scvd.store's five free x402 verifier tools, with modern discovery and legacy initialization. Copy it or use a compatible JSON verifier upstream.",
+          "published_at": "2026-10-01T16:36:20.140Z"
+        }
+      },
+      "clawhub": {
+        "state": "unknown",
+        "note": "no labelled version near the skill name"
+      },
+      "x402_list": {
+        "state": "read",
+        "description": "scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.\n\nFree instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts, including our competitors', a named defect vocabulary, and a Bitcoin-anchored corpus that appends weekly. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. Never a ranking, and never a verdict without its derivation and denominator beside it. Operated by Record Creative Co. LLC.",
+        "offer_count": 35,
+        "doctrine_present": true
+      },
+      "agentic_market": {
+        "state": "read",
+        "endpoint_count": 36,
+        "description": ""
+      }
+    },
+    "rows": [
+      {
+        "index": "mcp-registry",
+        "field": "general-store version",
+        "ours": "0.2.4",
+        "theirs": "0.2.4",
+        "state": "agrees"
+      },
+      {
+        "index": "mcp-registry",
+        "field": "general-store description",
+        "ours": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
+        "theirs": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
+        "state": "agrees",
+        "note": "a published version is immutable: a differing description means server.json changed without a version bump and a publish"
+      },
+      {
+        "index": "mcp-registry",
+        "field": "tab version",
+        "ours": "0.11.2",
+        "theirs": "0.11.2",
+        "state": "agrees"
+      },
+      {
+        "index": "npm",
+        "field": "scvd-cli version",
+        "ours": "0.5.0",
+        "theirs": "0.5.0",
+        "state": "agrees"
+      },
+      {
+        "index": "npm",
+        "field": "scvd-tab version",
+        "ours": "0.11.2",
+        "theirs": "0.11.2",
+        "state": "agrees"
+      },
+      {
+        "index": "npm",
+        "field": "x402-verify version",
+        "ours": "1.11.0",
+        "theirs": "1.11.0",
+        "state": "agrees"
+      },
+      {
+        "index": "npm",
+        "field": "x402-sign version",
+        "ours": "1.0.3",
+        "theirs": "1.0.3",
+        "state": "agrees"
+      },
+      {
+        "index": "npm",
+        "field": "scvd-preflight version",
+        "ours": "0.3.1",
+        "theirs": "0.3.1",
+        "state": "agrees"
+      },
+      {
+        "index": "npm",
+        "field": "scvd-corpus-client version",
+        "ours": "0.1.0",
+        "theirs": "0.1.0",
+        "state": "agrees"
+      },
+      {
+        "index": "npm",
+        "field": "scvd-defects version",
+        "ours": "0.22.0",
+        "theirs": "0.21.0",
+        "state": "differs"
+      },
+      {
+        "index": "npm",
+        "field": "scvd-mcp-starter version",
+        "ours": "0.2.0",
+        "theirs": "0.2.0",
+        "state": "agrees"
+      },
+      {
+        "index": "clawhub",
+        "field": "skill version",
+        "ours": "3.19.3",
+        "theirs": null,
+        "state": "unknown",
+        "note": "no labelled version near the skill name"
+      },
+      {
+        "index": "x402-list",
+        "field": "doctrine sentence present",
+        "ours": true,
+        "theirs": true,
+        "state": "agrees",
+        "note": "their description field dropped or capped the last sentence"
+      },
+      {
+        "index": "x402-list",
+        "field": "doors listed",
+        "ours": 38,
+        "theirs": 35,
+        "state": "differs",
+        "note": "paid items on the live shelf against their offerCount"
+      },
+      {
+        "index": "agentic-market",
+        "field": "returned endpoints",
+        "ours": 38,
+        "theirs": 36,
+        "state": "differs",
+        "note": "service-detail response versus paid shelf; eligibility and complete-index coverage unverified"
+      }
+    ]
+  },
+  "roster": {
+    "read_at": "2026-10-07T16:25:36.344Z",
+    "roster_read": true,
+    "records": [
+      {
+        "url": "https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store",
+        "registry": "AllthingsPM — MCP server directory",
+        "confirmed": "2026-10-01",
+        "age_days": 6,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://apis.io/providers/scvd-store/",
+        "registry": "APIs.io — provider directory",
+        "confirmed": "2026-10-01",
+        "age_days": 6,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://apis.io/a2a/scvd-store/",
+        "registry": "APIs.io — A2A agent-card directory",
+        "confirmed": "2026-10-01",
+        "age_days": 6,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://enterprisedna.co/directories/mcp/seancrecord-scvd-general-store-repo/",
+        "registry": "Enterprise DNA — MCP server directory",
+        "confirmed": "2026-10-01",
+        "age_days": 6,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://aiagentboard.org/mcp/store.scvd/general-store",
+        "registry": "AI Agent Board — MCP directory and endpoint check",
+        "confirmed": "2026-10-01",
+        "age_days": 6,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agenterc.com/explore/base/86957",
+        "registry": "AgentERC — ERC-8004 agent index",
+        "confirmed": "2026-09-23",
+        "age_days": 14,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://withai.top/tool/scvd-store",
+        "registry": "WithAI.Top — community tool directory",
+        "confirmed": "2026-09-23",
+        "age_days": 14,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://ucptools.dev/directory/scvd.store",
+        "registry": "UCP.tools — community merchant directory",
+        "confirmed": "2026-10-01",
+        "age_days": 6,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://ucpchecker.com/check/scvd.store",
+        "registry": "UCP Checker — public profile report",
+        "confirmed": "2026-09-19",
+        "age_days": 18,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b",
+        "registry": "MPPScan — payment API directory",
+        "confirmed": "2026-09-19",
+        "age_days": 18,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations",
+        "registry": "HOL — Awesome AI Plugins community catalog",
+        "confirmed": "2026-09-19",
+        "age_days": 18,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a",
+        "registry": "A2A Registry — community API register",
+        "confirmed": "2026-09-18",
+        "age_days": 19,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo",
+        "registry": "Gemini CLI — extension gallery",
+        "confirmed": "2026-09-18",
+        "age_days": 19,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent",
+        "registry": "Global A2A Registry — community agent directory",
+        "confirmed": "2026-09-18",
+        "age_days": 19,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://github.com/sing1ee/a2a-directory#readme",
+        "registry": "A2A Directory — community source catalog",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://8004scan.io/agents/base/86957",
+        "registry": "8004scan — ERC-8004 agent index",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agentscan.info/agents/0711e5ab-eca5-42cc-a7ca-38b433689d56",
+        "registry": "Agentscan — ERC-8004 agent index",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 0,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://8004agents.ai/base/agent/86957",
+        "registry": "8004agents — ERC-8004 agent index",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 200,
+        "state": "silent"
+      },
+      {
+        "url": "https://trust8004.xyz/agents/8453%3A86957",
+        "registry": "trust8004 — ERC-8004 agent index",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://robinsaige.com/s/store.scvd/general-store",
+        "registry": "robinsaige.com — MCP server observatory",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://crosspeel.com/endpoints/scvd-store/",
+        "registry": "Crosspeel (crosspeel.com) — endpoint observer",
+        "confirmed": "2026-09-10",
+        "age_days": 27,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://publishyoursaas.com/listing/scvd-store",
+        "registry": "PublishYourSaaS",
+        "confirmed": "2026-09-10",
+        "age_days": 27,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://aitoolscapital.com/tools/scvd-general-store/",
+        "registry": "AI Tools Capital",
+        "confirmed": "2026-09-10",
+        "age_days": 27,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agenstry.com/agents/scvd.store",
+        "registry": "Agenstry — agent directory",
+        "confirmed": "2026-09-08",
+        "age_days": 29,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agenstry.com/mcp/store.scvd/general-store",
+        "registry": "Agenstry — MCP directory",
+        "confirmed": "2026-09-08",
+        "age_days": 29,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcpfind.org/servers/store-scvd-general-store",
+        "registry": "MCPFind",
+        "confirmed": "2026-09-08",
+        "age_days": 29,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA",
+        "registry": "Licium",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.zero.xyz/c/scvd-signature-agent-card-15cd521c",
+        "registry": "Zero.xyz — SCVD Signature Agent Card",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://neuronto.com/ard-publishers/scvd.store",
+        "registry": "Neuronto ARD Registry",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://wellknownhq.com/d/scvd.store",
+        "registry": "WellKnown",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://github.com/seancrecord/scvd-general-store-repo",
+        "registry": "GitHub (the store's own source)",
+        "confirmed": "2026-08-26",
+        "age_days": 42,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
+        "registry": "agent-almanac (pjt222), a curated skills repository on GitHub",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcppedia.org/s/store-scvd-general-store",
+        "registry": "MCPpedia",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.getmcp.es/servers/general-store",
+        "registry": "getmcp.es",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://lightnow.ai/servers/store.scvd/general-store/versions",
+        "registry": "lightnow.ai",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcplookup.com/server/store.scvd/general-store",
+        "registry": "MCP Lookup",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
+        "registry": "Ronin Forge, State of MCP",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://socketcat.com/servers/store.scvd/general-store",
+        "registry": "socketcat",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://tracevero.com/mcp/store-scvd-general-store",
+        "registry": "Tracevero",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://signal402.com/services/scvd-store",
+        "registry": "signal402",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+        "registry": "402.ad",
+        "confirmed": "2026-09-10",
+        "age_days": 27,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
+        "registry": "Decipher Ranker",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+        "registry": "toll402",
+        "confirmed": "2026-09-03",
+        "age_days": 34,
+        "status": 404,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://agentpluginsdirectory.com/plugins/scvd-general-store",
+        "registry": "Agent Plugins Directory",
+        "confirmed": "2026-09-08",
+        "age_days": 29,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
+        "registry": "x402scan",
+        "confirmed": "2026-07-27",
+        "age_days": 72,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agentic.market/services/scvd-store",
+        "registry": "The x402 Bazaar (Coinbase CDP), via agentic.market",
+        "confirmed": "2026-07-27",
+        "age_days": 72,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcpservers.org/servers/seancrecord/scvd-general-store-repo",
+        "registry": "mcpservers.org",
+        "confirmed": "2026-07-29",
+        "age_days": 70,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo",
+        "registry": "Glama MCP server index",
+        "confirmed": "2026-07-31",
+        "age_days": 68,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+        "registry": "x402-list.com",
+        "confirmed": "2026-08-02",
+        "age_days": 66,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://glama.ai/mcp/connectors/store.scvd/general-store",
+        "registry": "Glama MCP connectors",
+        "confirmed": "2026-08-04",
+        "age_days": 64,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcpindex.ai/server/store-scvd-general-store",
+        "registry": "mcpindex.ai",
+        "confirmed": "2026-08-04",
+        "age_days": 64,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agent-tools.cloud/services/scvd-store-bazaar",
+        "registry": "agent-tools.cloud (x402 services)",
+        "confirmed": "2026-09-15",
+        "age_days": 22,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agent-tools.cloud/a2a/agents/scvd-evidence-agent",
+        "registry": "agent-tools.cloud (A2A agents)",
+        "confirmed": "2026-09-15",
+        "age_days": 22,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store",
+        "registry": "agent-tools.cloud (MCP servers)",
+        "confirmed": "2026-09-15",
+        "age_days": 22,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://x402.fuchss.app/provider/scvd.store",
+        "registry": "x402.fuchss.app (provider index)",
+        "confirmed": "2026-09-01",
+        "age_days": 36,
+        "status": 0,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+        "registry": "AgentIndex (agents.traderszone.net)",
+        "confirmed": "2026-09-01",
+        "age_days": 36,
+        "status": 402,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://agentcatalog.com/publishers/scvd.store?q=",
+        "registry": "AgentMesh Catalog (agentcatalog.com)",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
+        "registry": "skills.sh (open Agent Skills directory)",
+        "confirmed": "2026-09-08",
+        "age_days": 29,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
+        "registry": "Cairn (cairnwake.com) — the cold walk, published by arrangement",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://github.com/seancrecord/scvd-general-store-repo/issues/188#issuecomment-5555985899",
+        "registry": "0200project (base-tx-explain) — an independent re-derivation of a field walk, published in thread",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://stillosdigitalholdings.com/notary/trust",
+        "registry": "StillOS Notary — the receipt treaty, two instruments reading each other",
+        "confirmed": "2026-09-19",
+        "age_days": 18,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://probe402.com/grade?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fsmall_blessing",
+        "registry": "probe402 — dated probe record",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
+        "registry": "Circle — Sell to Agents readiness score",
+        "confirmed": "2026-09-01",
+        "age_days": 36,
+        "status": 200,
+        "state": "silent"
+      },
+      {
+        "url": "https://webmcpdirectory.com/tool/scvd-store",
+        "registry": "WebMCP Directory (webmcpdirectory.com)",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://webmcp.ora.ai/scvd.store",
+        "registry": "Ora — WebMCP directory (webmcp.ora.ai)",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://directory.ora.ai/scvd.store",
+        "registry": "Ora Directory (directory.ora.ai)",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://ora.ai/score/scvd.store",
+        "registry": "Ora — agent-readiness score",
+        "confirmed": "2026-09-06",
+        "age_days": 31,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://partners.circle.com/partner/scvdstore",
+        "registry": "Circle partner directory",
+        "confirmed": "2026-09-04",
+        "age_days": 33,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://www.getdrio.com/mcp/store-scvd-general-store",
+        "registry": "Drio (getdrio.com)",
+        "confirmed": "2026-09-01",
+        "age_days": 36,
+        "status": 503,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
+        "registry": "ZBS Index (index.zbs.gg)",
+        "confirmed": "2026-09-01",
+        "age_days": 36,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://verifymcp.io/servers/store-scvd-general-store/scvd",
+        "registry": "VerifyMCP (verifymcp.io)",
+        "confirmed": "2026-09-10",
+        "age_days": 27,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://verifymcp.io/servers/store-scvd-tab/scvd-tab",
+        "registry": "VerifyMCP (verifymcp.io) — the tab",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212",
+        "registry": "ChatGPT Plugin Directory (chatgpt.com) — the verifier door",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 403,
+        "state": "walled"
+      },
+      {
+        "url": "https://mcpbeat.com/mcp-servers/scvd/general-store/",
+        "registry": "mcpbeat (mcpbeat.com)",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 403,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://mcpbeat.com/mcp-servers/scvd/tab/",
+        "registry": "mcpbeat (mcpbeat.com) — the tab",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 403,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://catalog.agentage.io/mcp/store-scvd-general-store",
+        "registry": "agentage MCP Catalog (catalog.agentage.io)",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://catalog.agentage.io/mcp/store-scvd-tab",
+        "registry": "agentage MCP Catalog (catalog.agentage.io) — the tab",
+        "confirmed": "2026-09-02",
+        "age_days": 35,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcpservers.org/servers/scvd-store-llms-txt",
+        "registry": "mcpservers.org (llms.txt entry)",
+        "confirmed": "2026-08-04",
+        "age_days": 64,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v",
+        "registry": "m8ven.ai",
+        "confirmed": "2026-08-18",
+        "age_days": 50,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcp-marketplace.io/server/store-scvd-general-store",
+        "registry": "mcp-marketplace.io",
+        "confirmed": "2026-08-04",
+        "age_days": 64,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7",
+        "registry": "x402-bazaar.com (Bazaar mirror)",
+        "confirmed": "2026-08-04",
+        "age_days": 64,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
+        "registry": "Agent Identity Registry (AIR) — scvd-store, AIR-BYYP-0MQC-TAKR",
+        "confirmed": "2026-08-01",
+        "age_days": 67,
+        "status": 200,
+        "state": "silent"
+      },
+      {
+        "url": "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+        "registry": "mcpmarket.com",
+        "confirmed": "2026-08-11",
+        "age_days": 57,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://deepwiki.com/seancrecord/scvd-general-store-repo",
+        "registry": "DeepWiki (Cognition/Devin)",
+        "confirmed": "2026-08-11",
+        "age_days": 57,
+        "status": 429,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://cursor.directory/plugins/scvd-general-store-repo",
+        "registry": "Cursor Directory",
+        "confirmed": "2026-09-18",
+        "age_days": 19,
+        "status": 429,
+        "state": "unreachable"
+      },
+      {
+        "url": "https://smithery.ai/servers/seancrecord/scvd-general-store",
+        "registry": "Smithery",
+        "confirmed": "2026-08-11",
+        "age_days": 57,
+        "status": 200,
+        "state": "holds"
+      },
+      {
+        "url": "https://mcp.so/servers/scvd-store",
+        "registry": "mcp.so",
+        "confirmed": "2026-08-10",
+        "age_days": 58,
+        "status": 200,
+        "state": "holds"
+      }
+    ],
+    "regressions": [
+      {
+        "url": "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+        "registry": "toll402",
+        "was": "holds",
+        "now": "unreachable"
+      },
+      {
+        "url": "https://x402.fuchss.app/provider/scvd.store",
+        "registry": "x402.fuchss.app (provider index)",
+        "was": "holds",
+        "now": "unreachable"
+      },
+      {
+        "url": "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+        "registry": "AgentIndex (agents.traderszone.net)",
+        "was": "holds",
+        "now": "unreachable"
+      },
+      {
+        "url": "https://deepwiki.com/seancrecord/scvd-general-store-repo",
+        "registry": "DeepWiki (Cognition/Devin)",
+        "was": "holds",
+        "now": "unreachable"
+      }
+    ],
+    "advances": [
+      {
+        "url": "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+        "registry": "mcpmarket.com",
+        "was": "unreachable",
+        "now": "holds"
+      }
+    ],
+    "stale": [],
+    "walled": [
+      {
+        "url": "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212",
+        "registry": "ChatGPT Plugin Directory (chatgpt.com) — the verifier door",
+        "confirmed": "2026-09-17",
+        "age_days": 20,
+        "status": 403,
+        "state": "walled",
+        "reason": "answers 403 to any read without a ChatGPT session; the keeper confirms this row by eye"
+      }
+    ]
+  }
+}

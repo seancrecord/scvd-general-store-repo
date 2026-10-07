@@ -41,8 +41,9 @@ verification of x402 endpoints, payments and receipts. Before an
 agent pays an x402 endpoint, we check that it can be paid. After it
 pays, we check the signed receipt. Over time we watch endpoints and
 publish a dated, signed corpus. Sellers use it to prove a door works;
-buyers use it before spending. Every artifact is signed, expires, and
-names what we did not see. Not escrow, not a rating, not a guarantee.**
+buyers use it before spending. Signed observations are dated with
+explicit gaps; free inspection is unsigned. Not escrow, not a rating,
+not a guarantee.**
 
 Three paths, in that order. Before you pay: preflight any x402 door,
 free, at [scvd.store/api/preflight/v1](https://scvd.store/api/preflight/v1).
@@ -445,6 +446,11 @@ npm run deploy     # or let the Git-connected deploy push to scvd.store
 
 Deploys are Git-connected to the `scvd.store` custom domain — merge to main
 and Cloudflare handles the rest.
+
+`npm run seo:check` audits a bounded sample of public HTML pages, robots and
+sitemap membership; it does not measure Google indexing or ranking.
+`npm run seo:test` checks that instrument offline and runs in CI.
+[Brand-search findings, preview instructions and measurement limits](research/seo-brand-2026-10-06/README.md).
 
 ## How paying works here (the x402 flow, protocol v2)
 
@@ -924,3 +930,11 @@ cover source and package installation.
 [Ed25519 and ML-DSA-65: signature size and local signing measurements](docs/PQ_MEASUREMENT_2026-09.md)
 publishes the retained September 11 experiment, raw records, reproduction
 instructions and limits. Production checkpoint issuance is parked.
+
+### SCVD Attestation pilot
+
+A human-requested, bounded evidence engagement for one public x402 endpoint:
+daily observations and a signed report for a customer or internal review.
+The offer, operating steps and scope limits are in
+[the pilot runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+This is endpoint evidence, with no AI-decision compliance certification claim.
