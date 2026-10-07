@@ -10,25 +10,22 @@ import type { HonoEnv } from "@/types";
 
 export const evidencePilotRoutes = new Hono<HonoEnv>();
 const CSS = `
-body.pilot {background:#101921;color:#ecf1f4}
 .pilot .paper {max-width:1000px}
 .pilot h1 {font-size:clamp(2.2rem,6vw,4.4rem);letter-spacing:-.045em;text-align:left}
-.pilot h2 {text-align:left;line-height:1.25;color:#a9ded6;text-transform:none;letter-spacing:normal;font-size:1.5rem}
+.pilot h2 {text-align:left;line-height:1.25;text-transform:none;letter-spacing:normal;font-size:1.5rem}
 .pilot .room-directory {margin:1rem 0 2rem}
-.pilot summary {cursor:pointer;color:#a9ded6}
+.pilot summary {cursor:pointer;color:var(--neon)}
 .pilot .offer section {margin:0}
 .pilot .offer h2 {margin-top:0}
-.pilot a {color:#a9ded6}
 .pilot .intro {font-size:1.25rem;max-width:44rem}
 .pilot .offer {display:grid;grid-template-columns:1.8fr 1fr;gap:2.5rem;align-items:start;margin:2.5rem 0}
 .pilot .price {font-size:2.7rem;line-height:1.1;margin:0}
-.pilot .cta {display:inline-block;background:#a9ded6;color:#101921;padding:.85rem 1.1rem;text-decoration:none;border-radius:3px;font-weight:700;white-space:nowrap}
-.pilot a:focus-visible {outline:3px solid #a9ded6;outline-offset:5px}
-.pilot .sample {background:#182630;padding:1.5rem;border-radius:3px}
+.pilot .cta {display:inline-block;background:var(--neon);color:var(--night);padding:.85rem 1.1rem;text-decoration:none;border-radius:3px;font-weight:700;white-space:nowrap}
+.pilot a:focus-visible {outline:3px solid var(--teal);outline-offset:5px}
+.pilot .sample {background:var(--card);padding:1.5rem;border-radius:3px}
 .pilot table {width:100%;border-collapse:collapse;font-size:.95rem}
 .pilot td,.pilot th {padding:.8rem .5rem;text-align:left;vertical-align:top}
-.pilot li,.pilot td {color:#ecf1f4}
-.pilot th {color:#a9ded6}
+.pilot li,.pilot td {color:var(--night-text)}
 .pilot .limits li {margin-bottom:.9rem}
 .pilot .facts {display:flex;gap:2rem;flex-wrap:wrap;margin:1rem 0}
 .pilot .facts strong {font-size:1.5rem;display:block}
