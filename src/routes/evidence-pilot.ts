@@ -56,7 +56,7 @@ evidencePilotRoutes.get(pilot.path, c => {
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) return jsonDocumentMarkdownResponse({ base, path: pilot.path, title: pilot.name, description: PILOT_PROPOSITION, document: data });
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) return c.json(data);
   return c.html(renderSimplePage({ title: pilot.name, description: PILOT_PROPOSITION, path: pilot.path, markdownAlt: pilot.path,
-    collapseNavigation: true, bodyClass: "pilot", extraCss: CSS, webmcp: false,
+    collapseNavigation: true, bodyClass: "pilot", extraCss: CSS,
     bodyHtml: `<p class="intro">${h(PILOT_PROPOSITION)}</p>
     <div class="offer"><section><h2>A record you can hand to a reviewer.</h2><p>Agree the endpoint and the review you need to support. We observe its public payment interface each day and assemble the signed readings, changes and coverage gaps into one export.</p><p><a href="/try">Run a free preflight</a> · <a href="#sample">See a sample report</a></p><p>${h(PILOT_FREE)}</p></section>
     <section aria-label="Pilot price"><p class="price">$${pilot.price_usd} <small>USD</small></p><p>${pilot.duration_days} days · one public endpoint</p><p>${h(pilot.billing)}</p><a class="cta" href="${h(PILOT_REQUEST_URL)}">Request this pilot</a></section></div>
@@ -65,7 +65,7 @@ evidencePilotRoutes.get(pilot.path, c => {
     <table><caption>Illustrative first three days of a pilot</caption><thead><tr><th scope="col">Window</th><th scope="col">Attempts</th><th scope="col">Checks</th><th scope="col">Finding</th></tr></thead><tbody>${sampleRows}</tbody></table><p class="download"><a href="/api/evidence-pilot/sample">Download the unsigned sample JSON</a></p></section>
     <section><h2>What this evidence can establish</h2><p>What our instrument saw at a named endpoint and time, under named criteria. A reviewer can verify the exported signature and inspect the original readings.</p><ul class="limits">${PILOT_LIMITS.map(limit => `<li>${h(limit)}</li>`).join("")}</ul></section>
     <section><h2>Before you request a pilot</h2><p>This first offer is for operators of public x402 endpoints preparing a customer or internal review. Send the endpoint URL, the question the review must answer, who will read the report and the deadline. Leave out credentials, customer records and private decision data.</p><p>Methodology: <a href="/criteria">published criteria</a>. Existing observations: <a href="/corpus">the evidence corpus</a>. Vendor information: <a href="/trust">how SCVD operates</a>.</p></section>
-    ${jsonLdScript({ "@context": "https://schema.org", "@type": "Service", name: pilot.name, description: PILOT_PROPOSITION, url: `${base}${pilot.path}`, provider: organizationRef(base), offers: { "@type": "Offer", price: pilot.price_usd, priceCurrency: pilot.currency, description: PILOT_MONEY, url: `${base}${pilot.path}` } })}`,
+    ${jsonLdScript({ "@context": "https://schema.org", "@type": "Service", name: pilot.name, description: PILOT_PROPOSITION, url: `${base}${pilot.path}`, provider: organizationRef(base), offers: { "@type": "Offer", price: pilot.price_usd, priceCurrency: pilot.currency, acceptedPaymentMethod: pilot.billing, description: PILOT_MONEY, url: `${base}${pilot.path}` } })}`,
   }));
 });
 evidencePilotRoutes.get("/api/evidence-pilot/sample", c => c.json(sample));
@@ -78,7 +78,7 @@ evidencePilotRoutes.get("/api/evidence-pilot/:watch_id", async c => {
     if (c.req.query("download") !== "1" && wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
       const report = data.report;
       return c.html(renderSimplePage({ title: `${pilot.name}: ${report.window.complete ? "final report" : "interim report"}`, path: `/api/evidence-pilot/${record.watch_id}`,
-        description: PILOT_PROPOSITION, webmcp: false, collapseNavigation: true, bodyClass: "pilot", extraCss: CSS,
+        description: PILOT_PROPOSITION, collapseNavigation: true, bodyClass: "pilot", extraCss: CSS,
         bodyHtml: `<p class="endpoint">${h(record.url)}</p><p>${h(readableTime(record.started_at))}<br>to ${h(readableTime(record.ends_at))}</p><p><a class="cta" href="?download=1">Download signed JSON</a></p><p><strong>${report.coverage.days_with_conformance_checks} / ${report.coverage.elapsed_days}</strong> completed days with conformance checks; <strong>${report.coverage.days_without_conformance_checks}</strong> without.</p><p>${h(report.coverage.denominator)}</p><p>Changes recorded: ${report.changes.length}. These compare readings or criteria revisions; inspect the export for their kinds.</p><table><caption>Completed observation windows</caption><thead><tr><th scope="col">Day</th><th scope="col">Attempts</th><th scope="col">Checks</th><th scope="col">Coverage</th></tr></thead><tbody>${report.days.map(day => `<tr><th scope="row">${day.day}</th><td>${day.attempts}</td><td>${day.conformance_checks}</td><td>${gapLabel(day.gap)}</td></tr>`).join("")}</tbody></table><p><a href="?download=1">Download signed JSON</a></p><p>${h(data.how_to_verify)}</p><ul>${PILOT_LIMITS.map(limit => `<li>${h(limit)}</li>`).join("")}</ul>`,
       }));
     }

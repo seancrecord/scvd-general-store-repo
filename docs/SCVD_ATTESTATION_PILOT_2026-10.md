@@ -124,7 +124,9 @@ PR #996 initially caught missing response schemas, an over-budget agent index
 and omitted porch counters. Concrete response schemas, a short index pointer
 with the full offer in the counter guide, and bounded pilot read counters address
 those failures. The existing schema, reading-budget and route-inventory guards
-remain unchanged.
+remain unchanged. A later full run caught the missing invoice payment-method
+metadata and an unnecessary opt-out of the shared browser discovery script.
+The pilot now publishes its exact invoice terms and inherits the shared script.
 
 - The JCS input regression failed on the original canonicalizer (11 cases), then
   passed with the existing signing tests. The end-of-term watch check also failed
