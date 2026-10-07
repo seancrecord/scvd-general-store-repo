@@ -16,7 +16,7 @@ const CACHE_SLOTS = 1024;
 const CLEANUP_KEY = "internal/correction-page-cleanup.json";
 
 /** One bounded cleanup page per pass; its cursor survives failures/restarts. */
-async function pruneCache(bucket: R2Bucket, now: Date): Promise<void> {
+async function pruneCache(bucket: R2Bucket, now: Date): Promise<{ cursor?: string }> {
   const state = await r2ReadText(bucket, CLEANUP_KEY);
   const cursor = state === null ? undefined : (JSON.parse(state) as { cursor?: string }).cursor;
   const page = await bucket.list({ prefix: CACHE_PREFIX, limit: 1000,
@@ -26,7 +26,7 @@ async function pruneCache(bucket: R2Bucket, now: Date): Promise<void> {
     return Number.isFinite(expires) && expires <= now.getTime();
   }).map(object => object.key);
   if (expired.length) await bucket.delete(expired);
-  await bucket.put(CLEANUP_KEY, JSON.stringify({ cursor: page.truncated ? page.cursor : undefined }));
+  return { cursor: page.truncated ? page.cursor : undefined };
 }
 
 /** Only classification inputs; never payer, signature, note or other purchase data. */
@@ -61,7 +61,10 @@ export async function* cachedCorrectionPages(
   if (!env.CORPUS_R2) throw new Error("Correction cache requires object storage");
   if (!Number.isFinite(readBudget) || readBudget < 0) throw new Error("Invalid correction read budget");
   readBudget = Math.min(CORRECTION_READ_BUDGET, Math.floor(readBudget));
-  await pruneCache(env.CORPUS_R2, now);
+  const cleanup = await pruneCache(env.CORPUS_R2, now);
+  // Persist only after pruning succeeds. Keep the R2 binding explicit: this is
+  // object storage, outside the KV per-key write-rate/retry contract.
+  await env.CORPUS_R2.put(CLEANUP_KEY, JSON.stringify(cleanup));
   // One extra day covers the key-write/TTL boundary; actual list expiration
   // decides membership. No assumption that event.at equals the key timestamp.
   const prefixes = eventPrefixes(now.getTime() - (EVENT_TTL_SECONDS + 86400) * 1000,
