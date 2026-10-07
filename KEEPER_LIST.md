@@ -26,6 +26,16 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **PRESS — remaining public-distribution releases, October 7.**
+  `scvd-defects` 0.22.0 is merged in #976; npm still serves 0.21.0.
+  Publish the reviewed source using the existing npm workflow, then compare
+  the public tarball before closing the row. Seven other package versions
+  already match. The existing MPPScan page still omits Research Comparison,
+  Change Check and Batch Spot Check from its rendered purchase list; refresh
+  that entry after the canonical signature-scope copy repair releases, then
+  read it back. The old official MPP PR closed because intake moved here; no second registration is needed.
+  [Exact targets, evidence and limits](research/distribution-2026-10-07/README.md).
+
 - **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
   authenticated checks for now. The L13 code and public reader are released;
   `/admin/market/inflows` still needs its first current authorization-pairing
@@ -1446,14 +1456,14 @@ what you ruled and what is still yours to look at.
   read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
   and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
   deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
-  [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  [PR #991](https://github.com/tempoxyz/mpp/pull/991) closed unmerged October 2: the directory now directs submissions to MPPScan, where SCVD already registered September 19. [October 7 readback and remaining refresh](research/distribution-2026-10-07/README.md).
   Keeper-requested follow-ups posted September 18:
   [directory expansion update](https://github.com/tempoxyz/mpp/pull/991#issuecomment-5734203544)
   and [fresh parser reproduction / exact-query URL](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5734203762).
   The update labels the outside-wallet purchase as house-funded. The same
   directory comment was refreshed at 19:58 UTC after #813 merged and the live
   WebMCP bridge matched its source. No duplicate submission or expanded
-  listing was made; external review remains pending.
+  listing was made; the official-directory review later closed as recorded above.
   MPPScan discovery qualification DONE September 18 against the live shelf
   ([receipt](research/distribution-2026-09-18/mppscan-live-check.json));
   re-read September 19 after the publication doors deployed (#826): 38 of 38
