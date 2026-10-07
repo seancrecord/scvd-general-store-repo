@@ -1,5 +1,31 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-07 — brand-search presentation repair
+
+Applied Google's [snippet controls](https://developers.google.com/search/docs/appearance/snippet)
+to decorative and visitor text using supported `div` exclusions, and its
+[site-name guidance](https://developers.google.com/search/docs/appearance/site-names)
+to keep visible, WebSite and Open Graph names consistent. The existing title,
+service description and unlisted-room policy are retained.
+[Organization guidance](https://developers.google.com/search/docs/appearance/structured-data/organization)
+describes `sameAs` as identity references; reports and directory observations
+remain separately discoverable as `subjectOf`. These are semantic and
+presentation repairs, not demonstrated ranking factors in this case.
+[Local changes, verification and remaining measurement](../research/seo-brand-2026-10-06/README.md#october-7--local-repair-authorized-by-the-keeper).
+
+## 2026-10-06 — Google brand-search diagnosis
+
+Read Google's [AI features guidance](https://developers.google.com/search/docs/appearance/ai-features),
+[URL Inspection documentation](https://support.google.com/webmasters/answer/9012289),
+[canonicalization](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls),
+[snippet controls](https://developers.google.com/search/docs/appearance/snippet),
+[site names](https://developers.google.com/search/docs/appearance/site-names), and
+[site operator limits](https://developers.google.com/search/docs/monitor-debug/search-operators/all-search-site).
+Google indexed the store but the two tested brand queries preferred outside
+listings. Homepage/robots/canonical/root redirects passed the live checks;
+owner Search Console access and the precise ranking cause remain unestablished.
+[Dated findings and limits](../research/seo-brand-2026-10-06/README.md).
+
 ## 2026-10-07 — Personal Agent Protocol announcement
 
 Read the primary source, Sierra's
