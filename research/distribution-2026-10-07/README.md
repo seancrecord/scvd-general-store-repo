@@ -24,7 +24,14 @@ Agent Finder still has the same submitted head, so the prepared owning-account
 patch remains outstanding. Other comments, PR review threads, private portals
 and inboxes were not reviewed in this pass.
 
-## Concrete next actions
+## Later same-day publication
+
+The [defects 0.22.0 release](../defects-release-2026-10-07/README.md) is complete:
+public latest, source-matched tarball, fresh consumers and npm signature/
+provenance checks pass. The earlier package capture above retains its reading.
+Only the second action below remains; do not repeat the first publication.
+
+## Concrete next actions (original sequence)
 
 1. **Publish the already-reviewed defects package.** Source and regression
    shipped in [#976](https://github.com/seancrecord/scvd-general-store-repo/pull/976).

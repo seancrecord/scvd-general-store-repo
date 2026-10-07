@@ -4,6 +4,14 @@ Content review added September 30, 2026; prior dated admission records retained.
 stay in [KEEPER_LIST](KEEPER_LIST.md#directory-and-listings-press-is-yours-rule-30),
 builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
 
+## October 7 package follow-through
+
+`scvd-defects` 0.22.0 is published and public/latest. All 31 packed files match
+reviewed source, fresh JavaScript/strict TypeScript consumers pass, and npm
+verifies its registry signature and provenance attestation. The initial
+processing delay is retained; no repeat publication is needed.
+[Release receipt](research/defects-release-2026-10-07/README.md).
+
 ## October 1 listing additions
 
 [Primary-source read and limits](docs/SPEC_READS.md#2026-10-01--external-directory-and-package-records).

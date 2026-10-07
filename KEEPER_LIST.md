@@ -26,15 +26,15 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
-- **PRESS — remaining public-distribution releases, October 7.**
-  `scvd-defects` 0.22.0 is merged in #976; npm still serves 0.21.0.
-  Publish the reviewed source using the existing npm workflow, then compare
-  the public tarball before closing the row. Seven other package versions
-  already match. The existing MPPScan page still omits Research Comparison,
-  Change Check and Batch Spot Check from its rendered purchase list; refresh
-  that entry after the canonical signature-scope copy repair releases, then
-  read it back. The old official MPP PR closed because intake moved here; no second registration is needed.
-  [Exact targets, evidence and limits](research/distribution-2026-10-07/README.md).
+- **Defects 0.22.0 published October 7 — no repeat press.** The dry run and
+  publication succeeded; public latest and all 31 packed files match source.
+  A fresh installed consumer and npm signature/provenance verification pass.
+  [Release receipt and initial processing delay](research/defects-release-2026-10-07/README.md).
+  PRESS remaining: refresh the existing MPPScan entry after the canonical
+  signature-scope copy repair releases, then read it back. Its rendered list
+  omits Research Comparison, Change Check and Batch Spot Check. The old
+  official MPP PR closed because intake moved here; no second registration
+  is needed. [Exact target and limits](research/distribution-2026-10-07/README.md).
 
 - **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
   authenticated checks for now. The L13 code and public reader are released;

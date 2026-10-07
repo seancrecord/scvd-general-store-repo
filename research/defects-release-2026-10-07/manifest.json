@@ -1,0 +1,19 @@
+{
+  "algorithm": "sha256",
+  "scope": "Unsigned change detector for this release record, excluding the manifest itself.",
+  "files": {
+    "README.md": "2d2759469f7450c4fce48798e7d99c11b7c50e0a00e3d657821930e82348beee",
+    "consumer-package-lock.json": "15e3a3dad4cdcbcdf98410cb908cbdfb854bed6612d8328b60950d7aabdfb585",
+    "consumer-result.json": "41c1963f714ecc62e841aee3d776e066e9206c8f3dc006fa69039565df52831c",
+    "consumer.mjs": "7781e5e5bea1f10b8fea02624ea94774d21efe518b1eebcfa7ff607d99e0fea6",
+    "consumer.ts": "fd668c6bf7889bba3799caf5748ee64d704ae0457f28decb8f808f422117f333",
+    "initial-readbacks.json": "a4a9d6a1a79f7ddc6f5ed063981e479e417801b1c09105d8aa81806b60f4dec0",
+    "npm-signatures.txt": "17f2d7d774935ac35ce5f8c606c92dd18c98c5b25b8726956ffae4cb8ad7c6a0",
+    "package-readback.json": "13d277e0b6ef7cab900be62111b0a1674fd51ff60b929f29eadc18f755a5a02d",
+    "readback.py": "eb17b06bbd96b74e221906534543f873f1b6a5ba60b408c4e2daae7f7cdd6510",
+    "scvd-defects-attestations.json": "f380561b9c88ba1cc219c695e0521da165a5053ff9a2463857094bd5bc848874",
+    "scvd-defects-metadata.json": "6d912b2d0324934730e47b43d7614d7081ed0804c669758ee4a101a08c86ab02",
+    "validation.json": "82bd9287d7ac135ce8de0ee58ff0dae67c66d51e76573adaf0539e4e268a7f9c",
+    "workflow-runs.json": "ea51486d9b1e6fdf91d2d765e7d6ee1bbacfc8ba3822c922d7c128186d2e6195"
+  }
+}
