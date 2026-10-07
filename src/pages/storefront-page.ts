@@ -407,7 +407,7 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
     </div>`,
     )
     .join("\n");
-  return `<div class="wall-slips">\n${slips}\n    </div>`;
+  return `<div class="wall-slips" data-nosnippet>\n${slips}\n    </div>`;
 }
 
 /**
@@ -919,30 +919,11 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
         areaServed: "001",
       },
     ],
-    /**
-     * THE FIELD schema.org PROVIDES FOR "here is independent record of
-     * us," and the direct answer to an outside model reporting it
-     * could find no external reputation footprint. Derived from
-     * EXTERNAL_RECORDS so this list and the trust document cannot
-     * disagree, and so an entry is added in exactly one place.
-     *
-     * ONLY URLS SOMEBODY HAS OPENED. A dead or invented link here is
-     * worse than an empty array: sameAs is the one field a resolver
-     * follows, and a broken one in the middle of an identity claim is
-     * the strongest possible argument that the identity is not real.
-     */
-    // KEEPER_SOCIAL rides along: the keeper's own account is textbook
-    // sameAs material, kept apart from EXTERNAL_RECORDS because those
-    // promise independent records and an owned account is not one.
-    // ENTITY_PROFILES too (2026-09-03): the registry pages the keeper
-    // wrote for the organisation, kept apart for the same reason.
-    ...(EXTERNAL_RECORDS.length > 0 || KEEPER_SOCIAL.length > 0 || ENTITY_PROFILES.length > 0
+    // Identity profiles identify this business. Outside measurements and
+    // directory records are about it, and belong in subjectOf below.
+    ...(KEEPER_SOCIAL.length > 0 || ENTITY_PROFILES.length > 0
       ? {
-          sameAs: [
-            ...EXTERNAL_RECORDS.map((record) => record.url),
-            ...KEEPER_SOCIAL,
-            ...ENTITY_PROFILES,
-          ],
+          sameAs: [...new Set([...KEEPER_SOCIAL, ...ENTITY_PROFILES])],
         }
       : {}),
     /**
@@ -1019,6 +1000,11 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
      * is the defect this store keeps finding in its own work.
      */
     subjectOf: [
+      ...EXTERNAL_RECORDS.map((record) => ({
+        "@type": "WebPage",
+        name: record.registry,
+        url: record.url,
+      })),
       ...STOREFRONT_ROOMS.map((room) => ({
         "@type": "WebPage",
         name: room.name,
@@ -1081,6 +1067,7 @@ export function renderStorefront(data: StorefrontData): string {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${COPY.ogDescription}">
   <meta property="og:url" content="${data.base ?? "https://scvd.store"}/">
+  <meta property="og:site_name" content="${escapeHtml(STORE_SERVICE_NAME)}">
   <meta property="og:type" content="website">
   <meta property="og:image" content="${data.base ?? "https://scvd.store"}/og.png">
   <meta property="og:image:width" content="1200">
@@ -1152,12 +1139,18 @@ ${webmcpOriginTrialTags()}
   <main class="road" data-room="storefront">
 
     <header class="signfront">
-      <p class="tube-line">${escapeHtml(STORE_SERVICE_NAME)}<br>${COPY.tubeLine}</p>
+      <p class="tube-line">${COPY.tubeLine}</p>
       <h1 class="neon"><span class="neon-name">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></span><span class="sr-only"> (${escapeHtml(STORE_SERVICE_NAME)}) — ${escapeHtml(COPY.h1Summary)}</span></h1>
       <div class="light-pool"></div>
+      <div class="store-intro">
+        <p class="store-name"><a href="/what">${escapeHtml(STORE_SERVICE_NAME)}</a></p>
+        <p class="store-summary">${escapeHtml(COPY.metaDescription)}</p>
+      </div>
+      <div data-nosnippet>
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${COPY.intentLine}</p>
+      </div>
       ${data.ledgerLine ? `<p class="track-record">${escapeHtml(data.ledgerLine)}</p>` : ""}
       <p class="pay-rails">${escapeHtml(checkoutMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>. <a href="/rails">Payment breakdown</a>.</p>
     </header>
