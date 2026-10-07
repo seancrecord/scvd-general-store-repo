@@ -1,0 +1,115 @@
+{
+  "taken_at": "2026-10-07T16:31:00.165450+00:00",
+  "rows": [
+    {
+      "path": "/",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 200,
+      "ray": "a46e4b000da5f5f6-EWR",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 193094
+    },
+    {
+      "path": "/llms.txt",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 200,
+      "ray": "a46e4b0a3e2e7721-EWR",
+      "content_type": "text/plain;charset=UTF-8",
+      "bytes": 27676
+    },
+    {
+      "path": "/robots.txt",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 200,
+      "ray": "a46e4b0add8827f6-EWR",
+      "content_type": "text/plain;charset=UTF-8",
+      "bytes": 3403
+    },
+    {
+      "path": "/agents.md",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 200,
+      "ray": "a46e4b0b5e2360c8-EWR",
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 22012
+    },
+    {
+      "path": "/menu.json",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 200,
+      "ray": "a46e4b0e5fa483d0-EWR",
+      "content_type": "application/json",
+      "bytes": 486417
+    },
+    {
+      "path": "/openapi.json",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 200,
+      "ray": "a46e4b12ac917aa6-EWR",
+      "content_type": "application/json",
+      "bytes": 684702
+    },
+    {
+      "path": "/mcp",
+      "method": "POST",
+      "ua": "Python-urllib/3.13",
+      "status": 200,
+      "ray": "a46e4b15a90143bc-EWR",
+      "content_type": "application/json",
+      "bytes": 129192,
+      "tools_list_valid": true
+    },
+    {
+      "path": "/api/buy/spot_check",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 402,
+      "ray": "a46e4b1b4b0e1016-EWR",
+      "content_type": "application/json",
+      "bytes": 22682,
+      "payment_required_valid": true
+    },
+    {
+      "path": "/admin",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 403,
+      "ray": "a46e4b1d09324f46-IAD",
+      "content_type": "text/plain; charset=UTF-8",
+      "bytes": 17
+    },
+    {
+      "path": "/admin",
+      "method": "GET",
+      "ua": "node",
+      "status": 401,
+      "ray": "a46e4b1d79a558d7-EWR",
+      "content_type": "text/plain;charset=UTF-8",
+      "bytes": 12
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "ua": "Python-urllib/3.13",
+      "status": 403,
+      "ray": "a46e4b2989c420f8-EWR",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 4571
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "ua": "node",
+      "status": 403,
+      "ray": "a46e4b29fffa435c-EWR",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 4571
+    }
+  ]
+}
