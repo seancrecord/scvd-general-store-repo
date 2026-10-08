@@ -7,6 +7,11 @@ warm-up remains incomplete. The remaining active World bank-walk alarm was
 reproduced as public RPC providers rejecting the 500-block request. All three
 answered a 100-block probe. The repair uses that measured span and the existing
 derived catch-up budget; its regression fails against the old setting.
+World repair #999 is merged and deployed; the 18:31 UTC production result
+advanced its cursor by 3,600 blocks. The overall hourly run succeeded but took
+13 minutes. Its cache reuse fell from 419 to 41 pages, exposing a separate
+pagination-dependent cache defect. A follow-up uses stable key groups across
+short and empty KV continuations; CI and production readback remain its gates.
 [Evidence and remaining release checks](docs/WORKER_RECOVERY_2026-10-08.md).
 
 ## October 7 — writing and recognition discovery

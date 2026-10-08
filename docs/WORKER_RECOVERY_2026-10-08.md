@@ -13,7 +13,7 @@ hours on October 6 and October 8:
 
 Reads fell 65.81%. These are usage observations, not a new invoice or a
 guarantee that total charges will fall by the same percentage. Lists rose.
-The correction saved at 16:30:28 UTC read 19,996 event values, listed 882,244
+The correction with scan clock 16:30:28 UTC read 19,996 event values, listed 882,244
 keys across 1,408 pages, and reused 396 cached pages. It remained incomplete;
 the cache still needs further hourly passes before complete totals publish.
 
@@ -56,5 +56,45 @@ production bundle checks and the scalability audit passed. The final
 regression also passed after its catch-up assertion was tied to the shared
 budget constant. Full CI remains the merge gate.
 
-Deployment and a subsequent successful production reconciliation are still
-required to close the active alarm.
+PR #999 merged at 18:19:34 UTC after all four CI shards and `check` passed.
+Both production builds passed; version `01526676-7dae-431a-919b-49dbaf5eeadd`
+deployed at 18:20:20 UTC. The 18:31:07 saved World result reported `ran: true`
+and covered blocks 36,069,909–36,073,508; its cursor advanced by 3,600 blocks.
+The first readback was 812 blocks behind the head. This saved result contains
+no transfer findings, so it proves reader progress rather than matched payments.
+The standing alarm's last repeat remained 17:31:22 UTC. All five originally
+reported page paths returned HTTP 200 after deployment.
+
+## Cache pagination follow-up
+
+The 18:30 invocation completed with outcome `ok`, no runtime exceptions,
+2,505 ms CPU and 787,985 ms wall time. That leaves limited headroom before
+the 15-minute duration limit. Its correction record has `computed_at`
+18:30:10 UTC (the scan's clock, not its completion time), 19,983 event-value
+reads, 883,393 listed keys, 1,366 list responses, **41 reused pages**, and
+`complete: false`. Reuse had been 419 pages in the preceding reading.
+Steady cache warm-up is therefore not established by the earlier rising counts.
+
+The cache used each KV response as a page boundary. Cloudflare explicitly
+permits short and even empty continuation pages, including while deleted or
+expired keys are being traversed: [KV list contract](https://developers.cloudflare.com/kv/api/list-keys/).
+Its response boundary is not a stable identity for unchanged live keys.
+A regression reproduced the failure with the same 1,002 keys split differently:
+a warmed cache and zero new-value budget returned no correction instead of
+the previously complete result. The actual cause of every production miss is
+not instrumented; this proves a cache defect compatible with the observed drop.
+
+The follow-up packs the sorted live keys into fixed-size cache pages within
+each existing time slice, carrying short responses and empty continuations
+forward. Only the final page of a completed slice may be short. It retains
+the existing fingerprints, expiration checks, classification inputs and read
+budgets. At most two list pages are buffered; hitting the list budget drops
+an unfinished tail and marks the scan incomplete. Previously saved pages remain
+usable whenever their exact keys and expirations match a canonical page.
+
+The new regressions cover boundary changes with zero new event reads and
+refusal to cache an unfinished short page when listing stops at its budget.
+Both failed against the old implementation; all 63 focused cache/correction,
+classification, pulse and bulk-read tests pass with the repair. Typecheck,
+production bundles, scalability audit, docs check and whitespace check passed.
+Production cache reuse and runtime still need readback after this follow-up ships.
