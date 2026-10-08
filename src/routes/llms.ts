@@ -166,7 +166,11 @@ store" further down.
 
 ## Words people use for what this store does
 
-${askedForBlock()}
+${askedForBlock().replace(writingDiscoveryText(), `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${WRITTEN_ABOUT.map((piece) => `[${piece.where}](${piece.url})`).join("; ")}. ${writerRecognitionText()} Authors, dates and evidence: ${base}/#writing-recognition.`)}
+
+## ${WRITING_HEADING}
+
+${writingDiscoveryText()}
 
 ## Start here, by what you came to do
 
@@ -2007,6 +2011,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
  * store with a hole in it and nothing says so.
  */
 const SECTION_AREAS: Record<string, string> = {
+  [WRITING_HEADING]: "trust",
   "At the counter": "menu",
   "Practicing on us": "developers",
   "How paying works here": "developers",
@@ -2194,13 +2199,9 @@ export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig
       }\n  ${area.blurb}`,
   ).join("\n\n");
 
-  // The short index links to the bylines; the full guide retains their facts.
-  const indexSections = kept.map((section) => section.text).join("").replace(writingDiscoveryText(),
-    `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${WRITTEN_ABOUT.map((piece) => `[${piece.where}](${piece.url})`).join("; ")}. ${writerRecognitionText()} Authors, dates and evidence: ${base}/#writing-recognition.`);
-
   return `${preamble}${buyerQuickStart(base)}
 
-${indexSections}## The rest of this file, by area
+${kept.map((section) => section.text).join("")}## The rest of this file, by area
 
 This is the index. The store's full prose is long on purpose — the
 evidence is the product — so it is served in one document at

@@ -101,3 +101,9 @@ After these fixes, 74 tests across seven focused suites pass, including both
 reading-budget guards, writing discovery, brand search, trust records and guide
 fingerprints. Typecheck and all production bundle checks pass. Full CI still
 gates merge; the six supplied listing URLs are included in this same release.
+
+The full CI follow-through also required direct article URLs in the short index
+and byte-for-byte preservation of every guide section. The vocabulary retains
+compact article links; detailed writing is now its own complete section in the
+full guide and trust-area guide. Existing production-shape and section-preservation
+tests caught both constraints; neither budget nor assertion was weakened.
