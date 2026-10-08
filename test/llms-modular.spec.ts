@@ -1201,8 +1201,14 @@ const BASE = "https://scvd.store";
 // 2026-10-07: joined the bounded pilot offer and index pointer to main's
 // unsigned-inspection wording. Removing only the two pilot paragraphs
 // reproduced main's pins (14/14); these pins cover both intentional changes.
+// 2026-10-07: keeper writing adds attribution, dates and retained ranking evidence.
+// Restoring only askedForBlock to main 55d8da1c reproduced both old pins
+// (14/14 tests). The short index links to the complete evidence separately.
+// Follow-through: retain the compact vocabulary section verbatim in every
+// guide and file detailed writing under trust as its own complete section.
+// The previous pins passed in CI; only this reviewed section move changes them.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "b9b0afaae1782ac77388d268b72b7224051ff560de01270a17008a5c692a6bcd";
+  "3a61f18302b5cd8b51df233cb3ca1a8abb6e6c3d930018d07ddf085270373717";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1305,7 +1311,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "6fe76fa3dd0415c7d892f171efa56c8ed0f5984dd51832bf5311a41a753ddade",
+      "1a168c700b5c954e141b49a535cd8dd6a3ac2a5e0cbebcb0b3a85b38b37ae594",
     );
   });
 

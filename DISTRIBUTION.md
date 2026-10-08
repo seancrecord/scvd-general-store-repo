@@ -1,5 +1,21 @@
 # SCVD distribution: channels and records
 
+## October 7 listing reconciliation
+
+[Six public placements checked](research/discovery-presence-2026-10-07/README.md):
+ChatGPT's existing verifier entry is refreshed; Deside, MCP Harbor, Electra Index,
+makememoneynomistakes.ai and Agora by openforallofus are added to the canonical
+external records under their relevant protocols. Deside's host page and the
+Opening Day item were both read. Agora's dated handshake observation is an
+instrument record; directory presence is not a purchase or delivery result.
+
+ChatGPT now visibly lists version 2.0.0 with both App and Skill sections.
+Electra's version/transport fields conflict with the official MCP registry;
+the agent index's verdict and empty clean-job record remain attributed to its
+method. [Read details and limits](research/discovery-presence-2026-10-07/README.md).
+These additions are prepared locally; public SCVD surfaces update on release.
+
+
 Content review added September 30, 2026; prior dated admission records retained. Start here to find the record; human actions
 stay in [KEEPER_LIST](KEEPER_LIST.md#directory-and-listings-press-is-yours-rule-30),
 builds in [ROADMAP](ROADMAP.md). This is a channel map, not another queue.
@@ -100,7 +116,7 @@ ERC-8004 follow-through: [September 23 closeout and resume triggers](research/er
 
 | Destination | Existing asset / observed status | Admission route or remaining gate |
 | --- | --- | --- |
-| OpenAI / ChatGPT | [Verifier plugin published](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212); keeper reports the skill update completed September 17 | Upload/update task closed; review and publication status of that update have not been independently checked; [packet](registry/openai-plugin-verifier-submission.md). GitHub changes do not update uploaded skills. |
+| OpenAI / ChatGPT | [Verifier plugin published](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212); public version 2.0.0 with App and Skill sections read October 7 | Updated listing and skill presence confirmed; installed skill/source equality and ChatGPT execution remain untested in this pass. [Packet](registry/openai-plugin-verifier-submission.md) · [dated read](research/discovery-presence-2026-10-07/README.md). GitHub changes do not update uploaded skills. |
 | Awesome Copilot | Root Agent Plugins package submitted as [#3255](https://github.com/github/awesome-copilot/issues/3255); 0.2.4 automated skill/manifest/install gates passed at immutable pin `e7f6c068` | Rejected September 24 as not a fit for the repository; issue closed. Automated gates did not establish admission. No resubmission planned without materially changed fit. |
 | GitHub Agent Finder | [PR #34](https://github.com/github/agentfinder-catalog/pull/34) already includes both skills plus MCP/plugin entries | Existing review; [drawer](registry/agentfinder/README.md). Tab's previous registry-version blocker is cleared; it is not thereby in this PR. |
 | Cursor | [Cursor Directory listing](https://cursor.directory/plugins/scvd-general-store-repo) was updated September 18: current name/description/keywords, both skills, and pinned Tab configuration. [September 18 completion record](research/distribution-2026-09-18/FOLLOW_THROUGH.md). Official publisher application **submitted September 17; review pending**. [Receipt](research/distribution-2026-09-17/observations/cursor-publisher-submission.json). | Both MCP servers loaded and free preflight passed in Cursor CLI. Both skills remained absent in normal Agent mode and a portable-only control; [recheck](research/distribution-2026-09-17/observations/cursor-agent-mode-recheck.json). Native desktop qualification remains. Marketplace acceptance is unverified. |

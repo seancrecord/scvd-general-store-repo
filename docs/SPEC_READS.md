@@ -1,5 +1,46 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-07 — keeper-supplied discovery placements
+
+Opened the six public listing pages supplied by the keeper: ChatGPT, Deside,
+MCP Harbor, Electra Index, makememoneynomistakes.ai and Agora by openforallofus.
+Also opened Deside's Opening Day item and read the official MCP registry's
+latest `store.scvd/general-store` record. [Source URLs, exact observations and
+limits](../research/discovery-presence-2026-10-07/README.md).
+
+All listings were readable in the browser; five were unavailable to the web
+reader. ChatGPT's version 2.0.0 and App/Skill presence close the earlier listing
+publication uncertainty, not installed-content/runtime qualification. Electra's
+local/remote/version conflict is preserved. The agent index's verdict and empty
+clean-job history are its method's outputs. Agora's October 5 handshake/tool-list
+reading is an instrument observation, not a peer verification. No submissions,
+external edits, purchases or third-party checker execution were performed.
+
+
+## 2026-10-07 — writing and recognition discovery
+
+Follow-up read the same day: Google's [AI features guidance](https://developers.google.com/search/docs/appearance/ai-features),
+[profile-page guidance](https://developers.google.com/search/docs/appearance/structured-data/profile-page),
+and Schema.org's [author](https://schema.org/author). The homepage keeps its
+store type; each keeper-authored Article shares one Person identifier with
+both observed author profiles and a worksFor link to SCVD. No ProfilePage rich
+result or special AI eligibility is claimed. Relevant rooms get ordinary HTML
+article links. Existing referral counters are reused; they do not establish
+article-to-purchase attribution. [Story destinations and measurement](../research/writing-recognition-2026-10-06/article-destinations.md).
+
+Read Google's [structured-data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies)
+and Schema.org's [Article](https://schema.org/Article): article author,
+publication date, description, publisher and subject can identify the outside
+work; markup must accurately represent readable content. Google's AI-features
+guidance was read in the preceding October 6 task discussion; the October 7
+retry returned 503. No special AI schema or ranking improvement is claimed.
+
+Read the existing dev.to piece and HackerNoon Cairn piece to confirm their
+displayed byline and publication dates; the August AURa and September self-audit
+dates were read in the same task's earlier article review. The October 6 Web3
+placement is supported by the keeper's supplied screenshot, not an assertion
+that the live list still has that order. [Retained image, scope and validation](../research/writing-recognition-2026-10-06/README.md).
+
 ## 2026-10-07 — brand-search presentation repair
 
 Applied Google's [snippet controls](https://developers.google.com/search/docs/appearance/snippet)

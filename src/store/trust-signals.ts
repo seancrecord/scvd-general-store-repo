@@ -106,6 +106,42 @@ export interface ExternalRecord {
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
   {
+    url: "https://deside.io/x402/h/scvd.store",
+    registry: "Deside — x402 host and tool directory",
+    protocols: ["x402"],
+    confirmed: "2026-10-07",
+    what_it_proves: "That Deside indexes scvd.store as an x402 host and links individual store tools, including Opening Day. The host and item pages were opened; directory prices and rails are observations of its listing, not live checkout terms. Not an endorsement and not an audit; no purchase or delivery was tested.",
+  },
+  {
+    url: "https://ai.mcpharbor.dev/servers/store.scvd/general-store",
+    registry: "MCP Harbor — official-registry mirror",
+    protocols: ["mcp"],
+    confirmed: "2026-10-07",
+    what_it_proves: "That MCP Harbor mirrors store.scvd/general-store, links the source repository and https://scvd.store/mcp, and displays setup instructions and a tool list. Its official label describes registry provenance. Not an endorsement and not an audit; setup instructions do not prove execution in the named clients.",
+  },
+  {
+    url: "https://electraindex.com/mcp/scvd-general-store",
+    registry: "Electra Index — MCP directory",
+    protocols: ["mcp"],
+    confirmed: "2026-10-07",
+    what_it_proves: "That Electra Index lists SCVD General Store and links the website and repository. Its displayed local-package version and remote-access claim disagree with the official registry's hosted-server record read the same day; the discrepancy remains unresolved. Not an endorsement and not an audit; its capability labels are automatic, low-confidence classifications.",
+  },
+  {
+    url: "https://makememoneynomistakes.ai/agent/base:86957",
+    registry: "makememoneynomistakes.ai — ERC-8004 agent and x402 index",
+    protocols: ["erc8004", "x402"],
+    confirmed: "2026-10-07",
+    what_it_proves: "That this index has a named SCVD General Store record for Base agent 86957, a review-linked scorecard and associated x402 resources. The observed score and rank were null, with no clean jobs or clients reported by its method. Its verdict is its own classification, not an endorsement adopted by SCVD and not an audit; those counts are not a census of store sales.",
+  },
+  {
+    kind: "instrument",
+    url: "https://openforallofus.com/tools/store.scvd/general-store",
+    registry: "Agora by openforallofus — MCP directory and handshake observation",
+    protocols: ["mcp"],
+    confirmed: "2026-10-07",
+    what_it_proves: "That Agora lists store.scvd/general-store and publishes an October 5 observation of the MCP handshake and tool list at https://scvd.store/mcp. Its page reports no signed reports yet. Not an endorsement and not an audit: a handshake and tool catalogue do not establish successful tool execution, payment or delivery.",
+  },
+  {
     url: "https://www.allthingspm.app/resources/mcp-servers/store-scvd-general-store",
     registry: "AllthingsPM — MCP server directory",
     protocols: ["mcp"],
@@ -983,16 +1019,16 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      * review rather than dressing it as an endorsement.
      *
      * IT IS THE VERIFIER DOOR, NOT THE STORE. What OpenAI reviewed and
-     * listed is /mcp/verifier: five read-only tools and no shelf. A
+     * listed is /mcp/verifier: free verifier tools and no shelf. A
      * reader who takes this row as evidence about the paid instruments
      * has read it wrong, so the sentence says which door.
      */
     url: "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212",
     registry: "ChatGPT Plugin Directory (chatgpt.com) — the verifier door",
     protocols: ["skills", "mcp"],
-    confirmed: "2026-09-17",
+    confirmed: "2026-10-07",
     what_it_proves:
-      "That OpenAI reviewed the free verifier door at /mcp/verifier against its own submission guidelines and admitted it to the plugin directory, on the second attempt. Not an endorsement and not an audit: a directory review checks a listing's claims, its test cases and its tool annotations, and says nothing about whether the goods on this store's other doors are worth buying. It covers the five read-only tools on that door only.",
+      "That OpenAI admitted the free verifier door at /mcp/verifier on the second attempt, as recorded September 17. The public listing reopened October 7 displays version 2.0.0, developer scvd.store, and both App and Skill sections. Not an endorsement and not an audit: this establishes publication of the verifier listing, not paid-store quality, installed skill/source equality or successful ChatGPT tool execution. The listing discloses usage logging and the readiness-discovery queue.",
   },
   {
     url: "https://mcpbeat.com/mcp-servers/scvd/general-store/",

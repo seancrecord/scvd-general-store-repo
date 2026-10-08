@@ -1585,8 +1585,10 @@ what you ruled and what is still yours to look at.
   [publication record](registry/openai-plugin-verifier-submission.md) supersedes
   the old full-store review row: SCVD x402 Verifier 1.0.0 is Published with
   `/mcp/verifier`. The keeper completed the skill update September 17;
-  cross off the upload/update press. Do not infer review approval or publication
-  of the updated version from that report alone.
+  cross off the upload/update press. **October 7 public read:** version 2.0.0
+  and both App and Skill sections are visible. Updated listing presence is now
+  confirmed; installed skill/source equality and runtime qualification remain
+  separate. [Evidence](research/discovery-presence-2026-10-07/README.md).
 
 - **RULE, small: re-paste the WAF rule (2026-09-11, evening).** The
   user-agent rule you pressed worked and, within the hour, an

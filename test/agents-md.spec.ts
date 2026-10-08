@@ -1,7 +1,7 @@
 import { agentsMd } from "@/routes/agents-md";
 import type { Env } from "@/types";
 import { SELF, env } from "cloudflare:test";
-import { INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
+import { INDEPENDENT_REPORTING, WRITTEN_ABOUT, WRITER_RECOGNITION } from "@/store/copy/asked-for";
 import { describe, expect, it } from "vitest";
 
 const BASE = "https://scvd.store";
@@ -86,7 +86,9 @@ describe("/agents.md", () => {
     // WRITTEN_ABOUT list in store/copy/asked-for.ts, and only that list.
     const ALLOWED_EXTERNAL = [
       "https://github.com/seancrecord/",
-      ...WRITTEN_ABOUT.map((piece) => piece.url),
+      ...WRITTEN_ABOUT.flatMap((piece) => [piece.url, piece.author.url]),
+      WRITER_RECOGNITION.sourceUrl,
+      WRITER_RECOGNITION.evidenceUrl,
       // And the independent reporting (2026-09-03), from its own list.
       ...INDEPENDENT_REPORTING.map((piece) => piece.url),
     ];

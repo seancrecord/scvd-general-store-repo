@@ -15,6 +15,7 @@ import {
 import { escapeHtml } from "@/lib/sanitize";
 import { priceLabel } from "@/lib/price-label";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
+import { keeperAuthorJsonLd, writingSectionHtml } from "@/pages/writing-section";
 import { catIsOut } from "@/services/porch";
 import type { FirstDollar } from "@/lib/metrics";
 import {
@@ -1020,6 +1021,10 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
         "@type": "Article",
         headline: piece.title,
         url: piece.url,
+        datePublished: piece.datePublished,
+        description: piece.description,
+        author: keeperAuthorJsonLd(base),
+        about: organizationRef(base),
         publisher: { "@type": "Organization", name: piece.where },
       })),
       // And the independent reporting (2026-09-03): same edge, written
@@ -1257,6 +1262,8 @@ ${webmcpOriginTrialTags()}
       ${guestbookHtml(data.guestbook)}
       <p class="menu-meta"><a href="/visitors">The whole register's in the doorway.</a> <a href="/train">The train's out back.</a></p>
     </section>
+
+    ${writingSectionHtml()}
 
     <footer class="porch-print">
       <p class="porch-dare"><em>${escapeHtml(dareForDay(new Date().toISOString().slice(0, 10)))}</em></p>

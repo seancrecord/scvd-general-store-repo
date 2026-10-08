@@ -51,7 +51,7 @@ import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
 import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
-import { askedForBlock } from "@/store/copy/asked-for";
+import { askedForBlock, writingDiscoveryText, WRITING_HEADING, WRITING_DISCLOSURE, WRITTEN_ABOUT, writerRecognitionText } from "@/store/copy/asked-for";
 import {
   CLI_INSTALL,
   CLI_PACKAGE,
@@ -166,7 +166,11 @@ store" further down.
 
 ## Words people use for what this store does
 
-${askedForBlock()}
+${askedForBlock().replace(writingDiscoveryText(), `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${WRITTEN_ABOUT.map((piece) => `[${piece.where}](${piece.url})`).join("; ")}. ${writerRecognitionText()} Authors, dates and evidence: ${base}/#writing-recognition.`)}
+
+## ${WRITING_HEADING}
+
+${writingDiscoveryText()}
 
 ## Start here, by what you came to do
 
@@ -2007,6 +2011,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
  * store with a hole in it and nothing says so.
  */
 const SECTION_AREAS: Record<string, string> = {
+  [WRITING_HEADING]: "trust",
   "At the counter": "menu",
   "Practicing on us": "developers",
   "How paying works here": "developers",
@@ -2179,7 +2184,7 @@ ${others}
  * The preamble, the two sections a reader needs before anything else,
  * a map of the area files, and nothing else. Under our
  * local 30,000-character reading budget with room to spare, and every
- * sentence in it is the same sentence it was yesterday.
+ * area section retains its full prose. Writing references link to their evidence.
  */
 export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   const { preamble, sections } = splitGuide(storeGuideText(base, paymentConfig));

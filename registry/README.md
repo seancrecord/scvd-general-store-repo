@@ -9,7 +9,7 @@ the keeper explicitly authorized the September 17 Copilot and 8004scan issues.
 | Asset | Purpose / current record |
 | --- | --- |
 | [Plugin submissions](plugin-submissions.md) | Shared fields and qualification steps for Cursor, Claude, Kiro and Cline; reuse existing skills and MCP. |
-| [OpenAI verifier](openai-plugin-verifier-submission.md) | Published ChatGPT verifier; keeper completed the skill update September 17. Updated-version review/publication remains unverified. |
+| [OpenAI verifier](openai-plugin-verifier-submission.md) | Published ChatGPT verifier; keeper completed the skill update September 17. Public version 2.0.0 and its App/Skill sections confirmed October 7; installed-content/runtime qualification remains separate. |
 | [Agent Finder](agentfinder/README.md) | Existing PR #34 contains both skills and MCP/plugin descriptors. Continue it; do not repeat the old missing-entry instructions. |
 | [OpenCode setup](opencode/README.md) | Reuses both skills and derives MCP settings from the shared descriptor. Native discovery, connections, skill load and free preflight passed; ecosystem admission remains separate. |
 | [AGNTCY](agntcy/README.md) | Generated OASF record, published domain key, dated local signing receipt. Shared-node admission/current-record publication still unresolved. |
@@ -40,6 +40,8 @@ can require a skill update even when the server remains reachable.
 `npm run listings:check` reads public listings and registry versions without
 rewriting the [baselines](../docs/listings/) unless explicitly run with `--record`.
 Path presence, installed package behavior and marketplace acceptance are distinct.
+
+Latest public-placement reconciliation: [October 7 — six discovery records](../research/discovery-presence-2026-10-07/README.md).
 
 Recent submissions, failed attempts and source captures:
 [September 17 receipts](../research/distribution-2026-09-17/README.md).

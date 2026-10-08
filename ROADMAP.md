@@ -1,5 +1,19 @@
 # ROADMAP — September 2026
 
+## October 7 — writing and recognition discovery
+
+Follow-up authorized: shared keeper identity, contextual article links on four
+existing rooms, and a ranked [story-to-evidence map](research/writing-recognition-2026-10-06/article-destinations.md).
+Release isolated on `codex/writing-recognition`; CI and live verification gate publication.
+
+Keeper-authorized local implementation: the existing article list now supplies
+authors, dates and descriptions to homepage Article metadata, the agent guides,
+and a quiet section near the homepage footer. The writer's October 6 HackerNoon
+Web3 placement is dated and linked to the keeper's retained screenshot.
+[Scope and validation](research/writing-recognition-2026-10-06/README.md).
+No new page tree, product or search-performance claim. [PR #993](https://github.com/seancrecord/scvd-general-store-repo/pull/993) is the release record; deployment awaits its CI gate.
+
+
 Feature order. The desk is `KEEPER_LIST.md` (his hands).
 Two queues, one job each.
 
