@@ -243,7 +243,10 @@ export const WORLD_EVM: EvmChain = {
   blocksPerHour: 1800, envPrefix: "WORLD",
   defaultRpc: "https://worldchain-mainnet.g.alchemy.com/public",
   fallbacks: ["https://worldchain-mainnet.g.alchemy.com/public", "https://worldchain-mainnet.gateway.tenderly.co"],
-  logSpan: 500,
+  // Measured 2026-10-08: Alchemy's public endpoint refuses 500 blocks
+  // and names a 100-block cap; Tenderly, dRPC and Alchemy all answer
+  // 100. reconciliationPasses derives enough batches to outrun the head.
+  logSpan: 100,
 };
 
 export const EVM_CHAINS: readonly EvmChain[] = [
