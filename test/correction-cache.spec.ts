@@ -1,7 +1,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { invertedTimestamp } from "@/lib/kv-keys";
-import { EVENT_TTL_SECONDS } from "@/lib/event-range";
+import { EVENT_PREFIX_DIGITS, EVENT_TTL_SECONDS } from "@/lib/event-range";
 import * as channel from "@/lib/channel";
 import * as bulk from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
@@ -13,6 +13,7 @@ const REAL_NOW = Date.now();
 const NOW = new Date("2026-10-07T12:00:00.000Z");
 let sequence = 0;
 const run = (readBudget?: number, now = NOW) => recomputeCorrections(bindings, now, { cache: true, readBudget });
+const prefixOf = (name: string) => name.slice(0, "evt:".length + EVENT_PREFIX_DIGITS);
 async function row(offset: number, partial: Partial<MetricEvent> = {}, expiration?: number) {
   const name = `evt:${invertedTimestamp(NOW.getTime() - offset)}:${String(sequence++).padStart(6, "0")}`;
   const event: MetricEvent = { kind: "challenge", house: false, channel: "direct", item: "hello",
@@ -98,6 +99,40 @@ describe("standing correction input cache", () => {
     expect(await run(1000)).toEqual(reference);
     expect((await scan()).kv_keys_read).toBe(2);
     expect(reference[0]?.moved_by_behaviour).toBe(4);
+  });
+
+  it("reuses the same keys when KV moves page boundaries and inserts an empty continuation", async () => {
+    const names = (await Promise.all(Array.from({ length: 1002 }, (_, n) => row(n)))).sort();
+    await run(1000);
+    const reference = await run(1000);
+    expect((await scan()).complete).toBe(true);
+    const prefix = prefixOf(names[0]!);
+    expect(new Set(names.map(prefixOf)).size).toBe(1);
+    const list = bindings.COUNTERS.list.bind(bindings.COUNTERS);
+    vi.spyOn(bindings.COUNTERS, "list").mockImplementation(async options => {
+      if (options?.prefix !== prefix) return list(options);
+      if (!options.cursor) return { keys: names.slice(0, 400).map(name => ({ name })),
+        list_complete: false, cursor: "empty", cacheStatus: null };
+      if (options.cursor === "empty") return { keys: [],
+        list_complete: false, cursor: "rest", cacheStatus: null };
+      return { keys: names.slice(400).map(name => ({ name })), list_complete: true, cacheStatus: null };
+    });
+    expect(await run(0)).toEqual(reference);
+    expect(await scan()).toMatchObject({ kv_keys_read: 0, cached_pages: 2, complete: true });
+  });
+
+  it("does not cache an unfinished short page when empty continuations exhaust the list budget", async () => {
+    const name = await row(0);
+    const prefix = prefixOf(name);
+    const list = bindings.COUNTERS.list.bind(bindings.COUNTERS);
+    vi.spyOn(bindings.COUNTERS, "list").mockImplementation(async options => {
+      if (options?.prefix !== prefix) return list(options);
+      return { keys: options.cursor ? [] : [{ name }],
+        list_complete: false, cursor: "more", cacheStatus: null };
+    });
+    await run();
+    expect(await scan()).toMatchObject({ kv_keys_read: 0, complete: false });
+    expect((await bindings.CORPUS_R2!.list({ prefix: "internal/correction-pages/" })).objects).toEqual([]);
   });
 
   it("removes cache objects after their last source row expires", async () => {
