@@ -1,5 +1,14 @@
 # ROADMAP — September 2026
 
+## October 8 — Worker recovery and World bank walk
+
+Matched-hour KV reads fell 65.81% after the correction-cache release; cache
+warm-up remains incomplete. The remaining active World bank-walk alarm was
+reproduced as public RPC providers rejecting the 500-block request. All three
+answered a 100-block probe. The repair uses that measured span and the existing
+derived catch-up budget; its regression fails against the old setting.
+[Evidence and remaining release checks](docs/WORKER_RECOVERY_2026-10-08.md).
+
 ## October 7 — writing and recognition discovery
 
 Follow-up authorized: shared keeper identity, contextual article links on four
