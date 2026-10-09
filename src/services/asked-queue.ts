@@ -67,7 +67,7 @@ export interface AskedForStore {
  * Which free surface asked: the host page or JSON, or the held half
  * that the look, the passport decision and the A2A door all fold.
  */
-export type AskedSurface = "corpus_host" | "look";
+export type AskedSurface = "corpus_host" | "look" | "seller_declaration";
 
 /** Hosts the store holds before evicting the longest-unasked. */
 export const ASKED_FOR_CAP = 500;

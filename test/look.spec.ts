@@ -296,7 +296,8 @@ describe("never a score", () => {
       }
     };
     walk(body, "$");
-    const offending = keys.filter((key) => /score|rating|\brank|ratio|percent|_pct\b/i.test(key.split(".").pop() ?? ""));
+    // Match ratio as a field word; declaration is a statement, not a ratio.
+    const offending = keys.filter((key) => /score|rating|\brank|(?:^|_)ratio(?:_|$)|percent|_pct\b/i.test(key.split(".").pop() ?? ""));
     expect(offending).toEqual([]);
     expect(body.what_this_is_not).toBe(NOT_A_SCORE);
     expect(body.counts_travel_with_denominators).toContain("no share or percentage");

@@ -1,3 +1,4 @@
+import { declarationWeekChanges } from "@/services/seller-declaration";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { storeLinks } from "@/lib/store-links";
 import { publishedCountsBlock } from "@/store/published-counts";
@@ -611,6 +612,8 @@ ${history.what_this_cannot_see.map((line) => `- ${line}`).join("\n")}
 ${citeSection}
 ## If this is your host
 
+Seller declaration: ${history.declared_vs_observed?.state ?? "no_declaration"}. Read the dated comparison and free submission instructions at ${base}/seller-declarations; full rows in this history’s JSON twin.
+
 This page exists because the store's weekly walk met ${host} and has recorded what it saw since, with the weeks it did not look named as gaps. There is no claim step: the record is earned by observation. Free, for an operator: declare the door (POST ${base}/api/declare-door with {"host": "${host}"}); attach a standing note in your own words (GET ${base}/api/standing-note); or have the page withdrawn at ${base}/notice.
 
 ${storeLinks(base, { path: "/corpus/host/", host: { host, tier: tier.tier, refreshed: tier.latest?.source === "paid_refresh" } }).next.map((step) => `- [${step.name}](${step.url}) — $${step.price_usdc}: ${step.why} (derived from the ${step.source.replace("_", " ")})`).join("\n")}
@@ -819,6 +822,7 @@ corpusRoutes.get("/corpus/host/:host{[a-z0-9.:_-]+}", async (c) => {
         const links = storeLinks(base, { path: "/corpus/host/", host: { host, tier: tier.tier, refreshed: tier.latest?.source === "paid_refresh" } });
         return `<section>
         <h2>If this is your host</h2>
+        <p class="menu-desc"><strong>Declared against observed: ${escapeHtml((history.declared_vs_observed?.state ?? "no_declaration").replaceAll("_", " "))}.</strong> Declaration attached ${escapeHtml(history.declared_vs_observed?.declaration?.attached_at ?? "none")}; observation ${escapeHtml(history.declared_vs_observed?.observed?.observed_at ?? "not comparable")}. <a href="/api/seller-declaration?host=${encodeURIComponent(host)}">Read both dated records</a>. <a href="/seller-declarations">Declare receiving addresses free, or see options for a watch and review report</a>. A mismatch is not a finding of fraud.</p>
         <p class="menu-desc">This page exists because the store's weekly walk met <code>${escapeHtml(host)}</code>${history.first_observed ? ` on ${escapeHtml(history.first_observed)}` : ""} and has recorded what it saw since, with the weeks it did not look named as gaps. There is no claim step: the record is earned by observation. What an operator can do, free: declare the door so the next walk reads it from your own file — <code>POST ${escapeHtml(base)}/api/declare-door</code> with <code>{"host": "${escapeHtml(host)}"}</code> (<a href="/api/declare-door">how</a>); attach a standing note in your own words, proved with your wallet key or a file on your host (<a href="/api/standing-note">how</a>); or have the page withdrawn at the <a href="/notice">notice desk</a>.</p>
         <ul>${links.next.map((step) => `<li class="menu-desc"><a href="${escapeHtml(step.url)}">${escapeHtml(step.name)}</a> — $${step.price_usdc} <span class="menu-meta">(${escapeHtml(step.why)}; derived from the ${escapeHtml(step.source.replace("_", " "))})</span></li>`).join("")}</ul>
         <p class="menu-meta">${escapeHtml(links.derivation)}</p>
@@ -1392,5 +1396,6 @@ corpusRoutes.get("/corpus/changes/:file{[0-9]{4}-W[0-9]{2}\\.json}", async (c) =
       404,
     );
   }
-  return c.json(changes, 200, lastModifiedOf(changes.taken_at));
+  const declarations = await declarationWeekChanges(c.env, records, week);
+  return c.json({ ...changes, ...declarations }, 200, lastModifiedOf(changes.taken_at));
 });

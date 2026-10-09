@@ -1,3 +1,4 @@
+import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/store/seller-declarations";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
@@ -223,6 +224,11 @@ named human. Your operator can read every receipt.
 ${EVIDENCE_PILOT.name}: ${base}${EVIDENCE_PILOT.path}.
 ${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
 
+Seller declarations: ${base}/seller-declarations.
+${DECLARATION_PROPOSITION} ${DECLARATION_FREE} ${DECLARATION_MONEY}
+GET ${base}/api/seller-declaration explains proof, submission and dated comparisons.
+The weekly changes feed carries declaration_mismatches with declarations_compared; later declarations never rewrite an earlier week.
+
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
 \`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
 works whether or not you bought the thing. A live one to try right
@@ -361,6 +367,7 @@ answered now the way the last signed round saw it. Never a score, never
 a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
 
+Free seller declarations and dated address comparisons: ${base}/seller-declarations.
 For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
 
 For anyone who runs a door: ${base}/operators is the shelf from your

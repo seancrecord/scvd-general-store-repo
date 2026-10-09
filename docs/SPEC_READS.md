@@ -2950,3 +2950,14 @@ entry for the exact Research Comparison route. AgentCash origin discovery
 recognizes its price and x402/MPP protocols; the retained unbranded first page
 still has no SCVD row. [Evidence and limits](../research/research-comparison-2026-10-05/README.md).
 No payment, wallet access, organic demand or curation was established.
+
+
+## 2026-10-09 — CV1 wallet proof
+
+Read the primary [EIP-191 specification](https://eips.ethereum.org/EIPS/eip-191),
+including the personal_sign version and message prefix. CV1 uses the existing
+viem recovery path and binds host, normalized addresses, networks and valid_from
+inside the exact statement. A signature establishes wallet control only, not
+host ownership. No new x402, MPP or CAIP wire compatibility is claimed; network
+identifiers are declared context, and address/network pairs are not compared.
+Host-proof file placement is SCVD's existing convention, not an external standard.

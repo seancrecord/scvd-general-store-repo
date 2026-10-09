@@ -1,3 +1,4 @@
+import { SELLER_DECLARATION_INPUT_SCHEMA, DECLARATION_READ_SCHEMA, DECLARATION_WRITE_SCHEMA } from "@/lib/seller-declaration-schema";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { getAddress } from "viem";
@@ -8356,6 +8357,14 @@ openapiRoutes.get("/openapi.json", async (c) => {
             },
           },
         ),
+      },
+      "/api/seller-declaration": {
+        get: { ...returns(freeOp("Read seller declaration instructions or a dated comparison", "Free. Without host: proof instructions, price and limits. With host: declared and observed address digests, dates and source rows; never a verified-seller badge."), DECLARATION_READ_SCHEMA),
+          parameters: [{ name: "host", in: "query", required: false, schema: { type: "string" }, description: "Bare public hostname; omit for instructions." }] },
+        post: returns(postOp("Prepare or attach a seller declaration", "Free. Prepare returns exact signing text and a host-file hash without publishing. Attach verifies host control or every observed EVM wallet. Host proof takes precedence; new hosts and address rotations require host proof. GET explains errors and limits.", "action and declaration; attachment also needs evidence and, for wallets, signatures.", {
+          type: "object", required: ["action", "declaration"], properties: { action: { type: "string", enum: ["prepare", "attach"] }, declaration: SELLER_DECLARATION_INPUT_SCHEMA,
+            evidence: { type: "string", enum: ["well_known", "wallet_signature"] }, signatures: { type: "object", additionalProperties: { type: "string" } } },
+        }), DECLARATION_WRITE_SCHEMA),
       },
       "/api/standing-note": {
         get: returns(

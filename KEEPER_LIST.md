@@ -45,8 +45,8 @@ build, it is on the roadmap.
   pending. [Rule, evidence and scope](docs/PYTHON_CLIENT_ACCESS_2026-10.md).
 
 - **SCVD Attestation pilot, October 7 — first customer hands.** The bounded offer
-  is prepared and release authorized after your go-ahead. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
-  Once released and a buyer agrees the public endpoint, price and start time,
+  is built and merged in [#996](https://github.com/seancrecord/scvd-general-store-repo/pull/996) on October 7. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+  Once a buyer agrees the public endpoint, price and start time,
   activate from `/admin/evidence-pilot`; hand over and verify the final report
   before invoicing. No prospect was contacted, customer activated or invoice sent.
   Implementation and release status live on ROADMAP, not this desk.
@@ -1317,6 +1317,14 @@ what you ruled and what is still yours to look at.
   is needed for compact corpus discovery. Evidence: `docs/OPENAPI_HEADROOM_2026-09.md`.
 
 ### Decisions that unblock the roadmap
+
+- **RULED October 9 — CV1 seller declarations next.** Keeper agreed to the
+  recommendation and requested contextual funnel/paid follow-through. Free to
+  submit and read; an accepted declaration is an ask within the existing sweep
+  caps, not a guaranteed probe. Build and release stay on ROADMAP. Existing
+  watches/reports can be offered with their actual scope; declaration-change
+  alerts must not be claimed before built.
+
 
 - **RULED 2026-09-16 — takeoff readiness and A2A compatibility.** Buyer
   before spending is first; canonical A2A v1 retains an explicitly separated,
