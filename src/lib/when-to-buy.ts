@@ -1,6 +1,6 @@
 import { DELIVERY_ORDER } from "@/store/copy/position";
 import { MENU_ITEMS, getMenuItem } from "@/store";
-import { SHELF_CLUSTERS } from "@/lib/mcp-tools";
+import { SHELF_CLUSTERS } from "@/store/mcp-shelves";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 
 /**

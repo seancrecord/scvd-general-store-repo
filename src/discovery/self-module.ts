@@ -5,7 +5,7 @@ import {
   type FetchedSelfRow,
 } from "@/discovery/self-coherence";
 import { jcsCanonicalize } from "@/lib/jcs";
-import { SHELF_CLUSTERS } from "@/lib/mcp-tools";
+import { SHELF_CLUSTERS } from "@/store/mcp-shelves";
 
 export type { PassportModule };
 

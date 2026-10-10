@@ -1209,8 +1209,12 @@ const BASE = "https://scvd.store";
 // The previous pins passed in CI; only this reviewed section move changes them.
 // Re-pinned 2026-10-10 for the authorized offer-path guidance, shared operator
 // proposition and Aura Walk value sentence. No section was removed.
+// 2026-10-10: delivery-order limits and recovery-handle locations were
+// corrected together. Restoring only llms.ts, DELIVERY_ORDER and the recovery
+// guidance to 3d50daba reproduces both prior pins (39/39 focused checks).
+// The new pins cover those reviewed sentences, with all guide sections intact.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "8db70bf1fddc5bb62048ee159c12bcff37f861b8245a485bce69e7d4d58c6b7c";
+  "6b0760ef29514e8cdb85a98a1630e03f78e494d7a024a5af12b64d3d944cb7ce";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1313,7 +1317,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "05aed30e755130247c5c939904a5e6ad26630442a3e28a89c56598cf5191ef2e",
+      "0c8cdbf8fffbb1eee54ba9747c08296c41fb43b0ad4c75286a5e470c942c4ff0",
     );
   });
 

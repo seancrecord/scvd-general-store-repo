@@ -55,3 +55,21 @@ made. Documentation 403s seen in participant environments, reward-redemption gas
 friction and a genuinely cold documented purchase/recovery run remain separate
 work. Release, full CI and live readback remain pending. The clearer offers and
 commission intake still need an actual customer decision to establish demand.
+
+## PR #1002 release checks
+
+CI exposed an old delivery-wording assertion and two stale complete-guide
+fingerprints. Restoring only the earlier guide paragraph, delivery-order
+sentence and recovery guidance reproduced both old hashes and passed all
+39 positioning/guide checks. The corrected assertions require preparation
+before settlement, the possibility of later delivery failure and recovery
+without paying again. The byte pins remain fixed, not derived from the output.
+
+The checkout bundle initially measured 1,004,519 bytes against its unchanged
+1,000,000-byte limit. Moving shared shelf definitions out of the MCP catalogue
+removed unnecessary catalogue initialization from the checkout import graph;
+the same locked-dependency build measures 971,825 bytes and passes cold starts.
+Tool definitions and shelf membership are unchanged. A compact catalogue page
+also exceeded its unchanged 16,000-byte reader budget by six bytes. Seven
+items per page replaces eight; continuation still returns every item once,
+with the related-offer pointers retained.

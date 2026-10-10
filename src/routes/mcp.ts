@@ -192,7 +192,7 @@ export const MCP_SERVER_VERSION = "0.5.0";
 
 /**
  * WHY FIVE GROUPED buy_* TOOLS RATHER THAN ONE PER ITEM — the answer
- * is in src/lib/mcp-tools.ts, at SHELF_CLUSTERS, and this pointer
+ * is in src/store/mcp-shelves.ts, at SHELF_CLUSTERS, and this pointer
  * exists because somebody went looking for it HERE and did not find
  * it.
  *

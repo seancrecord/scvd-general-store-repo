@@ -13,7 +13,8 @@ import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
 import { CITED_ARTIFACT_FIELD } from "@/lib/bazaar-discovery";
 
 /** Fixed views of the existing shelf; no session, cursor storage, or second catalog. */
-export const COMPACT_CATALOG_PAGE_SIZE = 8;
+// Related offer pointers plus every enabled rail must fit the existing reader budget.
+export const COMPACT_CATALOG_PAGE_SIZE = 7;
 export const MCP_TOOL_RESULT_PAYMENT = "tool-result";
 
 /**

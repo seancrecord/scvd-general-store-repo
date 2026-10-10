@@ -225,11 +225,15 @@ describe("the contract and the handshakes carry the new opening", () => {
     expect(body.result.instructions).toContain("/corpus.json");
   });
 
-  it("agents.md leads with the opening and no longer claims settle-then-deliver", async () => {
+  it("agents.md leads with the opening and distinguishes preparation from later delivery failures", async () => {
     const manual = await text("/agents.md");
     expect(manual).toContain(OPERATED_BY);
     expect(manual.toLowerCase()).not.toContain("settles on-chain first");
-    expect(manual.toLowerCase()).toContain("delivers first and settles after");
+    expect(manual).toContain("prepares instant goods or the order before requesting settlement");
+    expect(manual).toContain("A failure before settlement takes no money.");
+    expect(manual).toContain("A failure after settlement can leave delivery incomplete");
+    expect(manual).toContain("recovery handle, and do not pay again");
+    expect(manual.toLowerCase()).not.toContain("a delivery that fails takes no money");
     expect(manual).toContain(`${BASE}/conformance`);
     expect(manual).toContain(`${BASE}/corpus`);
     expect(manual).toContain("x402-sign");
