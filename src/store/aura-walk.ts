@@ -69,3 +69,8 @@ export const AURA_WALK_MODELS_LINE =
 
 /** One sentence on what the report is, for the surfaces that summarise. */
 export const AURA_WALK_ONE_LINE = `Your x402 door shopped cold by models of different strength, by the keeper's hand, ${AURA_WALK_ENTRY_POINTS.length} entry points, every transcript attached`;
+
+/** The job in buyer language, shared by the listing and discovery paths. */
+export const AURA_WALK_TITLE = "Agent shopping audit — The Aura Walk";
+export const AURA_WALK_WHY = "Find where a cold agent gets stuck so you can prioritize changes to discovery, instructions and checkout before sending more buyers through them.";
+export const AURA_WALK_OUTCOME = `A report across ${AURA_WALK_ENTRY_POINTS.length} entry points: model names, complete transcripts, round trips, avoidable 400s and trust-signal placement.`;

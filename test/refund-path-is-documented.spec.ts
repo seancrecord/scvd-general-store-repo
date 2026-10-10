@@ -81,14 +81,12 @@ describe("the refund path is documented where an agent reads", () => {
 
   it("leads with the reason most refunds are not owed at all", async () => {
     /*
-     * The store settles at the last moment before signing, so a failed
-     * delivery takes no money. An agent that chases a refund for a
-     * purchase that never charged has wasted a round trip on both
-     * sides; the procedure says so in step one.
+     * The procedure distinguishes an unpaid refusal from a paid delivery
+     * gap; absence of a certificate does not establish absence of a charge.
      */
     const body = await agentsMd();
-    expect(body).toContain("delivers first and settles after");
-    expect(body).toContain("nothing was charged and there is nothing to refund");
+    expect(body).toContain("failure after settlement");
+    expect(body).toContain("A missing certificate alone does not establish whether money moved");
   });
 
   it("answers the endpoint it points at in the same envelope as everything else", async () => {

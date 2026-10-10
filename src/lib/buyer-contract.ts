@@ -1,3 +1,4 @@
+import { relatedOfferPaths } from "@/store/offer-paths";
 import { purchaseCapabilities, type PurchaseCapabilityConfig, nativeMcpCheckoutShape, nativeWebmcpCheckoutShape } from "@/lib/purchase-capabilities";
 import { purchaseChecklist } from "@/lib/purchase-checklist";
 import { buyerGuidance } from "@/lib/buyer-guidance";
@@ -12,7 +13,8 @@ import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
 import { CITED_ARTIFACT_FIELD } from "@/lib/bazaar-discovery";
 
 /** Fixed views of the existing shelf; no session, cursor storage, or second catalog. */
-export const COMPACT_CATALOG_PAGE_SIZE = 8;
+// Related offer pointers plus every enabled rail must fit the existing reader budget.
+export const COMPACT_CATALOG_PAGE_SIZE = 7;
 export const MCP_TOOL_RESULT_PAYMENT = "tool-result";
 
 /**
@@ -62,7 +64,9 @@ export function buyUrlTemplate(item: MenuItem, base: string): string {
 }
 
 export function buyerLinks(item: MenuItem, base: string) {
+  const related = relatedOfferPaths(item.id, base);
   return {
+    ...(related.length ? { optional_next_work: related } : {}),
     required_params: [...(buyInputSchema(item).required ?? [])],
     buy_url_template: buyUrlTemplate(item, base),
     input_contract_url: `${base}/menu/${item.id}?view=compact`,

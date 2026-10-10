@@ -1,3 +1,5 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
+import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
 import { paymentNetworkNames, paymentNetworkGuide } from "@/lib/payment-networks";
@@ -169,6 +171,13 @@ unscoped \`x402-*\` packages predate the current protocol.) Entirely
 optional — the house rule above stands, and everything either package
 does is also available over plain HTTPS on this page. They
 byte-reproduce the conformance vectors; that is the whole pitch.
+
+## When a quick check is not enough
+
+Agent shopping audit (The Aura Walk): ${AURA_WALK_WHY}
+Read ${base}/operators#shopping-audit for scope, current price, delivery and the free starting point.
+The same room offers a report for customer reviews and a free brief for custom platform work.
+No purchase is required to read the evidence or ask about scope.
 
 ## The moments this skill is for
 
@@ -343,11 +352,8 @@ the door, identifying this skill file, never you. Leave it on.
    selects a cache slot rather than opening one: slots are keyed by
    the VERIFIED paying wallet, so echoing the key only ever reaches
    your own earlier purchase, never somebody else's.
-4. We deliver first and settle after (changed 2026-08-10 — the store
-   settled first until then, and the old rule is quoted at
-   ${base}/becoming). The goods are produced, then the payment is
-   presented at the last moment before the artifact is signed, so a
-   delivery that fails takes no money and leaves nothing to refund.
+4. ${DELIVERY_ORDER} The ordering changed on 2026-08-10;
+   its history is at ${base}/becoming.
    Instant items arrive in the response body. Human-queue items return an \`order_id\`: poll
    \`${base}/api/order/{order_id}\`; optional \`callback_url\` gets a
    single POST on completion. Supplied callbacks must be public https on

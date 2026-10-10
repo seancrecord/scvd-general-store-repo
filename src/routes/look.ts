@@ -1,3 +1,4 @@
+import { relatedOfferPaths } from "@/store/offer-paths";
 import { Hono, type Context } from "hono";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { LOOK_HOLD_SECONDS, LOOK_VERSION, NOT_A_SCORE, lookAtDoor } from "@/services/look";
@@ -36,6 +37,7 @@ function doc(base: string) {
       "Anything about a host the chain never met, beyond that it never met it. Thin history is a fact about our coverage, not about the door, and the gaps are counted against us by reason.",
       `Anything newer than the hold on the held half: the chain's fold for a host is re-derived at most every ${LOOK_HOLD_SECONDS} seconds, and the artifact says when it was taken.`,
     ],
+    optional_next_work: relatedOfferPaths("spot_check", base),
     the_ladder: {
       free_first: {
         the_door: `${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} — the live half on its own. Free.`,

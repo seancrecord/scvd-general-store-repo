@@ -1,3 +1,4 @@
+import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
@@ -363,12 +364,12 @@ yours to draw.
 
 For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
 
-For anyone who runs a door: ${base}/operators is the shelf from your
-side, in the order a launch happens — before you launch, the week you
-launch, standing, and when something goes wrong — with the free
-instrument named first at each moment and every price read off the
-shelf when the page is served. A reading order, never a ranking, and
-nothing there certifies anyone.
+Agent shopping audit (The Aura Walk): ${AURA_WALK_WHY}
+Scope, current price, delivery window and free first step: ${base}/operators#shopping-audit.
+Larger customer-review reports and scoped platform work: ${base}/operators.
+
+Compare free checks, watches, review reports and custom work: ${base}/operators.
+Each path names its price, delivery and limits.
 
 The same weeks by calendar month, for a citation: ${base}/corpus/month
 — doors named, probed, payable and not at the month's closing week,
@@ -1238,9 +1239,7 @@ steps by which a look at somebody else's door becomes evidence a
 stranger can check without trusting us — the knock, the reading, the
 signature, the hash chain, the Bitcoin anchor — and every step names
 the thing you can go and verify yourself. It also says, in the place
-a buyer actually meets it, what happens to money here: the store
-delivers first and settles after, so a delivery that fails takes
-nothing and there is no refund queue to join. Prices and cadence in
+a buyer actually meets it, what happens to money here. ${DELIVERY_ORDER} Prices and cadence in
 it are read off the live shelf, never typed. It is free, needs no
 key, and the human page is at ${base}/how-it-works.
 

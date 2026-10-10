@@ -1826,6 +1826,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     })();
     till.deliveryKey = await openDeliveryIntent(c.env, {
       path: c.req.path,
+      ...(purchase ? { purchase_id: purchase.id } : {}),
+      payment_network: verifiedRequirements.network,
       ...(askedFor ? { query: askedFor } : {}),
       ...(till.settled.transaction
         ? { transaction: till.settled.transaction }

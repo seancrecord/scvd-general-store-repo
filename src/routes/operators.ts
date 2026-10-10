@@ -1,7 +1,10 @@
+import { offerPaths } from "@/services/offer-paths";
+import { offerPathsHtml } from "@/pages/offer-paths";
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
+import { briefFormCss } from "@/pages/commission-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { ladderRung } from "@/services/menu-markdown";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
@@ -71,7 +74,7 @@ export const OPERATOR_STAGES: readonly OperatorStage[] = [
       name: "The preflight",
       how: (base) => `POST ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT} with {"url": "..."} — one probe, every check by name, free. The same check as a GitHub Action: seancrecord/scvd-general-store-repo/action/preflight, which fails your deploy on not_ready.`,
     },
-    items: ["launch_check", "opening_day", "onpage_audit"],
+    items: ["launch_check", "opening_day", "onpage_audit", "aura_walk"],
   },
   {
     moment: "The week you launch",
@@ -99,7 +102,7 @@ export const OPERATOR_STAGES: readonly OperatorStage[] = [
       name: "The look",
       how: (base) => `POST ${base}/api/look/v1 with {"url": "..."} — the live probe folded with everything the chain holds about your host, free.`,
     },
-    items: ["the_case_file", "aura_walk"],
+    items: ["the_case_file"],
   },
 ];
 
@@ -119,8 +122,7 @@ function stages(base: string) {
   }));
 }
 
-const STANDFIRST =
-  "You run an x402 door. This is the shelf from your side, in the order a launch happens: what is free first at each moment, and what is for sale when you need it signed, dated and servable to somebody else. Every price here is read off the shelf when the page is served; the 402 at the door is the only price that binds.";
+const STANDFIRST = OPERATORS_PROPOSITION;
 
 const NOT =
   "Nothing here ranks you, scores you, or certifies you. Every paid item is a dated observation with its derivation and denominator beside it, signed so a stranger can check it without asking us, and it names what it did not see. Nothing charges again by itself: term items end on their date and say how to buy another.";
@@ -158,6 +160,7 @@ operatorsRoutes.get("/operators", (c) => {
         stores: "The doors a host's own file declared, keyed by that host, and the day it was last read by hand. Nothing about you.",
       }),
       summary: STANDFIRST,
+      offer_paths: offerPaths(base),
       stages: rows,
       what_this_is_not: NOT,
       all_items: `${base}/menu.json`,
@@ -169,7 +172,7 @@ operatorsRoutes.get("/operators", (c) => {
       base,
       path: "/operators",
       title: "For operators",
-      description: "The shelf from the seller's side, in the order a launch happens: what is free first at each moment, and what is for sale when you need it signed and servable. Never a score.",
+      description: OPERATORS_PROPOSITION,
       document: pagePayload as unknown as Record<string, unknown>,
     });
   }
@@ -195,17 +198,30 @@ operatorsRoutes.get("/operators", (c) => {
     renderSimplePage({
       title: "For operators",
       description:
-        "The shelf from the seller's side, in the order a launch happens: what is free first at each moment, and what is for sale when you need it signed and servable. Never a score.",
+        OPERATORS_PROPOSITION,
       path: "/operators",
-      bodyHtml: `<section><p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests, suggested fixes and signed rechecks.</p>
-    <p><a href="/open-for-business">Open for Business</a>: the weekly issue on what agents did at a live till and how not to turn them away silently; the index and the number of the week are free.</p></section>
-    <section>
+      collapseNavigation: true,
+      extraCss: briefFormCss,
+      bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(OPERATORS_PROPOSITION)}</p>
-        <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>
         <p class="menu-meta">${escapeHtml(OPERATORS_FREE_FIRST)}</p>
       </section>
+      ${offerPathsHtml(base)}
+      ${jsonLdScript({
+        "@context": "https://schema.org", "@type": "ItemList",
+        name: "Choose your next evidence task", url: `${base}/operators`,
+        itemListElement: offerPaths(base).map((offer, index) => ({
+          "@type": "ListItem", position: index + 1,
+          item: { "@type": "Service", name: offer.title, url: offer.url,
+            description: `${offer.why} ${offer.outcome} ${offer.price} ${offer.limits}`,
+            provider: organizationRef(base) },
+        })),
+      })}
+      <details><summary>Browse every free and paid option by launch stage</summary>
       ${sections}
+      </details>
       <section>
+        <p><a href="/a2a-desk">A2A checks and repair kits</a>: free card checks, authorized runtime tests, suggested fixes and signed rechecks. <a href="/open-for-business">Open for Business</a>: the weekly issue on what agents did at a live till.</p>
         <p class="menu-desc">${escapeHtml(OPERATORS_FOR_MONEY)}</p>
         <p class="menu-desc"><strong>${escapeHtml(NOT)}</strong></p>
         ${jsonLdScript({

@@ -104,8 +104,8 @@ export function renderSignalsPage(data: SignalsPageData): string {
     ? "No receipt reads since the signal went in."
     : `${total(s.readers)} receipt reads: ${sorted(readersByClass).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ")}. Over a week after minting: ${sorted(readersOld).map(([k, n]) => `${escapeHtml(k)} ×${n}`).join(", ") || "none"}. Shown from ${Object.keys(referrersNamed).length} named host${Object.keys(referrersNamed).length === 1 ? "" : "s"}.`;
   const examplesLine = total(s.examples) === 0
-    ? "No purchase carried a worked example as its input."
-    : `${total(s.examples)} purchases bought the worked example as-is: ${sorted(s.examples).slice(0, 3).map(([k, n]) => `<code>${escapeHtml(k)}</code> ×${n}`).join(", ")}.`;
+    ? "No copied-example input fields were recorded."
+    : `${total(s.examples)} copied-example field matches, not distinct purchases (one purchase can match several fields): ${sorted(s.examples).slice(0, 3).map(([k, n]) => `<code>${escapeHtml(k)}</code> ×${n}`).join(", ")}.`;
   const purposesDetail = s.purposes.length === 0
     ? "<p><small>Nobody wrote a purpose this month.</small></p>"
     : `<table border="1" cellpadding="4"><tr><th>day</th><th>item</th><th>purpose, their words</th></tr>
@@ -172,7 +172,7 @@ export function renderSignalsPage(data: SignalsPageData): string {
     .map(({ door, rows }) => `<h3>${DOOR_LABELS[door]}</h3>${table(rows, ["bucket", "settles"])}`)
     .join(""),
     "The 402 stamps its own instant into every offer (extra.quotedAt); a compliant client echoes the accepted offer whole, so the payment names the quote it answers and the elapsed time is read at verify. Not an identity: two knocks in one millisecond carry one stamp, and nothing here joins two purchases. unstamped is a client that rebuilt the accepted terms by hand and dropped the field, or a door whose checkout carries no x402 echo at all (UCP); count it, do not read it as fast or slow. Under five seconds is a script; over ten minutes is a human in the loop or a queue.")}
-  ${reading("Avoidable 400s, by item, field and why", refusalLine, `${table(s.refusal, ["item:field:reason", "refusals"])}<h3>The worked example, bought as-is</h3><p>${examplesLine}</p>${table(s.examples, ["item:field", "purchases"])}`,
+  ${reading("Avoidable 400s, by item, field and why", refusalLine, `${table(s.refusal, ["item:field:reason", "refusals"])}<h3>Worked-example input matches</h3><p>${examplesLine}</p>${table(s.examples, ["item:field", "field matches"])}`,
     "missing: the field was absent. malformed: it failed the published pattern. example: the worked example was pasted back. other: an encoding or callback refusal. A field that leads this table is a description or an example to rewrite, not a buyer to blame; an example bought as-is is a signed reading of a placeholder, which is the same defect from the other side.")}
   ${reading("Who reads receipts", readersLine, `<h3>By reader and artifact age</h3>${table(s.readers, ["reader:age", "reads"])}<h3>Where they were shown (referrer host)</h3>${table(s.referrers, ["host", "reads"])}`,
     "Classed from headers the verify route already keeps for ninety days; nothing is placed on the receipt and nothing new is collected. browser is whoever negotiated HTML, crawler is the shared table, agent is the rest. A browser read over a week after minting is a person being shown proof; the host it came from is where the store's artifacts travel. own means a link from our own pages; none means no referrer was sent, which is most agents.")}

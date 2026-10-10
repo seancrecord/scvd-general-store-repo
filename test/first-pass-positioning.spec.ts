@@ -225,11 +225,15 @@ describe("the contract and the handshakes carry the new opening", () => {
     expect(body.result.instructions).toContain("/corpus.json");
   });
 
-  it("agents.md leads with the opening and no longer claims settle-then-deliver", async () => {
+  it("agents.md leads with the opening and distinguishes preparation from later delivery failures", async () => {
     const manual = await text("/agents.md");
     expect(manual).toContain(OPERATED_BY);
     expect(manual.toLowerCase()).not.toContain("settles on-chain first");
-    expect(manual.toLowerCase()).toContain("delivers first and settles after");
+    expect(manual).toContain("prepares instant goods or the order before requesting settlement");
+    expect(manual).toContain("A failure before settlement takes no money.");
+    expect(manual).toContain("A failure after settlement can leave delivery incomplete");
+    expect(manual).toContain("recovery handle, and do not pay again");
+    expect(manual.toLowerCase()).not.toContain("a delivery that fails takes no money");
     expect(manual).toContain(`${BASE}/conformance`);
     expect(manual).toContain(`${BASE}/corpus`);
     expect(manual).toContain("x402-sign");
@@ -375,12 +379,16 @@ describe("the sideways surfaces carry the position too", () => {
     expect(alt).toContain("evidence observatory for agentic commerce");
   });
 
-  it("the README no longer claims settle-then-deliver", async () => {
-    // The flow flipped 2026-08-10; llms.txt and agents.md were
-    // corrected the same day and the README kept the old claim.
+  it("the README and listing draft distinguish preparation from paid delivery failure", async () => {
     const readme = (await import("../README.md?raw")).default;
-    expect(readme.toLowerCase()).not.toContain("settle first");
-    expect(readme.toLowerCase()).toContain("settle after");
+    const listing = (await import("../registry/agentic-market-submission.md?raw")).default;
+    for (const text of [readme, listing]) {
+      const prose = text.toLowerCase().replace(/\s+/g, " ");
+      expect(prose).toContain("a failure before settlement takes no money");
+      expect(prose).toContain("a failure after settlement can leave delivery incomplete");
+      expect(prose).toContain("do not pay again");
+      expect(prose).not.toContain("a delivery that fails takes no money");
+    }
   });
 });
 

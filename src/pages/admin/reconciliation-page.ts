@@ -260,18 +260,20 @@ function deliveriesHtml(
   audit: (DeliveryAudit & { house_payers?: Record<string, boolean> }) | null,
 ): string {
   if (!audit) return `<p>${ATTENTION} — the delivery audit didn't load. Reload to retry.</p>`;
+  const recorded = audit.recorded_delivery ?? [];
+  const recordedHtml = recorded.length ? `<p><strong>${recorded.length} leftover marker${recorded.length === 1 ? " has" : "s have"} matching retained delivery.</strong> These are not counted as missing goods. The original markers remain unchanged.</p><ul>${recorded.map(sale => `<li>${escapeHtml(sale.path)} — <a href="/admin/purchases?purchase_id=${escapeHtml(sale.purchase_id)}">Inspect retained delivery</a></li>`).join("")}</ul>` : "";
   if (audit.undelivered.length === 0) {
-    return `<p>${PASS} — every settle either delivered its goods or is in flight
-      (${audit.in_flight} in flight, ${audit.checked} checked${audit.truncated ? "; scan capped, count is a floor" : ""}).</p>`;
+    return `${recordedHtml}<p>${audit.truncated ? ATTENTION : PASS} — no unresolved overdue delivery markers in this scan
+      (${audit.in_flight} in flight, ${audit.checked} checked${audit.truncated ? "; scan incomplete, more rows may exist" : ""}). This audit does not establish delivery for payments with no marker.</p>`;
   }
   const rows = audit.undelivered
     .map((sale) => {
       const house = sale.payer
         ? (audit.house_payers?.[sale.payer] ?? false)
         : false;
-      return `<li>${escapeHtml(sale.path)} — $${sale.paid_usdc} settled ${escapeHtml(sale.settled_at)}${sale.transaction ? `, tx ${escapeHtml(sale.transaction)}` : ""}${
+      return `<li>${sale.evidence_status === "unavailable" ? "<strong>Retained evidence unavailable — do not infer non-delivery.</strong> " : ""}${escapeHtml(sale.path)} — $${sale.paid_usdc} settled ${escapeHtml(sale.settled_at)}${sale.transaction ? `, tx ${escapeHtml(sale.transaction)}` : ""}${
         house
-          ? ` <strong>[HOUSE WALLET]</strong> — the store's own money bought this and the artifact never minted; nobody outside is owed anything. "House money, absorbed" closes it honestly.`
+          ? ` <strong>[HOUSE WALLET]</strong> — the marker names a house wallet; inspect retained evidence before resolving it. "House money, absorbed" closes it honestly.`
           : sale.payer
             ? ` — paid by ${escapeHtml(sale.payer)}, a real buyer: fulfill or refund, never absorb.`
             : ""
@@ -301,12 +303,11 @@ function deliveriesHtml(
       </form></li>`;
     })
     .join("\n");
-  return `<p>${ATTENTION} — ${audit.undelivered.length} settle${audit.undelivered.length === 1 ? "" : "s"} took money without recorded goods.
-    <small>What this means mechanically: the settle succeeded and then the
-    fulfillment step — the certificate, the recorded goods — never wrote,
-    so the buyer paid and holds nothing. For an instant item that is a
-    half-finished purchase, not a missing shipment. Resolve inline below;
-    the record keeps the original intent inside it.</small></p>
+  return `${recordedHtml}<p>${ATTENTION} — ${audit.undelivered.length} overdue delivery marker${audit.undelivered.length === 1 ? " needs" : "s need"} review.
+    <small>A marker can survive a successful delivery if its clearing write failed.
+    Inspect the retained purchase or original order before fulfilling or refunding.
+    Missing or unreadable evidence is not proof that the buyer received nothing.
+    ${audit.truncated ? "The scan is incomplete; more markers may exist." : ""}</small></p>
     <ul>${rows}</ul>`;
 }
 

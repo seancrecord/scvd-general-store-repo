@@ -1,3 +1,4 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
 import { paymentMethod, paymentNetworkGuide } from "@/lib/payment-networks";
 import { ucpCheckoutOpen } from "@/lib/ucp/launch";
 import { nativeMcpInstruction, nativeCheckoutLane, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
@@ -54,7 +55,7 @@ function refundPath(base: string): string {
 
 /** The architectural half of the promise, stated once and reused. */
 function nothingToRefund(base: string): string {
-  return `This store delivers first and settles after: the payment is presented at the last moment before the artifact is signed, so a delivery that fails takes no money at all. Check the purchase before you chase it — GET ${base}/api/verify/{cert_id} is free and forever, and an order is at GET ${base}/api/order/{order_id}. No certificate and no settled payment means nothing was charged and there is nothing to refund.`;
+  return `${DELIVERY_ORDER} Check the purchase before you chase it — GET ${base}/api/verify/{cert_id} is free and forever, and an order is at GET ${base}/api/order/{order_id}. A missing certificate alone does not establish whether money moved; read the private purchase status before deciding what to do.`;
 }
 
 
@@ -199,7 +200,7 @@ under "Before you start" above.
 2. Request an item: GET ${base}/api/buy/{item_id} — the store answers HTTP 402 with the payment terms in the PAYMENT-REQUIRED header (base64 JSON), plus a plain-English note in the body. A bare request is answered too: required_params in the 402 body names any input the door needs. A door with required inputs is bought at its buy_url_template — the same door with each input as a <slot> to fill, carried by ${base}/menu.json, ${base}/api/catalog/v1 and every compact contract — never at the bare door, which quotes but refuses the paid request. A request that supplies an invalid input receives a field refusal instead of terms. Prices and each input contract are also free at ${base}/menu/{item_id}?view=compact and ${base}/api/catalog/v1.
 3. Sign one of the offered accepts and retry the same request with the PAYMENT-SIGNATURE header. Standard x402 v2 clients (e.g. @x402/fetch) do steps 2–3 for you.
 ${spendCapParagraph()}
-4. The store delivers first and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money. Instant items arrive in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
+4. ${DELIVERY_ORDER} Instant items arrive in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
 5. Verify anything you were given, free and forever: GET ${base}/api/verify/{id}.
 6. Check ANY issuer's x402 offer or receipt, free: the check_conformance MCP tool, or POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Same function behind both doors. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
 7. ${ENDPOINT_INSPECTION_DESCRIPTION} Use the preflight_endpoint MCP tool, or POST ${base}/api/preflight/v1 with {"url": "..."}. A shape check, never an uptime claim.
@@ -216,7 +217,7 @@ ${spendCapParagraph()}
 
 ${nativeMcpInstruction(paymentConfig)}
 
-- Payment: x402 v2, ${STORE_METADATA.currency} on a network offered in the current quote. Terms ride the PAYMENT-REQUIRED header. The store DELIVERS FIRST and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money.
+- Payment: x402 v2, ${STORE_METADATA.currency} on a network offered in the current quote. Terms ride the PAYMENT-REQUIRED header. ${DELIVERY_ORDER}
 - Retries are safe: send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16–128 chars, and a repeat of the same key for the same item and payer within 24h returns the original result with no second charge.
 - You do not have to generate one. Every 402 carries \`idempotency.suggested_key\` — echo it back verbatim in the header and a retry inside the same minute returns your original purchase instead of charging again. Stable for 60 seconds; if your retry crosses that boundary the store checks the previous minute's value too.
 - That suggested key is NOT a secret: it is derived from the item, the current minute and, when the request carries a body or tool arguments, a short digest of them, so anyone can compute it. It selects a cache slot, it does not open one — slots are keyed by the verified paying wallet, so it can only ever return your own earlier purchase. Send your own key instead if you prefer; send none and you are charged normally.

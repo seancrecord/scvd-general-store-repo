@@ -1,4 +1,6 @@
-import { SELF } from "cloudflare:test";
+import { app } from "@/index";
+import type { Env } from "@/types";
+import { env, SELF, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
@@ -133,4 +135,17 @@ describe("nothing was lost, only moved", () => {
     // The thing that used to ride in every session, served on demand.
     expect(body["spec"], `${url} carries no listing spec`).toBeDefined();
   });
+});
+
+
+it("keeps the served catalog inside the same budget with native checkout instructions enabled", async () => {
+  const ctx = createExecutionContext();
+  const response = await app.fetch(new Request(`${BASE}/mcp?payment=tool-result`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+  }), { ...env, MPP_CHECKOUT_ENABLED: "true", MPP_CHALLENGE_KEY: "fixture-native-checkout-key-32bytes" } as unknown as Env, ctx);
+  await waitOnExecutionContext(ctx);
+  const body = await response.json() as { result: { tools: Array<{ name: string; description: string }> } };
+  expect(body.result.tools.find(tool => tool.name.startsWith("buy_"))?.description).toContain("MPP");
+  expect(new TextEncoder().encode(JSON.stringify(body.result.tools)).length).toBeLessThan(CATALOG_BYTE_CEILING);
 });

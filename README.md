@@ -485,12 +485,12 @@ It goes like this:
 3. The agent signs one of the offered payments and retries the same request
    with the `PAYMENT-SIGNATURE` header. Standard v2 clients like
    `@x402/fetch` do steps 2–3 on their own.
-4. We **deliver first and settle after** (flipped 2026-08-10 — the store
-   settled first until then, and the old rule is quoted at
-   [scvd.store/becoming](https://scvd.store/becoming)). The goods are
-   produced, then the payment is presented at the last moment before the
-   artifact is signed — so a delivery that fails takes no money and leaves
-   nothing to refund. Instant items arrive in the response body. Human-queue
+4. We **prepare instant goods or the order before requesting settlement**.
+   A failure before settlement takes no money. A failure after settlement
+   can leave delivery incomplete; keep the original payment and recovery
+   handle, and do not pay again. The [payment and recovery guide](https://scvd.store/developers/llms.txt)
+   explains how to check the retained purchase and recover the original work.
+   Instant items arrive in the response body. Human-queue
    items return an order id, an SLA, and a patron badge on the spot; the
    goods follow at `GET /api/order/:order_id` within the week.
 
@@ -930,6 +930,19 @@ cover source and package installation.
 [Ed25519 and ML-DSA-65: signature size and local signing measurements](docs/PQ_MEASUREMENT_2026-09.md)
 publishes the retained September 11 experiment, raw records, reproduction
 instructions and limits. Production checkpoint issuance is parked.
+
+### From a quick check to larger work
+
+[Choose an outcome in the operators’ room](https://scvd.store/operators): an
+agent shopping audit (The Aura Walk), a bounded endpoint watch, an evidence
+report for a customer review, or a scoped platform/agency commission. Each
+path names its deliverable, limits, current price and free starting point.
+The homepage keeps inexpensive starters separate from these larger jobs;
+related item pages and agent catalogues point to the same paths.
+For custom work, [send a free brief](https://scvd.store/operators#request-brief)
+with a reply contact and optional proposed budget, then save the status link
+for the keeper’s quote or decline. Sending a request starts no work or payment.
+Declines publish a brief excerpt and reason; the contact field stays private.
 
 ### SCVD Attestation pilot
 

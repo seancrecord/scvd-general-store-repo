@@ -1,5 +1,6 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
 import { MENU_ITEMS, getMenuItem } from "@/store";
-import { SHELF_CLUSTERS } from "@/lib/mcp-tools";
+import { SHELF_CLUSTERS } from "@/store/mcp-shelves";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 
 /**
@@ -374,9 +375,7 @@ ${DECLINED.map((line) => `- ${line}`).join("\n")}
 
 Every paid instrument is an x402 tool call: call once, read the 402
 terms in \`error.data\`, sign one of the \`accepts\`, call again with the
-payment in \`_meta['x402/payment']\`. Goods are produced first and the
-payment is presented at the last moment before signing, so a delivery
-that fails takes no money at all.
+payment in \`_meta['x402/payment']\`. ${DELIVERY_ORDER}
 
 Prices and names above are read from the live shelf at render. If this
 document and \`${base}/menu.json\` ever disagree, the menu is right and

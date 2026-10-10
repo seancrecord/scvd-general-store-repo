@@ -22,6 +22,7 @@ import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
+  DELIVERY_ORDER_SHORT,
   POSITION_NOT,
   POSITION_OPENING,
 } from "@/store/copy/position";
@@ -5833,8 +5834,7 @@ function paidOp(
       payment_header: "PAYMENT-SIGNATURE",
       /* The v1 spelling is still accepted; saying so costs one field. */
       legacy_payment_header: "X-PAYMENT",
-      settlement:
-        "Delivers first, settles after; failed delivery takes no money.",
+      settlement: DELIVERY_ORDER_SHORT,
       discovery: `${env.STORE_BASE_URL}/.well-known/x402.json`,
       documentation: `${env.STORE_BASE_URL}/developers`,
     },
@@ -8900,18 +8900,22 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: created(
   postOp(
             "Commission request",
-            "Ask the keeper for something that is not on the shelf. A human reads it.",
+            "Free request for keeper review; no charge or accepted engagement. Browser form: /operators#request-brief (same-origin form POST redirects to status). Declines publish a brief excerpt and reason; contacts stay private.",
             "What you want, what you would pay, and where to reach you.",
             {
               type: "object",
-              required: ["description", "offer_usdc", "contact"],
+              anyOf: [
+                { required: ["description", "offer_usdc", "contact"] },
+                { required: ["suggest_listing"], properties: { suggest_listing: { type: "string", minLength: 1 } } },
+              ],
               properties: {
                 description: {
                   type: "string",
                   description: "What you want made.",
                 },
                 offer_usdc: {
-                  oneOf: [{ type: "number" }, { type: "string" }],
+                  type: "number",
+                  minimum: 0,
                   description: "What you would pay, in USDC.",
                 },
                 contact: {
@@ -8920,9 +8924,9 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 },
                 verified_identity: VERIFIED_IDENTITY,
                 suggest_listing: {
-                  type: "boolean",
+                  type: "string",
                   description:
-                    "Optional. True if you think this belongs on the shelf for everyone, not only for you.",
+                    "Optional Town Directory listing suggestion. A nonempty suggestion can be sent on its own.",
                 },
               },
             },
