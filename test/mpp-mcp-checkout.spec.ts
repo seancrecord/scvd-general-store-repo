@@ -234,3 +234,28 @@ it("with the lane disabled, no native challenge is quoted and a credential is re
   expect(object(refused.data)).toMatchObject({ code: "mpp_checkout_unavailable", charged: false });
   expect(facilitator.settleCalls).toBe(0);
 });
+
+it("describes the enabled native lane on each served paid tool, including compact connections", async () => {
+  for (const profile of ["", "?payment=tool-result", "?view=compact&item_id=hello&payment=tool-result"]) {
+    const list = async () => {
+      const response = await request(`/mcp${profile}`, { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }) });
+      return object(object(await response.json()).result).tools as Record<string, unknown>[];
+    };
+    const enabled = await list();
+    const paid = enabled.filter(tool => String(tool.name).startsWith("buy_"));
+    expect(paid.length).toBeGreaterThan(0);
+    for (const tool of paid) {
+      expect(tool.description, String(tool.name)).toContain("MPP");
+      expect(tool.description).toContain(`_meta['${MCP_CREDENTIAL_META_KEY}']`);
+      expect(tool.description).toContain(`${profile.includes("payment=tool-result") ? "result._meta" : "error.data"}['${MCP_PAYMENT_REQUIRED_META_KEY}']`);
+    }
+    testEnv.MPP_CHECKOUT_ENABLED = "false";
+    const disabled = await list();
+    for (const tool of disabled.filter(tool => String(tool.name).startsWith("buy_"))) {
+      expect(tool.description).not.toContain(`_meta['${MCP_CREDENTIAL_META_KEY}']`);
+    }
+    testEnv.MPP_CHECKOUT_ENABLED = "true";
+  }
+  expect(facilitator.settleCalls).toBe(0);
+});

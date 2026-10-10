@@ -1,4 +1,4 @@
-import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
+import { CHEAPEST_ON_THE_SHELF, DELIVERY_ORDER } from "@/store/copy/position";
 /**
  * KEEPER-EDITABLE COPY for the Practice Counter (/try).
  *
@@ -138,12 +138,10 @@ export const PRACTICE_COUNTER_COPY = {
   honestHead: "The honest part",
   honest: [
     "The money is real and so are the goods. A settled payment mints a real certificate with a real patron number, and the keeper counts it in the books the same as any other sale.",
-    "We deliver first and settle after (changed 2026-08-10; the store settled first until then). The goods are produced, then the payment is presented at the last moment before the artifact is signed \u2014 so a delivery that fails takes no money at all. A definitive settlement failure does not produce a paid certificate. An interrupted response can leave the outcome unknown; preserve the original payment and retry key.",
+    `${DELIVERY_ORDER} A definitive settlement failure does not produce a paid certificate. An interrupted response can leave the outcome unknown.`,
     // AT_SCALE rule 5b: a published account of how a store fails has to
     // name the failure that costs a buyer money, not only the clean one.
-    // The line above is the EASY case — nobody is out anything. This is
-    // the case the delivery audit and the chain walk exist for, and it
-    // was missing from the page that most needed it.
+    // The next line names the evidence gaps the audit and chain walk cover.
     // CORRECTED 2026-08-02, hours after it was written. The first
     // version said findings are "published at /corrections and
     // refunded" as though that step were mechanical. It is not:
@@ -152,7 +150,7 @@ export const PRACTICE_COUNTER_COPY = {
     // publishes without a hand — but the copy was claiming an
     // automatic loop the code does not close, on the page whose whole
     // job is saying what this store actually does.
-    "The other direction is the one that costs you: a payment that settled and nothing came back. Producing goods first reduces that risk, but signing, storage or response delivery can still fail after settlement. A delivery audit looks for settlements with no artifact behind them, and the configured chain walks compare our books against on-chain transfers and report gaps. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
+    "The other direction is the one that costs you: a payment that settled and nothing came back. Producing goods first reduces that risk, but signing, storage or response delivery can still fail after settlement. A delivery audit checks leftover markers against retained purchase evidence, and the configured chain walks compare our books against on-chain transfers and report gaps. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
     "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine.",
     "House rule, standing: nothing from this store can act without your decision, and we never ask for credentials, keys, or wallet secrets. Anything that does either is not us.",
   ],

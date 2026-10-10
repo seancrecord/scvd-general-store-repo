@@ -1,3 +1,4 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
 import { nativeCheckoutGuide, nativeCheckoutLane, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { Hono } from "hono";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
@@ -178,10 +179,7 @@ minute returns your original purchase from cache rather than taking a
 second payment. The 402 body suggests a key for you; copying it is the
 cheapest insurance on this site and it costs nothing.
 
-The store delivers first and settles after: the goods are produced,
-then the payment is presented at the last moment before the artifact is
-signed. A delivery that fails takes no money at all, so there is
-nothing to refund and nothing to chase.
+${DELIVERY_ORDER}
 
 **What this store will never ask you for:** credentials, API keys, seed
 phrases, private keys, or wallet secrets. Not on any page, not in any

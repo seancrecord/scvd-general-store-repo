@@ -1239,9 +1239,7 @@ steps by which a look at somebody else's door becomes evidence a
 stranger can check without trusting us — the knock, the reading, the
 signature, the hash chain, the Bitcoin anchor — and every step names
 the thing you can go and verify yourself. It also says, in the place
-a buyer actually meets it, what happens to money here: the store
-delivers first and settles after, so a delivery that fails takes
-nothing and there is no refund queue to join. Prices and cadence in
+a buyer actually meets it, what happens to money here. ${DELIVERY_ORDER} Prices and cadence in
 it are read off the live shelf, never typed. It is free, needs no
 key, and the human page is at ${base}/how-it-works.
 

@@ -1,3 +1,4 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
@@ -103,16 +104,10 @@ const HOW_EVIDENCE_IS_MADE = [
   },
 ] as const;
 
-/**
- * THE ORDER OF OPERATIONS AT THE TILL, which is the thing most worth
- * knowing before spending and is nowhere else in one sentence: the
- * goods are produced FIRST and the payment is presented at the last
- * moment before the artifact is signed. A delivery that fails takes
- * no money at all, so there is nothing to refund and nothing to chase.
- */
+/** Shared ordering claim includes the paid gap after settlement. */
 const HOW_MONEY_WORKS = {
   order_of_operations:
-    "The store delivers first and settles after. The work is done, then payment is presented at the last moment before the artifact is signed. A delivery that fails takes no money at all — which is why there is no refund queue to join and nobody to chase.",
+    DELIVERY_ORDER,
   what_money_buys:
     "Our labour on the record. Never the record itself: the corpus, the battery, the vocabulary and every published observation are free forever and are not behind any payment. A purchase buys a fresh look, a longer look, a look aimed somewhere specific, or a signed artifact you can hand to a third party.",
   what_money_never_buys:
@@ -121,7 +116,7 @@ const HOW_MONEY_WORKS = {
   recurrence:
     "Nothing here charges again by itself, ever — there is no mechanism that could. Some items cover a term of days for one payment; when the term ends it stops, and a further purchase is a decision you make.",
   refunds:
-    "Structurally unnecessary rather than generously offered: because settlement happens after delivery, a failure takes nothing.",
+    "A failure after settlement may need recovery or a refund. Inspect the retained purchase before acting. The keeper pays refunds manually and records their status on the public refund ledger.",
   trade_accounts:
     "The one door where money does not move through us: a marketplace with a trade account (/trade) collects its customer's payment itself and orders by signed webhook; we deliver the same goods, bill the account on a statement, and the certificate says so — settled_via: trade_account, no chain fields — because no chain was involved.",
 } as const;
@@ -268,7 +263,7 @@ const FAQ = [
   },
   {
     q: "What happens if I pay and the thing fails?",
-    a: "Nothing is taken. The work is produced before payment is presented, so a failed delivery settles nothing. That is a property of the order of operations, not a policy we could quietly change.",
+    a: DELIVERY_ORDER,
   },
   {
     q: "Will buying something change what you say about my door?",

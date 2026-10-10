@@ -9,6 +9,7 @@ import { freeA2ACheck } from "@/lib/a2a-admission";
 import { readPurchaseStatus } from "@/services/purchase-intent";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { buyerQuickStart, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
+import { mppCheckoutEnabled } from "@/lib/mpp-checkout-capability";
 import { nativeMcpInstruction } from "@/lib/purchase-capabilities";
 import { decodeBase64Json } from "@/lib/base64-json";
 import { priceLine } from "@/services/menu-markdown";
@@ -1437,6 +1438,13 @@ function requestTools(c: Context<HonoEnv>): McpTool[] {
 }
 
 function paymentProfileTool(c: Context<HonoEnv>, tool: McpTool): McpTool {
+  // Hosts may show one tool without the handshake. Keep its available payment
+  // lane local to the description, derived from the same gate as the quote.
+  const ids = tool.itemIds ?? (tool.itemId ? [tool.itemId] : []);
+  if (ids.some(id => mppCheckoutEnabled(c.env, `/api/buy/${id}`, "GET"))) {
+    const location = standardPayment(c) ? "result._meta" : "error.data";
+    tool = { ...tool, description: `${tool.description} MPP when quoted: ${location}['${MCP_PAYMENT_REQUIRED_META_KEY}']; retry identical arguments with the signed credential in _meta['${MCP_CREDENTIAL_META_KEY}'] and the quote's retry key. Send only one payment protocol.` };
+  }
   if (!standardPayment(c)) return tool;
   return { ...tool, description: tool.description
     .replaceAll("error 402 with the payment requirements in error.data", "isError:true with the payment requirements in result.structuredContent")

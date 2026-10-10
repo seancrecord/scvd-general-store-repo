@@ -1,3 +1,4 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
 import { A2A_ACTIONS } from "@/store/a2a-repair";
 import type { MenuItem } from "@/types";
 
@@ -693,7 +694,7 @@ function expectedOutcome(item: MenuItem, facts: PaidDoorFacts): string {
     item.term_days === undefined
       ? ""
       : ` The purchase covers a ${String(item.term_days)}-day term as one payment; nothing renews it by itself, because there is no mechanism here that could.`;
-  return `${delivery}${term} Every delivery carries a signed certificate, a sequential patron number, a badge URL and a verify URL that is free to call forever, by anyone, without asking us. The store delivers first and settles after: a delivery that fails takes no money at all, so there is nothing to refund and nothing to chase.`;
+  return `${delivery}${term} Every delivery carries a signed certificate, a sequential patron number, a badge URL and a verify URL that is free to call forever, by anyone, without asking us. ${DELIVERY_ORDER}`;
 }
 
 function whatYouCanUseItFor(task: string | undefined): string {

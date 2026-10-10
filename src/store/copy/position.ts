@@ -195,11 +195,15 @@ export const positionRegister = (base: string): string =>
  * money moving first is now wrong, and there were eleven of them.
  *
  * Stated from the BUYER's side rather than the gate's, because that
- * is the part that matters to a reader: the consequence of a failed
- * delivery is no charge, not a refund to chase.
+ * is the part that matters to a reader. Only a pre-settlement failure
+ * guarantees no charge; signing and storage still follow settlement.
  */
 export const DELIVERY_ORDER =
-  "The store delivers first and settles after: the goods are produced, then the payment is presented at the last moment before the artifact is signed. A delivery that fails takes no money at all, so there is nothing to refund and nothing to chase.";
+  "The store prepares instant goods or the order before requesting settlement. A failure before settlement takes no money. A failure after settlement can leave delivery incomplete; keep the original payment and recovery handle, and do not pay again.";
+
+/** Repeated per OpenAPI operation; the full recovery explanation lives above. */
+export const DELIVERY_ORDER_SHORT =
+  "Prepared before settlement; later delivery can fail. Recover without paying again.";
 
 /**
  * The same fact with its history attached, for surfaces that a reader

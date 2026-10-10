@@ -22,6 +22,7 @@ import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
+  DELIVERY_ORDER_SHORT,
   POSITION_NOT,
   POSITION_OPENING,
 } from "@/store/copy/position";
@@ -5833,8 +5834,7 @@ function paidOp(
       payment_header: "PAYMENT-SIGNATURE",
       /* The v1 spelling is still accepted; saying so costs one field. */
       legacy_payment_header: "X-PAYMENT",
-      settlement:
-        "Delivers first, settles after; failed delivery takes no money.",
+      settlement: DELIVERY_ORDER_SHORT,
       discovery: `${env.STORE_BASE_URL}/.well-known/x402.json`,
       documentation: `${env.STORE_BASE_URL}/developers`,
     },

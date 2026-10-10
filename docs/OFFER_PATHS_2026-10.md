@@ -68,7 +68,8 @@ changed. Full CI remains required before a merge.
 1. Delivery/reporting reconciliation implemented locally; [scope and validation](ADMIN_REVENUE_REVIEW_2026-10.md).
 2. Admin receipt attribution and activity-unit corrections implemented locally;
    release and authenticated readback remain.
-3. Reproduce the current documentation and recovery friction before changing it.
+3. Current guidance gaps reproduced and corrected locally; [evidence and limits](BUYER_GUIDANCE_REVIEW_2026-10.md).
+   A paid cold-buyer run and environment-specific access failures remain unverified.
 4. Offer packaging is implemented locally; release and live follow-through remain.
 5. The commission discovery path is ready locally, but no customer brief has
    been received or accepted as part of this work. Existing published rungs

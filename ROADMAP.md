@@ -22,7 +22,15 @@ unlinked outside receipts, house receipts and unknown payers; copied-example
 counts are labelled as field matches.
 [Reporting changes and limits](docs/ADMIN_REVENUE_REVIEW_2026-10.md).
 
-**Still to do:** 3 needs current documentation/recovery reproduction. Item 5 needs a real agreed brief and customer decision;
+**Implemented locally: 3 (reproducible guidance gaps).** MCP purchase-tool
+descriptions now name the enabled native lane. Shared and installed guidance
+identifies recovery-handle locations and the limits of pending delivery evidence.
+The existing signing-outage regression disproved the broad no-charge delivery
+promise; the corrected copy distinguishes failures before and after settlement,
+with a dated correction. [Reproduction and limits](docs/BUYER_GUIDANCE_REVIEW_2026-10.md).
+
+**Still to do:** release and live readback; environment-specific documentation
+403s and a paid cold-buyer run remain unverified. Item 5 needs a real agreed brief and customer decision;
 exposing an intake is not a sale or evidence of demand. Existing commission
 rungs still bound quotes. No customer activation, outbound contact or charge
 is authorized by this copy change. Validation and release state:

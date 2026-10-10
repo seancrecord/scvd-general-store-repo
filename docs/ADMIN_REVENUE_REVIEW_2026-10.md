@@ -50,6 +50,7 @@ unavailable evidence, human-order scope, same-wallet research attribution,
 incomplete research reads, activity units, tax rows and both checkout gates.
 Typecheck and both Worker dry-run bundles pass. Full CI is still a merge gate.
 
-The next review reproduces the studies' documentation and recovery complaints
-against current code. Historical complaints are not automatically current bugs.
-No paid customer qualification or live purchase has been performed here.
+The [subsequent guidance review](BUYER_GUIDANCE_REVIEW_2026-10.md) reproduces
+the current MCP description and recovery-documentation gaps and corrects an
+overstated delivery promise. Historical complaints are not automatically current
+bugs. No paid customer qualification or live purchase has been performed here.
