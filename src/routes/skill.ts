@@ -1,3 +1,4 @@
+import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
 import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
 import { paymentNetworkNames, paymentNetworkGuide } from "@/lib/payment-networks";
@@ -169,6 +170,13 @@ unscoped \`x402-*\` packages predate the current protocol.) Entirely
 optional — the house rule above stands, and everything either package
 does is also available over plain HTTPS on this page. They
 byte-reproduce the conformance vectors; that is the whole pitch.
+
+## When a quick check is not enough
+
+Agent shopping audit (The Aura Walk): ${AURA_WALK_WHY}
+Read ${base}/operators#shopping-audit for scope, current price, delivery and the free starting point.
+The same room offers a report for customer reviews and a free brief for custom platform work.
+No purchase is required to read the evidence or ask about scope.
 
 ## The moments this skill is for
 

@@ -1,5 +1,27 @@
 # ROADMAP — September 2026
 
+## October 10 — revenue review and clearer offer paths
+
+Keeper approved five follow-ups: (1) reconcile delivery/reporting contradictions,
+(2) make the admin revenue summary distinguish customers, rewarded research
+and machinery, (3) reproduce current documentation/recovery friction, (4) make
+existing larger offers understandable and findable, and (5) test a bounded
+platform/agency commission through the existing request-and-quote desk.
+
+**Implemented locally: 4, plus the discovery path for 5.** Keep the inexpensive
+homepage starters and add a separate larger-work section. Reuse `/operators`
+for outcome-led choices with shared value, deliverable, limits and derived
+terms. Related listings and agent entry points lead to the relevant choice.
+The Aura Walk now appears before launch as well as being useful for diagnosing
+friction; it no longer hides only under things going wrong. No new SKU or price.
+
+**Still to do:** 1–3 remain implementation work, in that order after this
+packaging pass. Item 5 needs a real agreed brief and customer decision;
+exposing an intake is not a sale or evidence of demand. Existing commission
+rungs still bound quotes. No customer activation, outbound contact or charge
+is authorized by this copy change. Validation and release state:
+[offer-path notes](docs/OFFER_PATHS_2026-10.md).
+
 ## October 8 — Worker recovery and World bank walk
 
 Matched-hour KV reads fell 65.81% after the correction-cache release; cache

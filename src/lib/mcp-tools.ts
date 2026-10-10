@@ -1,3 +1,4 @@
+import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { isVerificationTool, METERED_TOOL_EFFECTS, VERIFICATION_TOOL_WORLD } from "@/lib/mcp-tool-effects";
 import { PUBLICATION_COLLECTIONS_SCHEMA } from "@/lib/publication-checkout";
@@ -210,7 +211,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_human_task",
     title: "Human Labor",
     purpose:
-      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. Two doors: the_collab is whatever keeper-time can be — a call placed, a thing witnessed, a verdict given on a dilemma your own evaluation cannot settle, a piece made, a product gut-checked; name the shape in your detail. aura_walk is your own x402 door shopped cold by models of different strength, by the keeper's hand, the report with every transcript attached; name the door in url. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable.",
+      `Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. Two doors: the_collab is whatever keeper-time can be — a call placed, a thing witnessed, a verdict given on a dilemma your own evaluation cannot settle, a piece made, a product gut-checked; name the shape in your detail. aura_walk is an agent shopping audit of your own x402 door. ${AURA_WALK_WHY} The keeper runs the passes and attaches the transcripts; name the door in url. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable.`,
     itemIds: [
       "the_collab",
       // The cold-agent pass, sold (2026-09-02). Labor by the method

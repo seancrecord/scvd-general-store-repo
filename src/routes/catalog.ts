@@ -1,3 +1,4 @@
+import { relatedOffersHtml } from "@/pages/offer-paths";
 import { purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import { purchaseChecklist, purchaseChecklistHtml } from "@/lib/purchase-checklist";
@@ -671,6 +672,7 @@ function renderItemPage(
     title: noun ? `${noun} — ${item.name}` : item.name,
     description: noun ? `${noun}. ${item.description}` : item.description,
     path: `/menu/${item.id}`,
+    collapseNavigation: true,
     /**
      * The till is offered on the item page whether or not the shutter
      * is down, and the STORE decides — a closed shutter refuses at the
@@ -709,6 +711,7 @@ function renderItemPage(
       <section>
         <p class="menu-desc">${escapeHtml(item.description)}</p>
       </section>
+      ${relatedOffersHtml(item.id, base)}
       <section>
         <h2>The facts</h2>
         ${factsHtml}

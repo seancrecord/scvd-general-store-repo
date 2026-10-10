@@ -1207,8 +1207,10 @@ const BASE = "https://scvd.store";
 // Follow-through: retain the compact vocabulary section verbatim in every
 // guide and file detailed writing under trust as its own complete section.
 // The previous pins passed in CI; only this reviewed section move changes them.
+// Re-pinned 2026-10-10 for the authorized offer-path guidance, shared operator
+// proposition and Aura Walk value sentence. No section was removed.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "3a61f18302b5cd8b51df233cb3ca1a8abb6e6c3d930018d07ddf085270373717";
+  "8db70bf1fddc5bb62048ee159c12bcff37f861b8245a485bce69e7d4d58c6b7c";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1311,7 +1313,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "1a168c700b5c954e141b49a535cd8dd6a3ac2a5e0cbebcb0b3a85b38b37ae594",
+      "05aed30e755130247c5c939904a5e6ad26630442a3e28a89c56598cf5191ef2e",
     );
   });
 

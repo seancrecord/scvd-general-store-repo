@@ -1,3 +1,4 @@
+import { AURA_WALK_WHY } from "@/store/aura-walk";
 /**
  * KEEPER-EDITABLE machine-legibility copy (synthesis build pass,
  * 2026-07-23). Registrar-plain by doctrine: every figure true or
@@ -409,7 +410,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
   research_comparison: "one signed comparison of your research endpoints: atomic quotes, dated host history, gaps and shared receivers. Individual preflight and history reads are free; the purchase adds assembly, signature and certificate binding. No research content is evaluated.",
   a2a_repair_kit: "Exact observed failures, suggested fixes and runnable regression tests, followed by a signed recheck and a seven-day card watch; A2A 0.3.0 JSON-RPC only",
   aura_walk:
-    "the buyer's side of your door as weaker and stronger models actually experience it — where each stalls, retries, misreads the accepts or pays the wrong rail — counted per entry point and quoted verbatim, by a person's hand. A preflight says the door is well-formed; this says whether a cold agent gets through it.",
+    AURA_WALK_WHY,
   passport_refresh:
     "a new census observation of your endpoint, now instead of Sunday — folded into your endpoint passport wherever newest, moving the passport (and the chip that decays with it) back to fresh. The verdict lands whatever it says: a broken finding darkens the chip. The check is bought; the grade never is.",
   trust_profile:

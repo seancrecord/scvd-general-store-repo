@@ -1,3 +1,4 @@
+import { relatedOfferPaths } from "@/store/offer-paths";
 import { artifactClassForItem } from "@/store/attestation-spec";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { buyUrlTemplate } from "@/lib/buyer-contract";
@@ -171,6 +172,8 @@ ${requiredLine}${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` :
       : ""
   }${stock}${constraints}
 > ${item.note_402}
+
+${relatedOfferPaths(item.id, base).map(o => `Optional next work: ${o.when} [${o.title} — scope, price and free starting point](${o.url}).`).join("\n")}
 `;
 }
 

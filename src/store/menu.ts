@@ -4,6 +4,7 @@ import { RUN1_ITEMS } from "@/store/menu-run1";
 import { UTILITY_ITEMS } from "@/store/menu-utility";
 import {
   AURA_WALK_ENTRY_POINTS,
+  AURA_WALK_WHY,
   AURA_WALK_MEASURES,
   AURA_WALK_METHOD_FILE,
   AURA_WALK_MODELS_LINE,
@@ -49,7 +50,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     listed_week: "2026-W36",
     name: "The Aura Walk",
     subtitle:
-      "your endpoint shopped cold by models of different strength, the transcripts attached",
+      "agent shopping audit: find where unfamiliar agents get stuck, with transcripts and counts",
     price_usdc: 150,
     pricing: "fixed",
     cadence: "one_off",
@@ -60,7 +61,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     // one held the whole shelf and every stranger met a 409.
     weekly_inventory: 5,
     waitlist: true,
-    description: `Your x402 door shopped cold, the way this store walks its own: no prior context, no memory of you, a different entry point each pass (${AURA_WALK_ENTRY_POINTS.length} of them, from the raw HTTP door to the installed skill), and every point where the model had to guess, retry or dig written down. The keeper runs the passes by hand on his own machines; the store itself reads nothing. The completed order carries the report — per entry point, ${AURA_WALK_MEASURES.map((m) => m.charAt(0).toLowerCase() + m.slice(1)).join("; ")} — with every transcript attached verbatim and the model named on each. ${AURA_WALK_MODELS_LINE}. Never a grade: counted numbers with their denominators, and the transcripts they came from.`,
+    description: `${AURA_WALK_WHY} Your x402 door shopped cold, the way this store walks its own: no prior context, no memory of you, a different entry point each pass (${AURA_WALK_ENTRY_POINTS.length} of them, from the raw HTTP door to the installed skill), and every point where the model had to guess, retry or dig written down. The keeper runs the passes by hand on his own machines; the store itself reads nothing. The completed order carries the report — per entry point, ${AURA_WALK_MEASURES.map((m) => m.charAt(0).toLowerCase() + m.slice(1)).join("; ")} — with every transcript attached verbatim and the model named on each. ${AURA_WALK_MODELS_LINE}. Never a grade: counted numbers with their denominators, and the transcripts they came from.`,
     note_402:
       "A week of the keeper's hands and a stack of transcripts. Name the door in url; ask for a weaker model in detail if that is who shops at yours.",
     constraints: [

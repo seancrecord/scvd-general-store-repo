@@ -1,3 +1,4 @@
+import { relatedOfferPaths } from "@/store/offer-paths";
 import { getMenuItem } from "@/store";
 import { shelfForItem } from "@/lib/mcp-tools";
 import type { StoredSpotEvidence } from "@/services/spot-evidence";
@@ -53,5 +54,5 @@ export function spotFollowUp(base: string, certId: string, value: StoredSpotEvid
     for_next_session:{ artifact_url:artifactUrl, certificate_id:certId, hosts, free_history:free.map(row=>row.url), note:"A bookmark for a later task, not a schedule or an automatic purchase." } };
   return {counter_note, follow_up:{optional:true, title:"What this reading leaves open", summary,
     free_alternatives:free, live_alternative:{tool:"look_at_door", method:"POST", url:`${base}/api/look/v1`, missing_inputs:["url"], price_usdc:0},
-    options, policy:"Each paid option is a separate purchase under the buyer's authorization. No recommendation that any host is safe. Offers are outside the signed observation; prices and availability are checked at the next quote."}};
+    options, optional_next_work: relatedOfferPaths(value.kind, base), policy:"Each paid option is a separate purchase under the buyer's authorization. No recommendation that any host is safe. Offers are outside the signed observation; prices and availability are checked at the next quote."}};
 }

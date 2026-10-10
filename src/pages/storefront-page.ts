@@ -1,3 +1,4 @@
+import { largerWorkHtml } from "@/pages/offer-paths";
 import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { currentWeekKey } from "@/lib/kv-keys";
@@ -1166,6 +1167,7 @@ ${webmcpOriginTrialTags()}
       ${cheapest ? `<a class="door-cta" href="/menu/${escapeHtml(cheapest.id)}">Try ${escapeHtml(cheapest.name)} · ${escapeHtml(priceLabel(cheapest))}</a>` : ''}
       <a class="door-cta" href="/mcp.md">Connect through MCP</a>
     </nav>
+    <p class="shelf-more"><a href="#larger-work">Have a larger job? Compare audits, evidence reports and custom work →</a></p>
 
     <p class="menu-meta">${escapeHtml(ENDPOINT_INSPECTION_DESCRIPTION)}</p>
 
@@ -1212,6 +1214,8 @@ ${webmcpOriginTrialTags()}
         The whole catalog reads at <a href="/llms.txt"><code>/llms.txt</code></a>.</p>
       <p class="shelf-till"><a class="door-cta" href="/menu">${escapeHtml(COPY.shelvesTillCta)}</a> — ${escapeHtml(COPY.shelvesTillBody)}</p>
     </section>
+
+    ${largerWorkHtml(data.base ?? "https://scvd.store")}
 
     <section class="sold">
       <h2 class="night-head"><span class="sold-live" aria-hidden="true"></span>${COPY.soldHead}</h2>

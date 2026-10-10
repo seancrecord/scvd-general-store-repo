@@ -1,3 +1,4 @@
+import { relatedOfferPaths } from "@/store/offer-paths";
 import { purchaseCapabilities, type PurchaseCapabilityConfig, nativeMcpCheckoutShape, nativeWebmcpCheckoutShape } from "@/lib/purchase-capabilities";
 import { purchaseChecklist } from "@/lib/purchase-checklist";
 import { buyerGuidance } from "@/lib/buyer-guidance";
@@ -62,7 +63,9 @@ export function buyUrlTemplate(item: MenuItem, base: string): string {
 }
 
 export function buyerLinks(item: MenuItem, base: string) {
+  const related = relatedOfferPaths(item.id, base);
   return {
+    ...(related.length ? { optional_next_work: related } : {}),
     required_params: [...(buyInputSchema(item).required ?? [])],
     buy_url_template: buyUrlTemplate(item, base),
     input_contract_url: `${base}/menu/${item.id}?view=compact`,

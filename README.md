@@ -931,6 +931,15 @@ cover source and package installation.
 publishes the retained September 11 experiment, raw records, reproduction
 instructions and limits. Production checkpoint issuance is parked.
 
+### From a quick check to larger work
+
+[Choose an outcome in the operators’ room](https://scvd.store/operators): an
+agent shopping audit (The Aura Walk), a bounded endpoint watch, an evidence
+report for a customer review, or a scoped platform/agency commission. Each
+path names its deliverable, limits, current price and free starting point.
+The homepage keeps inexpensive starters separate from these larger jobs;
+related item pages and agent catalogues point to the same paths.
+
 ### SCVD Attestation pilot
 
 A human-requested, bounded evidence engagement for one public x402 endpoint:
