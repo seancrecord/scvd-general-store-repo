@@ -1,6 +1,7 @@
 # Buyer guidance review — October 10, 2026
 
-Local implementation on `codex/clear-offer-paths`; not published or deployed.
+Implementation on `codex/clear-offer-paths`; release and production readback are
+tracked in [PR #1002](https://github.com/seancrecord/scvd-general-store-repo/pull/1002).
 This follows the revenue review's documentation/recovery item. It does not
 reclassify historical study outcomes or claim a new cold-buyer qualification.
 
@@ -73,3 +74,8 @@ Tool definitions and shelf membership are unchanged. A compact catalogue page
 also exceeded its unchanged 16,000-byte reader budget by six bytes. Seven
 items per page replaces eight; continuation still returns every item once,
 with the related-offer pointers retained.
+
+A later full-suite run found one more stale admin assertion expecting a count
+difference to identify certificate coverage. The updated assertion requires the
+bounded certificate-read wording and rejects the old penny-page inference.
+All 46 focused admin/reporting checks and typecheck pass.

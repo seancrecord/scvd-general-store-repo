@@ -8,6 +8,10 @@ and machinery, (3) reproduce current documentation/recovery friction, (4) make
 existing larger offers understandable and findable, and (5) test a bounded
 platform/agency commission through the existing request-and-quote desk.
 
+Release record: [PR #1002](https://github.com/seancrecord/scvd-general-store-repo/pull/1002).
+Its validation notes track the full CI gate and production readback. The local
+implementation notes below describe build scope, not evidence of customer demand.
+
 **Implemented locally: 4, plus the discovery path for 5.** Keep the inexpensive
 homepage starters and add a separate larger-work section. Reuse `/operators`
 for outcome-led choices with shared value, deliverable, limits and derived

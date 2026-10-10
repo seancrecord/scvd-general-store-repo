@@ -1,7 +1,9 @@
 # Clear offer paths — October 10, 2026
 
-Local implementation on `codex/clear-offer-paths`, based on main at
-`605d1a58`. Committed locally at the keeper’s request; not published or deployed.
+Implementation on `codex/clear-offer-paths`, based on main at `605d1a58`.
+[PR #1002](https://github.com/seancrecord/scvd-general-store-repo/pull/1002)
+is the release record; its validation notes track CI and production readback.
+The local validation below does not establish a customer decision or sale.
 
 ## What changed
 

@@ -1,7 +1,8 @@
 # Admin revenue review — October 10, 2026
 
-Implemented locally on `codex/clear-offer-paths`. No production records were
-changed. Release and authenticated production readback remain pending.
+Implemented on `codex/clear-offer-paths`. No production records were changed.
+[PR #1002](https://github.com/seancrecord/scvd-general-store-repo/pull/1002)
+tracks release and public readback. Authenticated production readback remains separate.
 
 ## Delivery evidence
 
