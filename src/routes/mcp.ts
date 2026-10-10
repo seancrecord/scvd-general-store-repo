@@ -101,7 +101,7 @@ import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME, VOICE } from "@/store";
 import { getOrder, remainingInventory } from "@/services/orders";
-import { waitlistHowToJoin } from "@/routes/requests";
+import { waitlistHowToJoin } from "@/lib/waitlist-guidance";
 import { capacityVerdict } from "@/services/queue-capacity";
 import { InvalidPatronageTarget } from "@/services/patronage";
 import { WindowRefused } from "@/services/cards";

@@ -1,3 +1,4 @@
+import { briefFormHtml } from "@/pages/commission-brief";
 import { escapeHtml as esc } from "@/lib/sanitize";
 import { offerPaths } from "@/services/offer-paths";
 import { relatedOfferPaths } from "@/store/offer-paths";
@@ -29,7 +30,8 @@ export function offerPathsHtml(base: string): string {
     <p><strong>Limits:</strong> ${esc(o.limits)}</p>
     <p><strong>Free first:</strong> <a href="${esc(o.free_first.url)}">${esc(o.free_first.label)}</a>.</p>
     <p><a href="${esc(o.next_step.url)}">${esc(o.next_step.label)} →</a></p>
-    ${"request" in o && o.request ? `<p><a href="${esc(o.request.human_url)}">Email a brief to the keeper</a>, or send <code>POST ${esc(o.request.url)}</code>.</p><pre>${esc(JSON.stringify(o.request.body, null, 2))}</pre><p>${esc(o.request.note)}</p>` : ""}
+    ${"request" in o && o.request ? `
+${briefFormHtml()}<details><summary>Email or send a brief through the API</summary><p><a href="${esc(o.request.human_url)}">Email a brief to the keeper</a>, or send <code>POST ${esc(o.request.url)}</code>.</p><pre>${esc(JSON.stringify(o.request.body, null, 2))}</pre><p>${esc(o.request.note)}</p></details>` : ""}
   </section>`).join("")}`;
 }
 

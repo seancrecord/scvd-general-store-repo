@@ -12,7 +12,9 @@ platform/agency commission through the existing request-and-quote desk.
 homepage starters and add a separate larger-work section. Reuse `/operators`
 for outcome-led choices with shared value, deliverable, limits and derived
 terms. Related listings and agent entry points lead to the relevant choice.
-The Aura Walk now appears before launch as well as being useful for diagnosing
+The custom-review path now includes a short browser brief form, reusing the
+existing commission ledger and a readable status page; a quote remains the
+keeper’s decision. The Aura Walk now appears before launch as well as being useful for diagnosing
 friction; it no longer hides only under things going wrong. No new SKU or price.
 
 **Implemented locally: 1–2.** Delivery markers are cross-checked against

@@ -63,6 +63,43 @@ used static copies rendered by the local Worker, because its HTTPS certificate
 is not trusted by the in-app browser. No authenticated production state was
 changed. Full CI remains required before a merge.
 
+## Browser brief handoff — October 10 follow-up
+
+The custom-review path now has a script-free form at
+`/operators#request-brief`: a description, reply contact and optional proposed
+USDC budget. It writes the existing commission ledger, then redirects to a
+readable status page. Refreshing that page does not submit another request.
+The page renders the existing public desk view, including quote expiration,
+declines and accepted order links. It never receives the private contact.
+There is no new checkout, qualification questionnaire, price or promise to
+accept the work. The form explains that declined brief excerpts and reasons
+are public; anyone holding a status link can read that brief and its terms.
+
+The browser form accepts only same-origin submissions, bounds the body and
+field lengths, refuses duplicate fields, and escapes preserved validation
+errors. Responses with a brief/contact use `no-store`; status pages also
+refuse indexing and referrer leakage. JSON request behavior is unchanged.
+OpenAPI now describes the actual numeric budget and textual Directory
+suggestion fields, including the existing suggestion-only option. The shared
+offer object includes the browser URL as well as the JSON recipe and email
+alternative, so the operators' JSON/Markdown and HTML point to the same action.
+
+The initial form regressions failed before implementation (missing form,
+rejected submission, missing escaped draft, missing readable quote state).
+A separate contract regression failed against the old OpenAPI types. The
+expanded affected run passed 233 tests across 10 files, including existing
+commission settlement/recovery and production API reader budgets. A static
+copy of the local Worker-rendered form was inspected in the browser; no live
+brief, quote or payment was created. This is locally built, not released or
+proof that a customer wants the offer.
+
+Typecheck and all dry-run bundles pass. The first doors-Worker build caught
+a browser-page import reaching checkout through the waitlist helper; the
+helper now lives in a dependency-light shared module, with its text unchanged.
+The form markup is also separate from the full status-page renderer.
+The final discovery/claim-chain, agent-card, waitlist and checkout-parity
+sweep passed 135 tests across 11 files.
+
 ## Remaining work from the revenue review
 
 1. Delivery/reporting reconciliation implemented locally; [scope and validation](ADMIN_REVENUE_REVIEW_2026-10.md).
@@ -71,7 +108,7 @@ changed. Full CI remains required before a merge.
 3. Current guidance gaps reproduced and corrected locally; [evidence and limits](BUYER_GUIDANCE_REVIEW_2026-10.md).
    A paid cold-buyer run and environment-specific access failures remain unverified.
 4. Offer packaging is implemented locally; release and live follow-through remain.
-5. The commission discovery path is ready locally, but no customer brief has
+5. The commission discovery and browser intake paths are ready locally, but no customer brief has
    been received or accepted as part of this work. Existing published rungs
    still bound quotes; a larger price needs the keeper's decision. Better
    presentation is not evidence of willingness to pay or revenue lift.

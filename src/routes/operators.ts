@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
+import { briefFormCss } from "@/pages/commission-brief";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { ladderRung } from "@/services/menu-markdown";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
@@ -200,6 +201,7 @@ operatorsRoutes.get("/operators", (c) => {
         OPERATORS_PROPOSITION,
       path: "/operators",
       collapseNavigation: true,
+      extraCss: briefFormCss,
       bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(OPERATORS_PROPOSITION)}</p>
         <p class="menu-meta">${escapeHtml(OPERATORS_FREE_FIRST)}</p>

@@ -31,8 +31,8 @@ export const OFFER_PATHS = [
     when: "Your release or client decision spans several endpoints or entry points and does not fit a single shelf item.",
     why: "Agree the question, evidence and delivery window before paying for work whose scope is still unclear.",
     outcome: "A proposed brief and keeper quote defining the deliverable and delivery window, or a decline with a reason.",
-    limits: "A request is not an accepted engagement. No implementation, monitoring, certification or additional protocol coverage is promised until explicitly included in the agreed scope. Decline reasons are public; contacts are private.",
-    next_label: "Read commission terms",
+    limits: "A request is not an accepted engagement. No implementation, monitoring, certification or additional protocol coverage is promised until explicitly included in the agreed scope. A declined brief excerpt and decline reason are public; contacts are private.",
+    next_label: "Send a brief",
   },
 ] as const;
 

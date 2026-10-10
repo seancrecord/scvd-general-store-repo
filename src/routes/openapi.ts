@@ -8900,18 +8900,22 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: created(
   postOp(
             "Commission request",
-            "Ask the keeper for something that is not on the shelf. A human reads it.",
+            "Free request for keeper review; no charge or accepted engagement. Browser form: /operators#request-brief (same-origin form POST redirects to status). Declines publish a brief excerpt and reason; contacts stay private.",
             "What you want, what you would pay, and where to reach you.",
             {
               type: "object",
-              required: ["description", "offer_usdc", "contact"],
+              anyOf: [
+                { required: ["description", "offer_usdc", "contact"] },
+                { required: ["suggest_listing"], properties: { suggest_listing: { type: "string", minLength: 1 } } },
+              ],
               properties: {
                 description: {
                   type: "string",
                   description: "What you want made.",
                 },
                 offer_usdc: {
-                  oneOf: [{ type: "number" }, { type: "string" }],
+                  type: "number",
+                  minimum: 0,
                   description: "What you would pay, in USDC.",
                 },
                 contact: {
@@ -8920,9 +8924,9 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 },
                 verified_identity: VERIFIED_IDENTITY,
                 suggest_listing: {
-                  type: "boolean",
+                  type: "string",
                   description:
-                    "Optional. True if you think this belongs on the shelf for everyone, not only for you.",
+                    "Optional Town Directory listing suggestion. A nonempty suggestion can be sent on its own.",
                 },
               },
             },

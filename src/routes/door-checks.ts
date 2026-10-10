@@ -28,7 +28,7 @@ import { buyInputSchema, buyerInputRepair, missingRequiredInputs, presentInputNa
 import { resolveInputRecord } from "@/lib/input-aliases";
 import { catalogRecovery } from "@/lib/catalog-recovery";
 import { itemKeyFromPath, recordPaymentDecline } from "@/lib/metrics";
-import { waitlistHowToJoin } from "@/routes/requests";
+import { waitlistHowToJoin } from "@/lib/waitlist-guidance";
 import {
   PAYMENT_VARY,
 } from "@/lib/payments";

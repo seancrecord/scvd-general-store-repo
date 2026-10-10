@@ -939,6 +939,10 @@ report for a customer review, or a scoped platform/agency commission. Each
 path names its deliverable, limits, current price and free starting point.
 The homepage keeps inexpensive starters separate from these larger jobs;
 related item pages and agent catalogues point to the same paths.
+For custom work, [send a free brief](https://scvd.store/operators#request-brief)
+with a reply contact and optional proposed budget, then save the status link
+for the keeper’s quote or decline. Sending a request starts no work or payment.
+Declines publish a brief excerpt and reason; the contact field stays private.
 
 ### SCVD Attestation pilot
 
