@@ -79,3 +79,8 @@ A later full-suite run found one more stale admin assertion expecting a count
 difference to identify certificate coverage. The updated assertion requires the
 bounded certificate-read wording and rejects the old penny-page inference.
 All 46 focused admin/reporting checks and typecheck pass.
+The delivery-intent test likewise now requires the bounded marker-scan verdict,
+not a claim that no buyer was left undelivered; 74 delivery/alert checks pass.
+The rationale-pointer test failed on the moved shelf file and passes with its
+new location (5 agent-UX checks). These are stale assertions corrected without
+changing the production behavior or relaxing any reader/bundle limit.
