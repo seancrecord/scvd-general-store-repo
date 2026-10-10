@@ -1,8 +1,8 @@
 {
-  "version": "3.19.3",
-  "bundle_sha256": "ea482956517acf6e8a23a62fae84ce6933500b57da5c6fcd5bdafb61348b6cd8",
-  "tree_sha256": "b0cedc1e5402896c44c76edaf53dcf33e70b04bcd94fb70825855ea846a26ab9",
-  "published_at": "2026-10-02T15:01:31.460Z",
-  "commit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90",
-  "changelog": "Clarify MPP inspection scope, bounded evidence acquisition and retained-original guidance; preserve signed evidence and existing checkout boundaries."
+  "version": "3.19.4",
+  "bundle_sha256": "b96158c8f734c680db746a439b72a7bac215d5441ae19ae1f2a1b3c32d4b7faa",
+  "tree_sha256": "768f24a51666f82b17c2f360761b9909c158dc565fb62036d7570dd0fce04397",
+  "published_at": "2026-10-10T23:34:56.926Z",
+  "commit": "6c46246578524ad430a4aef62fa32caddf20c2de",
+  "changelog": "Clearer offers and payment recovery  Adds discovery paths for shopping audits, endpoint watches, evidence reports and custom reviews, with clear outcomes, scope and next steps.  Points buyers to the compact catalogue for current prices, required inputs and availability.  Clarifies native MPP purchasing alongside x402.  Explains where to find recovery handles and how to recover the original purchase without paying again.  Corrects delivery guidance: failures before settlement take no money; failures afterward can leave delivery incomplete."
 }
