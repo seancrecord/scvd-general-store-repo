@@ -360,9 +360,9 @@ export function takeSectionHtml(
       return `<p><small>The storefront's organic figure matches this table exactly right now (${allTime.organic}).</small></p>`;
     }
     if (diff > 0) {
-      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The difference — ${diff} — is settles that minted no certificate, listed by item under <a href="#no-certificate">settled at the till, no certificate</a> below. Same books, two honest counts, and now both on the page.</small></p>`;
+      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The count difference is ${diff}; it does not identify the sales or establish missing delivery. Compare per-item coverage and classification under <a href="#no-certificate">settled at the till, no certificate</a> below. Counter timing, classification changes and scan coverage can also move this difference.</small></p>`;
     }
-    return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}).</strong> Penny pages cannot explain a negative gap. What can: a run of sales seconds apart, where the till's tally misses counts (ruled a floor, 2026-09-04). The certificates are right; the storefront's number is ${take.total.organic_sales - allTime.organic} low and will stay low, because a missed count never comes back on its own.</small></p>`;
+    return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}).</strong> Penny pages cannot explain a negative gap. The difference is ${take.total.organic_sales - allTime.organic}; compare timing, scan coverage and classification before attributing it to missed counters.</small></p>`;
   })();
   const money = (value: number): string => `$${value.toFixed(2)}`;
   const rows = take.lines
@@ -390,7 +390,7 @@ export function takeSectionHtml(
     ? `<p style="font-size:1.25em"><strong>${allTime.organic}</strong> organic sale${allTime.organic === 1 ? "" : "s"}, all-time
     <small>(the storefront's number; +${allTime.house} house)</small> ·
     <strong>${money(t.organic_usdc)}</strong> on certificates <small>(+${money(t.house_usdc)} house)</small></p>
-    <p><strong>${t.organic_sales}</strong> of those carry a certificate${noCert !== null && noCert >= 0 ? `; <strong>${noCert}</strong> settled on penny pages, which mint none` : ""}.
+    <p><strong>${t.organic_sales}</strong> certificate-backed sales appear in this read${noCert !== null && noCert >= 0 ? `; the count difference is <strong>${noCert}</strong>, not an identified set of penny-page sales` : ""}.
     Money below is the certificates' money; the penny pages' pennies are on the till table further down.</p>`
     : `<p style="font-size:1.25em"><strong>${money(t.organic_usdc)}</strong> organic on certificates, all-time
     <small>(+${money(t.house_usdc)} house)</small> ·

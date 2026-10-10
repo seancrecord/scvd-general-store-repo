@@ -190,6 +190,7 @@ export async function runMppCheckout(c: Context<HonoEnv>, next: Next, header: st
       await store.accountMppPurchase().catch(() => undefined);
       if (native.kind !== "publication") {
         deliveryKey = await openDeliveryIntent(c.env, { path: c.req.path, query: purchase.request,
+          purchase_id: purchase.id, payment_network: terms.network,
           transaction: settled.transaction, payer: settled.payer, paid_usdc: paidUsdc, settled_at: new Date().toISOString() }).catch(() => null);
       }
       c.set("payment", settled);

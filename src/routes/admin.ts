@@ -627,7 +627,7 @@ adminRoutes.get("/admin/take", async (c) => {
   const notes: string[] = [];
   const [take, allTimeStats, operations] = await Promise.allSettled([
     import("@/services/books-summary").then(({ takeSummary }) =>
-      takeSummary(c.env),
+      takeSummary(c.env, { includeResearch: true }),
     ),
     // Diagnosed, not summarised: the same walk, keeping the per-item
     // till counters the take reconciles against below.
@@ -2280,11 +2280,11 @@ adminRoutes.get("/admin/deliveries", async (c) => {
   const audit = await auditDeliveries(c.env);
   return c.json({
     what_this_is:
-      "Payments that settled and whose goods never went out. Each row is money this store took without delivering, found by the store rather than reported by a buyer — the buyer may be an agent that is no longer running.",
+      "Open delivery markers cross-checked against retained purchase evidence. Unresolved markers need review; a marker alone does not establish that the buyer received nothing. Matching retained deliveries are listed separately without clearing the original marker.",
     verdict:
       audit.undelivered.length === 0
-        ? `No undelivered sales. ${audit.in_flight} request(s) still inside the grace window, which is not a fault.`
-        : `${audit.undelivered.length} SALE(S) TOOK MONEY AND DELIVERED NOTHING. Check each, then fulfil or refund by hand.`,
+        ? `No unresolved overdue delivery markers in this scan. ${audit.recorded_delivery.length} retained delivery record(s) explain leftover markers; ${audit.in_flight} request(s) remain in flight.${audit.truncated ? " Scan incomplete; more rows may exist." : ""}`
+        : `${audit.undelivered.length} overdue delivery marker(s) need review; ${audit.recorded_delivery.length} retained delivery record(s) explain other markers. Inspect the evidence before acting.${audit.truncated ? " Scan incomplete; counts are a floor." : ""}`,
     what_to_do:
       "There is no automatic remedy and that is deliberate: re-running a handler whose side effects are unknown could double-deliver, and a refund is money moving, which never happens on a cron here. Recover the original work or refund it by hand, then submit the original payment network and completed-order or finalized-refund evidence to /admin/delivery/resolve. Keep the obligation open until the evidence is accepted.",
     grace_minutes: DELIVERY_GRACE_MINUTES,

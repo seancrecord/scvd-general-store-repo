@@ -15,8 +15,14 @@ terms. Related listings and agent entry points lead to the relevant choice.
 The Aura Walk now appears before launch as well as being useful for diagnosing
 friction; it no longer hides only under things going wrong. No new SKU or price.
 
-**Still to do:** 1–3 remain implementation work, in that order after this
-packaging pass. Item 5 needs a real agreed brief and customer decision;
+**Implemented locally: 1–2.** Delivery markers are cross-checked against
+retained purchase evidence without clearing records or triggering money movement.
+The take page separates certificate receipts linked to rewarded studies from
+unlinked outside receipts, house receipts and unknown payers; copied-example
+counts are labelled as field matches.
+[Reporting changes and limits](docs/ADMIN_REVENUE_REVIEW_2026-10.md).
+
+**Still to do:** 3 needs current documentation/recovery reproduction. Item 5 needs a real agreed brief and customer decision;
 exposing an intake is not a sale or evidence of demand. Existing commission
 rungs still bound quotes. No customer activation, outbound contact or charge
 is authorized by this copy change. Validation and release state:

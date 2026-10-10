@@ -65,9 +65,9 @@ changed. Full CI remains required before a merge.
 
 ## Remaining work from the revenue review
 
-1. Reconcile delivery/reporting contradictions against retained purchase evidence.
-2. Make admin revenue reporting distinguish outside customers, rewarded studies
-   and automated traffic, with honest units and coverage.
+1. Delivery/reporting reconciliation implemented locally; [scope and validation](ADMIN_REVENUE_REVIEW_2026-10.md).
+2. Admin receipt attribution and activity-unit corrections implemented locally;
+   release and authenticated readback remain.
 3. Reproduce the current documentation and recovery friction before changing it.
 4. Offer packaging is implemented locally; release and live follow-through remain.
 5. The commission discovery path is ready locally, but no customer brief has
