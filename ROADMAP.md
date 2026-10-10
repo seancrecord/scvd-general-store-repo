@@ -41,6 +41,9 @@ exposing an intake is not a sale or evidence of demand. Existing commission
 rungs still bound quotes. No customer activation, outbound contact or charge
 is authorized by this copy change. Validation and release state:
 [offer-path notes](docs/OFFER_PATHS_2026-10.md).
+The updated installed skill is declared as 3.19.4; ClawHub's observed release
+record remains 3.19.3 until the separate publication step. Merging site code
+does not update that external installation.
 
 ## October 8 — Worker recovery and World bank walk
 

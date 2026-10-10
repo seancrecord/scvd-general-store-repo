@@ -90,3 +90,12 @@ Agentic.market submission draft. Both now distinguish preparation from a failure
 after settlement and tell a buyer to retain the original recovery handle rather
 than pay again. The new regression failed on the old prose; 79 positioning and
 recovery checks pass with the correction. No external listing was resubmitted.
+
+The full local run completed with 16,208 passing tests and two failing guards:
+the correction note did not explicitly name its test, and the changed skill tree
+still declared the published version. Both failures reproduced in isolation.
+The note now names `test/purchase-reconciliation.spec.ts`; the new skill is
+declared as 3.19.4 while `published.json` remains the observed 3.19.3 release.
+All 76 affected correction, publication, guide and recovery checks, skill-tree
+parity and typecheck pass after those fixes. Full CI remains the merge gate.
+Publishing 3.19.4 to ClawHub is a separate release action, still outstanding.
