@@ -485,12 +485,12 @@ It goes like this:
 3. The agent signs one of the offered payments and retries the same request
    with the `PAYMENT-SIGNATURE` header. Standard v2 clients like
    `@x402/fetch` do steps 2–3 on their own.
-4. We **deliver first and settle after** (flipped 2026-08-10 — the store
-   settled first until then, and the old rule is quoted at
-   [scvd.store/becoming](https://scvd.store/becoming)). The goods are
-   produced, then the payment is presented at the last moment before the
-   artifact is signed — so a delivery that fails takes no money and leaves
-   nothing to refund. Instant items arrive in the response body. Human-queue
+4. We **prepare instant goods or the order before requesting settlement**.
+   A failure before settlement takes no money. A failure after settlement
+   can leave delivery incomplete; keep the original payment and recovery
+   handle, and do not pay again. The [payment and recovery guide](https://scvd.store/developers/llms.txt)
+   explains how to check the retained purchase and recover the original work.
+   Instant items arrive in the response body. Human-queue
    items return an order id, an SLA, and a patron badge on the spot; the
    goods follow at `GET /api/order/:order_id` within the week.
 

@@ -84,3 +84,9 @@ not a claim that no buyer was left undelivered; 74 delivery/alert checks pass.
 The rationale-pointer test failed on the moved shelf file and passes with its
 new location (5 agent-UX checks). These are stale assertions corrected without
 changing the production behavior or relaxing any reader/bundle limit.
+
+The final copy sweep also found the overbroad guarantee in the README and
+Agentic.market submission draft. Both now distinguish preparation from a failure
+after settlement and tell a buyer to retain the original recovery handle rather
+than pay again. The new regression failed on the old prose; 79 positioning and
+recovery checks pass with the correction. No external listing was resubmitted.
