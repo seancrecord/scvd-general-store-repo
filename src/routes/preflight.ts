@@ -1,3 +1,4 @@
+import { relatedOfferPaths } from "@/store/offer-paths";
 import { Hono, type Context } from "hono";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { deferBookkeeping } from "@/lib/defer-bookkeeping";
@@ -117,6 +118,7 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
      * it could decide anything. Prices and terms are read off the
      * menu, never typed here.
      */
+    optional_next_work: relatedOfferPaths("service_audit", base),
     the_ladder: {
       free_first: {
         artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,

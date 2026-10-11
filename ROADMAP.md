@@ -1,5 +1,50 @@
 # ROADMAP — September 2026
 
+## October 10 — revenue review and clearer offer paths
+
+Keeper approved five follow-ups: (1) reconcile delivery/reporting contradictions,
+(2) make the admin revenue summary distinguish customers, rewarded research
+and machinery, (3) reproduce current documentation/recovery friction, (4) make
+existing larger offers understandable and findable, and (5) test a bounded
+platform/agency commission through the existing request-and-quote desk.
+
+Release record: [PR #1002](https://github.com/seancrecord/scvd-general-store-repo/pull/1002).
+Its validation notes track the full CI gate and production readback. The local
+implementation notes below describe build scope, not evidence of customer demand.
+
+**Implemented locally: 4, plus the discovery path for 5.** Keep the inexpensive
+homepage starters and add a separate larger-work section. Reuse `/operators`
+for outcome-led choices with shared value, deliverable, limits and derived
+terms. Related listings and agent entry points lead to the relevant choice.
+The custom-review path now includes a short browser brief form, reusing the
+existing commission ledger and a readable status page; a quote remains the
+keeper’s decision. The Aura Walk now appears before launch as well as being useful for diagnosing
+friction; it no longer hides only under things going wrong. No new SKU or price.
+
+**Implemented locally: 1–2.** Delivery markers are cross-checked against
+retained purchase evidence without clearing records or triggering money movement.
+The take page separates certificate receipts linked to rewarded studies from
+unlinked outside receipts, house receipts and unknown payers; copied-example
+counts are labelled as field matches.
+[Reporting changes and limits](docs/ADMIN_REVENUE_REVIEW_2026-10.md).
+
+**Implemented locally: 3 (reproducible guidance gaps).** MCP purchase-tool
+descriptions now name the enabled native lane. Shared and installed guidance
+identifies recovery-handle locations and the limits of pending delivery evidence.
+The existing signing-outage regression disproved the broad no-charge delivery
+promise; the corrected copy distinguishes failures before and after settlement,
+with a dated correction. [Reproduction and limits](docs/BUYER_GUIDANCE_REVIEW_2026-10.md).
+
+**Still to do:** release and live readback; environment-specific documentation
+403s and a paid cold-buyer run remain unverified. Item 5 needs a real agreed brief and customer decision;
+exposing an intake is not a sale or evidence of demand. Existing commission
+rungs still bound quotes. No customer activation, outbound contact or charge
+is authorized by this copy change. Validation and release state:
+[offer-path notes](docs/OFFER_PATHS_2026-10.md).
+The updated installed skill is declared as 3.19.4; ClawHub's observed release
+record remains 3.19.3 until the separate publication step. Merging site code
+does not update that external installation.
+
 ## October 8 — Worker recovery and World bank walk
 
 Matched-hour KV reads fell 65.81% after the correction-cache release; cache

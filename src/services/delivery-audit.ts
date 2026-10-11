@@ -7,6 +7,8 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import type { Env } from "@/types";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { inspectPurchase, validPurchaseId } from "@/services/purchase-inspection";
+import { formatUnits } from "viem";
 
 /**
  * THE DELIVERY AUDIT — did the goods actually leave the shelf after
@@ -49,8 +51,8 @@ import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
  *
  * HOW: an intent row, written after settlement and before the handler,
  * deleted only when the handler returns goods. Anything still sitting
- * there after a grace period is a sale that took money and delivered
- * nothing. This is the ordinary outbox pattern, and the reason it fits
+ * there after a grace period needs review against retained purchase evidence;
+ * a failed clearing write can leave a marker after successful delivery. This is the ordinary outbox pattern, and the reason it fits
  * is that it does not need the artifact classes to agree on a shape —
  * a certificate, an order, a stamp and a pass are all just "the
  * handler returned 2xx", which is the one fact common to every shelf.
@@ -72,6 +74,9 @@ export const DELIVERY_GRACE_MINUTES = 10;
 export const DELIVERY_SCAN_CAP = 500;
 
 export interface DeliveryIntent {
+  /** Retained purchase identity, never the private recovery token. Legacy rows lack it. */
+  purchase_id?: string;
+  payment_network?: string;
   /** MCP retry identity is complete even when the desk's query preview is cut. */
   mcp_retry?: { input_digest: string; payment: SettledPayment };
   /** The route that took the money. */
@@ -106,6 +111,7 @@ export interface DeliveryIntent {
 export interface UndeliveredSale extends DeliveryIntent {
   key: string;
   minutes_waiting: number;
+  evidence_status?: "not_established" | "unavailable";
 }
 
 export interface DeliveryAudit {
@@ -113,6 +119,8 @@ export interface DeliveryAudit {
   /** Rows young enough to still be a request in flight. */
   in_flight: number;
   undelivered: UndeliveredSale[];
+  /** Stale markers with matching retained goods; read-only, not automatically resolved. */
+  recorded_delivery: (UndeliveredSale & { purchase_id: string; delivery_state: "delivered" })[];
   truncated: boolean;
   scanned_at: string;
 }
@@ -157,8 +165,8 @@ export async function getOpenDeliveryIntent(
 }
 
 /**
- * Walk the open intents and separate "still in flight" from "took the
- * money and delivered nothing".
+ * Walk open intents and distinguish in-flight requests, matching retained
+ * deliveries and overdue markers whose delivery is not established.
  *
  * Reports rather than repairs. There is no honest automatic remedy: we
  * cannot re-run a handler whose side effects we do not know, and we
@@ -177,6 +185,53 @@ export async function auditDeliveries(
   const values = await bulkGetJson<DeliveryIntent>(env.ORDERS, listed.names);
 
   const undelivered: UndeliveredSale[] = [];
+  const recordedDelivery: DeliveryAudit["recorded_delivery"] = [];
+  // Legacy native intents predate purchase_id. Search the settlement month
+  // and preceding month only; a miss leaves the obligation open, not disproved.
+  // One ledger read per month per audit, and no write or recovery/resume call.
+  const months = new Map<string, Promise<string[] | null>>();
+  const inspections = new Map<string, ReturnType<typeof inspectPurchase>>();
+  async function evidence(intent: DeliveryIntent): Promise<{ id?: string; unavailable: boolean }> {
+    let ids: string[] = [];
+    if (intent.purchase_id) {
+      if (!validPurchaseId(intent.purchase_id)) return { unavailable: true };
+      ids = [intent.purchase_id];
+    } else if (intent.transaction && /^0x[a-f0-9]{64}$/i.test(intent.transaction) && Number.isFinite(Date.parse(intent.settled_at))) {
+      if (!env.COUNTER_LEDGER) return { unavailable: true };
+      const settled = new Date(intent.settled_at);
+      const monthNames = [settled.toISOString().slice(0, 7), new Date(Date.UTC(settled.getUTCFullYear(), settled.getUTCMonth() - 1, 1)).toISOString().slice(0, 7)];
+      for (const month of monthNames) {
+        let reading = months.get(month);
+        if (!reading) {
+          const ledger = env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${month}/mpp-sales`));
+          reading = ledger.listMppSalesWithCorrections().then(rows => rows.map(row => row.sale)).catch(() => null);
+          months.set(month, reading);
+        }
+        const rows = await reading;
+        if (rows === null) return { unavailable: true };
+        for (const raw of rows) {
+          try {
+            const row: unknown = JSON.parse(raw);
+            if (isRecord(row) && row.transaction === intent.transaction && typeof row.id === "string" && validPurchaseId(row.id)) ids.push(row.id);
+          } catch { /* An unreadable row cannot establish a delivery. */ }
+        }
+      }
+    }
+    ids = [...new Set(ids)];
+    if (ids.length !== 1) return { unavailable: false };
+    const id = ids[0]!;
+    let reading = inspections.get(id);
+    if (!reading) { reading = inspectPurchase(env, id); inspections.set(id, reading); }
+    const result = await reading;
+    if (result.status === 503) return { unavailable: true };
+    const p = result.body.purchase;
+    if (result.status !== 200 || !p || p.payment_state !== "settled" || p.delivery_state !== "delivered" ||
+      p.transaction !== intent.transaction || p.path !== intent.path || !intent.payer || p.payer !== intent.payer ||
+      (intent.payment_network && p.network !== intent.payment_network) || p.currency !== "USDC" || p.decimals === null || !Number.isFinite(intent.paid_usdc) || intent.paid_usdc < 0 ||
+      Number(formatUnits(BigInt(p.amount_atomic), p.decimals)) !== intent.paid_usdc ||
+      (p.protocol === "mpp" && p.ledger.state !== "matched")) return { unavailable: false };
+    return { id, unavailable: false };
+  }
   let inFlight = 0;
   for (const key of listed.names) {
     const intent = values.get(key);
@@ -195,11 +250,14 @@ export async function auditDeliveries(
       inFlight += 1;
       continue;
     }
-    undelivered.push({
+    const match = await evidence(intent).catch(() => ({ unavailable: true, id: undefined }));
+    const row: UndeliveredSale = {
       ...intent,
       key,
       minutes_waiting: Number.isFinite(minutes) ? minutes : -1,
-    });
+    };
+    if (match.id) recordedDelivery.push({ ...row, purchase_id: match.id, delivery_state: "delivered" });
+    else undelivered.push({ ...row, evidence_status: match.unavailable ? "unavailable" : "not_established" });
   }
   undelivered.sort((a, b) => b.minutes_waiting - a.minutes_waiting);
 
@@ -207,6 +265,7 @@ export async function auditDeliveries(
     checked: listed.names.length,
     in_flight: inFlight,
     undelivered,
+    recorded_delivery: recordedDelivery,
     // AUTHORITATIVE, not inferred (2026-09-15). This read
     // `names.length >= DELIVERY_SCAN_CAP`, which is a guess at
     // completeness from the size of the answer. listKeys already knows:
@@ -387,7 +446,7 @@ export async function runDeliveryAudit(
   for (const sale of audit.undelivered) {
     await sendAlert(env, {
       condition: "undelivered_sale",
-      detail: `A payment settled on ${sale.path} ${sale.minutes_waiting} minutes ago and no goods went out.${
+      detail: `A payment settled on ${sale.path} ${sale.minutes_waiting} minutes ago and its delivery marker is still open.${
         sale.transaction ? ` Settlement: ${sale.transaction}.` : ""
       }${
         sale.payer ? ` Payer: ${sale.payer}.` : ""
@@ -395,7 +454,7 @@ export async function runDeliveryAudit(
         sale.query
           ? ` REQUEST PREVIEW (may be truncated): ${sale.query}. Check the retained original purchase or order; this preview alone cannot establish the work owed.`
           : " NO REQUEST PREVIEW IS HELD. Check the retained original purchase or order before deciding whether the work can be recovered."
-      } This is money taken without delivery — check the order, then refund or fulfil by hand.`,
+      } Delivery is not established by this audit. Inspect the retained purchase before deciding whether to recover, fulfil or refund.`,
       key: sale.key,
     }).catch(() => {
       // The alert is the courtesy; the row stays either way, and the

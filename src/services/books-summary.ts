@@ -1,6 +1,7 @@
 import { taxRows } from "@/services/tax-export";
 import { getMenuItem } from "@/store/menu";
 import type { Env } from "@/types";
+import { revenueBreakdown, type RevenueBreakdown } from "@/services/revenue-breakdown";
 
 /**
  * THE TAKE: the keeper kept reading the month number first, thinking
@@ -44,6 +45,8 @@ export interface TakeItemLine {
 }
 
 export interface TakeSummary {
+  /** Admin-only attribution over this same certificate read; never a second certificate walk. */
+  revenue?: RevenueBreakdown;
   lines: TakeLine[];
   /**
    * BY ITEM, ALL-TIME (the keeper's question, 2026-09-01: "where do I
@@ -75,7 +78,7 @@ function shelfKindOf(itemId: string): ShelfKind {
   return item.fulfillment === "human_queue" ? "queue" : "instant";
 }
 
-export async function takeSummary(env: Env): Promise<TakeSummary> {
+export async function takeSummary(env: Env, options: { includeResearch?: boolean } = {}): Promise<TakeSummary> {
   const { rows, truncated } = await taxRows(env);
   const lines = new Map<ShelfKind, TakeLine>();
   const line = (kind: ShelfKind): TakeLine => {
@@ -182,6 +185,7 @@ export async function takeSummary(env: Env): Promise<TakeSummary> {
       a.item.localeCompare(b.item),
   );
   return {
+    ...(options.includeResearch ? { revenue: await revenueBreakdown(env, rows, truncated) } : {}),
     lines: ordered,
     items,
     total,

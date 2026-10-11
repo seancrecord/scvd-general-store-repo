@@ -1,3 +1,5 @@
+import { commissionStatusHtml } from "@/pages/commission-request";
+import { wantsHtml } from "@/pages/simple-page";
 import { isBuying } from "@/routes/door-checks";
 import { storePaymentGate } from "@/lib/store-payment-gate";
 import { captureCommissionPurchase, fulfillCommissionPurchase } from "@/services/commission-purchase";
@@ -268,6 +270,9 @@ commissionRoutes.get("/api/commission/pay/:rung", async (c) => {
 });
 
 commissionRoutes.get("/api/commission/:id", noStore, async (c) => {
+  c.header("Vary", "Accept");
+  c.header("X-Robots-Tag", "noindex, nofollow");
+  c.header("Referrer-Policy", "no-referrer");
   const request = await getCommission(c.env, c.req.param("id"));
   if (!request) {
     return c.json(
@@ -278,5 +283,6 @@ commissionRoutes.get("/api/commission/:id", noStore, async (c) => {
       404,
     );
   }
-  return c.json(deskView(request, c.env.STORE_BASE_URL));
+  const view = deskView(request, c.env.STORE_BASE_URL);
+  return wantsHtml(c.req.header("Accept")) ? c.html(commissionStatusHtml(view)) : c.json(view);
 });

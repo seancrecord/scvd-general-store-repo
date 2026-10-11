@@ -29,9 +29,8 @@ export function mppPaymentHeader(authorization: string | undefined): string | un
  * matching off and lib/metrics.ts drops the slash from the item key;
  * until 2026-09-19 this lane refused it while the other answered, so
  * the slashed knock got a thinner 402 with no native challenge).
- * test/doors-parity.spec.ts holds the edges. MCP, WebMCP and the
- * packages keep their existing x402 checkout, and nothing here claims
- * otherwise for them.
+ * test/doors-parity.spec.ts holds the edges. MCP and WebMCP derive their
+ * native lane from this same capability; the packages retain x402 checkout.
  */
 export function nativeCheckoutItem(path: string, method: string): MenuItem | undefined {
   // A HEAD asks the same question a GET asks (lib/quote-method).

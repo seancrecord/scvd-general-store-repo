@@ -1207,10 +1207,16 @@ const BASE = "https://scvd.store";
 // Follow-through: retain the compact vocabulary section verbatim in every
 // guide and file detailed writing under trust as its own complete section.
 // The previous pins passed in CI; only this reviewed section move changes them.
-// 2026-10-09: add the free seller declaration entry and contextual pilot link.
-// The two reviewed guide additions are the only source of these pin changes.
+// Re-pinned 2026-10-10 for the authorized offer-path guidance, shared operator
+// proposition and Aura Walk value sentence. No section was removed.
+// 2026-10-10: delivery-order limits and recovery-handle locations were
+// corrected together. Restoring only llms.ts, DELIVERY_ORDER and the recovery
+// guidance to 3d50daba reproduces both prior pins (39/39 focused checks).
+// The new pins cover those reviewed sentences, with all guide sections intact.
+// 2026-10-10: merging seller declarations adds only its free guidance and
+// history pointer. Restoring main llms.ts reproduces both prior pins (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "922816b681eb4aae527997a5fe7f1d3119d81f2459ea1fb90d3ae0abf1ce4003";
+  "c428ae8cf16e734f511b36b24488a9190788732371942b05c06391e88500ed03";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1313,7 +1319,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "114c92e733d974fbc74d9bc48571fb8086badc61cd0d3a144a7f99dd9eb2db4b",
+      "8c9daacaea4e4d3158e3af98bce3672b5a733af02a82d6d518e38bb14d1fedcb",
     );
   });
 

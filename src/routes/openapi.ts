@@ -23,6 +23,7 @@ import { CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
+  DELIVERY_ORDER_SHORT,
   POSITION_NOT,
   POSITION_OPENING,
 } from "@/store/copy/position";
@@ -354,6 +355,7 @@ export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
   "/health": "no-store by design: a liveness line that must never be a cached yes",
   "/bell": "an HTML room, not a machine-readable document: lib/conditional-get.ts tags the representations an agent polls, and this GET exists to put a form in front of a person. The bell's machine door is POST /api/bell, which is outside conditional GET by method.",
   "/bot-auth/observe": "no-store: each observation verifies the current signed request and current key status",
+  "/api/seller-declaration": "no-store: each comparison reads the current declaration and retained observations; this route does not revalidate cached responses",
 };
 const NO_STORE_PREFIXES = ["/api/buy/", "/api/order/", "/api/phantom/", "/api/commission/pay/"];
 
@@ -4695,7 +4697,7 @@ const IDEMPOTENCY_PARAMETER: OpenApiObject = {
    * what an unresolved admission refuses — is in every 402 body's
    * idempotency block and on /developers, where it is read once.
    */
-  description: `Optional. Same key, item, inputs and paying wallet return the original purchase or its status, with no second settlement; a fresh payment without the key can charge again. Echo idempotency.suggested_key from the 402, or send your own private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character key; values outside that range are treated as absent. Full rule: /developers.`,
+  description: `Optional: echo 402 idempotency.suggested_key or a private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character key (other lengths mean absent). Same key/item/inputs/paying wallet replays purchase/status without settling twice. Fresh payment without the key can charge again. Full rule: /developers.`,
   example: "scvd-your-own-high-entropy-value-0001",
 };
 
@@ -5834,8 +5836,7 @@ function paidOp(
       payment_header: "PAYMENT-SIGNATURE",
       /* The v1 spelling is still accepted; saying so costs one field. */
       legacy_payment_header: "X-PAYMENT",
-      settlement:
-        "Delivers first, settles after; failed delivery takes no money.",
+      settlement: DELIVERY_ORDER_SHORT,
       discovery: `${env.STORE_BASE_URL}/.well-known/x402.json`,
       documentation: `${env.STORE_BASE_URL}/developers`,
     },
@@ -8909,18 +8910,22 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: created(
   postOp(
             "Commission request",
-            "Ask the keeper for something that is not on the shelf. A human reads it.",
+            "Free request for keeper review; no charge or accepted engagement. Browser form: /operators#request-brief (same-origin form POST redirects to status). Declines publish a brief excerpt and reason; contacts stay private.",
             "What you want, what you would pay, and where to reach you.",
             {
               type: "object",
-              required: ["description", "offer_usdc", "contact"],
+              anyOf: [
+                { required: ["description", "offer_usdc", "contact"] },
+                { required: ["suggest_listing"], properties: { suggest_listing: { type: "string", minLength: 1 } } },
+              ],
               properties: {
                 description: {
                   type: "string",
                   description: "What you want made.",
                 },
                 offer_usdc: {
-                  oneOf: [{ type: "number" }, { type: "string" }],
+                  type: "number",
+                  minimum: 0,
                   description: "What you would pay, in USDC.",
                 },
                 contact: {
@@ -8929,9 +8934,9 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 },
                 verified_identity: VERIFIED_IDENTITY,
                 suggest_listing: {
-                  type: "boolean",
+                  type: "string",
                   description:
-                    "Optional. True if you think this belongs on the shelf for everyone, not only for you.",
+                    "Optional Town Directory listing suggestion. A nonempty suggestion can be sent on its own.",
                 },
               },
             },

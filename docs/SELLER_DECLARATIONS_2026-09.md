@@ -187,3 +187,26 @@ typecheck and production dry-run bundles pass. The browser preview verifies the
 free lookup form and readable no-declaration result. No production declaration,
 paid purchase or customer activation was made. Required full CI shards and
 production readback remain release gates; implementation is ready locally.
+
+## October 10 release-gate repair
+
+PR #1001 was blocked by real integration failures: the operator stages repeated
+`conformance_watch` and displaced the free discovery step; the no-store
+declaration API advertised conditional revalidation; the expanded OpenAPI
+growth case exceeded its reader budget; and the checkout worker exceeded its
+bundle limit. These checks were reproduced before the repair.
+
+The merge from main preserves both the seller guidance and the newer offer and
+recovery guidance, including main's lighter checkout shelf import. Declarations
+follow the free discovery step without duplicating the paid watch. The no-store
+API no longer advertises ETag revalidation. Repeated purpose and retry wording
+is shorter while retaining the fields, signed-text/receipt distinction, private
+key length rule and warning that a fresh unkeyed payment can charge again.
+Neither size limit was raised.
+
+The guide's prior main hashes were reproduced by restoring main's guide file
+(14 checks), then pinned to the reviewed combined guide. The repaired operator,
+cache, size, guide and declaration checks pass (157 checks); the final wording
+also passes the buyer-purpose, declared-input and size checks (170 checks).
+Typecheck and production bundles pass. Full local and required CI checks remain
+release gates; this record does not claim a production release or customer use.

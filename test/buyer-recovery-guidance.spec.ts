@@ -110,3 +110,16 @@ it("public discovery explains how to recover without changing interfaces or payi
   expect(properties.retry_after_seconds).toBeDefined();
   expect(object(properties.recovery_state).enum).toContain("pending");
 });
+
+it("documents recovery handle locations and the scope of an unestablished delivery", async () => {
+  for (const path of ["/skill.md", "/developers/llms.txt", "/openapi.json"]) {
+    const response = await request(path);
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    expect(text).toContain("recovery.purchase_id");
+    expect(text).toContain("result.structuredContent.recovery");
+    expect(text).toContain("Purchase-Recovery");
+    expect(text).toContain("not_established_by_this_record");
+    expect(text).toContain("not proof that goods were never delivered");
+  }
+});
