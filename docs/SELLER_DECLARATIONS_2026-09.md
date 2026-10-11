@@ -1,7 +1,6 @@
 # Seller declarations — declared against observed
 
-**Status: PROPOSED. Nothing here is built. Two rulings are on
-KEEPER_LIST before a line of code.** Written 2026-09-10 as the
+**Status: IMPLEMENTED October 9 on `codex/seller-declarations`; validation and release pending. Keeper approved CV1 next and contextual funnel placement, including the recommended free/queue defaults.** Written 2026-09-10 as the
 third of four moves toward a corpus a buyer must check (the first
 two shipped the same day: the asked-for queue at `/corpus/asked.json`
 and `changed_pay_to` on the weekly changes feed with `pay_to` on
@@ -44,7 +43,7 @@ comparison rule. It is not a new trust lane.
 
 ## The declaration
 
-One per host, newest wins, attached by either existing proof:
+A current declaration per host, with prior dated records retained for historical comparisons. Host proof takes precedence over wallet-only statements. The prepared input is:
 
 ```json
 {
@@ -62,10 +61,10 @@ One per host, newest wins, attached by either existing proof:
 }
 ```
 
-Storage keeps the verbatim addresses the seller declared (they are
-the seller's own published words, the same as a 402 body); every
-derived view carries digests only, the same law the observation
-obeys. The `wallet_signature` lane can only prove control of ONE of
+Storage and public comparisons keep address digests only. The prepare response
+returns the caller's own normalized addresses in the exact text to sign; that
+text is not retained. The original proposal to retain verbatim addresses was
+not needed for comparison and was dropped in the October 9 implementation. The `wallet_signature` lane can only prove control of ONE of
 the declared addresses at a time; a declaration listing more than
 one address needs a signature per address or the `well_known` lane.
 
@@ -104,10 +103,10 @@ denominator `declarations_compared`.
 - **Standing-note law.** The declaration rides beside the
   observation and never alters it; a declaration for a host the
   chain never observed is accepted and held (unlike a note), because
-  the asked-for queue now guarantees the host will be swept — the
-  declaration is itself an ask.
+  the declaration itself is an ask in the bounded queue. Queue caps and
+  eviction mean no probe date or eventual probe is guaranteed.
 
-## The two rulings (KEEPER_LIST)
+## Approved defaults (October 9, KEEPER_LIST)
 
 1. **Is a declaration free, and stays free?** The whole point is
    that it spreads; a fee kills it. Recommended: free to attach and
@@ -115,11 +114,10 @@ denominator `declarations_compared`.
    the conformance desk. The paid instrument, if any, is the WATCH
    on a declaration (alert the seller when the line moves), which is
    an endpoint watch with a finding rule and already priced.
-2. **Does a declaration create an obligation to probe?** A seller
-   declaring a host the feeds do not name would otherwise wait on
-   the sweep. Recommended: a declaration enters the asked-for queue
-   at the top of its week (asks = the sweep cap) so it is swept next
-   round; it does not jump the roster cap.
+2. **A declaration is an ask within the existing caps.** Record one ask in
+   the existing queue; do not manufacture extra demand counts to raise priority.
+   The normal most-asked ordering, weekly sweep cap and eviction remain in force.
+   Neither acceptance nor payment guarantees a census probe date.
 
 ## Acceptance
 
@@ -141,3 +139,84 @@ denominator `declarations_compared`.
   under `/corpus/declared.json` is the most that exists.
 - A dispute flow. A seller who disagrees with an observation has the
   standing note and the notice desk already.
+
+
+## October 9 implementation refinements
+
+- `/seller-declarations` is the human page and JSON/markdown guide;
+  `/api/seller-declaration` prepares exact proof text, attaches, and reads a
+  host comparison. Preparation stores nothing. Submit within ten minutes of
+  `valid_from`; later statements need a later timestamp. Replay never redates.
+- Host proof reuses the standing-note well-known path, with a bounded read and
+  no redirects. Wallet proof requires a signature from every declared EVM address
+  and those addresses in the latest observed challenge for the named host.
+  Wallet control is explicitly not host control. Domain statements take precedence;
+  new hosts, rotations and Solana use domain proof. This closes the original
+  draft's unbound-wallet-to-host ambiguity without inventing ownership evidence.
+- Only digests are retained, stricter than the original private-verbatim proposal.
+  Prepared text returns the caller's own input for signing; public reads never
+  expose literal addresses. Networks are context, not a claimed address/network
+  pairing comparison: the historical observation carries sets, not those pairs.
+- Independent declaration keys retain prior dated statements for as-of weekly
+  comparisons. At most 100 per host; the weekly view refuses an incomplete read
+  beyond its 2,000-record cap. KV visibility is eventually consistent. There is
+  no cryptographic proof of completeness or permanent retention guarantee.
+- A comparison needs a probe after both attachment and valid_from. A later seal
+  cannot turn an earlier probe into a post-declaration observation. A latest
+  probe without an address is not_captured, never a fallback to an older match.
+- Contextual links appear on operators, corpus, host histories, look responses
+  and the Attestation pilot. Prices derive from the existing shelf and pilot
+  terms. The free record remains first. Existing conformance watches and the
+  pilot do not provide declaration-change alerts; that extension is not sold.
+- Host proof performs an HTTPS read, never a payment; public-target guard and
+  body/time caps apply. Domain DNS rebinding protection is limited to the shared
+  platform egress boundary. API bodies are capped; attachment attempts have a
+  courtesy per-host KV throttle, not an atomic global admission guarantee.
+
+## Validation, October 9
+
+The public room test first failed with 404 before implementation. The altered-terms
+signature regression also failed when recovery enforcement was temporarily removed,
+then passed after the enforcement was restored. Focused tests
+cover both proof lanes, altered signing terms, new-host refusal in the wallet
+lane, replay without redating, domain precedence, all five comparison states,
+actual probe timestamps, as-of weekly comparisons, address redaction, HTTP
+submission, throttling, readable results and contextual paid/free links.
+Feature, guide, schema, reader-budget, porch and collector-boundary checks pass;
+typecheck and production dry-run bundles pass. The browser preview verifies the
+free lookup form and readable no-declaration result. No production declaration,
+paid purchase or customer activation was made. Required full CI shards and
+production readback remain release gates; implementation is ready locally.
+
+## October 10 release-gate repair
+
+PR #1001 was blocked by real integration failures: the operator stages repeated
+`conformance_watch` and displaced the free discovery step; the no-store
+declaration API advertised conditional revalidation; the expanded OpenAPI
+growth case exceeded its reader budget; and the checkout worker exceeded its
+bundle limit. These checks were reproduced before the repair.
+
+The merge from main preserves both the seller guidance and the newer offer and
+recovery guidance, including main's lighter checkout shelf import. Declarations
+follow the free discovery step without duplicating the paid watch. The no-store
+API no longer advertises ETag revalidation. Repeated purpose and retry wording
+is shorter while retaining the fields, signed-text/receipt distinction, private
+key length rule and warning that a fresh unkeyed payment can charge again.
+Neither size limit was raised.
+
+The guide's prior main hashes were reproduced by restoring main's guide file
+(14 checks), then pinned to the reviewed combined guide. The repaired operator,
+cache, size, guide and declaration checks pass (157 checks); the final wording
+also passes the buyer-purpose, declared-input and size checks (170 checks).
+Typecheck and production bundles pass. Full local and required CI checks remain
+release gates; this record does not claim a production release or customer use.
+
+The full CI run exposed two further integration issues: the observatory guard
+read the substring `ratio` in the route name `declarations` as a metric, and
+the short guide index exceeded its 27,000-character alarm by 52 characters.
+The guard now distinguishes route-dictionary keys from metric fields and still
+checks nested values; adversarial fixtures prove actual rate/share/score/rank
+fields remain visible. Restoring the old scan failed both the real artifact and
+fixture checks. The index's navigation explanation is shorter; no guide section,
+link or full-guide sentence was removed. All 35 observatory, guide and catalogue
+checks pass, and typecheck passes. Required CI is repeated on this final repair.

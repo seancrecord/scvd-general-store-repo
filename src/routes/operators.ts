@@ -68,6 +68,11 @@ export const OPERATOR_STAGES: readonly OperatorStage[] = [
     items: [],
   },
   {
+    moment: "Declare where you receive", question: "Does the captured payment address match what I declared?",
+    free: { name: "Seller declarations", how: base => `Free: ${base}/seller-declarations explains proof of control and the dated address-digest comparison. A mismatch is a comparison, not a fraud finding.` },
+    items: [],
+  },
+  {
     moment: "Before you launch",
     question: "Does my door serve a 402 a stock client can actually pay?",
     free: {
@@ -239,6 +244,7 @@ operatorsRoutes.get("/operators", (c) => {
             url: `${base}/operators`,
           })),
         })}
+        <p><a href="/seller-declarations">Declare receiving addresses and read the free comparison</a>.</p>
         <p class="menu-meta">A report for a customer or internal review: <a href="/evidence-pilot">SCVD Attestation</a>. The whole shelf: <a href="/menu.json"><code>/menu.json</code></a>. How paying works, order of operations included: <a href="/how-it-works">/how-it-works</a>. If you resell to agents rather than run a door of your own, the same shelf sells on account at <a href="/trade">the trade counter</a>. JSON twin of this page at the same URL with <code>Accept: application/json</code>.</p>
       </section>`,
     }),

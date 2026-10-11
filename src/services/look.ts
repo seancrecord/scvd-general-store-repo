@@ -1,3 +1,4 @@
+import { declarationNextSteps } from "@/store/seller-declarations";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { recordAsk } from "@/services/asked-queue";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
@@ -102,6 +103,7 @@ export interface HeldHalf {
   /** The host's own shared-wallet fact, when the chain has met it (G2 ruling). */
   payment_address?: SubjectHistory["payment_address"];
   standing_note?: SubjectHistory["standing_note"];
+  declared_vs_observed?: SubjectHistory["declared_vs_observed"];
   what_this_cannot_see: string[];
   rows_url: string;
   derived_at: string;
@@ -145,6 +147,7 @@ export interface LookReport {
     free_first: Record<string, string>;
     paid: Record<string, unknown>[];
   };
+  seller_declarations?: ReturnType<typeof declarationNextSteps>;
   next_steps: Record<string, string>;
 }
 
@@ -221,6 +224,7 @@ export async function heldHalfOf(env: Env, host: string, now: Date = new Date())
     verdict_changes: history.verdict_changes.length,
     ...(history.payment_address ? { payment_address: history.payment_address } : {}),
     ...(history.standing_note ? { standing_note: history.standing_note } : {}),
+    declared_vs_observed: history.declared_vs_observed,
     what_this_cannot_see: history.what_this_cannot_see,
     rows_url: `${base}/corpus/host/${host}.json`,
     derived_at: now.toISOString(),
@@ -393,6 +397,7 @@ export async function lookAtDoor(
           ),
         ].filter((rung): rung is Record<string, unknown> => rung !== null),
       },
+      seller_declarations: declarationNextSteps(base),
       next_steps: {
         if_you_will_pay_it: `${base}/api/before-you-pay/v1 — whether YOUR client would sign what this door serves, free; a door can be ready and still be refused on your own machine.`,
         if_the_history_is_thin: `Thin history is a fact about our coverage, not about the door: ${held.rounds_probed} probed round${held.rounds_probed === 1 ? "" : "s"} of ${held.rounds_since_first_sighting} is what we hold, and the gaps are counted against us by reason.`,

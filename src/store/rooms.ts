@@ -86,6 +86,7 @@ export interface Room {
  * are about, not one of them. HUMAN_SURFACES puts it back at the front.
  */
 export const ROOMS: readonly Room[] = [
+  { path: "/seller-declarations", name: "Seller declarations", writes_its_own_deeper: true },
   { path: "/evidence-pilot", name: "SCVD Attestation", writes_its_own_deeper: true },
   { path: "/a2a-desk", name: "A2A checks and repair kits", deeper: ["a2a_repair_kit"], writes_its_own_deeper: true },
   // "What is scvd.store?" since 2026-09-03 (F29): the branded question,
