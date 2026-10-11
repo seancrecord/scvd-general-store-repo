@@ -2209,11 +2209,8 @@ export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig
 
 ${kept.map((section) => section.text).join("")}## The rest of this file, by area
 
-This is the index. The store's full prose is long on purpose — the
-evidence is the product — so it is served in one document at
-${base}/llms-full.txt and split by area below. Nothing here is a
-summary of what is over there; each file carries the sections
-themselves.
+The complete guide is at ${base}/llms-full.txt.
+The area files below carry its full sections, not summaries.
 
 ${map}
 

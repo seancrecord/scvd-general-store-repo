@@ -210,3 +210,13 @@ cache, size, guide and declaration checks pass (157 checks); the final wording
 also passes the buyer-purpose, declared-input and size checks (170 checks).
 Typecheck and production bundles pass. Full local and required CI checks remain
 release gates; this record does not claim a production release or customer use.
+
+The full CI run exposed two further integration issues: the observatory guard
+read the substring `ratio` in the route name `declarations` as a metric, and
+the short guide index exceeded its 27,000-character alarm by 52 characters.
+The guard now distinguishes route-dictionary keys from metric fields and still
+checks nested values; adversarial fixtures prove actual rate/share/score/rank
+fields remain visible. Restoring the old scan failed both the real artifact and
+fixture checks. The index's navigation explanation is shorter; no guide section,
+link or full-guide sentence was removed. All 35 observatory, guide and catalogue
+checks pass, and typecheck passes. Required CI is repeated on this final repair.
