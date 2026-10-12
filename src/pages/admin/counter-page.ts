@@ -1,6 +1,7 @@
 import { getRetiredItem } from "@/store/retired";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { commissionAttention } from "@/pages/admin/commission-attention";
 import type { CloserEntry } from "@/services/closers";
 import type { GrudgeEntry } from "@/services/grudges";
 import type { ListedEntry } from "@/services/guestbook";
@@ -69,6 +70,7 @@ export interface CounterPageData {
   tips: TipRecord[];
   refunds: RefundRecord[];
   commissions: CommissionRequest[];
+  commissionsIncomplete?: boolean;
   waitlist: WaitlistEntry[];
   failedItems: Record<string, number>;
   guestbook: ListedEntry[];
@@ -217,7 +219,7 @@ function orderRowHtml(order: OrderRecord): string {
     </form>`
     }`
       : `<p><em>Delivered:</em> ${escapeHtml(clipped(order.deliverable ?? "", 140))}</p>`;
-  return `<li>
+  return `<li id="order-${escapeHtml(encodeURIComponent(order.order_id))}">
   <strong>${escapeHtml(order.order_id)}</strong>, ${escapeHtml(order.item_name)}
   [${order.status}] paid $${order.paid_usdc} (tip $${order.tip_usdc})
   patron #${order.patron_number}, ${escapeHtml(order.created_at.slice(0, 10))}
@@ -485,10 +487,10 @@ function refundsHtml(refunds: RefundRecord[]): string {
  * DERIVED (deskStatusOf), never re-implemented here, so the counter
  * cannot disagree with the pay route about whether a quote is live.
  */
-function deskHtml(request: CommissionRequest): string {
-  const status = deskStatusOf(request);
+function deskHtml(request: CommissionRequest, now: Date): string {
+  const status = deskStatusOf(request, now);
   if (status === "accepted") {
-    return ` \u00B7 <strong>[accepted]</strong> $${request.quote_usdc}${request.order_id ? ` \u00B7 order ${escapeHtml(request.order_id)}` : ""}`;
+    return ` \u00B7 <strong>[accepted]</strong> ${request.quote_usdc === undefined ? "quote amount unavailable" : `${request.quote_usdc} USDC`}${request.order_id ? ` \u00B7 <a href="/api/order/${escapeHtml(encodeURIComponent(request.order_id))}">Order ${escapeHtml(request.order_id)}</a>` : ""}`;
   }
   if (status === "declined") {
     return ` \u00B7 <strong>[declined]</strong> reply (public): ${escapeHtml(request.decline_reply ?? "")}`;
@@ -507,7 +509,7 @@ function deskHtml(request: CommissionRequest): string {
   return `${standing}
     <form method="POST" action="/admin/commission/${escapeHtml(request.id)}/quote" style="display:inline">
       <select name="usdc">${rungOptions}</select>
-      <input type="number" name="window_hours" placeholder="window (hours)" min="1" required style="width:8rem">
+      <input type="number" name="window_hours" aria-label="Delivery window in hours after payment" placeholder="delivery hours" min="1" required style="width:8rem">
       <input type="text" name="note" placeholder="note to requester (optional)">
       <button type="submit">${status === "quoted" || status === "expired" ? "Re-quote" : "Quote"}</button>
     </form>
@@ -517,14 +519,14 @@ function deskHtml(request: CommissionRequest): string {
     </form>`;
 }
 
-function requestsHtml(requests: CommissionRequest[]): string {
+function requestsHtml(requests: CommissionRequest[], now: Date): string {
   if (requests.length === 0) {
     return "<p>The ledger is quiet.</p>";
   }
   return requests
     .map(
       (request) =>
-        `<li><strong>$${request.offer_usdc}</strong>, ${escapeHtml(request.description)}, contact: ${escapeHtml(request.contact)}, ${escapeHtml(request.date)}${request.suggest_listing ? ` \u00B7 <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? `, claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""}${deskHtml(request)}</li>`,
+        `<li id="request-${escapeHtml(encodeURIComponent(request.id))}"><strong>Proposed budget: ${request.offer_usdc} USDC</strong>, ${escapeHtml(request.description)}, contact: ${escapeHtml(request.contact)}, ${escapeHtml(request.date)}${request.suggest_listing ? ` \u00B7 <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? `, claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""} · <a href="/api/commission/${escapeHtml(encodeURIComponent(request.id))}">Buyer status</a>${deskHtml(request, now)}</li>`,
     )
     .join("\n");
 }
@@ -587,7 +589,16 @@ function guestbookHtml(entries: ListedEntry[]): string {
 }
 
 
-export function renderCounterPage(data: CounterPageData): string {
+export function renderCounterPage(data: CounterPageData, now: Date = new Date()): string {
+  const incomplete = Boolean(data.commissionsIncomplete || data.loadNotes.length);
+  const attention = commissionAttention(data.commissions, data.orders, now, incomplete);
+  const directorySuggestions = data.commissions.filter(request => request.suggest_listing);
+  const briefs = data.commissions.filter(request => !request.suggest_listing);
+  const completedOrderIds = new Set(data.orders.filter(order => order.status === "completed").map(order => order.order_id));
+  const closed = (request: CommissionRequest) => deskStatusOf(request, now) === "declined" ||
+    (deskStatusOf(request, now) === "accepted" && !!request.order_id && completedOrderIds.has(request.order_id));
+  const activeBriefs = briefs.filter(request => !closed(request));
+  const closedBriefs = briefs.filter(closed);
   const pendingConfessions = data.confessions.filter(
     (confession) => confession.status === "pending_review",
   ).length;
@@ -664,6 +675,7 @@ export function renderCounterPage(data: CounterPageData): string {
     (tag) => tag.status === "declined",
   ).length;
   const needsHands =
+    attention.reviewCount + attention.missingCount +
     openOrders +
     pendingTrainTags +
     pendingConfessions +
@@ -675,9 +687,11 @@ export function renderCounterPage(data: CounterPageData): string {
     <h2>At a glance</h2>
     <p style="font-size:1.1em">${
       needsHands === 0
-        ? "<strong>Nothing needs your hands.</strong> The rest of this page is reference."
+        ? incomplete ? "<strong>Partial reading.</strong> Loaded records show no work needing your hands; check the load notes before treating the desk as clear." : "<strong>Nothing needs your hands.</strong> The rest of this page is reference."
         : `<strong>${needsHands} thing${needsHands === 1 ? "" : "s"} need${needsHands === 1 ? "s" : ""} your hands:</strong>
           ${openOrders ? ` <a href="#orders">${openOrders} open order${openOrders === 1 ? "" : "s"}</a> ·` : ""}
+          ${attention.reviewCount ? ` <a href="#needs-attention">${attention.reviewCount} brief${attention.reviewCount === 1 ? "" : "s"} or quote${attention.reviewCount === 1 ? "" : "s"} to review</a> ·` : ""}
+          ${attention.missingCount ? ` <a href="#needs-attention">${attention.missingCount} accepted request${attention.missingCount === 1 ? "" : "s"} to check</a> ·` : ""}
           ${pendingTrainTags ? ` <a href="#queues">${pendingTrainTags} tag${pendingTrainTags === 1 ? "" : "s"} waiting</a> ·` : ""}
           ${pendingConfessions ? ` <a href="#queues">${pendingConfessions} confession${pendingConfessions === 1 ? "" : "s"}</a> ·` : ""}
           ${pendingRefunds ? ` <a href="#queues">${pendingRefunds} refund${pendingRefunds === 1 ? "" : "s"} to pay</a> ·` : ""}
@@ -702,6 +716,8 @@ export function renderCounterPage(data: CounterPageData): string {
           : ""
     }
   </section>
+
+  ${attention.html}
 
   <section>
     <h2>This week's note</h2>
@@ -783,17 +799,13 @@ export function renderCounterPage(data: CounterPageData): string {
     </details>
   </section>
 
-  <section>
-    ${
-      /*
-       * An empty ledger folds like the waitlists beside it
-       * (2026-10-02); a request on it stands open in the room.
-       */
-      data.commissions.length === 0
-        ? `<details><summary>Commission requests (0)</summary><p>The ledger is quiet.</p></details>`
-        : `<h2>Commission requests (${data.commissions.length})</h2>
-    <ul>${requestsHtml(data.commissions)}</ul>`
-    }
+  <section id="requests">
+    ${briefs.length === 0 ? "<details><summary>Commission requests (0)</summary>" : `<h2>Commission requests (${briefs.length})</h2>`}
+    <p>Proposed budgets and unpaid quotes are separate from paid orders. The delivery window starts after payment; quote expiry is the deadline to accept.</p>
+    ${activeBriefs.length ? `<ul>${requestsHtml(activeBriefs, now)}</ul>` : "<p>No active briefs in this reading.</p>"}
+    ${closedBriefs.length ? `<details><summary>Closed commission requests (${closedBriefs.length})</summary><ul>${requestsHtml(closedBriefs, now)}</ul></details>` : ""}
+    ${briefs.length === 0 ? "</details>" : ""}
+    <details><summary>Directory suggestions (${directorySuggestions.length})</summary><p>Listing suggestions are not commission leads or sales.</p>${directorySuggestions.length ? `<ul>${requestsHtml(directorySuggestions, now)}</ul>` : "<p>None in this reading.</p>"}</details>
     ${sideCountersHtml(data)}
   </section>
 
