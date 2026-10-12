@@ -1582,12 +1582,15 @@ what you ruled and what is still yours to look at.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
-- **hf-discover: zero twenty minutes after the Space went live
-  (2026-10-05, filed).** Your curl returned `{"results":[]}` with the
-  Space RUNNING and tagged `mcp-server`
-  (`docs/ard-discovery/2026-10-05/hf-discover-scvd-after.json`). Too
-  soon to read as a refusal; a reminder re-runs the same read on
-  2026-10-12 from here. Nothing for your hands until then.
+- **LOOK: hf-discover, one week on (2026-10-12).** The Hub's own
+  search — the live query hf-discover makes downstream, per its
+  README — now returns `keeper-scvd/scvd-x402-verifier` for "scvd"
+  under the `mcp-server` filter (`docs/ard-discovery/2026-10-12/`).
+  One curl from your machine confirms the index itself:
+  `curl -sS -X POST https://huggingface-hf-discover.hf.space/search -H 'content-type: application/json' -d '{"query":{"text":"scvd","filter":{"type":["application/mcp-server-card+json"]}},"pageSize":10,"federation":"none"}'`
+  Paste the result; it gets filed beside the two zeros. Known limit,
+  the Hub's not ours: a purpose query ("verify x402 receipt") returns
+  nothing; the Hub search answers to names.
 
 - **The ChatGPT verifier plugin is published (2026-09-17).** The
   [publication record](registry/openai-plugin-verifier-submission.md) supersedes
