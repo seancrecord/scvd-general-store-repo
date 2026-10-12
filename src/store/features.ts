@@ -1,3 +1,4 @@
+import { ucpRecoveryPaths } from "@/lib/ucp/checkout/discovery";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY, SELLER_DECLARATIONS_PATH } from "@/store/seller-declarations";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
@@ -319,7 +320,8 @@ export const FEATURES: readonly Feature[] = [
     proposition: OPERATORS_PROPOSITION,
     for_money: OPERATORS_FOR_MONEY,
     free_first: OPERATORS_FREE_FIRST,
-    doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}"],
+    // UCP read/cancel extend the existing purchase-recovery feature.
+    doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}", ...Object.keys(ucpRecoveryPaths("", {}))],
     named_on: ["/scorers"],
     opened: OPERATORS_OPENED,
   },
