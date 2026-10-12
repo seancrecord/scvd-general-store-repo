@@ -37,6 +37,7 @@ describe("machine surfaces stay inside the reader's limit", () => {
     const paths = SURFACES.map((surface) => surface.path);
     expect(paths).toEqual([
       "/.well-known/agent-skills/scvd-personal-shopper/SKILL.md",
+      "/.well-known/agent-skills/scvd-personal-shopper/references/hosts.md",
       "/.well-known/agent-skills/scvd-personal-shopper/references/wallet.md",
       "/api/seller-declaration",
       "/calling-card/calling-card.mjs",

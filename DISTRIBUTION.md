@@ -1,5 +1,9 @@
 # SCVD distribution: channels and records
 
+## October 12 — Hermes and personal-agent entry
+
+The personal-shopper release now includes both website skill-discovery formats, canonical supporting files, host recipes and a no-spend rehearsal. [Qualification matrix](docs/AGENT_ENTRY_2026-10.md); [ClawHub metadata](registry/scvd-personal-shopper/catalog.json). An installable artifact is not a qualified payment integration. Publication/readback status stays in the [release record](research/personal-agent-release-2026-10-12/README.md).
+
 ## October 12 — personal-agent shopping
 
 The personal shopper skill is packaged at `skills/scvd-personal-shopper/` and

@@ -1163,12 +1163,14 @@ ${webmcpOriginTrialTags()}
     </header>
 
     <nav class="first-actions" data-first-actions aria-label="Start here">
-      <a class="door-cta" href="/menu">Browse the catalog</a>
-      <a class="door-cta" href="/try">Run a free preflight</a>
+      <a class="door-cta" href="/try">Check an endpoint · free</a>
+      <a class="door-cta" href="/conformance">Check a receipt · free</a>
+      <a class="door-cta" href="/menu/conformance_watch">Watch an endpoint</a>
+      <a class="door-cta" href="/operators">Get signed evidence</a>
       ${cheapest ? `<a class="door-cta" href="/menu/${escapeHtml(cheapest.id)}">Try ${escapeHtml(cheapest.name)} · ${escapeHtml(priceLabel(cheapest))}</a>` : ''}
       <a class="door-cta" href="/mcp.md">Connect through MCP</a>
     </nav>
-    <p class="shelf-more"><a href="#buy-with-agent">Buy with your agent →</a></p>
+    <p class="shelf-more"><a href="#buy-with-agent">Buy with your agent →</a> · <a href="/menu">Browse the catalog</a></p>
     <p class="shelf-more"><a href="#larger-work">Have a larger job? Compare audits, evidence reports and custom work →</a></p>
 
     <p class="menu-meta">${escapeHtml(ENDPOINT_INSPECTION_DESCRIPTION)}</p>
@@ -1252,6 +1254,7 @@ ${webmcpOriginTrialTags()}
         <label class="door-small" for="personal-shopper-prompt">Copy this into your agent:</label>
         <textarea id="personal-shopper-prompt" class="personal-shopper-prompt" readonly rows="9">${escapeHtml(personalShopperPrompt(data.base ?? "https://scvd.store"))}</textarea>
         <p class="door-small"><a class="door-cta" href="${PERSONAL_SHOPPER.path}">Read the shopping skill</a>. Payment needs a compatible wallet and an agent that can use it. Your agent should explain any setup before you fund it.</p>
+        <p class="door-small"><a class="door-cta" href="${PERSONAL_SHOPPER.hostsPath}">Choose your agent’s connection</a> — Hermes, OpenClaw, Claude, Codex and chat agents. You can ask for a no-spend rehearsal first: see the quote, missing capabilities and approvals before funding anything.</p>
         <details><summary>Install the skill</summary><p class="door-small"><code>npx skills add seancrecord/scvd-general-store-repo --skill ${PERSONAL_SHOPPER.name}</code></p></details>
         <p class="door-small">${COPY.doorHumanHandoffLead}</p>
         <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffRead)}</code></p>

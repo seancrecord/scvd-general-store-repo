@@ -44,3 +44,30 @@ support before observing it.
 [PR #1008](https://github.com/seancrecord/scvd-general-store-repo/pull/1008) contains the release. The Skills CLI also installed the complete two-file skill in a disposable directory with telemetry disabled. The rendered handoff was inspected in the browser; its label, selectable prompt and install disclosure are present. A top-of-page link points to the handoff.
 
 Automatic approval review rejected enabling auto-merge because it would merge and deploy production changes and interpreted the keeper's approval as branch/PR authorization only. No retry or bypass was attempted. Explicit keeper approval for merge/deploy is required before that action. ClawHub publication waits for the canonical public URLs to exist. CI status and publication readback remain pending.
+
+## Agent-entry extension
+
+The keeper approved the follow-through on October 12: Hermes website discovery,
+task-based front-page actions, host recipes, categorized distribution and a
+no-spend rehearsal. Details and limits: [agent entry](../../docs/AGENT_ENTRY_2026-10.md).
+
+Validation: the new discovery spec failed 3/4 before implementation (missing
+index, cross-origin reference and entry links); all four pass afterward. The
+navigation regression failed against the prior page and passes with the new
+links. The prior full-guide baseline passed before discovery-link snapshots
+were updated. Final affected suite: 79 tests across nine files; eight discovery
+and manifest Node tests; TypeScript check; both Worker bundles and MPP build
+check. The browser rendered the new first-screen actions and connection link.
+
+A real Skills CLI website install from a disposable HTTP fixture containing
+six artifacts fetched from the local HTTPS Worker installed the shopper and
+both references. Installed bytes matched the source for every shopper file;
+telemetry was disabled. This proves installer resolution against Worker-served
+artifacts, not a live production install or a Hermes payment.
+
+ClawHub 0.23.3 dry-run: would-publish, scvd-personal-shopper 1.0.0, three files,
+fingerprint f856c1a1ec0ac3852d03f5f37983fd08d132740bc7102272dec33d1c25c0ef09.
+Categories finance/integrations; topics x402/shopping/usdc/receipts/spend-limits.
+No wallet funding, signing or purchase was performed. The prior PR head passed
+all four CI shards and check; this extension requires a fresh CI run. Production
+readback and public registry inspection remain release steps.

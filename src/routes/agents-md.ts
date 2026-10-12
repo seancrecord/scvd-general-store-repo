@@ -1,3 +1,4 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DELIVERY_ORDER } from "@/store/copy/position";
 import { paymentMethod, paymentNetworkGuide } from "@/lib/payment-networks";
 import { ucpCheckoutOpen } from "@/lib/ucp/launch";
@@ -185,6 +186,14 @@ ${base}/api/bounties; the terms are on the board and further down
 this file).
 
 ${beforeYouStartSection(base, paymentConfig)}
+
+## Personal agents: connect or rehearse first
+
+Host setup and no-spend rehearsal: ${base}${PERSONAL_SHOPPER.hostsPath}.
+Skill installers can discover files at ${base}/.well-known/skills/index.json.
+An unsigned quote is free. A rehearsal reports the selected result, live terms,
+observed host capabilities, missing inputs and required approvals; it cannot
+establish settlement or grant permission. Re-check terms before a later purchase.
 
 ## Installation
 

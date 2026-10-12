@@ -50,10 +50,11 @@ interface PublishedSkill {
   /** Agent Skills name: 1–64 chars, lowercase alphanumeric and hyphens. */
   name: string;
   render(env: Env): Promise<string> | string;
+  files?: Readonly<Record<string, string>>;
 }
 
 const PUBLISHED_SKILLS: readonly PublishedSkill[] = [
-  { name: PERSONAL_SHOPPER.name, render: () => PERSONAL_SHOPPER.markdown },
+  { name: PERSONAL_SHOPPER.name, render: () => PERSONAL_SHOPPER.markdown, files: PERSONAL_SHOPPER.files },
   {
     name: "scvd-general-store",
     render: (env) => renderSkillMarkdown(env, { live: false }),
@@ -121,7 +122,33 @@ export async function agentSkillsIndex(env: Env): Promise<AgentSkillsIndex> {
   return { $schema: AGENT_SKILLS_SCHEMA, skills };
 }
 
+// Hermes and the Skills CLI use Vercel's files-based index. Keep the
+// digest-based RFC index too: these are two consumer formats over one catalog.
+export const WELL_KNOWN_SKILLS_PATH = "/.well-known/skills";
+export async function wellKnownSkillsIndex(env: Env) {
+  return { skills: await Promise.all(PUBLISHED_SKILLS.map(async (skill) => ({
+    name: skill.name,
+    description: frontmatterDescription(await skill.render(env)),
+    files: ["SKILL.md", ...Object.keys(skill.files ?? {})],
+  }))) };
+}
+
 export const agentSkillsIndexRoutes = new Hono<HonoEnv>();
+
+agentSkillsIndexRoutes.get(`${WELL_KNOWN_SKILLS_PATH}/index.json`, async (c) =>
+  c.json(await wellKnownSkillsIndex(c.env)),
+);
+
+agentSkillsIndexRoutes.get(`${WELL_KNOWN_SKILLS_PATH}/:name/*`, async (c) => {
+  const skill = PUBLISHED_SKILLS.find(row => row.name === c.req.param("name"));
+  const prefix = `${WELL_KNOWN_SKILLS_PATH}/${c.req.param("name")}/`;
+  const file = c.req.path.slice(prefix.length);
+  // Only published text is addressable; no filesystem lookup or proxy fetch.
+  const body = file === "SKILL.md" ? await skill?.render(c.env)
+    : skill?.files && Object.hasOwn(skill.files, file) ? skill.files[file] : undefined;
+  if (body === undefined) return c.json({ error: "no such skill file" }, 404);
+  return c.text(body, 200, { "Content-Type": "text/markdown; charset=utf-8" });
+});
 
 agentSkillsIndexRoutes.get(AGENT_SKILLS_INDEX_PATH, async (c) =>
   c.json(await agentSkillsIndex(c.env)),
@@ -139,6 +166,8 @@ agentSkillsIndexRoutes.get("/.well-known/agent-skills/:name/SKILL.md", async (c)
   });
 });
 
-agentSkillsIndexRoutes.get(PERSONAL_SHOPPER.walletPath, (c) =>
-  c.text(PERSONAL_SHOPPER.wallet, 200, { "Content-Type": "text/markdown; charset=utf-8" }),
-);
+for (const [file, body] of Object.entries(PERSONAL_SHOPPER.files)) {
+  agentSkillsIndexRoutes.get(`/.well-known/agent-skills/${PERSONAL_SHOPPER.name}/${file}`, (c) =>
+    c.text(body, 200, { "Content-Type": "text/markdown; charset=utf-8" }),
+  );
+}

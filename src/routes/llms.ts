@@ -491,11 +491,9 @@ Personal-agent shopping, wallet setup and approved purchases: ${base}${PERSONAL_
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
-Skills discovery index (Agent Skills Discovery RFC v0.2.0: including the
-focused x402 buyer verification skill,
-each with the SHA-256 digest of the file it points at):
-${base}/.well-known/agent-skills/index.json — the digested copies at
-\`${base}/.well-known/agent-skills/{name}/SKILL.md\`
+Skills with file lists (Hermes / Skills CLI): ${base}/.well-known/skills/index.json.
+Digest-based RFC v0.2.0 index: ${base}/.well-known/agent-skills/index.json.
+Both serve the same skills and supporting files; digested artifacts: \`${base}/.well-known/agent-skills/{name}/SKILL.md\`.
 Canonical ERC-8004 identity and endpoint-domain acknowledgment:
 ${base}/.well-known/agent-registration.json
 Public discovery records by protocol, with observation dates and limits:

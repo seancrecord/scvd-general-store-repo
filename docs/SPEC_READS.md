@@ -2966,3 +2966,10 @@ inside the exact statement. A signature establishes wallet control only, not
 host ownership. No new x402, MPP or CAIP wire compatibility is claimed; network
 identifiers are declared context, and address/network pairs are not compared.
 Host-proof file placement is SCVD's existing convention, not an external standard.
+
+## 2026-10-12 — Hermes website skills and ClawHub catalog metadata
+
+- [Hermes skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills): website discovery uses `/.well-known/skills/index.json`, entries with name/description/files; URL and GitHub installation are separate sources. Search can include skills.sh and ClawHub. Format support is not evidence of payment capability.
+- [Hermes consumer source](https://github.com/NousResearch/hermes-agent/blob/ff2d02f998f9f9e45543eea30fb935f47e4504a7/tools/skills_hub_sources.py): WellKnownSkillSource reads index entries and fetches every relative file, requiring SKILL.md. The public store returned 404 for its expected index before this change.
+- [Vercel handler types](https://github.com/vercel-labs/skills-handler/blob/e546b7fef03edff0174298007247a61c54f38851/src/types.ts): index is `{skills: [{name, description, files}]}`; no digest field required. Existing digest-based discovery remains separately available.
+- [ClawHub publishing](https://docs.openclaw.ai/clawhub/publishing): at most three categories/five topics; finance and integrations fit the shopper. Metadata is explicitly passed for this skill only. Dry-run does not validate category slugs. Reserved endorsement topics excluded. Publication may precede public visibility while review is pending.

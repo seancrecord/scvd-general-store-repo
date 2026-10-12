@@ -1,5 +1,6 @@
 import markdown from "../../skills/scvd-personal-shopper/SKILL.md";
 import wallet from "../../skills/scvd-personal-shopper/references/wallet.md";
+import hosts from "../../skills/scvd-personal-shopper/references/hosts.md";
 
 // The installed and served instructions share bytes, including relative references.
 const name = /^---\n(?:[^\n]*\n)*?name: ([a-z0-9-]+)\n/.exec(markdown)?.[1];
@@ -9,6 +10,9 @@ export const PERSONAL_SHOPPER = {
   name,
   markdown,
   wallet,
+  hosts,
+  files: { "references/wallet.md": wallet, "references/hosts.md": hosts } as Readonly<Record<string, string>>,
+  hostsPath: `/.well-known/agent-skills/${name}/references/hosts.md`,
   path: `/.well-known/agent-skills/${name}/SKILL.md`,
   walletPath: `/.well-known/agent-skills/${name}/references/wallet.md`,
 };

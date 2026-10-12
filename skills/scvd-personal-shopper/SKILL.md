@@ -11,6 +11,10 @@ Help the user accomplish their stated task at https://scvd.store. Explain the
 result they will get before discussing wallets. Reading the menu and obtaining
 an unsigned quote are free. A signed payment spends real money.
 
+For host-specific installation, capability checks, or a no-spend rehearsal,
+read [connection guidance](references/hosts.md). On a rehearsal request, stop
+with the plan; do not proceed into wallet setup, funding or payment.
+
 ## Choose something useful
 
 Read https://scvd.store/menu.json fresh. Match the user's need to the item's

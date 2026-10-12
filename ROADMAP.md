@@ -1,5 +1,9 @@
 # ROADMAP — September 2026
 
+## October 12 — agent entry follow-through
+
+Approved: support Hermes’s files-based website skill discovery, clearer first-screen task routes, host installation guidance, ClawHub categories/topics, and a no-spend rehearsal in the personal shopper. Implementation and qualification limits: [agent entry](docs/AGENT_ENTRY_2026-10.md). Release remains tracked with the personal-shopper PR.
+
 ## October 12 — approved personal-agent shopping path
 
 Keeper approved the reviewed personal-agent skill and distribution plan.

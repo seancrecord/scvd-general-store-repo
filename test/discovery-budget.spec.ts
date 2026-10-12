@@ -45,6 +45,8 @@ const BASE = "https://scvd.store";
  * instruments drift apart.
  */
 const CEILINGS: Record<string, number> = {
+  "/.well-known/skills/index.json": 8000,
+  [PERSONAL_SHOPPER.hostsPath]: MACHINE_SURFACE_CEILINGS.find(surface => surface.path === PERSONAL_SHOPPER.hostsPath)!.budget,
   // The reference has the same reading budget wherever it is measured.
   [PERSONAL_SHOPPER.walletPath]: MACHINE_SURFACE_CEILINGS.find(surface => surface.path === PERSONAL_SHOPPER.walletPath)!.budget,
   // The two the x402 indexers fetch. Production 2026-09-15: 334 KB and
@@ -120,7 +122,7 @@ const DISCOVERY_WALL_BYTES = 512_000;
  * path, so its documents are enumerated from the skills index and held
  * to one ceiling each. The focused verification skill is ~10 KB.
  */
-const PARAMETERISED = new Set(["/.well-known/agent-skills/:name/SKILL.md"]);
+const PARAMETERISED = new Set(["/.well-known/agent-skills/:name/SKILL.md", "/.well-known/skills/:name/*"]);
 const SKILL_DOCUMENT_CEILING = 64_000;
 
 describe("the discovery documents stay small enough to be read", () => {
@@ -209,6 +211,18 @@ describe("the discovery documents stay small enough to be read", () => {
     // The excluded list may only name documents that are actually served.
     for (const path of deliberatelyExcluded) {
       if (path.startsWith("/.well-known")) expect(served, `${path} is excluded but no longer served`).toContain(path);
+    }
+  });
+
+  it("bounds every installable file enumerated by the consumer index", async () => {
+    const response = await SELF.fetch(`${BASE}/.well-known/skills/index.json`);
+    const index = await response.json() as { skills: Array<{name: string; files: string[]}> };
+    expect(index.skills.length).toBeGreaterThan(0);
+    for (const skill of index.skills) for (const file of skill.files) {
+      const path = `/.well-known/skills/${skill.name}/${file}`;
+      const artifact = await SELF.fetch(`${BASE}${path}`);
+      expect(artifact.status, path).toBe(200);
+      expect(new TextEncoder().encode(await artifact.text()).length, path).toBeLessThanOrEqual(SKILL_DOCUMENT_CEILING);
     }
   });
 

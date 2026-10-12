@@ -1,3 +1,4 @@
+// 2026-10-12: add the consumer files index beside the digested index; HEAD baseline passed before re-pinning.
 import { env, SELF } from "cloudflare:test";
 import type { Env } from "@/types";
 import { describe, expect, it } from "vitest";
@@ -1218,7 +1219,7 @@ const BASE = "https://scvd.store";
 // 2026-10-12: personal shopper links and removal of redundant navigation prose.
 // Restoring llms.ts from the parent reproduces both prior pins (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1c6e7f29eb6b89f017b95fa41094c1540c8fe6d6309b4822600c0b18f3a7421e";
+  "989f4b9db40115c96f2d85c5e8f80cf57366f7ef12a3f12bef1c8f989cfcec13";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1321,7 +1322,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "0117a7a5079c7ad6c9478a2e37146791e9a3f5fbae3914569308da3c41023d08",
+      "ee358d8f83d6e0d8a2fd7e18e15c5428f8361fb695e9d6502ff926a38211a22e",
     );
   });
 
