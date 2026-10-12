@@ -1,8 +1,9 @@
+import { ARC_USDC, GATEWAY_EXTRA, GATEWAY_WINDOW_SECONDS, ArcGatewayScheme, ArcGatewayFacilitator, type GatewayPayment } from "@/lib/arc-gateway";
 import { escapeHtml } from "@/lib/sanitize";
 import { commissionGuidance } from "@/lib/buyer-guidance";
 import type { ObservationCheckpoint } from "@/services/purchase-observation";
 import { publicationCheckout } from "@/lib/publication-checkout";
-import { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, basePayTo, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo, type PaymentNetworkConfig } from "@/lib/payment-networks";
+import { ARC_NETWORK, arcPayTo, BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, basePayTo, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo, type PaymentNetworkConfig } from "@/lib/payment-networks";
 export { BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK, ARBITRUM_NETWORK, WORLD_NETWORK, acceptedNetworks, polygonPayTo, solanaPayTo, arbitrumPayTo, worldPayTo } from "@/lib/payment-networks";
 import { createFacilitatorConfig } from "@coinbase/x402";
 import {
@@ -588,6 +589,9 @@ export function railAccepts(env: PaymentNetworkConfig, tiersUsdc: number[]): Pay
       });
     }
   }
+  const arc = arcPayTo(env);
+  if (arc) for (const tier of tiersUsdc) accepts.push({ scheme: "exact", network: ARC_NETWORK, payTo: arc,
+    price: { amount: usdcToAtomic(tier), asset: ARC_USDC }, maxTimeoutSeconds: GATEWAY_WINDOW_SECONDS, extra: { ...GATEWAY_EXTRA } });
   return accepts;
 }
 
@@ -632,10 +636,11 @@ export interface ManifestAccept {
    * beside the transfer method the authorization is built for. See
    * EVM_TRANSFER_METHOD.
    */
-  extra?: { name: string; version: string; assetTransferMethod: string };
+  extra?: { name: string; version: string; assetTransferMethod?: string; verifyingContract?: string; minValiditySeconds?: number };
 }
 
 const USDC_ASSET_BY_NETWORK: Record<string, string> = {
+  [ARC_NETWORK]: ARC_USDC,
   [BASE_NETWORK]: BASE_USDC,
   [POLYGON_NETWORK]: POLYGON_USDC,
   [ARBITRUM_NETWORK]: ARBITRUM_USDC,
@@ -682,7 +687,8 @@ export function manifestAccepts(
       // railAccepts sets this on every entry it builds.
       maxTimeoutSeconds: option.maxTimeoutSeconds ?? SIGNING_WINDOW_SECONDS,
     };
-    if (network.startsWith("eip155:")) {
+    if (network === ARC_NETWORK) entry.extra = { ...GATEWAY_EXTRA };
+    else if (network.startsWith("eip155:")) {
       entry.extra = {
         name: network === WORLD_NETWORK ? "USDC" : EVM_USDC_DOMAIN.name,
         version: EVM_USDC_DOMAIN.version,
@@ -1559,7 +1565,7 @@ export interface PaymentStack {
    * no decline bookkeeping and no settlement rules live on it. Those
    * stay downstream where every protocol shares them.
    */
-  facilitator: KvWarmFacilitatorClient;
+  facilitator: HTTPFacilitatorClient;
 }
 
 /**
@@ -1662,14 +1668,16 @@ let cachedStack: PaymentStack | undefined;
 export function getPaymentStack(env: Env): PaymentStack {
   if (!cachedStack) {
     installBazaarObserver();
-    const facilitator = new KvWarmFacilitatorClient(
+    const standard = new KvWarmFacilitatorClient(
       createFacilitatorConfig(env.CDP_API_KEY_ID, env.CDP_API_KEY_SECRET),
       env.COUNTERS,
     );
+    const facilitator = arcPayTo(env) ? new ArcGatewayFacilitator(standard) : standard;
     const resourceServer = new x402ResourceServer(facilitator).register(
       BASE_NETWORK,
       new ExactEvmScheme(),
     );
+    if (arcPayTo(env)) resourceServer.register(ARC_NETWORK, new ArcGatewayScheme());
     if (polygonPayTo(env)) {
       // Same scheme class as Base — @x402/evm's own table carries the
       // Polygon USDC deployment, so "$X" maps to the right contract
@@ -1898,6 +1906,11 @@ export async function processSettlementWithRetry(
   ...args: SettlementArgs
 ): Promise<Awaited<ReturnType<x402HTTPResourceServer["processSettlement"]>>> {
   const first = await httpServer.processSettlement(...args);
+  if (args[1].network === ARC_NETWORK) {
+    if (!first.success && first.errorReason !== "gateway_payment_declined") throw new SettlementUnknown(ARC_NETWORK);
+    if (first.success && (first.network !== ARC_NETWORK || !/^gateway:[0-9a-f]{64}$/.test(first.transaction))) throw new InvalidSettlementReceipt(ARC_NETWORK);
+    return first; // Ambiguous Gateway calls are reconciled by nonce, never resubmitted here.
+  }
   if (first.success || !isTransientSettleFailure(first.errorReason)) {
     return checkedSettlement(first, args[1].network);
   }
@@ -2006,6 +2019,8 @@ export async function rescueAmbiguousSettle(
 
 /** What the payment gate hands to the buy handler once money has settled. */
 export interface SettledPayment {
+  /** Gateway acceptance; transaction is a purchase reference, never a chain hash. */
+  gateway?: GatewayPayment;
   paidUsdc: number;
   tipUsdc: number;
   payer?: string;

@@ -1,3 +1,4 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { monthsSinceOpening } from "@/lib/metrics";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -102,7 +103,8 @@ export function couldBeNative(cert: Pick<Certificate, "network" | "payer" | "set
  * SINCE THE WHOLE STORE (2026-09-18) any Base certificate may be native,
  * not only the pilot's one product; certificates on the other rails
  * cannot be, and are x402 without a read. */
-export async function certificateProtocol(env: Env, cert: Certificate, context: AccountingContext = {}): Promise<"x402" | "mpp" | "unavailable"> {
+export async function certificateProtocol(env: Env, cert: Certificate, context: AccountingContext = {}): Promise<"x402" | "mpp" | "gateway" | "unavailable"> {
+  if (cert.gateway_payment || cert.network === ARC_NETWORK) return "gateway";
   if (cert.network !== BASE_NETWORK) return "x402";
   if (!cert.payer || !cert.settlement_tx) return "unavailable";
   /*

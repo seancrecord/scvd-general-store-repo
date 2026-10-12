@@ -21,7 +21,8 @@ export interface PurchaseInspection {
   created_at: string;
   path: string;
   door: "http" | "mcp" | "ucp";
-  payment_state: PurchaseIntent["state"];
+  payment_state: PurchaseIntent["state"] | import("@/lib/arc-gateway").GatewayState;
+  gateway_payment?: import("@/lib/arc-gateway").GatewayPayment;
   transaction: string | null;
   delivery_state: "delivered" | "order_created" | "not_established_by_this_record";
   house: boolean | null;
@@ -67,16 +68,18 @@ export async function inspectPurchase(env: Env, id: string): Promise<InspectionR
       network: record.terms.network, asset: record.terms.asset, currency: metadata?.symbol ?? null,
       decimals: metadata?.decimals ?? null, amount_atomic: record.terms.amount,
       payer: record.payer, recipient: record.terms.payTo, created_at: record.created_at, path: record.path, door: record.door,
-      payment_state: record.state, transaction: record.payment?.transaction ?? null,
+      payment_state: record.payment?.gateway?.state ?? record.state,
+      ...(record.payment?.gateway ? { gateway_payment: record.payment.gateway } : {}),
+      transaction: record.payment?.gateway ? record.payment.gateway.batch_transaction ?? null : record.payment?.transaction ?? null,
       delivery_state: delivered ? record.item?.fulfillment === "human_queue" ? "order_created" : "delivered" : "not_established_by_this_record",
-      house: protocol === "mpp" ? record.mpp!.house : null,
+      house: record.payment?.gateway ? record.gateway_house ?? null : protocol === "mpp" ? record.mpp!.house : null,
       accounting_recorded: protocol === "mpp" ? record.mpp!.accounted === true : null,
       ledger: { state: "not_inspected" }, accounting_check: "not_inspected" };
   } catch {
     return failure(503, "purchase_inspection_unavailable", "The purchase record could not be read or validated. No absence or payment outcome is inferred.");
   }
   if (purchase.protocol === "x402") return { status: 200, body: { code: "purchase_inspected", read_at, purchase,
-    note: "Retained x402 purchase facts. Legacy accounting is not inspected by this lookup; no accounting success is inferred from delivery." } };
+    note: record.payment?.gateway ? "Gateway purchase facts; confirmation comes from Circle transfer history. The Gateway desk holds published accounting rows." : "Retained x402 purchase facts. Legacy accounting is not inspected by this lookup; no accounting success is inferred from delivery." } };
   const month = record.created_at.slice(0, 7);
   try {
     if (!env.COUNTER_LEDGER) throw new Error("Ledger unavailable");

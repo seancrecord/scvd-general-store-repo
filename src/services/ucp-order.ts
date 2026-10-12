@@ -113,6 +113,7 @@ function storedOrderFrom(
       network: purchase.payment.network ?? purchase.terms.network,
       transaction: purchase.payment.transaction,
       ...(purchase.payment.payer ? { payer: purchase.payment.payer } : {}),
+      ...(purchase.payment.gateway ? { gateway: purchase.payment.gateway } : {}),
       paid_usdc: purchase.payment.paidUsdc,
       tip_usdc: purchase.payment.tipUsdc,
     },

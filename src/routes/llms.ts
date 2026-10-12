@@ -785,7 +785,7 @@ with a badge at \`${base}/badges/{patron_number}.svg\`, verify anything at
 ${base}/.well-known/scvd-signing-key.
 
 WHAT THE CERTIFICATE BINDS, inside the signed bytes rather than beside
-them: cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
+them (Gateway certificates instead sign accepted_usdc and gateway_payment at issue, with later batch state on private purchase status): cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
 not the tip), asset, network, payer, and settlement_tx. The payer is
 the paying wallet address — chain-verifiable by anyone, unlike the
 optional name, which is whatever the buyer chose. settlement_tx is the

@@ -61,6 +61,7 @@ export type AdminTab =
    * that never needed a pitch.
    */
   | "buyers"
+  | "gateway"
   | "mpp-sales"
   /**
    * THE DISCLOSURE CENSUS (2026-09-18): who tells us what at the
@@ -180,6 +181,7 @@ export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string
   bounties: { title: "The bounty board", what: "The paying wallet, the week's budget, and where every claim went." },
   referrals: { title: "Word of mouth", what: "Who said our name, and who carried a link. Two different mechanisms." },
   buyers: { title: "The buyers", what: "Every outside wallet holding a certificate, and what it bought." },
+  "gateway": { title: "Gateway payments", what: "Acceptance and batch settlement, one record per purchase." },
   "mpp-sales": { title: "MPP sales", what: "Every native-protocol sale as a row: who paid, on which settlement, for what." },
   disclosure: { title: "What they told us", what: "Who fills the optional block at the door, and who ignores it." },
   signals: { title: "Buyer signals", what: "What the till sees without asking. Built with its own off switch; still read." },
@@ -273,6 +275,7 @@ const READING_SHELVES: readonly {
       { tab: "buyers", href: "/admin/buyers", label: "The buyers" },
       // The native-protocol sales as rows (2026-09-28): the take counted
       // them and nothing showed who, which transaction, or what.
+      { tab: "gateway", href: "/admin/gateway", label: "Gateway payments" },
       { tab: "mpp-sales", href: "/admin/mpp-sales", label: "MPP sales" },
       // Promoted to the nav 2026-09-04: the keeper could not find it. The
       // 08-05 consolidation left it reachable only from a footnote on the

@@ -1097,3 +1097,13 @@ test("a delivered Spot Check visibly offers an optional human note and same-orig
   assert.ok(!nodes.some(row=>row.href?.includes("elsewhere.example")));
   assert.ok(nodes.every(row=>Object.keys(row.listeners).length===0),"nothing sends or buys automatically");
 });
+
+test('Gateway signing uses the offered contract and full batch validity window', () => {
+  const accept = { scheme: 'exact', network: 'eip155:5042', asset: USDC_BASE, payTo: '0x3333333333333333333333333333333333333333', amount: '10000', maxTimeoutSeconds: 604900,
+    extra: { name: 'GatewayWalletBatched', version: '1', verifyingContract: '0x77777777dcc4d5a8b6e418fd04d8997ef11000ee', minValiditySeconds: 604800 } };
+  assert.deepEqual(acceptProblems(accept, 5042), []);
+  const authorization = buildAuthorization({ from: '0x2222222222222222222222222222222222222222', accept, nowSeconds: 1000, nonce: `0x${'aa'.repeat(32)}` });
+  assert.equal(authorization.validBefore, '605900');
+  assert.equal(buildTypedData(accept, authorization).domain.verifyingContract, accept.extra.verifyingContract);
+  assert.ok(acceptProblems({ ...accept, extra: { ...accept.extra, verifyingContract: 'bad' } }, 5042).length);
+});

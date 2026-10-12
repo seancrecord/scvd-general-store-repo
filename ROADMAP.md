@@ -1,5 +1,18 @@
 # ROADMAP — September 2026
 
+## October 12 — Arc checkout and historical settlement audit
+
+Keeper approved both, with full checkout rather than a pilot. Arc integration
+is implemented locally on `codex/arc-gateway-checkout`; the keeper supplied the recipient
+and both Worker configs now carry it. Release remains pending validation and
+the normal release gate. [Implementation and checks](docs/ARC_GATEWAY_2026-10.md).
+
+The historical receipt-and-adjustment audit is complete within the retained
+evidence. A stale Solana payer alias exists, but does not explain the one-count
+counter excess. No refund or counter adjustment is justified by this audit;
+retain the warning. [Evidence and limits](research/settle-reconciliation-2026-10-12/README.md).
+
+
 ## October 10 — admin follow-through
 
 **Implemented:** the counter now puts paid work, unanswered

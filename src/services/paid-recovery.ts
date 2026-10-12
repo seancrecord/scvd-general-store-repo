@@ -1,3 +1,5 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
+import { gatewayNeedsCheck, publishGatewaySale, reconcileGatewaySale } from "@/services/gateway-sales";
 import { LaborCapacityStore, laborCapacity } from "@/services/labor-reservations";
 import { PatronageRecoveryStore, type PatronageGrantInput } from "@/services/patronage-recovery";
 import { LaunchCheckStore } from "@/services/launch-check-recovery";
@@ -260,7 +262,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     return this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<PurchaseIntent>("purchase");
       if (prior) {
-        if ((!prior.delivery || (prior.mpp && !prior.mpp.accounted)) && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+        if ((!prior.delivery || gatewayNeedsCheck(prior.payment?.gateway) || (prior.mpp && !prior.mpp.accounted)) && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
         return { started: false, record: JSON.stringify(prior) };
       }
       if (proposal.observation_digest) {
@@ -376,6 +378,10 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       await txn.put("purchase", next);
       return next;
     });
+    if (record.payment?.gateway) {
+      await publishGatewaySale(this.env, record);
+      await this.schedulePurchaseRecovery();
+    }
     // Persist definitive non-payment before freeing anything it holds: only
     // once the not_settled record above is durable, and only for a state
     // THIS store confirmed — a delayed not_settled writer against an already settled
@@ -422,7 +428,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   async schedulePurchaseRecovery(): Promise<void> {
     await this.ctx.storage.transaction(async (txn) => {
       const record = await txn.get<PurchaseIntent>("purchase");
-      if (record && (!record.delivery || (record.mpp && !record.mpp.accounted)) && record.state !== "not_settled" && !await txn.getAlarm()) {
+      if (record && (!record.delivery || gatewayNeedsCheck(record.payment?.gateway) || (record.mpp && !record.mpp.accounted)) && record.state !== "not_settled" && !await txn.getAlarm()) {
         await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
       }
     });
@@ -431,14 +437,32 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   async alarm(): Promise<void> {
     if (await this.watches.repair()) return;
     if (await this.patronage.repair()) return;
-    const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
+    let record = await this.ctx.storage.get<PurchaseIntent>("purchase");
     if (!record || record.state === "not_settled") return;
+    if (record.terms.network === ARC_NETWORK) {
+      // Re-arm before Circle I/O, including after goods have been delivered.
+      await this.ctx.storage.setAlarm(purchaseRecoveryAlarmAt(300_000));
+      try {
+        const next = await reconcileGatewaySale(this.env, record);
+        record = await this.ctx.storage.transaction(async txn => {
+          const current = await txn.get<PurchaseIntent>("purchase");
+          if (!current) throw new Error("Gateway purchase disappeared");
+          if (next.state === "unknown" && current.state !== "unknown") return current;
+          const state = current.state === "settled" ? current.state : next.state;
+          const merged = { ...current, state, ...(next.payment ? { payment: next.payment } : {}) };
+          await txn.put("purchase", merged);
+          return merged;
+        });
+      } catch { return; }
+      if (record.state === "not_settled") { await this.updatePurchase({}); await this.ctx.storage.deleteAlarm(); return; }
+      if (record.state === "unknown") return;
+    }
     if (record.delivery) {
       if (record.mpp && !record.mpp.accounted) {
         await this.ctx.storage.setAlarm(purchaseRecoveryAlarmAt(300_000));
         await this.accountMppPurchase();
       }
-      await this.ctx.storage.deleteAlarm();
+      if (!gatewayNeedsCheck(record.payment?.gateway)) await this.ctx.storage.deleteAlarm();
       return;
     }
     // Unsupported goods/unknown rails retain their record for the delivery
@@ -473,7 +497,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
         const current = await txn.get<PurchaseIntent>("purchase");
         if (!current || current.state !== "settled") return;
         await txn.put("purchase", { ...current, delivery });
-        await txn.deleteAlarm();
+        if (!gatewayNeedsCheck(current.payment?.gateway)) await txn.deleteAlarm();
       });
       // The status handle now retrieves the good. Clear the old desk only
       // after that durable result exists; bookkeeping cannot block retrieval.

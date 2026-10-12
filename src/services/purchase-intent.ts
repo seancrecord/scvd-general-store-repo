@@ -1,3 +1,6 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
+import { isHouseTraffic } from "@/lib/channel";
+import { isGatewayFinal } from "@/lib/arc-gateway";
 import { x402PurchasePayment, settlementPurchaseIdentity, assertPurchasePayment, type PurchasePayment, type PurchaseProtocol } from "@/lib/purchase-payment";
 import { orderStatusBody } from "@/lib/order-status";
 import { laborCapacity } from "@/services/labor-reservations";
@@ -71,6 +74,7 @@ export interface PurchaseIntent {
   reconciliation?: { start_block?: number; next_block?: number; before_signature?: string; checked_at: string };
   delivery?: Record<string, unknown>;
   /** Retained before submission; bookkeeping must survive delivery and lost acknowledgements. */
+  gateway_house?: boolean;
   mpp?: { challenge_id: string; house: boolean; accounted?: true };
 
 }
@@ -124,15 +128,16 @@ export function purchaseProtocol(record: PurchaseIntent): PurchaseProtocol {
 export function purchaseStatus(record: PurchaseIntent) {
   const delivery = record.delivery ?? publicationDelivery(record);
   const pending = !delivery && record.state !== "not_settled";
-  return { purchase_id: record.id, payment_protocol: purchaseProtocol(record), payment_state: record.state,
+  return { purchase_id: record.id, payment_protocol: purchaseProtocol(record), payment_state: record.payment?.gateway ? record.payment.gateway.state : record.state,
+    ...(record.payment?.gateway ? { gateway_payment: record.payment.gateway } : {}),
     settlement_attempted: false,
     recovery_state: delivery ? "ready" : pending ? "pending" : "not_settled",
     next_action: delivery ? "use_fulfillment" : pending ? "read_purchase_status" : "review_unsettled_purchase",
     retry_after_seconds: pending ? PURCHASE_STATUS_POLL_SECONDS : null,
-    charged: record.state === "unknown" ? null : record.state === "settled",
+    charged: record.payment?.gateway ? (isGatewayFinal(record.payment.gateway) ? true : record.payment.gateway.state === "failed" ? false : null) : record.state === "unknown" ? null : record.state === "settled",
     path: record.path, door: record.door, request: record.request,
     terms: record.terms, created_at: record.created_at,
-    transaction: record.payment?.transaction ?? null,
+    transaction: record.payment?.gateway ? record.payment.gateway.batch_transaction ?? null : record.payment?.transaction ?? null,
     // A saved settlement is not evidence of delivery. Artifact recovery follows
     // the existing transaction journal; this status never calls a cert a good.
     delivery_state: delivery ? (record.item?.fulfillment === "human_queue" ? "order_created" : "delivered") : "not_established_by_this_record",
@@ -281,6 +286,7 @@ type PurchaseInput = {
   idempotency?: { surface: string; key: string };
   terms: PaymentRequirements; request: string; item?: MenuItem; commission?: CommissionPurchase; publication?: PublicationSnapshot;
   mpp?: PurchaseIntent["mpp"];
+  gateway_house?: boolean;
 };
 
 /** Called only after x402 verification, at the last seam before settlement. */
@@ -329,6 +335,7 @@ export async function beginVerifiedPurchaseIntent(env: Env, input: PurchaseInput
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 2, id,
       payment_context: input.payment, request_digest: requestDigest,
       ...(input.mpp ? { mpp: input.mpp } : {}),
+      ...(input.terms.network === ARC_NETWORK ? { gateway_house: input.gateway_house ?? isHouseTraffic(env, { payer }) } : {}),
       token: crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", ""),
       path: input.path, door: input.door, payer, terms: input.terms, request: input.request,
       payment_proof: input.payment.proof_digest,

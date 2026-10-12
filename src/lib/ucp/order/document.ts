@@ -37,6 +37,7 @@ export interface StoredUcpOrder {
   line_titles: string[];
   /** The settlement as the purchase record holds it. */
   settlement: {
+    gateway?: import("@/lib/arc-gateway").GatewayPayment;
     purchase_id: string;
     network: string;
     transaction: string;
@@ -148,14 +149,19 @@ export function orderDocument(
               line_items: order.lines.map((line, index) => ({ id: `li_${index + 1}`, quantity: line.quantity })),
               description:
                 order.fulfillment.kind === "instant"
-                  ? "Delivered at settlement: the goods are in this order."
+                  ? order.settlement.gateway ? "Delivered after Gateway acceptance; batch settlement is tracked separately." : "Delivered at settlement: the goods are in this order."
                   : "The keeper completed the work-order this order references.",
             },
           ]
         : [],
     },
     "store.scvd": {
-      settlement: order.settlement,
+      settlement: order.settlement.gateway ? {
+        purchase_id: order.settlement.purchase_id, network: order.settlement.network,
+        payer: order.settlement.payer, accepted_usdc: order.settlement.paid_usdc,
+        gateway_payment_at_issue: order.settlement.gateway,
+        note: "Acceptance at issue time. Read the private purchase status for later batch settlement.",
+      } : order.settlement,
       created_at: order.created_at,
       lines: order.lines,
       ...(order.fulfillment.kind === "human_queue"

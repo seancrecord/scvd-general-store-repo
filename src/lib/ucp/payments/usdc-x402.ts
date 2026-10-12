@@ -1,3 +1,5 @@
+import { ARC_USDC } from "@/lib/arc-gateway";
+import { arcPayTo } from "@/lib/payment-networks";
 import { ARBITRUM_USDC, BASE_USDC, POLYGON_USDC, WORLD_USDC } from "@/lib/base-rpc";
 import {
   arbitrumPayTo,
@@ -80,6 +82,7 @@ export interface UsdcHandlerInstance {
  * side formats an address of its own.
  */
 const RAIL_ASSETS: Record<string, string> = {
+  arc: ARC_USDC,
   base: BASE_USDC,
   polygon: POLYGON_USDC,
   arbitrum: ARBITRUM_USDC,
@@ -103,9 +106,10 @@ const RAIL_ASSETS: Record<string, string> = {
  * the five.
  */
 export const FINALITY_NOTE =
-  "There is no storewide confirmation count. Each instance publishes what settled means on its own rail: the EVM rails reconcile against that chain's own `finalized` block tag, and Solana is read at the `confirmed` commitment with the transaction's error state checked. Five chains do not share one number.";
+  "There is no storewide confirmation count. Each instance publishes what settled means on its own rail: the EVM rails reconcile against that chain's own `finalized` block tag, and Solana is read at the `confirmed` commitment with the transaction's error state checked. Gateway acceptance is a separate state from batch settlement.";
 
 const RAIL_FINALITY: Record<string, { model: string; accepted_at: string }> = {
+  arc: { model: "Circle Gateway batched settlement", accepted_at: "Goods are delivered after Gateway acceptance. Batch finality is separately read from Circle transfer history; confirmed or completed transfers are accounted as settled. The initial receipt does not establish an on-chain transfer." },
   base: {
     model: "OP-stack rollup with Ethereum-backed finality",
     accepted_at:
@@ -134,6 +138,7 @@ const RAIL_FINALITY: Record<string, { model: string; accepted_at: string }> = {
 };
 
 function railPayTo(env: PaymentNetworkConfig, key: string): string | null {
+  if (key === "arc") return arcPayTo(env);
   if (key === "base") return basePayTo(env);
   if (key === "polygon") return polygonPayTo(env);
   if (key === "arbitrum") return arbitrumPayTo(env);

@@ -25,6 +25,7 @@ export function orderStatusBody(
 ): Record<string, unknown> {
   const response: Record<string, unknown> = {
     ...humanOrderEvidence(order),
+    ...(order.gateway_payment_at_issue ? { gateway_payment_at_issue: order.gateway_payment_at_issue, payment_note: "Gateway acceptance is recorded at issue. Read private purchase status for later batch settlement before requesting or paying a refund." } : {}),
     order_id: order.order_id,
     item_id: order.item_id,
     item_name: order.item_name,
@@ -82,8 +83,8 @@ export function orderStatusBody(
       due_at: new Date(due).toISOString(),
       hours_late: hoursLate,
       kind: finishedAt ? "delivered_late" : "still_open",
-      owed_usdc: order.paid_usdc,
-      note: finishedAt
+      ...(order.gateway_payment_at_issue ? { refund_ceiling_usdc: order.paid_usdc, settlement_check_required: true } : { owed_usdc: order.paid_usdc }),
+      note: order.gateway_payment_at_issue ? "The promised window was missed. Check the private purchase settlement before refunding; only an amount actually charged can be refunded." : finishedAt
         ? "This was delivered after its promised window. The promise says a missed window earns the money back; delivering eventually does not discharge it. You are owed a refund and you do not have to ask for it."
         : "This is past its promised window and nothing has been delivered. You are owed a refund and you do not have to ask for it.",
       how_it_gets_paid:

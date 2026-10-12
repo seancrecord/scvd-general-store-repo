@@ -53,20 +53,20 @@ export async function revenueBreakdown(env: Env, receipts: TaxRow[], receiptsTru
   const purchases = await Promise.all([...ids].slice(0, REVENUE_PURCHASE_CAP).map(id => inspectPurchase(env, id).catch(() => null)));
   const observed = purchases.flatMap(reading => {
     const p = reading?.body.purchase;
-    if (!reading || reading.status !== 200 || !p || p.payment_state !== "settled" || !p.transaction ||
+    if (!reading || reading.status !== 200 || !p || !["settled", "confirmed", "completed"].includes(p.payment_state) || !p.transaction ||
       (p.protocol === "mpp" && p.ledger.state !== "matched")) { result.incomplete = true; return []; }
     result.study_purchases_inspected++;
     return [p];
   });
   for (const row of receipts) {
     if (row.row_type !== "sale") continue; // Refunds have no reliable per-purchase join; show them separately.
-    const match = observed.some(p => p.transaction === row.settlement_tx && p.network === row.network && p.payer === row.payer &&
+    const match = observed.some(p => (!row.purchase_id || p.purchase_id === row.purchase_id) && p.transaction === row.settlement_tx && p.network === row.network && p.payer === row.payer &&
       p.path === `/api/buy/${row.item}` && p.currency === "USDC" && p.decimals !== null &&
       Number(formatUnits(BigInt(p.amount_atomic), p.decimals)) === row.amount_usdc);
     const bucket = row.house_flagged === "house" ? result.house : row.house_flagged === "unknown" ? result.unknown_payer :
       match ? result.research : result.outside_unlinked;
     bucket.sales++;
-    bucket.usdc += row.amount_usdc + row.tip_usdc;
+    bucket.usdc += row.amount_usdc + (row.payment_protocol === "x402-gateway" ? 0 : row.tip_usdc);
   }
   return result;
 }

@@ -1,5 +1,42 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-12 — Arc Gateway checkout
+
+Read Circle's primary [seller integration](https://developers.circle.com/gateway-nanopayments/howtos/x402-seller),
+[buyer integration](https://developers.circle.com/gateway-nanopayments/howtos/x402-buyer),
+[seller reconciliation](https://developers.circle.com/gateway-nanopayments/howtos/x402-seller-reconciliation),
+[batched settlement](https://developers.circle.com/gateway-nanopayments/concepts/batched-settlement),
+[supported networks](https://developers.circle.com/gateway-nanopayments/supported-networks),
+[EIP-3009 signing](https://developers.circle.com/gateway-nanopayments/howtos/eip-3009-signing),
+and [SDK documentation](https://developers.circle.com/sdks/gateway-nanopayments-sdk).
+Also inspected the published `@circle-fin/x402-batching` 3.5.0 package without
+installing it. The implementation uses the existing x402 client interface and
+EVM scheme, with no new signing dependency.
+
+The live mainnet `/v1/x402/supported` response from
+`https://gateway-api.circle.com` supplies Arc `eip155:5042`, `exact`, and
+`extra.name=GatewayWalletBatched`, `version=1`, verifying contract
+`0x77777777dcc4d5a8b6e418fd04d8997ef11000ee`, minimum validity 604800 seconds.
+The signing contract differs from USDC's asset address
+`0x3600000000000000000000000000000000000000`. Arc's native gas representation
+uses 18 decimals; its ERC-20 payment interface uses six. Some prose examples
+show a shorter validity; the live supported metadata and SDK agree on seven
+days. The quote uses that minimum plus 100 seconds.
+
+The transfer API's amount unit was checked against a public completed transfer,
+`707fbaaf-779a-4e27-ab0f-a86892d26903`, and its Arc batch transaction
+`0x3c25182cae376935ecd7b8bbee9211023f79ddcf3c978b98d86c4bf7eab737f7`:
+API amount `500` corresponds to a 500-atomic-unit recipient credit. No payment
+was made by this task. API acceptance, per-transfer confirmation, and receipt
+of a batch on chain are distinct facts. A shared batch hash cannot be used as
+an individual purchase identity. Read-only transfer lookup matches nonce,
+payer, recipient, both networks, token and exact atomic amount.
+
+Source-chain balance selection constrains a Gateway buyer. This does not prove
+that every Circle-wallet buyer is Arc-only or cannot pay another way. The
+keeper's explicit implementation decision is the authority to add this rail.
+
+
 ## 2026-10-07 — keeper-supplied discovery placements
 
 Opened the six public listing pages supplied by the keeper: ChatGPT, Deside,

@@ -1,3 +1,5 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
+import { gatewayPayment, gatewayCharged } from "@/lib/arc-gateway";
 import { recordPaymentOperation } from "@/lib/payment-operations";
 import { storeLinks } from "@/lib/store-links";
 import { mppPaymentHeader, nativeOfferAdvertised } from "@/lib/mpp-checkout-capability";
@@ -446,7 +448,7 @@ async function enrich402Body(
               ? {
                   payload_template: template,
                   payload_template_note:
-                    "Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL — standard base64 alphabet, one unbroken line (`base64 -w0` from a shell: GNU base64 wraps at 76 columns by default and curl sends only the first line). Everything else is already correct for THIS challenge and should not be rebuilt — `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), the chainId of the accepted entry's own network (eip155:8453 \u2192 8453, eip155:137 \u2192 137), and verifyingContract = accepted.asset — details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template covers the EVM rails (eip155:*) only.",
+                    "Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL — standard base64 alphabet, one unbroken line (`base64 -w0` from a shell: GNU base64 wraps at 76 columns by default and curl sends only the first line). Everything else is already correct for THIS challenge and should not be rebuilt — `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), the chainId of the accepted entry's own network (eip155:8453 \u2192 8453, eip155:137 \u2192 137), and verifyingContract = accepted.extra.verifyingContract when present (Circle Gateway), otherwise accepted.asset — details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template covers the EVM rails (eip155:*) only.",
                 }
               : {};
           })(),
@@ -924,7 +926,7 @@ export async function signedRecoveryResponse(c: Context<HonoEnv>, recovery: Sign
       response.headers.set("Paid-Retry", "true");
       return response;
     }
-    const response = c.json({ ...recovery.delivery, paid_retry: true, charged: true, charged_again: false });
+    const response = c.json({ ...recovery.delivery, paid_retry: true, charged: recovery.payment.gateway ? gatewayCharged(recovery.payment.gateway) : true, charged_again: false });
     for (const [name, value] of Object.entries(recovery.payment.settleHeaders)) response.headers.set(name, value);
     return response;
   } catch {
@@ -1355,7 +1357,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         response.headers.set("Paid-Retry", "true");
         return response;
       }
-      const response = c.json({ ...recorded.delivery, paid_retry: true, charged: true, charged_again: false });
+      const response = c.json({ ...recorded.delivery, paid_retry: true, charged: recorded.payment.gateway ? gatewayCharged(recorded.payment.gateway) : true, charged_again: false });
       for (const [name, value] of Object.entries(recorded.payment.settleHeaders)) response.headers.set(name, value);
       return response;
     } catch {
@@ -1533,6 +1535,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     query.delete("payment_payload");
     const purchase = (menuItem || publication) ? await beginPurchaseIntent(c.env, {
       path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
+      gateway_house: isHouseTraffic(c.env, { ...gateSignals(c), payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot) }),
       ...(idempotencyKey ? { idempotency: { surface: await idempotencyScope(c.req.path, query, bodyDigest), key: idempotencyKey } } : {}),
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
       request: query.toString(), item: commission && menuItem ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),
@@ -1670,6 +1673,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         headers: {},
       };
     }
+    const gateway = till.settled.network === ARC_NETWORK ? await gatewayPayment(verifiedPayload, till.settled.transaction) : undefined;
     if (publication && purchase) {
       till.settled.headers = await withReceiptHeader(c.env, till.settled.headers, {
         resourceUrl: `${c.env.STORE_BASE_URL}${c.req.path}`, payer: purchase.payer,
@@ -1680,7 +1684,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (purchase) {
       const confirmed = { paidUsdc, tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
         transaction: till.settled.transaction, network: verifiedRequirements.network,
-        payer: purchase.payer, settleHeaders: till.settled.headers };
+        payer: purchase.payer, settleHeaders: till.settled.headers, ...(gateway ? { gateway } : {}) };
       // The intent already exists. A failed status update must not interrupt
       // delivery after confirmed payment; its saved state remains uncertain.
       await purchaseIntentStore(c.env, purchase.id).updatePurchase({ state: "settled", payment: confirmed }).catch(() => undefined);
@@ -1773,6 +1777,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
      */
     deferBookkeeping(c, recordReferralFor(c, "settled", till.payer));
     const payment: SettledPayment = {
+      ...(gateway ? { gateway } : {}),
       paidUsdc,
       tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
       transaction: till.settled.transaction,

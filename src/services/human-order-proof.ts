@@ -17,7 +17,8 @@ async function inputHash(order: OrderRecord): Promise<string> {
 }
 async function commissionStatement(order: OrderRecord, signedAt: string) {
   return { type: "scvd.human-commission.v1", order_id: order.order_id, cert_id: order.cert_id, item_id: order.item_id,
-    accepted_at: order.created_at, sla_hours: order.sla_hours, paid_usdc: order.paid_usdc, tip_usdc: order.tip_usdc,
+    accepted_at: order.created_at, sla_hours: order.sla_hours,
+    ...(order.gateway_payment_at_issue ? { accepted_usdc: order.paid_usdc, accepted_tip_usdc: order.tip_usdc, gateway_payment_at_issue: order.gateway_payment_at_issue } : { paid_usdc: order.paid_usdc, tip_usdc: order.tip_usdc }),
     inputs_sha256: await inputHash(order), inputs_hash_covers: INPUTS, signed_at: signedAt };
 }
 async function sign(env: Env, statement: Record<string, unknown>): Promise<HumanOrderProof> {

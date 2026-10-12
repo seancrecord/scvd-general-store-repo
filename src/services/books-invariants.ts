@@ -117,6 +117,7 @@ export async function certificatesWithoutSettleRecord(
     const cert = record?.certificate;
     if (!cert?.payer || !cert.settlement_tx) continue;
     const protocol = await certificateProtocol(env, cert, context);
+    if (protocol === "gateway") continue;
     if (protocol !== "x402") {
       let state: string = protocol === "mpp" ? await inspectNativeCertificate(env, cert, context) : "unavailable";
       if (state === "matched" && recorded.has(KV_KEYS.payerSettle(cert.payer, cert.settlement_tx))) state = "legacy_overlap";
@@ -187,11 +188,11 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
   const rail = stats.organic_by_rail;
   if (
     rail &&
-    rail.base + rail.polygon + rail.solana + (rail.arbitrum ?? 0) + (rail.world ?? 0) + rail.rail_not_recorded !==
+    rail.base + rail.polygon + rail.solana + (rail.arbitrum ?? 0) + (rail.world ?? 0) + (rail.arc ?? 0) + rail.rail_not_recorded !==
       stats.organic_settlements
   ) {
     breaches.push(
-      `rail-identity: published split ${rail.base}+${rail.polygon}+${rail.solana}+${rail.arbitrum ?? 0}+${rail.world ?? 0}+${rail.rail_not_recorded} ≠ organic ${stats.organic_settlements}. The construction that guarantees this identity has been broken by a change somewhere upstream.`,
+      `rail-identity: published split ${rail.base}+${rail.polygon}+${rail.solana}+${rail.arbitrum ?? 0}+${rail.world ?? 0}+${rail.arc ?? 0}+${rail.rail_not_recorded} ≠ organic ${stats.organic_settlements}. The construction that guarantees this identity has been broken by a change somewhere upstream.`,
     );
   }
 

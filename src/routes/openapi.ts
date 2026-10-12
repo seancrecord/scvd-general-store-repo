@@ -4503,7 +4503,6 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
     "message",
     "item_id",
     "deliverable",
-    "paid_usdc",
     "certificate",
     "signature",
     "public_key",
@@ -4518,7 +4517,9 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
       description:
         "The goods. Its shape is the item's own — a note, a reading, a record — which is why this field is deliberately untyped here rather than falsely narrowed to one item's payload.",
     },
-    paid_usdc: { type: "number" },
+    paid_usdc: { type: "number", description: "Settled amount on direct payment rails." },
+    accepted_usdc: { type: "number", description: "Gateway amount accepted for batching; not evidence of final settlement." },
+    gateway_payment: { type: "object", description: "Gateway acceptance state; read private purchase status for later batch settlement." },
     tip_usdc: {
       type: "number",
       description: "What was paid above the ask, where anything was.",
@@ -4593,7 +4594,7 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
  */
 const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
   type: "object",
-  required: ["message", "order_id", "status", "order_url", "paid_usdc"],
+  required: ["message", "order_id", "status", "order_url"],
   properties: {
     ...HUMAN_PROOF_REFERENCES,
     message: { type: "string" },
@@ -4617,7 +4618,9 @@ const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
       format: "uri",
       description: "Where to poll it.",
     },
-    paid_usdc: { type: "number" },
+    paid_usdc: { type: "number", description: "Settled amount on direct payment rails." },
+    accepted_usdc: { type: "number", description: "Gateway amount accepted for batching; not evidence of final settlement." },
+    gateway_payment: { type: "object", description: "Gateway acceptance state; read private purchase status for later batch settlement." },
     tip_usdc: { type: "number" },
     patron_number: { type: "integer" },
     badge_url: { type: "string", format: "uri" },

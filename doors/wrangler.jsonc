@@ -64,6 +64,8 @@
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",
+    // Public Arc recipient chosen by the keeper on October 12. Deploy with the Gateway integration.
+    "ARC_PAY_TO": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
     "STORE_BASE_URL": "https://scvd.store",
     "BASE_RPC_URL": "https://mainnet.base.org",
     "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"

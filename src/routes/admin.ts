@@ -310,7 +310,7 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 // Applied before authentication so refusals also cannot be cached.
-for (const path of ["/admin/purchases", "/admin/purchases/*", "/admin/evidence-pilot", "/admin/evidence-pilot/*"]) adminRoutes.use(path, async (c, next) => {
+for (const path of ["/admin/gateway", "/admin/purchases", "/admin/purchases/*", "/admin/evidence-pilot", "/admin/evidence-pilot/*"]) adminRoutes.use(path, async (c, next) => {
   c.header("Cache-Control", "no-store");
   c.header("Vary", "Authorization, Accept");
   await next();
@@ -2338,6 +2338,14 @@ adminRoutes.get("/admin/buyers", async (c) => {
  * page held the row: who paid, on which transaction, for what. JSON by
  * Accept, like the purchase inspection it links to.
  */
+adminRoutes.get("/admin/gateway", async (c) => {
+  const { readGatewaySales } = await import("@/services/gateway-sales");
+  const reading = await readGatewaySales(c.env);
+  if (!wantsHtml(c.req.header("Accept"))) return c.json(reading);
+  const { renderGatewayPage } = await import("@/pages/admin/gateway-page");
+  return c.html(renderGatewayPage(reading));
+});
+
 adminRoutes.get("/admin/mpp-sales", async (c) => {
   const { readMppSaleEvidence } = await import("@/services/mpp-sales");
   const listing = await readMppSaleEvidence(c.env);

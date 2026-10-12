@@ -1318,6 +1318,17 @@ what you ruled and what is still yours to look at.
 
 ### Decisions that unblock the roadmap
 
+- **RULED October 12 — full Arc Gateway checkout and historical receipt audit.**
+  “I want to do both. no pilots just add it as long as it doesnt mess anything up.”
+  This settles the earlier Circle deeper/listing-only and pilot sequencing for
+  this scope. Implementation and release checks are on ROADMAP, not this desk.
+  **Recipient supplied October 12.** Public address is recorded identically
+  in both Worker configs. No key or credential was requested.
+  Gateway transfer history supplies per-sale confirmation; no automatic
+  withdrawal or independently walked Arc receive wallet is claimed. The
+  historical audit changed no counts and found no refund basis.
+
+
 - **RULED October 9 — CV1 seller declarations next.** Keeper agreed to the
   recommendation and requested contextual funnel/paid follow-through. Free to
   submit and read; an accepted declaration is an ask within the existing sweep

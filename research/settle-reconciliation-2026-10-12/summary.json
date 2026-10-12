@@ -1,0 +1,90 @@
+{
+  "observed_at": "2026-10-12T19:08:04.841157+00:00",
+  "method": "Read-only authenticated Cloudflare KV key listing with cursor exhaustion and bulk reads. Four prefix scans are sequential, not an atomic snapshot. No production writes.",
+  "coverage": {
+    "settlement_records": 536,
+    "payer_rows": 45,
+    "sale_events": 327,
+    "selected_metric_keys": 131,
+    "listing_truncated": false
+  },
+  "counter_sum_excluding_founding": 573,
+  "derived_payer_purchases": 572,
+  "settlement_record_count": 536,
+  "months": [
+    {
+      "month": "2026-07",
+      "paid_plus_house_counters": 33,
+      "settlement_records": 0,
+      "difference": 33
+    },
+    {
+      "month": "2026-08",
+      "paid_plus_house_counters": 133,
+      "settlement_records": 128,
+      "difference": 5
+    },
+    {
+      "month": "2026-09",
+      "paid_plus_house_counters": 317,
+      "settlement_records": 318,
+      "difference": -1
+    },
+    {
+      "month": "2026-10",
+      "paid_plus_house_counters": 90,
+      "settlement_records": 90,
+      "difference": 0
+    }
+  ],
+  "sale_events_window": [
+    "2026-09-06T22:12:22.014Z",
+    "2026-10-12T14:29:28.306Z"
+  ],
+  "house_events_without_payer": 103,
+  "raw_local_evidence": [
+    {
+      "path": "/tmp/scvd-settle-investigation/payer_settle.json",
+      "sha256": "231f512ec780d8d7ba66e2f4a2836b7b394218a95b0539730321c5f8f5159e5e"
+    },
+    {
+      "path": "/tmp/scvd-settle-investigation/payer.json",
+      "sha256": "7c34235e6aba010300bf53eb69c524c4be1b00b1d2626f3412c868e2bddfd1ac"
+    },
+    {
+      "path": "/tmp/scvd-settle-investigation/sellevt.json",
+      "sha256": "045ba7607c2ad24ba1d9e0e04b25847d8a986523893033dc0787e29e006494e3"
+    },
+    {
+      "path": "/tmp/scvd-settle-investigation/metric.json",
+      "sha256": "a409d938a6f5a65cbdba4364db5936b928edf71ce44481f960afae496c46c3c9"
+    },
+    {
+      "path": "/tmp/scvd-settle-investigation/certificates.json",
+      "sha256": "46ca169900081d4425e8406392a34cf868f18ab02a008ca9fade56ba7f66e8db"
+    },
+    {
+      "path": "/tmp/scvd-settle-investigation/adjustments.json",
+      "sha256": "fb935fc79f96d52a3c10978087516af91ab1751c85c1fcf61d7f2db45785ca93"
+    },
+    {
+      "path": "/tmp/scvd-settle-investigation/reclassifications.json",
+      "sha256": "912570d49794e3892290f767f87191beff622ad7545c453e36bf5d3cebe3e230"
+    }
+  ],
+  "conclusion": "One-count discrepancy reproduced; no individual transaction identified as its cause. October counters and settlement records both total 90. Historical monthly differences and payer-row floors prevent a justified single-counter correction.",
+  "receipt_followup": {
+    "certificates": 582,
+    "with_payer": 548,
+    "matching_settlement_records": 536,
+    "without_matching_legacy_record": 12,
+    "preinstrument_no_payer": 33,
+    "trade_account_test": 1,
+    "duplicate_certificate_transactions": 0,
+    "house_reclassification_entries": 3,
+    "house_reclassification_settles": 19,
+    "rail_reversals": 2,
+    "stale_case_alias_purchases": 2,
+    "production_changes": false
+  }
+}

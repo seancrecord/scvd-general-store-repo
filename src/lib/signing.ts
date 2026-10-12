@@ -181,6 +181,9 @@ export const CERT_FIELDS = [
    * behind this purchase", written by anyone, under our signature.
    */
   "cited_artifact",
+  // Gateway acceptance fields, appended and covered by both canonical forms.
+  "gateway_payment",
+  "accepted_usdc",
 ] as const;
 
 /**

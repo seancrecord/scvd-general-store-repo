@@ -213,6 +213,7 @@ export async function backfillPayerSettlesFromCertificates(
     const transaction = cert?.settlement_tx;
     if (!cert || !payer || !transaction) continue;
     const protocol = await certificateProtocol(env, cert, context);
+    if (protocol === "gateway") continue;
     if (protocol !== "x402") {
       result.skipped_certificates.push({ cert_id: cert.cert_id, reason: protocol });
       // A previous legacy repair may already have written this key. Do not

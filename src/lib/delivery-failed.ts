@@ -1,3 +1,4 @@
+import { gatewayCharged } from "@/lib/arc-gateway";
 import { canonicalAddress } from "@/lib/addresses";
 import { sendAlert } from "@/lib/alerts";
 import type { SettledPayment } from "@/lib/payments";
@@ -67,6 +68,12 @@ export function deliveryFailedBody(
   item: Pick<MenuItem, "name">,
   settled: SettledPayment,
 ): Record<string, unknown> & { error: string } {
+  if (settled.gateway) return {
+    code: "delivery_failed", error: `Gateway accepted the payment for "${item.name}", but delivery could not finish. Keep this purchase and read its private status; do not pay again. Batch settlement is separate from acceptance.`,
+    charged: gatewayCharged(settled.gateway), accepted_usdc: settled.paidUsdc, gateway_payment: settled.gateway,
+    transaction: settled.gateway.batch_transaction ?? null, network: settled.network,
+    recovery: { do_not_retry: "Recover this original purchase; never submit another payment to resolve an uncertain one.", contact_url: `${base}/api/letter` },
+  };
   return {
     error: `Your payment for "${item.name}" settled and the delivery then failed on our side. This is our failure, not yours, and it is the one failure this store has agreed to own: the money moved, the goods did not leave. The keeper has been paged with your transaction, and the delivery is finished by hand.`,
     // The literal, not the constant: the rule-57 guards walk this
