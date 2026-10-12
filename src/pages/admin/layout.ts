@@ -172,7 +172,7 @@ export type AdminTab =
 export const PAGE_HEADS: Readonly<Record<AdminTab, { title: string; what: string }>> = {
   round: { title: "The round", what: "What ran, when, and what is waiting on your hand." },
   office: { title: "The desk", what: "The take, the month's slice, and the ledger's answers per item." },
-  counter: { title: "The counter", what: "The day's actual work: orders, alarms, letters, review queues." },
+  counter: { title: "The counter", what: "The day's actual work: briefs, quotes, paid orders, alarms, letters and review queues." },
   tools: { title: "The back shelf", what: "Levers that change something. Rarely pulled, never by accident." },
   reconciliation: { title: "The books check", what: "Every audit that can disagree with itself, with its verdict." },
   files: { title: "Keeper's files", what: "The tax file, the founding edition, the Sunday digest." },

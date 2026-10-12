@@ -101,7 +101,7 @@ import { setMonthlyNote } from "@/services/patronage";
 import { markKeeperSeen, setShutter, shutterState } from "@/services/shutter";
 import { kvGet, kvPut } from "@/lib/kv-retry";
 import {
-  listCommissions,
+  readCommissions,
   listFailedItems,
   listWaitlist,
 } from "@/services/requests";
@@ -755,7 +755,7 @@ adminRoutes.get("/admin/counter", async (c) => {
   ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
-    listCommissions(c.env),
+    readCommissions(c.env),
     listFailedItems(c.env),
     listGuestbook(c.env, 30),
     kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
@@ -808,6 +808,8 @@ adminRoutes.get("/admin/counter", async (c) => {
   // The snapshot owns its receipts. An alert arriving while another
   // shelf loads must stay unread, even if its timestamp matches this visit.
   const alertInbox = shelf(alerts, null, "alerts", notes);
+  const commissionReading = shelf(commissions, null, "requests", notes);
+  if (commissionReading?.incomplete) notes.push("Commission requests: the scan was capped or some listed records could not be read. Counts cover loaded records only.");
   // The Gazette press left the counter with the 2026-08-05
   // retirement; the freshness check went with it.
   const page = renderCounterPage({
@@ -822,7 +824,8 @@ adminRoutes.get("/admin/counter", async (c) => {
       },
       grudges: shelf(grudges, [], "grudges", notes),
       waitlist: shelf(waitlist, [], "waitlists", notes),
-      commissions: shelf(commissions, [], "requests", notes),
+      commissions: commissionReading?.requests ?? [],
+      commissionsIncomplete: commissionReading === null || commissionReading.incomplete,
       failedItems: shelf(failedItems, {}, "failed items", notes),
       guestbook: shelf(guestbook, [], "guestbook", notes),
       weekNote: shelf(weekNote, null, "week note", notes) || DEFAULT_WEEK_NOTE,

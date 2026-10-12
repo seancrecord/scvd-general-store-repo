@@ -1,5 +1,24 @@
 # ROADMAP — September 2026
 
+## October 10 — admin follow-through
+
+**Implemented:** the counter now puts paid work, unanswered
+briefs, expired and expiring quotes, and accepted requests with missing order
+evidence in a short “Needs attention” list. Waiting quotes remain visible;
+completed work folds away. Directory suggestions and proposed budgets remain
+separate from sales. Existing controls and records do the work; no new scan or
+outreach runs. Capped or unreadable request scans carry a partial-reading notice.
+[Implementation, checks and release follow-ups](docs/ADMIN_ATTENTION_2026-10.md).
+
+**Release follow-ups checked October 10:** seller declarations [PR #1001](https://github.com/seancrecord/scvd-general-store-repo/pull/1001)
+merged with all four CI shards and the required check green. Both production
+builds succeeded; the declaration page, API, free comparison and OpenAPI contract
+were verified live. Main's separate shutdown-error run passed unchanged on rerun.
+ClawHub 3.19.4 is published: the keeper's screenshot and a fresh public CLI read agree, with a
+clean moderation result. The publication workflow succeeded; its generated
+[record PR #1004](https://github.com/seancrecord/scvd-general-store-repo/pull/1004)
+merged October 10; the publication record is on main.
+
 ## October 10 — revenue review and clearer offer paths
 
 Keeper approved five follow-ups: (1) reconcile delivery/reporting contradictions,
@@ -35,15 +54,16 @@ The existing signing-outage regression disproved the broad no-charge delivery
 promise; the corrected copy distinguishes failures before and after settlement,
 with a dated correction. [Reproduction and limits](docs/BUYER_GUIDANCE_REVIEW_2026-10.md).
 
-**Still to do:** release and live readback; environment-specific documentation
+**Released:** PR #1002 merged October 10; both production Worker builds and the
+public offer-path readback passed. **Still to do:** authenticated admin readback; environment-specific documentation
 403s and a paid cold-buyer run remain unverified. Item 5 needs a real agreed brief and customer decision;
 exposing an intake is not a sale or evidence of demand. Existing commission
 rungs still bound quotes. No customer activation, outbound contact or charge
 is authorized by this copy change. Validation and release state:
 [offer-path notes](docs/OFFER_PATHS_2026-10.md).
-The updated installed skill is declared as 3.19.4; ClawHub's observed release
-record remains 3.19.3 until the separate publication step. Merging site code
-does not update that external installation.
+ClawHub 3.19.4 was published separately October 10 and its public latest version
+is verified. The generated publication record is in PR #1004; merging site code
+alone does not update that external installation.
 
 ## October 8 — Worker recovery and World bank walk
 
