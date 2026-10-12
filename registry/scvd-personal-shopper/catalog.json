@@ -1,0 +1,19 @@
+{
+  "slug": "scvd-personal-shopper",
+  "name": "SCVD Personal Shopper",
+  "version": "1.0.0",
+  "categories": [
+    "finance",
+    "integrations"
+  ],
+  "topics": [
+    "x402",
+    "shopping",
+    "usdc",
+    "receipts",
+    "spend-limits"
+  ],
+  "sourceRepo": "https://github.com/seancrecord/scvd-general-store-repo",
+  "sourcePath": "skills/scvd-personal-shopper",
+  "changelog": "Choose a useful signed good, rehearse without spending, check host and wallet capabilities, obtain funding and purchase approval, and verify delivery. Includes wallet and host setup references."
+}

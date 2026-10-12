@@ -67,12 +67,12 @@ it('publishes the same generated checklist on each compact contract and item pag
     expect(html, item.id).toContain('data-purchase-checklist');
   }
 });
-it('puts four first actions ahead of the activity board', async () => {
+it('puts task-based first actions ahead of the activity board', async () => {
   const html = await (await SELF.fetch(BASE, { headers: { Accept: 'text/html' } })).text();
   const actions = /<nav[^>]*data-first-actions[\s\S]*?<\/nav>/.exec(html)?.[0];
   expect(actions).toBeDefined();
   const cheapest = [...MENU_ITEMS].filter(item => item.price_usdc > 0).sort((a,b) => a.price_usdc - b.price_usdc)[0]!;
-  for (const href of ['/menu', '/try', `/menu/${cheapest.id}`, '/mcp.md']) expect(actions).toContain(`href="${href}"`);
+  for (const href of ['/try', '/conformance', '/menu/conformance_watch', '/operators', `/menu/${cheapest.id}`, '/mcp.md']) expect(actions).toContain(`href="${href}"`);
   for (const match of actions!.matchAll(/href="([^"]+)"/g)) {
     const response = await SELF.fetch(BASE + match[1]);
     expect(response.status, match[1]).toBe(200);

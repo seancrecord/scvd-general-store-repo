@@ -1,3 +1,4 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { LLMS_AREAS } from "@/routes/llms";
@@ -33,6 +34,10 @@ import { app } from "@/index";
  * fails the staleness checks below.
  */
 const DELIBERATELY_QUIET: Record<string, string> = {
+  [PERSONAL_SHOPPER.hostsPath]:
+    "connection and rehearsal reference reached from the shopper skill, homepage and operational manual; file parity is tested in skills-well-known.spec.ts",
+  [PERSONAL_SHOPPER.walletPath]:
+    "supporting reference linked from the discoverable personal shopper skill; readers follow that relative link, whose served bytes and reachability are held by personal-shopper.spec.ts",
   /*
    * THE UCP SUPPORTING DOCUMENTS (2026-09-16). /ucp, /ucp/v1 and the
    * two catalog operations are named in the guide and reachable from

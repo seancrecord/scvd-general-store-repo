@@ -1,3 +1,4 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DELIVERY_ORDER } from "@/store/copy/position";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
@@ -104,6 +105,8 @@ metadata:
 # ${STORE_METADATA.name}
 
 ${buyerQuickStart(base)}
+
+Shopping with a personal agent: ${base}${PERSONAL_SHOPPER.path}. Free quotes, approved purchases, wallet setup when needed, and receipt verification.
 
 ${paymentNetworkGuide(env)}
 
