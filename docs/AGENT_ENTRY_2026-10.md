@@ -31,10 +31,10 @@ for the buyer's runtime, not a new endpoint or a claim that a wallet was tested.
 
 | Path | Evidence | Still unobserved |
 | --- | --- | --- |
-| Public HTTP discovery | Live baseline read; local index/file/digest/CORS tests | New production paths until release |
-| Skills CLI | Previous GitHub/local install succeeded in disposable directory; new website path requires release readback | Native purchase |
+| Public HTTP discovery | Production index/file readback after PR #1008; local digest/CORS tests | Archive follow-up production readback |
+| Skills CLI | Live GitHub install complete; live website readback exposed missing references; fixed local HTTPS install complete | Native purchase |
 | Hermes | Official consumer format inspected at ff2d02f998f9f9e45543eea30fb935f47e4504a7; contract and files tested locally | Full Hermes host installation, model use and payment |
-| ClawHub / OpenClaw | Versioned package and categories prepared; dry-run and public readback tracked in release record | Native purchase; public listing until publication |
+| ClawHub / OpenClaw | 1.0.0 public with clean scan; temporary install includes all three source-identical files | Native purchase |
 | Muse / ChatGPT / Claude / Grok chat | URL-based recipe conditional on actual session tools | Runtime-specific installation and payment |
 | xAI crawlers | GrokBot, xAI-Grok, Grok-DeepSearch named in live robots.txt; wildcard also permits access | Official operator identity, successful genuine crawler fetch or indexing |
 

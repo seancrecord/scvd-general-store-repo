@@ -2973,3 +2973,20 @@ Host-proof file placement is SCVD's existing convention, not an external standar
 - [Hermes consumer source](https://github.com/NousResearch/hermes-agent/blob/ff2d02f998f9f9e45543eea30fb935f47e4504a7/tools/skills_hub_sources.py): WellKnownSkillSource reads index entries and fetches every relative file, requiring SKILL.md. The public store returned 404 for its expected index before this change.
 - [Vercel handler types](https://github.com/vercel-labs/skills-handler/blob/e546b7fef03edff0174298007247a61c54f38851/src/types.ts): index is `{skills: [{name, description, files}]}`; no digest field required. Existing digest-based discovery remains separately available.
 - [ClawHub publishing](https://docs.openclaw.ai/clawhub/publishing): at most three categories/five topics; finance and integrations fit the shopper. Metadata is explicitly passed for this skill only. Dry-run does not validate category slugs. Reserved endorsement topics excluded. Publication may precede public visibility while review is pending.
+
+
+## 2026-10-12 — complete website skill installation
+
+Read [Cloudflare's discovery RFC v0.2.0](https://github.com/cloudflare/agent-skills-discovery-rfc#archive-distribution)
+and the installed official `skills@1.5.26` consumer (`WellKnownProvider`). The
+consumer tries the RFC index before the files-based index and returns the first
+successful catalog. An RFC `skill-md` entry installs only that file; references
+require `type: archive`, with the digest covering the archive's raw bytes.
+
+Observed on production after PR #1008: website installation omitted both
+references even though the newer files-based index enumerated them. GitHub
+installation was complete. Correction: publish a deterministic tar.gz for the
+shopper's RFC entry, generated from the same canonical text. Keep the readable
+SKILL.md, references and Hermes files-based index at their existing URLs. The
+actual Skills CLI then installed all three files from the local HTTPS Worker,
+with byte parity. No payment mechanism or instruction bytes changed.
