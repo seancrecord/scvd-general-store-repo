@@ -1,3 +1,4 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { Hono } from "hono";
 import { sha256Hex } from "@/lib/idempotency";
 import { renderExecutionContract } from "@/routes/execution-contract";
@@ -52,6 +53,7 @@ interface PublishedSkill {
 }
 
 const PUBLISHED_SKILLS: readonly PublishedSkill[] = [
+  { name: PERSONAL_SHOPPER.name, render: () => PERSONAL_SHOPPER.markdown },
   {
     name: "scvd-general-store",
     render: (env) => renderSkillMarkdown(env, { live: false }),
@@ -136,3 +138,7 @@ agentSkillsIndexRoutes.get("/.well-known/agent-skills/:name/SKILL.md", async (c)
     "Content-Type": "text/markdown; charset=utf-8",
   });
 });
+
+agentSkillsIndexRoutes.get(PERSONAL_SHOPPER.walletPath, (c) =>
+  c.text(PERSONAL_SHOPPER.wallet, 200, { "Content-Type": "text/markdown; charset=utf-8" }),
+);

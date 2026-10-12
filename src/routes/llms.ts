@@ -1,3 +1,4 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/store/seller-declarations";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
@@ -197,6 +198,8 @@ find out.
 
 Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): ${PREFLIGHT_VERSIONS.map((version) => `[preflight ${version}](${base}/api/preflight/${version})`).join(" · ")} · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [calling-card setup](${base}/bot-auth) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
 
+Personal-agent shopping: [skill](${base}${PERSONAL_SHOPPER.path}) · [paste prompt](${base}/#buy-with-agent).
+
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [our own month, signed](${base}/store-month) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train) · [Open for Business, for sellers](${base}/open-for-business)
@@ -208,9 +211,6 @@ Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.js
 For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/.well-known/scvd-signing-key) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
-
-Every one of those is described in its own section below. This list is
-the map; the sections are the territory.
 
 Well well. Come in then.
 
@@ -487,6 +487,7 @@ ${menu}
 Machine-readable catalog: ${base}/menu.json (markdown if your Accept
 header prefers text/markdown; one item at \`${base}/menu/{item_id}\`)
 Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
+Personal-agent shopping, wallet setup and approved purchases: ${base}${PERSONAL_SHOPPER.path}
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md

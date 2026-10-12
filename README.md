@@ -80,6 +80,21 @@ index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 
 [Find SCVD by protocol: x402, MPP, MCP, WebMCP, ERC-8004, A2A, OASF, skills and UCP](#on-other-peoples-records).
 
+## Buy with your personal agent
+
+[Copy the shopping prompt](https://scvd.store/#buy-with-agent), or install the
+[personal shopper skill](skills/scvd-personal-shopper/SKILL.md):
+
+```sh
+npx skills add seancrecord/scvd-general-store-repo --skill scvd-personal-shopper
+```
+
+Your agent reads the current menu, shows the price, helps with a compatible
+wallet if needed, and returns the artifact and verified receipt. Reading and
+quotes are free. Funding and each purchase need your approval. Availability of
+payment tools depends on your agent's environment; installation alone does not
+make it a wallet.
+
 ## The doors, by task
 
 What people arrive here to do, and where each door is:

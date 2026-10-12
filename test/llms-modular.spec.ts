@@ -1215,8 +1215,10 @@ const BASE = "https://scvd.store";
 // The new pins cover those reviewed sentences, with all guide sections intact.
 // 2026-10-10: merging seller declarations adds only its free guidance and
 // history pointer. Restoring main llms.ts reproduces both prior pins (14/14).
+// 2026-10-12: personal shopper links and removal of redundant navigation prose.
+// Restoring llms.ts from the parent reproduces both prior pins (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c428ae8cf16e734f511b36b24488a9190788732371942b05c06391e88500ed03";
+  "1c6e7f29eb6b89f017b95fa41094c1540c8fe6d6309b4822600c0b18f3a7421e";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1319,7 +1321,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "8c9daacaea4e4d3158e3af98bce3672b5a733af02a82d6d518e38bb14d1fedcb",
+      "0117a7a5079c7ad6c9478a2e37146791e9a3f5fbae3914569308da3c41023d08",
     );
   });
 

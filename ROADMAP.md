@@ -1,5 +1,15 @@
 # ROADMAP — September 2026
 
+## October 12 — approved personal-agent shopping path
+
+Keeper approved the reviewed personal-agent skill and distribution plan.
+Implementation adds a storefront paste prompt, the installable shopper skill,
+served references and discovery links, using existing checkout. Publication
+and verification are tracked in [the release record](research/personal-agent-release-2026-10-12/README.md).
+The remaining qualification is a user-approved useful purchase and, separately,
+new-wallet onboarding. No new payment rail or authorization primitive is implied.
+
+
 ## October 10 — admin follow-through
 
 **Implemented:** the counter now puts paid work, unanswered

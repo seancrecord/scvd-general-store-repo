@@ -1,5 +1,6 @@
 import { largerWorkHtml } from "@/pages/offer-paths";
 import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
+import { PERSONAL_SHOPPER, personalShopperPrompt } from "@/store/personal-shopper";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
@@ -1239,12 +1240,18 @@ ${webmcpOriginTrialTags()}
     </section>
 
     <section class="doors">
-      <div class="door door-human">
+      <div class="door door-human" id="buy-with-agent">
         <span class="pushpin"></span>
         <h3>${COPY.doorHumanHead}</h3>
         <p>${COPY.doorHumanBody}
         <a class="door-cta" href="/what">/what</a>.</p>
         <p class="door-small">${COPY.doorHumanSmall}</p>
+        <h3>Buy with your agent</h3>
+        <p class="door-small">Choose a signed good, approve its price, and have your agent bring back the receipt. Reading and quotes are free; each purchase is a separate decision.</p>
+        <label class="door-small" for="personal-shopper-prompt">Copy this into your agent:</label>
+        <textarea id="personal-shopper-prompt" class="personal-shopper-prompt" readonly rows="9">${escapeHtml(personalShopperPrompt(data.base ?? "https://scvd.store"))}</textarea>
+        <p class="door-small"><a href="${PERSONAL_SHOPPER.path}">Read the shopping skill</a>. Payment needs a compatible wallet and an agent that can use it. Your agent should explain any setup before you fund it.</p>
+        <details><summary>Install the skill</summary><p class="door-small"><code>npx skills add seancrecord/scvd-general-store-repo --skill ${PERSONAL_SHOPPER.name}</code></p></details>
         <p class="door-small">${COPY.doorHumanHandoffLead}</p>
         <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffRead)}</code></p>
         <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffMcp)}</code></p>

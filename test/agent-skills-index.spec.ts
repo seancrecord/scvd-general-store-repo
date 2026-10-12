@@ -32,6 +32,7 @@ describe("the Agent Skills discovery index", () => {
     expect(body.skills.map((s) => s.name).sort()).toEqual([
       "execution-contract",
       "scvd-general-store",
+      "scvd-personal-shopper",
       "scvd-x402-verification",
     ]);
     for (const skill of body.skills) {

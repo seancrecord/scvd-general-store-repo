@@ -1,5 +1,10 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-12 — Personal-agent shopping distribution
+
+Read [Skills documentation](https://www.skills.sh/docs), the [Skills CLI](https://github.com/vercel-labs/skills), [Coinbase's wallet skills](https://github.com/coinbase/agentic-wallet-skills), its [x402 guide](https://github.com/coinbase/agentic-wallet-skills/blob/main/skills/agentic-wallet/references/x402-pay.md), and [AIsa's skill](https://github.com/AIsa-team/nanopayment-x402/blob/main/SKILL.md). Skills supports named installation from a repository; leaderboard placement follows install telemetry. Coinbase documents Base x402 payment, amount ceilings and custom headers. AIsa documents a Gateway-specific signing domain, not drop-in compatibility with standard EVM exact payments. An unpaid live SCVD quote returned v2 exact/Base on this date. No wallet funding, settlement or named personal-host compatibility was established. The draft's provider setup remains conditional on actual host capabilities. Public skill source and its reference are the served bytes; no second wallet/payment implementation is added.
+
+
 ## 2026-10-07 — keeper-supplied discovery placements
 
 Opened the six public listing pages supplied by the keeper: ChatGPT, Deside,
