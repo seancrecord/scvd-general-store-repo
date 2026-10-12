@@ -1,3 +1,4 @@
+import { sellerDeclarationRoutes } from "@/routes/seller-declarations";
 import { evidencePilotRoutes } from "@/routes/evidence-pilot";
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
 import { documentDiscovery } from "@/lib/document-discovery";
@@ -205,6 +206,7 @@ app.route("/", okfRoutes);
 app.route("/", defectRoutes);
 app.route("/", noticeRoutes);
 app.route("/", standingNoteRoutes);
+app.route("/", sellerDeclarationRoutes);
 app.route("/", trustRoutes);
 app.route("/", agentAuthRoutes);
 app.route("/", askRoutes);

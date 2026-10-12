@@ -1,3 +1,4 @@
+import { declarationComparison, type DeclarationComparison } from "@/services/seller-declaration";
 import { evidenceUrl } from "@/services/corpus-evidence";
 import { RECEIPT_ABSENT_CLASS } from "@/store/defect-vocabulary";
 import type { CatalogReading } from "@/services/catalog-agreement";
@@ -248,6 +249,7 @@ export interface SubjectHistory {
   corrections: string;
   /** The host's own standing note (G2 ruling §5), when one is attached. */
   standing_note?: StandingNote;
+  declared_vs_observed?: DeclarationComparison;
   /** T2 (G2 ruling): this door's own shared-wallet fact. Absent when
    * the chain never met the host. */
   payment_address?: HostWalletFact;
@@ -575,6 +577,7 @@ export async function subjectHistory(
   return {
     host,
     asked_at: now.toISOString(),
+    declared_vs_observed: await declarationComparison(env, records, host, now),
     corrections: CORRECTIONS_POINTER,
     ...(hostNote ? { standing_note: hostNote } : {}),
     ...(paymentAddress ? { payment_address: paymentAddress } : {}),

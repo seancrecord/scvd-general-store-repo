@@ -62,6 +62,7 @@ function landingJson(base: string) {
     },
     wallet_facts: `${base}/corpus/wallet-facts.json`,
     battery_delta: `${base}/corpus/battery-delta.json`,
+    seller_declarations: `${base}/seller-declarations`,
     standing_notes: `${base}/api/standing-note`,
     how_to_verify: `Printed on the document itself, at ${base}/corpus.json — recompute the digests, check the signatures against the published key, and run ots verify on evidence that is not ours.`,
     /*
@@ -159,6 +160,7 @@ function landingHtml(base: string, facts: WalletFacts | null | undefined): strin
             ? " Wallet facts could not be read. No counts are shown."
             : " The chain holds no signed week yet, so there is nothing to count over — this sentence fills with the first ward round rather than quoting a number we do not have."
       } Each door's own page carries its <code>payment_address</code> fact. Custodial and platform wallets make unrelated doors share one address; the observation is served, the inference is yours.</p>
+      <p class="menu-desc"><a href="/seller-declarations">Seller declarations</a>: free proof of control and a dated comparison of declared and observed receiving-address digests. For a record over time, the same page explains the bounded watch and review report.</p>
       <p class="menu-desc">And the subject gets a voice: an operator who proves control of a door or a wallet can attach a standing note at <a href="/api/standing-note"><code>/api/standing-note</code></a> — their dated statement, riding beside our observation on every surface that shows it. Beside, never instead.</p>
       <p class="menu-desc">Cite it as a dataset: DOI <a href="${CORPUS_DATASET_DOI_URL}"><code>${CORPUS_DATASET_DOI}</code></a> (Zenodo; the same files, a new version each signed round; CC BY 4.0). The same files are on <a href="${CORPUS_DATASET_HUGGINGFACE_URL}">Hugging Face</a>.</p>
       <p class="menu-desc">Verification needs nothing from us: recompute any snapshot's sha256, check the signature against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, walk the previous_digest chain back to the first entry, and run <code>ots verify</code> on the Bitcoin-anchored proof. The exact steps, field order included, ride on <a href="/corpus.json"><code>/corpus.json</code></a> itself.</p>

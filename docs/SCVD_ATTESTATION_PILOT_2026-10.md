@@ -2,7 +2,8 @@
 
 Implementation prepared October 7, 2026, following the keeper's “lets do it then.”
 Release authorized October 7: “make sure the ui is right but then merge push.”
-Customer activation and invoicing remain separate from releasing the software.
+Merged October 7 in [PR #996](https://github.com/seancrecord/scvd-general-store-repo/pull/996) after the required checks passed.
+Customer activation and invoicing remain separate from the completed implementation.
 
 ## The offer
 

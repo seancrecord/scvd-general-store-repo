@@ -1,3 +1,4 @@
+import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY, SELLER_DECLARATIONS_PATH } from "@/store/seller-declarations";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import {
@@ -105,6 +106,9 @@ export interface Feature {
 }
 
 export const FEATURES: readonly Feature[] = [
+  { id: "seller_declarations", name: "Seller declarations", room: SELLER_DECLARATIONS_PATH,
+    proposition: DECLARATION_PROPOSITION, for_money: DECLARATION_MONEY, free_first: DECLARATION_FREE,
+    doors: ["/api/seller-declaration"], named_on: ["/operators", "/corpus", "/evidence-pilot"], opened: "2026-10-09" },
   { id: "evidence_pilot", name: EVIDENCE_PILOT.name, room: EVIDENCE_PILOT.path,
     proposition: PILOT_PROPOSITION, for_money: PILOT_MONEY, free_first: PILOT_FREE,
     doors: ["/api/evidence-pilot/sample", "/api/evidence-pilot/{watch_id}"],

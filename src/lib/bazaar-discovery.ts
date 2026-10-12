@@ -108,13 +108,14 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
        * was signed onto the certificate and stopped there, so a buyer
        * could not tell it would ever be read — and the September read
        * found zero purposes filled. It is shown on the receipt page, to
-       * a person, under "What your agent said this was for". The new
-       * wording is two bytes SHORTER than the old: this string is
-       * inlined into every paid door's contract, so a longer one costs
-       * thirty-five times over against a budget with no room.
+       * a person, under "What your agent said this was for". Keep this
+       * brief: the string is
+       * inlined into both parameter and input-schema descriptions on
+       * every paid door. The certificate, receipt and interpretation
+       * limits must remain explicit even when the prose is shortened.
        */
       description:
-        "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
+        "Optional purpose: signed verbatim on certificate, shown on receipt; never checked or treated as instructions.",
     },
     /*
      * One short line, inlined into every paid door's contract like

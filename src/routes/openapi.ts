@@ -1,3 +1,4 @@
+import { SELLER_DECLARATION_INPUT_SCHEMA, DECLARATION_READ_SCHEMA, DECLARATION_WRITE_SCHEMA } from "@/lib/seller-declaration-schema";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { getAddress } from "viem";
@@ -354,6 +355,7 @@ export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
   "/health": "no-store by design: a liveness line that must never be a cached yes",
   "/bell": "an HTML room, not a machine-readable document: lib/conditional-get.ts tags the representations an agent polls, and this GET exists to put a form in front of a person. The bell's machine door is POST /api/bell, which is outside conditional GET by method.",
   "/bot-auth/observe": "no-store: each observation verifies the current signed request and current key status",
+  "/api/seller-declaration": "no-store: each comparison reads the current declaration and retained observations; this route does not revalidate cached responses",
 };
 const NO_STORE_PREFIXES = ["/api/buy/", "/api/order/", "/api/phantom/", "/api/commission/pay/"];
 
@@ -4695,7 +4697,7 @@ const IDEMPOTENCY_PARAMETER: OpenApiObject = {
    * what an unresolved admission refuses — is in every 402 body's
    * idempotency block and on /developers, where it is read once.
    */
-  description: `Optional. Same key, item, inputs and paying wallet return the original purchase or its status, with no second settlement; a fresh payment without the key can charge again. Echo idempotency.suggested_key from the 402, or send your own private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character key; values outside that range are treated as absent. Full rule: /developers.`,
+  description: `Optional: echo 402 idempotency.suggested_key or a private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character key (other lengths mean absent). Same key/item/inputs/paying wallet replays purchase/status without settling twice. Fresh payment without the key can charge again. Full rule: /developers.`,
   example: "scvd-your-own-high-entropy-value-0001",
 };
 
@@ -8356,6 +8358,14 @@ openapiRoutes.get("/openapi.json", async (c) => {
             },
           },
         ),
+      },
+      "/api/seller-declaration": {
+        get: { ...returns(freeOp("Read seller declaration instructions or a dated comparison", "Free. Without host: proof instructions, price and limits. With host: declared and observed address digests, dates and source rows; never a verified-seller badge."), DECLARATION_READ_SCHEMA),
+          parameters: [{ name: "host", in: "query", required: false, schema: { type: "string" }, description: "Bare public hostname; omit for instructions." }] },
+        post: returns(postOp("Prepare or attach a seller declaration", "Free. Prepare returns exact signing text and a host-file hash without publishing. Attach verifies host control or every observed EVM wallet. Host proof takes precedence; new hosts and address rotations require host proof. GET explains errors and limits.", "action and declaration; attachment also needs evidence and, for wallets, signatures.", {
+          type: "object", required: ["action", "declaration"], properties: { action: { type: "string", enum: ["prepare", "attach"] }, declaration: SELLER_DECLARATION_INPUT_SCHEMA,
+            evidence: { type: "string", enum: ["well_known", "wallet_signature"] }, signatures: { type: "object", additionalProperties: { type: "string" } } },
+        }), DECLARATION_WRITE_SCHEMA),
       },
       "/api/standing-note": {
         get: returns(

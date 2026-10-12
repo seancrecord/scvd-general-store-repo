@@ -30,6 +30,19 @@ import type { Env } from "@/types";
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
+// counted_paths is a route-name dictionary, not a set of metric fields.
+// Inspect its values recursively, but do not call "declarations" a ratio.
+function metricFieldNames(node: unknown, countedPaths: object): string[] {
+  if (Array.isArray(node)) return node.flatMap(value => metricFieldNames(value, countedPaths));
+  if (!node || typeof node !== "object") return [];
+  return Object.entries(node).flatMap(([key, value]) => [
+    ...(node === countedPaths ? [] : [key]),
+    ...metricFieldNames(value, countedPaths),
+  ]);
+}
+
+const isRelativeMetric = (key: string): boolean => /rate|ratio|percent|score|rank|share/i.test(key);
+
 describe("the counts, read", () => {
   it("shows a recorded visit under its surface and channel, house beside it, in name order", async () => {
     await recordPorchVisit(testEnv, "atlas", {});
@@ -89,20 +102,23 @@ describe("the counts, read", () => {
     expect(observatory.counted_paths["/observatory"]).toBe("observatory");
   });
 
-  it("no key reads as a rate, share or score", async () => {
+  it("no metric field reads as a rate, share or score", async () => {
     const observatory = await computeObservatory(testEnv);
-    const keys: string[] = [];
-    const walk = (node: unknown): void => {
-      if (Array.isArray(node)) node.forEach(walk);
-      else if (node && typeof node === "object") {
-        for (const [key, value] of Object.entries(node)) {
-          keys.push(key);
-          walk(value);
-        }
-      }
+    expect(metricFieldNames(observatory, observatory.counted_paths).filter(isRelativeMetric)).toEqual([]);
+  });
+
+  it("exempts only route names, while still catching relative metrics at every depth", () => {
+    const countedPaths = { "/seller-declarations": "seller_declarations", "/conversion-rate": "fixture" };
+    const fixture = {
+      counted_paths: countedPaths,
+      conversion_rate: 0.5,
+      months: [{ nested: { ratio: 0.5, percent: 50, score: 1, rank: 1, share: 0.5 } }],
     };
-    walk(observatory);
-    expect(keys.filter((key) => /rate|ratio|percent|score|rank|share/i.test(key))).toEqual([]);
+    expect(metricFieldNames(fixture, countedPaths).filter(isRelativeMetric))
+      .toEqual(["conversion_rate", "ratio", "percent", "score", "rank", "share"]);
+    // Even a metric nested under a route remains visible to the guard.
+    const nested = { "/seller-declarations": { score: 1 } };
+    expect(metricFieldNames({ counted_paths: nested }, nested).filter(isRelativeMetric)).toEqual(["score"]);
   });
 });
 

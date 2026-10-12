@@ -1,3 +1,4 @@
+import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/store/seller-declarations";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
@@ -224,6 +225,11 @@ named human. Your operator can read every receipt.
 ${EVIDENCE_PILOT.name}: ${base}${EVIDENCE_PILOT.path}.
 ${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
 
+Seller declarations: ${base}/seller-declarations.
+${DECLARATION_PROPOSITION} ${DECLARATION_FREE} ${DECLARATION_MONEY}
+GET ${base}/api/seller-declaration explains proof, submission and dated comparisons.
+The weekly changes feed carries declaration_mismatches with declarations_compared; later declarations never rewrite an earlier week.
+
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
 \`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
 works whether or not you bought the thing. A live one to try right
@@ -362,6 +368,7 @@ answered now the way the last signed round saw it. Never a score, never
 a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
 
+Free seller declarations and dated address comparisons: ${base}/seller-declarations.
 For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
 
 Agent shopping audit (The Aura Walk): ${AURA_WALK_WHY}
@@ -2202,11 +2209,8 @@ export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig
 
 ${kept.map((section) => section.text).join("")}## The rest of this file, by area
 
-This is the index. The store's full prose is long on purpose — the
-evidence is the product — so it is served in one document at
-${base}/llms-full.txt and split by area below. Nothing here is a
-summary of what is over there; each file carries the sections
-themselves.
+The complete guide is at ${base}/llms-full.txt.
+The area files below carry its full sections, not summaries.
 
 ${map}
 

@@ -87,6 +87,8 @@ export const PORCH_EXACT = new Map<string, string>([
    */
   ["/bounties", "bounties"],
   ["/api/bounties", "bounties.json"],
+  ["/seller-declarations", "seller-declarations"],
+  ["/api/seller-declaration", "seller-declaration"],
   ["/evidence-pilot", "evidence-pilot"],
   ["/api/evidence-pilot/sample", "evidence-pilot:sample"],
   ["/field-study", "field-study"],
@@ -331,6 +333,8 @@ const KIND_EXACT: Readonly<Record<string, PorchSurfaceKind>> = {
   "verify-receipt": "instrument",
   stamp: "instrument",
   "standing-note": "instrument",
+  "seller-declarations": "instrument",
+  "seller-declaration": "instrument",
   "provenance:self": "instrument",
   "bot-auth:check": "instrument",
   practice: "instrument",
