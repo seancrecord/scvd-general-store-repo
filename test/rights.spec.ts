@@ -2,6 +2,8 @@ import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { RIGHTS } from "@/store/rights";
 import { ROOMS } from "@/store/rooms";
+import { REFUND_POLICY } from "@/store/refund-policy";
+import { escapeHtml } from "@/lib/sanitize";
 
 const BASE = "https://scvd.store";
 
@@ -16,6 +18,25 @@ const BASE = "https://scvd.store";
  * middle was empty on every surface while four shelves sold custody.
  */
 describe("the store says whose the thing is", () => {
+  it("shows the existing refund commitment and mechanism to browser buyers", async () => {
+    const page = await (await SELF.fetch(`${BASE}/rights`, {
+      headers: { Accept: "text/html" },
+    })).text();
+    expect(page).toContain('id="purchase-terms"');
+    expect(page).toContain('id="refund-policy"');
+    for (const field of ["commitment", "mechanism", "instant_items", "where_recorded"] as const) {
+      expect(page).toContain(escapeHtml(REFUND_POLICY[field]));
+    }
+  });
+
+  it("names the purchase terms and refund policy in homepage links", async () => {
+    const page = await (await SELF.fetch(BASE, {
+      headers: { Accept: "text/html" },
+    })).text();
+    expect(page).toContain('<a href="/rights#purchase-terms">Terms of purchase</a>');
+    expect(page).toContain('<a href="/rights#refund-policy">Refund policy</a>');
+  });
+
   it("answers the four questions a buyer actually asks", async () => {
     const body = (await (await SELF.fetch(`${BASE}/rights`)).json()) as {
       summary: Record<string, unknown>;

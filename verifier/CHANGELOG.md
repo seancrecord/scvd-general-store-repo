@@ -4,6 +4,24 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## Unreleased — advisory scope and exported-bundle reports
+
+`verify-source --subject` adds bounded reader commentary beside signed advisory
+codes, with observed facts and unknown behavior separate. Missing retry-key or
+signed-offer declarations do not become claims of endpoint-wide absence;
+declared retry fields do not prove retry safety. Unknown codes remain
+uninterpreted. Commentary is not signed evidence; original rows, signature
+checks, exit meanings and file-overwrite protection are unchanged. This source
+change is not a published release or a native buyer acceptance result.
+
+`verify <bundle.json>` now accepts the same compact report options as
+`verify-source`: subject selection, JSON/Markdown, saved challenge headers and
+exclusive report output. Without report options, `verify` retains its full
+result. Reports identify the input kind and hash the exact input bytes; bundle
+context is unsigned. Wrong input forms receive fixed command guidance without
+reflecting input contents. Detached corpus payloads need their signature
+envelope. These October 12 changes passed local regression and retained-bundle
+replay checks; they have not been published or accepted by a fresh native study.
 ## 1.11.0 — source prepared 2026-10-01
 
 **Added.** Optional `verify-source --check-identifiers SAVED_DRAFT` compares

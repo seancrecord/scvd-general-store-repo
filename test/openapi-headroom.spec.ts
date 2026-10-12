@@ -11,6 +11,8 @@ import { nativeMcpCheckoutShape, nativeWebmcpCheckoutShape } from "@/lib/purchas
 
 // Golden schemas in fixtures/openapi-shared-schemas.json were captured from
 // 9d04efe5 before component reuse, not generated from the code under test.
+// ReadingCadence and ProbeUrlInput were captured from c9c8b9c8 before the
+// October integration reduction. Keep those expanded contracts unchanged.
 // Keep rail recipients and enabled lanes aligned with the other size guards.
 const allRails = productionShape(env as Env);
 

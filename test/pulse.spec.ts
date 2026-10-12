@@ -469,10 +469,11 @@ describe("the correction walk's own age rides the pulse (2026-09-02)", () => {
 describe("known machinery shows its two halves", () => {
   it("publishes by_user_agent and by_behaviour beside the total", async () => {
     const { recomputeCorrections } = await import("@/services/reclassify");
+    await testEnv.COUNTERS.delete("reclassification:progress:v1");
     const T0 = Date.parse("2026-07-10T09:00:00.000Z");
     const put = async (user_agent: string, item: string, ms: number) =>
       testEnv.COUNTERS.put(
-        `evt:${(9_999_999_999_999 - (T0 + ms)).toString().padStart(15, "0")}:${item}${ms}`,
+        `evt:${(9_999_999_999_999 - (T0 + ms)).toString().padStart(13, "0")}:${item}${ms}`,
         JSON.stringify({ kind: "challenge", item, channel: "direct", house: false, user_agent, at: new Date(T0 + ms).toISOString() }),
       );
     for (const [n, item] of ["hello", "small_blessing", "luckies", "daily_fortune"].entries()) {

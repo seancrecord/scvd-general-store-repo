@@ -11,6 +11,46 @@ const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
 
 describe("/.well-known/ucp", () => {
+  it("publishes the release-specific specs and REST contract through both discovery paths", async () => {
+    // Optional for a business profile, but useful to readers that need
+    // the full declaration. Each catalog operation has its own spec.
+    const specPaths: Record<string, string> = {
+      "dev.ucp.shopping.catalog.search": "shopping/catalog/search/",
+      "dev.ucp.shopping.catalog.lookup": "shopping/catalog/lookup/",
+      "dev.ucp.shopping.checkout": "shopping/checkout/",
+      "dev.ucp.shopping.order": "shopping/order/",
+    };
+    for (const path of ["/.well-known/ucp", "/.well-known/ucp.json"]) {
+      const response = await SELF.fetch(`${BASE}${path}`);
+      expect(response.status).toBe(200);
+      const profile = await response.json() as {
+        ucp: {
+          version: string;
+          services: Record<string, { spec?: string; schema?: string; endpoint: string }[]>;
+          capabilities: Record<string, { spec?: string }[]>;
+        };
+      };
+      const release = `https://ucp.dev/${profile.ucp.version}`;
+      expect(profile.ucp.services["dev.ucp.shopping"]).toEqual([
+        expect.objectContaining({
+          spec: `${release}/specification/overview/`,
+          schema: `${release}/services/shopping/rest.openapi.json`,
+          endpoint: `${BASE}/ucp/v1`,
+        }),
+      ]);
+      for (const [name, instances] of Object.entries(profile.ucp.capabilities)) {
+        for (const instance of instances) {
+          if (name.startsWith("dev.ucp.")) {
+            expect(specPaths[name], name).toBeDefined();
+            expect(instance.spec, name).toBe(`${release}/specification/${specPaths[name]}`);
+          } else {
+            expect(instance.spec, name).toBe(`${BASE}/ucp/specs/shopping-inputs`);
+          }
+        }
+      }
+    }
+  });
+
   it("serves a profile pinned to one dated UCP version", async () => {
     const res = await SELF.fetch(`${BASE}/.well-known/ucp`);
     expect(res.status).toBe(200);

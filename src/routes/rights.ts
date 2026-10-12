@@ -4,6 +4,7 @@ import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { REFUND_POLICY } from "@/store/refund-policy";
+import { CHECKOUT_CANCELLATION } from "@/lib/ucp/checkout/discovery";
 import { RIGHTS, RIGHTS_LIMIT, RIGHTS_STANDFIRST } from "@/store/rights";
 import type { HonoEnv } from "@/types";
 
@@ -62,6 +63,7 @@ rightsRoutes.get("/rights", (c) => {
      * what you are owed if it goes wrong.
      */
     refund_policy: REFUND_POLICY,
+    checkout_cancellation: CHECKOUT_CANCELLATION,
   };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
@@ -94,9 +96,22 @@ rightsRoutes.get("/rights", (c) => {
       bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(RIGHTS_STANDFIRST)}</p>
       </section>
-      <section>
+      <section id="purchase-terms">
         <h2>The rulings</h2>
         ${clauses}
+      </section>
+      <section id="refund-policy">
+        <h2>Refund policy</h2>
+        <p class="menu-desc">${escapeHtml(REFUND_POLICY.commitment)}</p>
+        <p class="menu-desc">${escapeHtml(REFUND_POLICY.mechanism)}</p>
+        <p class="menu-desc">${escapeHtml(REFUND_POLICY.instant_items)}</p>
+        <p class="menu-meta">${escapeHtml(REFUND_POLICY.where_recorded)}</p>
+        <p class="menu-meta"><a href="/fulfillment-log">The delivery and refund record</a></p>
+      </section>
+      <section id="checkout-cancellation">
+        <h2>Canceling an unfinished checkout</h2>
+        <p class="menu-desc">${escapeHtml(CHECKOUT_CANCELLATION)}</p>
+        <p class="menu-meta"><a href="/ucp">UCP checkout documentation</a></p>
       </section>
       <section>
         <h2>The limit</h2>

@@ -847,10 +847,10 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
      * THE CATEGORY, IN THE FIELD FOR IT (2026-09-02). alternateName
      * carries the store's names; knowsAbout carries category phrases as
      * topics; subjectOf links what has been written about the store
-     * under a byline. The storefront prose does not change: the
-     * identity noun stays on every sentence a person reads, and these
-     * are the machine fields a question in anyone's words resolves
-     * through. store/copy/asked-for.ts has the reasoning.
+     * under a byline. The writing section renders the same article
+     * facts with the keeper's authorship explicit. These are the
+     * machine fields a question in anyone's words resolves through.
+     * store/copy/asked-for.ts has the reasoning.
      */
     knowsAbout: ASKED_FOR_NOUNS,
     url: "https://scvd.store",

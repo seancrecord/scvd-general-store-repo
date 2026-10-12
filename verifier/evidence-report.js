@@ -7,6 +7,60 @@ export const EVIDENCE_REPORT_MAX_BYTES = 131072;
 const hash = value => typeof value === "string" && /^[a-f0-9]{64}$/i.test(value);
 const text = value => typeof value === "string" && value.length > 0 && value.length <= 2048 ? value : null;
 
+// Reader commentary stays beside, never inside, the signed row. These meanings
+// follow the preflight battery's declared scope; an absent field is not an
+// experiment on the merchant's retry behavior.
+const retryAbsent = {
+  observed: "The recorded advisory says the declared inputs contained no recognized retry-key field.",
+  unknown: "Whether retries are protected through a header, session, settlement identity or an unrecognized field; whether another authorization would double-charge. No paid retry was tested by this advisory.",
+};
+const offersAbsent = {
+  observed: "The recorded advisory says no signed offer was found in the challenge placements the probe read.",
+  unknown: "Whether signed offers exist elsewhere or appear under another request condition; this does not establish endpoint-wide absence.",
+};
+const advisoryMeanings = new Map([
+  ["retry-key-not-in-challenge", retryAbsent],
+  ["retry-key-declared", {
+    observed: "The recorded advisory says a declared input has a recognized retry-key shape.",
+    unknown: "Whether the merchant honors that field or safely handles retries; a declaration is not a paid retry test.",
+  }],
+  ["signed-offers-not-in-challenge", offersAbsent],
+  ["no-signed-offers", offersAbsent], // Historical code, same bounded reading.
+]);
+const ADVISORY_READINGS_MAX_BYTES = 16384;
+
+export function readAdvisoryScope(subject) {
+  const reading = {
+    basis: "reader_interpretation_of_signed_codes",
+    scope: "Derived reader commentary, not additional signed claims or independently tested behavior. Codes come only from retained exact-subject signed rows. Unknown or omitted advisories do not imply a clean result.",
+    status: subject.status, omitted_observations: subject.omitted_observations,
+    observations: [], omitted_advisories: 0, max_bytes: ADVISORY_READINGS_MAX_BYTES,
+  };
+  // Bound the expansion from terse codes as well as the original row excerpt.
+  // Omission counts survive; neither JSON nor Markdown silently loses scope.
+  let bytes = 2;
+  for (const observation of subject.observations) {
+    const codes = observation.value?.advisories;
+    if (!Array.isArray(codes)) continue;
+    const row = { signed_claims_pointer: observation.signed_claims_pointer, advisories: [] };
+    const baseBytes = new TextEncoder().encode(JSON.stringify(row)).length + 1;
+    if (bytes + baseBytes > ADVISORY_READINGS_MAX_BYTES) { reading.omitted_advisories += codes.length; continue; }
+    bytes += baseBytes;
+    for (const value of codes) {
+      const code = typeof value === "string" ? value : null;
+      const item = { code, ...(advisoryMeanings.get(code) ?? {
+        observed: null, unknown: "This code is not interpreted by this reader. Consult the original battery definition; neither safety nor absence of a safeguard is established.",
+      }) };
+      const size = new TextEncoder().encode(JSON.stringify(item)).length + 1;
+      if (bytes + size > ADVISORY_READINGS_MAX_BYTES) { reading.omitted_advisories++; continue; }
+      bytes += size;
+      row.advisories.push(item);
+    }
+    reading.observations.push(row);
+  }
+  return reading;
+}
+
 /** Headers and their resource URL are unsigned claims, including when a
  * digest matches a signed row. Never select a payment rail or authorize it. */
 export async function readPaymentChallenge(bytes, subject) {
@@ -53,7 +107,7 @@ export function renderEvidenceReport(result, maxBytes = EVIDENCE_REPORT_MAX_BYTE
   // issuer claims can become Markdown structure. Never interpolate them into
   // the surrounding prose. The compact record preserves the bounded rows.
   const data = JSON.stringify(result).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
-  const report = `# Evidence verification report\n\nCorpus snapshots verified in this command: ${result.corpus_snapshots_verified}. This is not a count of weekly history or proof of current delivery. Unsigned history is not authenticated by this check.\n\nOriginal-file SHA-256 and signed-message SHA-256 identify different bytes. The exact computed fields are below; retain and cite this report without retyping identifiers. Keep the original response, source URL and independently established key: this report cannot be verified alone.\n\n\`\`\`json\n${data}\n\`\`\`\n\nSignature validity does not establish issuer identity, truthful observations, current payment terms, settlement, delivery, Bitcoin anchoring or permission to spend. Observation dates remain separate from snapshot publication and any caller freshness policy.\n`;
+  const report = `# Evidence verification report\n\nCorpus snapshots verified in this command: ${result.corpus_snapshots_verified}. This is not a count of weekly history or proof of current delivery. Unsigned history is not authenticated by this check.\n\nInput-file SHA-256 and signed-message SHA-256 identify different bytes. ${result.input_kind === "evidence_bundle" ? "The input hash identifies bundle bytes, not the original HTTP response. Bundle context is unsigned and not authenticated." : "The input hash identifies the saved response bytes."} The exact computed fields are below; retain and cite this report without retyping identifiers. Keep the input file (saved response or exported bundle), source URL and independently established key: this report cannot be verified alone.\n\n\`\`\`json\n${data}\n\`\`\`\n\nSignature validity does not establish issuer identity, truthful observations, current payment terms, settlement, delivery, Bitcoin anchoring or permission to spend. Observation dates remain separate from snapshot publication and any caller freshness policy.\n`;
   if (new TextEncoder().encode(report).length > Math.min(maxBytes, EVIDENCE_REPORT_MAX_BYTES)) throw new Error("report_too_large");
   return report;
 }
