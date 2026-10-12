@@ -53,6 +53,7 @@ export function ucpRecoveryPaths(base: string, edgeResponses: Record<string, unk
   return {
     "/ucp/v1/checkout-sessions/{id}": {
       get: {
+        security: [],
         summary: "Read a UCP checkout",
         description: "Read current checkout state, including an in-flight completion. Poll here instead of submitting payment again. The UCP profile at /.well-known/ucp links the full shopping contract.",
         parameters,
@@ -61,6 +62,7 @@ export function ucpRecoveryPaths(base: string, edgeResponses: Record<string, unk
     },
     "/ucp/v1/checkout-sessions/{id}/cancel": {
       post: {
+        security: [],
         summary: "Cancel an unfinished UCP checkout",
         description: CHECKOUT_CANCELLATION,
         parameters,
