@@ -1,3 +1,5 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
+import { MACHINE_SURFACE_CEILINGS } from "@/store/reader-limits";
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { app } from "@/index";
@@ -43,6 +45,8 @@ const BASE = "https://scvd.store";
  * instruments drift apart.
  */
 const CEILINGS: Record<string, number> = {
+  // The reference has the same reading budget wherever it is measured.
+  [PERSONAL_SHOPPER.walletPath]: MACHINE_SURFACE_CEILINGS.find(surface => surface.path === PERSONAL_SHOPPER.walletPath)!.budget,
   // The two the x402 indexers fetch. Production 2026-09-15: 334 KB and
   // 345 KB. Both carry the ownership claim and both are enormous, which
   // is exactly the combination that failed.
