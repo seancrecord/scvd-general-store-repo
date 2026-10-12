@@ -102,3 +102,14 @@ No duplicate upload or scan bypass was attempted. The skill content is unchanged
 Controlled verification installs do not establish directory ranking. skills.sh
 has no manual submission flow; its directory uses genuine installation activity.
 No new wallet, funding, signing, purchase or recurring monitoring was performed.
+
+
+Follow-up CI's route audit caught the archive route missing from its explicit
+index-discovered paths. The archive was already listed and exercised through
+the public index; the audit now records that entry point. Both audit tests
+pass. The other affected discovery group remains 43 passing tests.
+
+The skills.sh detail URL returned an HTTP 200 shell, but browser readback
+rendered an unavailable-skill/404 page. It is not yet indexed. This is distinct
+from the successful real GitHub/Skills CLI installation; no listing or ranking
+is claimed from that result. [Directory readback](skills-sh-page.json).

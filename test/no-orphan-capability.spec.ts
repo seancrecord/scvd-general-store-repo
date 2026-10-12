@@ -34,6 +34,8 @@ import { app } from "@/index";
  * fails the staleness checks below.
  */
 const DELIBERATELY_QUIET: Record<string, string> = {
+  "/.well-known/agent-skills/skill.tar.gz":
+    "multi-file skill download reached through the public RFC discovery index; agent-skills-index.spec.ts fetches, hashes and unpacks every published archive",
   [PERSONAL_SHOPPER.hostsPath]:
     "connection and rehearsal reference reached from the shopper skill, homepage and operational manual; file parity is tested in skills-well-known.spec.ts",
   [PERSONAL_SHOPPER.walletPath]:
