@@ -1,5 +1,9 @@
 # SCVD distribution: channels and records
 
+## October 12 — production readback
+
+PR #1008 is live. The public GitHub install includes the complete shopper. A website installer readback found that the preferred RFC index omitted supporting files; the follow-up packages them together without changing skill content. ClawHub 1.0.0 is public with a clean scan; a temporary install matched all three source files. Current evidence is in the [release record](research/personal-agent-release-2026-10-12/README.md).
+
 ## October 12 — Hermes and personal-agent entry
 
 The personal-shopper release now includes both website skill-discovery formats, canonical supporting files, host recipes and a no-spend rehearsal. [Qualification matrix](docs/AGENT_ENTRY_2026-10.md); [ClawHub metadata](registry/scvd-personal-shopper/catalog.json). An installable artifact is not a qualified payment integration. Publication/readback status stays in the [release record](research/personal-agent-release-2026-10-12/README.md).

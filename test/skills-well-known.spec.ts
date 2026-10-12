@@ -13,7 +13,7 @@ describe("website skill discovery used by Hermes and skills.sh", () => {
     expect(response.headers.get("content-type")).toContain("application/json");
     const index = await response.json() as { skills: Entry[] };
     const digested = await (await SELF.fetch(`${BASE}/.well-known/agent-skills/index.json`)).json() as {
-      skills: Array<{name: string; description: string; url: string; digest: string}>;
+      skills: Array<{name: string; description: string; url: string; digest: string; type: string}>;
     };
     expect(index.skills.map(s => s.name)).toEqual(digested.skills.map(s => s.name));
     for (const skill of index.skills) {
@@ -26,7 +26,7 @@ describe("website skill discovery used by Hermes and skills.sh", () => {
         expect(artifact.headers.get("content-type")).toContain("text/markdown");
         const body = await artifact.text();
         expect(body).toBe(await (await SELF.fetch(new URL(file, original.url))).text());
-        if (file === "SKILL.md") expect(`sha256:${await sha256Hex(body)}`).toBe(original.digest);
+        if (file === "SKILL.md" && original.type === "skill-md") expect(`sha256:${await sha256Hex(body)}`).toBe(original.digest);
       }
     }
     expect(index.skills.find(s => s.name === "scvd-personal-shopper")!.files)

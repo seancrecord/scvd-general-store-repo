@@ -122,7 +122,7 @@ const DISCOVERY_WALL_BYTES = 512_000;
  * path, so its documents are enumerated from the skills index and held
  * to one ceiling each. The focused verification skill is ~10 KB.
  */
-const PARAMETERISED = new Set(["/.well-known/agent-skills/:name/SKILL.md", "/.well-known/skills/:name/*"]);
+const PARAMETERISED = new Set(["/.well-known/agent-skills/:name/skill.tar.gz", "/.well-known/agent-skills/:name/SKILL.md", "/.well-known/skills/:name/*"]);
 const SKILL_DOCUMENT_CEILING = 64_000;
 
 describe("the discovery documents stay small enough to be read", () => {
@@ -231,10 +231,10 @@ describe("the discovery documents stay small enough to be read", () => {
     const skills = index.skills ?? [];
     expect(skills.length).toBeGreaterThan(0);
     for (const skill of skills) {
-      const path = `/.well-known/agent-skills/${skill.name}/SKILL.md`;
-      const response = await SELF.fetch(`${BASE}${path}`);
+      const path = skill.url!;
+      const response = await SELF.fetch(path);
       expect(response.status, path).toBe(200);
-      const bytes = new TextEncoder().encode(await response.text()).length;
+      const bytes = (await response.arrayBuffer()).byteLength;
       expect(bytes, `${path} is ${bytes} bytes against a ceiling of ${SKILL_DOCUMENT_CEILING}`).toBeLessThanOrEqual(SKILL_DOCUMENT_CEILING);
       expect(bytes, path).toBeLessThan(DISCOVERY_WALL_BYTES);
     }

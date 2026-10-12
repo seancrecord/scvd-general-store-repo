@@ -1,0 +1,24 @@
+{
+  "observedAt": "2026-10-12T20:36:39.857Z",
+  "mergeCommit": "2e7a52fa2e244c35c2c91cd8ff0eef5a6526f324",
+  "status": "passed",
+  "files": [
+    {
+      "file": "SKILL.md",
+      "bytes": 5030,
+      "sha256": "176d4a635242f668773133cb97eea8e637ea0510019fb50e38651f38a5f4d3ff"
+    },
+    {
+      "file": "references/wallet.md",
+      "bytes": 2684,
+      "sha256": "a62edcb5f53a6b81903977e65d6aa5e2370ef459f0f3b994ca04be9f83b176b1"
+    },
+    {
+      "file": "references/hosts.md",
+      "bytes": 4202,
+      "sha256": "fbfbaee6d632fd7a8111c9f8732475e55f09db8c669ad7a3abfe679d4564d4f9"
+    }
+  ],
+  "homepage": "passed",
+  "indexSkillCount": 4
+}

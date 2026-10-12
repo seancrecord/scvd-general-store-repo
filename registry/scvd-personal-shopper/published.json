@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-10-12T20:43:13.931Z",
+  "slug": "scvd-personal-shopper",
+  "owner": "seancrecord",
+  "url": "https://clawhub.ai/seancrecord/scvd-personal-shopper",
+  "version": "1.0.0",
+  "publication": "public",
+  "install": "passed",
+  "files": [
+    {
+      "path": "SKILL.md",
+      "size": 5030,
+      "sha256": "176d4a635242f668773133cb97eea8e637ea0510019fb50e38651f38a5f4d3ff",
+      "contentType": "text/markdown"
+    },
+    {
+      "path": "references/hosts.md",
+      "size": 4202,
+      "sha256": "fbfbaee6d632fd7a8111c9f8732475e55f09db8c669ad7a3abfe679d4564d4f9",
+      "contentType": "text/markdown"
+    },
+    {
+      "path": "references/wallet.md",
+      "size": 2684,
+      "sha256": "a62edcb5f53a6b81903977e65d6aa5e2370ef459f0f3b994ca04be9f83b176b1",
+      "contentType": "text/markdown"
+    }
+  ],
+  "security": {
+    "status": "clean",
+    "hasWarnings": false,
+    "checkedAt": 1791837633537,
+    "model": null,
+    "hasScanResult": true,
+    "sha256hash": "cce83fbad0772fed63f2b9334eadcd6508298ae5b066202241c45d37d26e2888",
+    "virustotalUrl": "https://www.virustotal.com/gui/file/cce83fbad0772fed63f2b9334eadcd6508298ae5b066202241c45d37d26e2888",
+    "scanners": {
+      "vt": null,
+      "skillspector": null,
+      "llm": {
+        "status": "clean",
+        "verdict": "benign",
+        "normalizedStatus": "clean",
+        "confidence": "high",
+        "summary": "This skill is a disclosed shopping-and-payment guide with strong user-approval safeguards, though users should be careful with the optional unpinned install commands and wallet setup.",
+        "dimensions": null,
+        "guidance": null,
+        "findings": null,
+        "agenticRiskFindings": null,
+        "riskSummary": null,
+        "model": null,
+        "checkedAt": 1791837633537
+      }
+    }
+  },
+  "sourceCommit": "2e7a52fa2e244c35c2c91cd8ff0eef5a6526f324"
+}

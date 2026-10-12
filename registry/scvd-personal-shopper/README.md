@@ -1,6 +1,7 @@
 # Personal shopper distribution — 2026-10-12
 
-`catalog.json` is the intended ClawHub metadata for this skill only. Categories
+`catalog.json` is the ClawHub metadata for this skill only. Version 1.0.0 is
+public and its complete installation is verified; see [published.json](published.json). Categories
 come from the official skill taxonomy, read October 12. Topics describe the
 workflow; none imply platform endorsement. The skill instructions are free;
 the store charges only for separately approved purchases.

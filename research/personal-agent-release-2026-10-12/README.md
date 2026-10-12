@@ -71,3 +71,34 @@ Categories finance/integrations; topics x402/shopping/usdc/receipts/spend-limits
 No wallet funding, signing or purchase was performed. The prior PR head passed
 all four CI shards and check; this extension requires a fresh CI run. Production
 readback and public registry inspection remain release steps.
+
+
+## Approved production release and consumer readback
+
+The keeper explicitly approved merge, production deployment and ClawHub
+publication. This supersedes the earlier approval blocker above. PR #1008
+merged at 2026-10-12T20:35:36Z after all four test shards and required check
+passed. Merge: `2e7a52fa2e244c35c2c91cd8ff0eef5a6526f324`. Both production
+Worker builds succeeded. Public index and all three shopper files passed
+source-byte readback at 20:36:39Z. GitHub Skills CLI installation also included
+all three matching files, with telemetry disabled.
+
+The live website consumer exposed a packaging defect missed by the earlier
+single-index fixture: Skills CLI prefers the RFC index, and its `skill-md`
+entry installs no references. The follow-up changes that one entry to an
+archive containing the same three files. Two regression assertions failed
+against the prior implementation; afterward 43 tests across four discovery
+specs, typecheck and production build checks passed. `skills@1.5.26` installed
+all three matching files from the fixed local HTTPS Worker with both discovery
+indexes present. Production installation is the final follow-up release check.
+
+ClawHub accepted the approved three-file 1.0.0 upload with fingerprint
+`f856c1a1ec0ac3852d03f5f37983fd08d132740bc7102272dec33d1c25c0ef09`, version ID
+`k97fz04hf0z5jemb5qtg6fbm8h8g4efr`. The initial readback was pending. It then became public with a clean scan;
+a clean temporary install included all three source-identical files.
+[Publication receipt](../../registry/scvd-personal-shopper/published.json).
+No duplicate upload or scan bypass was attempted. The skill content is unchanged by the archive fix.
+
+Controlled verification installs do not establish directory ranking. skills.sh
+has no manual submission flow; its directory uses genuine installation activity.
+No new wallet, funding, signing, purchase or recurring monitoring was performed.
