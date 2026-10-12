@@ -183,7 +183,7 @@ const OFFER_HEADER_MIRROR_BUDGET = 12_288;
 /** Mirror signed offers into the challenge header only when they fit. */
 function withOfferHeader(
   headers: Record<string, string>,
-  offers: Record<string, unknown>,
+  offers: Record<string, unknown> | null,
 ): Record<string, string> {
   try {
     const headerName = Object.keys(headers).find(
@@ -206,8 +206,14 @@ function withOfferHeader(
     // Five networks times three tiers overflowed stock Node fetch before
     // it could read the 402. Keep every payable term in the original
     // header and every signed offer in the body; only omit this mirror.
-    if (encoded.length > OFFER_HEADER_MIRROR_BUDGET) return headers;
-    return { ...headers, [headerName]: encoded };
+    if (offers && encoded.length <= OFFER_HEADER_MIRROR_BUDGET) return { ...headers, [headerName]: encoded };
+    // Six rails plus native challenges can overflow even without the offer
+    // mirror. Bazaar discovery remains complete in the JSON body; the header
+    // needs every payment term, not a second copy of the discovery schema.
+    if (headers[headerName]!.length <= OFFER_HEADER_MIRROR_BUDGET) return headers;
+    const extensions = isRecord(decoded["extensions"]) ? { ...decoded["extensions"] } : {};
+    delete extensions["bazaar"];
+    return { ...headers, [headerName]: encodeBase64Json({ ...decoded, extensions }) };
   } catch {
     return headers;
   }
@@ -1218,6 +1224,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
          * blocking the till. See lib/offer-receipt.ts.
          */
         const offers = await offerExtensionsFor(c.env, result.response.headers);
+        let challengeExtensions: Record<string, unknown> = {};
+        try {
+          const challengeHeader = Object.entries(result.response.headers).find(([name]) => name.toLowerCase() === "payment-required")?.[1];
+          const challenge = challengeHeader ? decodeBase64Json(challengeHeader) : null;
+          if (isRecord(challenge) && isRecord(challenge.extensions)) challengeExtensions = challenge.extensions;
+        } catch { /* Optional metadata must not prevent a payment challenge. */ }
         const enriched = await enrich402Body(
           c.env,
           c.req.path,
@@ -1245,16 +1257,15 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         return respondWithInstructions(c, {
           ...result.response,
           headers: {
-            ...(offers
-              ? withOfferHeader(result.response.headers, offers)
-              : result.response.headers),
+            ...withOfferHeader(result.response.headers, offers),
             ...retryAfter,
           },
           body:
-            offers && isRecord(enriched)
+            isRecord(enriched)
               ? {
                   ...enriched,
                   extensions: {
+                    ...challengeExtensions,
                     ...(isRecord(enriched["extensions"])
                       ? enriched["extensions"]
                       : {}),

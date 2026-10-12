@@ -102,3 +102,12 @@ live settlement. No one-product gate or trial mode exists in this implementation
 The separate [historical receipt audit](../research/settle-reconciliation-2026-10-12/README.md)
 leaves the one-count legacy warning unresolved. It found no transaction-backed
 single-counter correction or refund basis, and changed no production records.
+
+After merging current main, CI exposed the discovery-document growth budget
+and the complete enabled-rail fixture exposed oversized quote headers. Both
+failures were reproduced before their fixes. OpenAPI now shares identical 402
+responses and avoids duplicate menu schema properties, while keeping checkout
+offers inline. Wide quote headers omit only optional discovery mirrors; the
+complete discovery metadata and signed offers remain in the JSON body. Header
+tests enable Arc alongside every other rail. The guide snapshot was verified
+against main before accepting its single new Arc certificate clause.

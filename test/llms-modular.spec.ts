@@ -1218,8 +1218,10 @@ const BASE = "https://scvd.store";
 // history pointer. Restoring main llms.ts reproduces both prior pins (14/14).
 // 2026-10-12: personal shopper links and removal of redundant navigation prose.
 // Restoring llms.ts from the parent reproduces both prior pins (14/14).
+// 2026-10-12: one Arc clause distinguishes signed acceptance from settlement.
+// Restoring only llms.ts to main 2e7a52fa reproduces both old pins (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "989f4b9db40115c96f2d85c5e8f80cf57366f7ef12a3f12bef1c8f989cfcec13";
+  "bf9cde19a1c9766aa61a5612e44caa3c529a8511ad90e51aa8e85208f1c476da";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1322,7 +1324,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "ee358d8f83d6e0d8a2fd7e18e15c5428f8361fb695e9d6502ff926a38211a22e",
+      "8b56b071a8a50b9edf874518509269efe204142466b0f5c264a8dac86a540e53",
     );
   });
 

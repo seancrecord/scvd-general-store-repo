@@ -126,7 +126,8 @@ it("preserves each paid challenge header through its OpenAPI reference", async (
     if (!operation || !operation["x-payment"]) continue;
     const responses = operation.responses as Record<string, { headers: Record<string, unknown> }>;
     for (const [name, schema] of Object.entries(PAYMENT_CHALLENGE_HEADERS)) {
-      expect(expand(responses["402"]!.headers[name], document)).toEqual(schema);
+      const response = expand(responses["402"], document) as { headers: Record<string, unknown> };
+      expect(response.headers[name]).toEqual(schema);
     }
     checked++;
   }
