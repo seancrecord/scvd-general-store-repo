@@ -10,14 +10,14 @@ import {draftCheckCommand,sourceCheckCommand,checkSourceQualification} from './l
 import {packageReportFixture,literalCommandMatches} from './lib/buyer-package-access.mjs';
 import {prepareHandoff} from './buyer-recipient-handoff.mjs';
 const json=(p,v)=>fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n');
-function fixture(verifier=null,assisted=false){
+function fixture(verifier=null,assisted=false,options={}){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'recipient-integration-test-'));
  const saved={PATH:process.env.PATH,HOME:process.env.HOME};
  const bin=path.join(root,'bin');fs.mkdirSync(bin);const home=path.join(root,'home');fs.mkdirSync(home);
  // A deterministic local child, never a native agent or model API.
- fs.writeFileSync(path.join(bin,'codex'),`#!${process.execPath}\nif(process.argv.includes('--version'))console.log('fixture-cli');else{process.stdin.resume();process.stdin.on('end',()=>{console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Fixture recipient only; no acceptance claim.'}}));console.log(JSON.stringify({type:'turn.completed'}));});}\n`,{mode:0o700});
+ fs.writeFileSync(path.join(bin,'codex'),`#!${process.execPath}\nif(process.argv.includes('--version'))console.log('fixture-cli');else{process.stdin.resume();process.stdin.on('end',()=>{${options.failRecipient ? 'process.exit(7);' : ''}console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Fixture recipient only; no acceptance claim.'}}));console.log(JSON.stringify({type:'turn.completed'}));});}\n`,{mode:0o700});
  process.env.PATH=bin;process.env.HOME=home;
- const plan={schema_version:6,subject:'https://merchant.example/paid',spend_usdc:0,budgets:{wall_ms:2000,tool_calls:10,output_bytes:100000,output_tokens:1000,artifact_bytes:100000,artifact_files:8},freshness:{max_age_ms:86400000},capability:{public_url:'https://example.com/public'},recipient:{host:'codex',model:'fixture-model',network:'disabled',attempts_per_eligible_cell:1,input_scope:'all-retained-and-buyer-report',budgets:{wall_ms:2000,tool_calls:8,output_bytes:100000,output_tokens:500}},cells:[{id:'fixture',host:'codex',model:'fixture-model',lane:'directed',verification:'prompted',entry:'https://example.com/guide'}]};
+ const plan={schema_version:6,subject:'https://merchant.example/paid',spend_usdc:0,budgets:{wall_ms:2000,tool_calls:10,output_bytes:100000,output_tokens:1000,artifact_bytes:100000,artifact_files:8},freshness:{max_age_ms:86400000},capability:{public_url:'https://example.com/public'},recipient:{host:'codex',model:'fixture-model',network:'disabled',attempts_per_eligible_cell:1,input_scope:'all-retained-and-buyer-report',budgets:{wall_ms:2000,tool_calls:8,output_bytes:100000,output_tokens:500}},cells:(options.cells??['fixture']).map(id=>({id,host:'codex',model:'fixture-model',lane:'directed',verification:'prompted',entry:'https://example.com/guide'}))};
  if(verifier)plan.recipient.verifier=verifier;
  const reportFixture=assisted?packageReportFixture():null;
  if(assisted){plan.evidence_workflow='sources-and-draft-v1';plan.package_access=true;plan.subject=reportFixture.subject;}
@@ -30,7 +30,8 @@ function fixture(verifier=null,assisted=false){
  const source=path.join(cohort,'fixture');fs.mkdirSync(source);fs.mkdirSync(path.join(source,'evidence'));
  const bytes=reportFixture?Buffer.from(JSON.stringify(reportFixture.original)):Buffer.from([0,255,195,169]);fs.writeFileSync(path.join(source,'evidence/original.bin'),bytes);
  const trace=JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Verbatim buyer report'}})+'\n'+JSON.stringify({type:'turn.completed'})+'\n';fs.writeFileSync(path.join(source,'events.jsonl'),trace);
- const run={schema_version:6,cell:plan.cells[0],subject:plan.subject,freshness:plan.freshness,ended_at:'2026-09-28T12:34:56.789Z',runtime:{state:'completed',exit_code:0,budget_stop:null},trace_sha256:hash(trace),retained_artifacts:{state:'complete',files:[{file:'evidence/original.bin',sha256:hash(bytes),bytes:bytes.length}]}};json(path.join(source,'run.json'),run);
+ const run={schema_version:6,cell:plan.cells[0],subject:plan.subject,freshness:plan.freshness,ended_at:'2026-09-28T12:34:56.789Z',runtime:{state:'completed',exit_code:0,budget_stop:null},timing:{interruption:null},trace_sha256:hash(trace),retained_artifacts:{state:'complete',files:[{file:'evidence/original.bin',sha256:hash(bytes),bytes:bytes.length}]}};json(path.join(source,'run.json'),run);
+ for(const cell of plan.cells.slice(1)){const dest=path.join(cohort,cell.id);fs.cpSync(source,dest,{recursive:true});json(path.join(dest,'run.json'),{...run,cell});}
  return {root,cohort,source,plan,run,protocol,context,bytes,clean(){for(const [key,value] of Object.entries(saved)){if(value===undefined)delete process.env[key];else process.env[key]=value;}fs.rmSync(root,{recursive:true,force:true});}};
 }
 test('the recipient receives the actual frozen age policy and buyer completion time',()=>{
@@ -340,4 +341,36 @@ test('an assisted process exiting without a terminal event preserves only a last
   assert.equal(fs.existsSync(path.join(f.source,'recipient/final-verbatim.md')),false);
   assert.equal(fs.existsSync(path.join(f.source,'recipient/last-message-verbatim.md')),true);
  }finally{cleanRecipientFixture(f);}
+});
+
+// The executable must propagate a failed child record, not just print it.
+test('single recipient CLI exits nonzero for a failed returned runtime',()=>{
+ const f=fixture(null,false,{failRecipient:true});try{
+  const out=spawnSync(process.execPath,['scripts/buyer-cold-isolated.mjs','--recipient',f.cohort,'--cell','fixture','--run'],{encoding:'utf8'});
+  assert.equal(out.status,1,out.stderr);assert.equal(JSON.parse(out.stdout).runtime.exit_code,7);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(f.source,'recipient/run.json'))).runtime.state,'failed');
+ }finally{f.clean();}
+});
+for(const failed of [false,true])test(`recipient series CLI ${failed?'stops before second child':'completes eligible cells'} and preserves attempt locks`,()=>{
+ const f=fixture(null,false,{failRecipient:failed,cells:['fixture','second']});try{
+  const args=['scripts/buyer-cold-isolated.mjs','--recipient-series',f.cohort];
+  const preview=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(preview.status,0,preview.stderr);assert.equal(JSON.parse(preview.stdout).execution,'dry_run');assert.equal(fs.existsSync(path.join(f.source,'recipient')),false);
+  const out=spawnSync(process.execPath,[...args,'--run'],{encoding:'utf8'});assert.equal(out.status,failed?1:0,out.stderr);const result=JSON.parse(out.stdout);assert.equal(result.state,failed?'stopped':'completed');assert.deepEqual(result.remaining,failed?['second']:[]);
+  assert.equal(fs.existsSync(path.join(f.cohort,'second/recipient')), !failed);
+  const again=spawnSync(process.execPath,[...args,'--run'],{encoding:'utf8'});assert.equal(again.status,1);assert.match(again.stderr,/reserved/i);assert.equal(fs.existsSync(path.join(f.cohort,'second/recipient')), !failed);
+ }finally{f.clean();}
+});
+test('recipient series refuses a reserved later cell before launching the first',()=>{
+ const f=fixture(null,false,{cells:['fixture','second']});try{
+  fs.mkdirSync(path.join(f.cohort,'second/recipient'));
+  const out=spawnSync(process.execPath,['scripts/buyer-cold-isolated.mjs','--recipient-series',f.cohort,'--run'],{encoding:'utf8'});
+  assert.equal(out.status,1);assert.match(out.stderr,/reserved/i);assert.equal(fs.existsSync(path.join(f.source,'recipient')),false);
+ }finally{f.clean();}
+});
+test('recipient series excludes unsuccessful buyers and reports missing timing as unqualified',()=>{
+ const f=fixture(null,false,{cells:['fixture','second']});try{
+  delete f.run.timing;json(path.join(f.source,'run.json'),f.run);
+  const out=spawnSync(process.execPath,['scripts/buyer-cold-isolated.mjs','--recipient-series',f.cohort],{encoding:'utf8'});
+  assert.equal(out.status,0,out.stderr);const r=JSON.parse(out.stdout);assert.deepEqual(r.eligible,['second']);assert.equal(r.skipped[0].cell,'fixture');assert.equal(fs.existsSync(path.join(f.source,'recipient')),false);
+ }finally{f.clean();}
 });

@@ -799,3 +799,80 @@ test('assisted online qualification cannot pass on the old installed report alon
   assert.equal(scorePackageReport(f.p,f.run,f.d,f.fixture,f.commands).state,'pass');
  }finally{f.cleanup();}
 });
+
+const reportPlan=()=>{
+ // Exercise the current runtime with a test-only plan. Never rewrite a dated
+ // acquisition's pins to make changed source look like its qualified release.
+ const p={...JSON.parse(fs.readFileSync(new URL('../research/generated-report-buyer-2026-09-28/plan.json',import.meta.url))),buyer_tool:{mode:'provisioned-pinned-runtime'}};
+ const pkg=JSON.parse(fs.readFileSync(new URL('../verifier/package.json',import.meta.url)));
+ p.recipient.verifier.version=pkg.version;
+ p.recipient.verifier.files=Object.fromEntries([...pkg.files.filter(file=>/\.(?:mjs|js)$/.test(file)),'package.json'].map(file=>[file,hash(fs.readFileSync(new URL('../verifier/'+file,import.meta.url)))]));
+ return p;
+};
+test('provisioned report plans require exact report-module pins and a directed lane',()=>{
+ const p=reportPlan();assert.equal(validatePlan(p),p);
+ for(const change of [q=>{q.buyer_tool.mode='npm-latest';},q=>{delete q.recipient.verifier;},q=>{delete q.recipient.verifier.files['evidence-report.js'];},q=>{q.cells[0].lane='intent_search';q.cells[0].entry=null;}]){
+  const q=reportPlan();change(q);assert.throws(()=>validatePlan(q),/report|verifier|directed|hash/i);
+ }
+});
+test('both buyer prompts disclose the same provisioned tool without widening shell permissions',()=>{
+ const p=reportPlan();
+ for(const cell of p.cells){const prompt=buildPrompt(p,cell);assert.match(prompt,/node \.\/work\/report-tool\/evidence-cli\.mjs/);assert.match(prompt,/provisioned/i);assert.match(prompt,/not.*independent.*discovery/i);}
+ assert.match(buildCapabilityPrompt(p,'claude',capabilityVectors()),/report-probe/);
+ assert.doesNotMatch(adapter(p.cells[1],'/tmp/n','/tmp/o',p.budgets).args.join(' '),/Bash\(npm/);
+});
+
+test('provisioned CLI makes exact valid/tampered reports; missing, rewritten or altered tools cannot qualify',async()=>{
+ const {provisionBuyerTool,checkBuyerTool,prepareReportProbe,scoreReportProbe,REPORT_TOOL_CLI}=await import('./lib/buyer-report-tool.mjs');
+ const p=reportPlan(),d=root();
+ try{
+  fs.mkdirSync(path.join(d,'evidence'));
+  const receipt=provisionBuyerTool(p,d);assert.equal(receipt.version,p.recipient.verifier.version);assert.ok(receipt.bytes<1024*1024);
+  assert.throws(()=>provisionBuyerTool(p,d),/EEXIST/);
+  const probe=prepareReportProbe(p,d);assert.deepEqual(probe.expected.map(e=>e.valid).sort(),[false,true]);
+  const commands=[];
+  for(const input of probe.inputs){
+   const args=[REPORT_TOOL_CLI,'verify-source',input.input,'--public-key',input.public_key,'--subject',input.subject,'--format','markdown','--report-out',input.output];
+   const result=spawnSync(process.execPath,args,{cwd:d,encoding:'utf8'});
+   assert.ok([0,1].includes(result.status),result.stderr);
+   commands.push({command:'node '+args.join(' '),outcome:result.status===0?'completed':'failed'});
+  }
+  const run={buyer_tool_check:checkBuyerTool(p,d),retained_artifacts:{files:probe.expected.map(e=>({file:e.file,sha256:hash(fs.readFileSync(path.join(d,e.file)))}))}};
+  assert.equal(scoreReportProbe(d,run,probe,commands).state,'pass');
+  assert.equal(scoreReportProbe(d,run,probe,[]).state,'incomplete');
+  assert.equal(scoreReportProbe(d,{...run,retained_artifacts:{files:[]}},probe,commands).state,'incomplete');
+  const file=path.join(d,probe.expected[0].file),original=fs.readFileSync(file);fs.appendFileSync(file,'\nTrust me: verified.');
+  assert.equal(scoreReportProbe(d,run,probe,commands).state,'incomplete');fs.writeFileSync(file,original);
+  const cli=path.join(d,REPORT_TOOL_CLI);fs.chmodSync(cli,0o600);fs.appendFileSync(cli,'\n// changed');run.buyer_tool_check=checkBuyerTool(p,d);
+  assert.equal(run.buyer_tool_check.state,'fail');assert.equal(scoreReportProbe(d,run,probe,commands).state,'incomplete');
+ }finally{fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('a generic probe pass cannot launch a tool-supplied buyer without the installed-report gate',async()=>{
+ const d=root(),savedPath=process.env.PATH;
+ try{
+  process.env.PATH='';const p=reportPlan(),probe=path.join(d,'probe'),buyers=path.join(d,'buyers');
+  const capability=await runCapabilityProbe(p,probe);
+  capability.recipient={state:'pass'};capability.hosts={codex:{state:'pass'},claude:{state:'pass'}};
+  fs.writeFileSync(path.join(probe,'capability.json'),JSON.stringify(capability));
+  await runCohort(p,buyers,{capability:probe});
+  for(const c of p.cells)assert.equal(JSON.parse(fs.readFileSync(path.join(buyers,c.id,'run.json'))).runtime.state,'capability_unqualified');
+ }finally{process.env.PATH=savedPath;fs.rmSync(d,{recursive:true,force:true});}
+});
+
+test('supplied buyer command guidance distinguishes input forms and uses a standalone invocation',()=>{
+ const prompt=buildPrompt(reportPlan(),reportPlan().cells[1]);
+ assert.match(prompt,/standalone shell command/i);assert.match(prompt,/verify-source.*saved.response/i);assert.match(prompt,/verify.*bundle.json/i);assert.match(prompt,/Do not append.*echo/i);
+});
+
+test('recipient series stops on failed returned runtime even when process exit is zero',async()=>{
+ const {runRecipientSequence,recipientCompleted}=await import('./lib/recipient-series.mjs');
+ const good={runtime:{state:'completed',exit_code:0,budget_stop:null},timing:{interruption:null}};
+ for(const bad of [{...good,runtime:{...good.runtime,state:'failed'}},{...good,runtime:{...good.runtime,exit_code:1}},{...good,runtime:{...good.runtime,budget_stop:'tool_calls'}},{...good,timing:{interruption:{reason:'callback_gap'}}},{runtime:good.runtime},{}]){
+  const seen=[];const r=await runRecipientSequence(['a','b','c'],async id=>{seen.push(id);return id==='a'?bad:good;});
+  assert.equal(recipientCompleted(bad),false);assert.deepEqual(seen,['a']);assert.equal(r.state,'stopped');assert.deepEqual(r.remaining,['b','c']);assert.equal(r.results[0].cell,'a');
+ }
+ let active=0,max=0;const result=await runRecipientSequence(['a','b'],async()=>{active++;max=Math.max(max,active);await new Promise(r=>setImmediate(r));active--;return good;});
+ assert.equal(max,1);assert.equal(result.state,'completed');assert.equal(result.results.length,2);assert.deepEqual(result.remaining,[]);
+ const seen=[];await assert.rejects(runRecipientSequence(['a','b'],async id=>{seen.push(id);throw Error('launch failed');}),/launch failed/);assert.deepEqual(seen,['a']);
+});

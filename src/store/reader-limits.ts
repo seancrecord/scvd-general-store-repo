@@ -1,3 +1,5 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
+
 /**
  * READER LIMITS, AS PART OF THE CONTRACT (house rule 59).
  *
@@ -135,6 +137,10 @@ export const SINGLE_ITEM_TOOL_BUDGET_BYTES = 10_000;
 export const COMPACT_ITEM_CONTRACT_BUDGET_BYTES = 18_000;
 
 export const MACHINE_SURFACE_CEILINGS: readonly MachineSurfaceCeiling[] = [
+  // Local reading budgets for the short onboarding document and its one reference.
+  { path: PERSONAL_SHOPPER.path, budget: 8000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "text" },
+  { path: PERSONAL_SHOPPER.hostsPath, budget: 8000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "text" },
+  { path: PERSONAL_SHOPPER.walletPath, budget: 5000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "text" },
   { path: "/api/seller-declaration", budget: 16_000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },
   { path: "/calling-card/calling-card.mjs", budget: 32000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "text" },
   { path: "/bot-auth", budget: 24000, fetchCap: SCANNER_FETCH_CAP_BYTES, kind: "json" },

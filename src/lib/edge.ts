@@ -1,4 +1,5 @@
 import { VARY_ACCEPT } from "@/lib/accept";
+import { agentJourneyStep } from "@/lib/agent-journey";
 import { whereToLookNext } from "@/lib/store-links";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import type { EventSignals } from "@/lib/metrics";
@@ -200,6 +201,7 @@ export const isolateTiming: MiddlewareHandler<HonoEnv> = async (c, next) => {
         path: url.pathname,
         status: c.res.status,
         ua: (c.req.header("User-Agent") ?? "").slice(0, 120),
+        journey: agentJourneyStep(c.req.raw, c.res.status),
       }),
     );
   } catch {

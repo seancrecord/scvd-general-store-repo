@@ -142,3 +142,10 @@ test('schema 6 full acceptance requires the integrated recipient, even with a pa
   assert.equal((await scoreColdRun(b.run,b.review,b.root)).usable,'incomplete');
  }finally{b.cleanup();}
 });
+
+test('a changed or missing provisioned runtime prevents otherwise complete buyer acceptance',async()=>{
+ const b=baseline();try{
+  b.run.required_buyer_tool={mode:'provisioned-pinned-runtime'};
+  for(const check of [undefined,{state:'fail'}]){b.run.buyer_tool_check=check;assert.notEqual((await scoreColdRun(b.run,b.review,b.root)).usable,'pass');}
+ }finally{b.cleanup();}
+});

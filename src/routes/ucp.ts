@@ -14,6 +14,7 @@ import {
   USDC_HANDLER_TYPE,
 } from "@/lib/ucp/payments/usdc-x402";
 import { ucpProfile } from "@/lib/ucp/profile";
+import { CHECKOUT_CANCELLATION } from "@/lib/ucp/checkout/discovery";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
 import {
   IDEMPOTENCY_KEY_MAX_LENGTH,
@@ -143,7 +144,7 @@ ucpRoutes.get("/ucp/v1", (c) => {
               body: { payment: { instruments: [{ id: "pi_1", handler_id: "the quoted handler's id", type: "x402", selected: true, credential: { type: "x402", x402Version: 2, payload: "the signed x402 payment payload" } }] } },
               shape: `${base}/ucp/specs/payment/usdc-x402`,
             },
-            "checkout.cancel": { method: "POST", url: `${base}/ucp/v1/checkout-sessions/{id}/cancel` },
+            "checkout.cancel": { method: "POST", url: `${base}/ucp/v1/checkout-sessions/{id}/cancel`, description: CHECKOUT_CANCELLATION },
             "order.get": { method: "GET", url: `${base}/ucp/v1/orders/{id}` },
           }
         : {}),

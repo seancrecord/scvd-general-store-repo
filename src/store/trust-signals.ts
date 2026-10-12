@@ -1286,7 +1286,7 @@ export const RECORDS_NOT_LISTED =
 /**
  * THE KEEPER'S OWN SOCIAL ACCOUNT (his word, 2026-08-28: "@keeper_scvd
  * — is my twitter in the schemas?"). It was not, anywhere. It rides
- * sameAs beside EXTERNAL_RECORDS — a social profile is the textbook
+ * sameAs beside ENTITY_PROFILES — a social profile is the textbook
  * sameAs use, and it is the one identity link here that is
  * self-controlled rather than somebody else's index, which is why it
  * is its own constant instead of an EXTERNAL_RECORDS entry: that

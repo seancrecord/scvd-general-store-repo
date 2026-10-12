@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scvd-general-store",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
   "author": {
     "name": "Record Creative Co. LLC",

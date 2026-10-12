@@ -12,6 +12,19 @@ evidence. A stale Solana payer alias exists, but does not explain the one-count
 counter excess. No refund or counter adjustment is justified by this audit;
 retain the warning. [Evidence and limits](research/settle-reconciliation-2026-10-12/README.md).
 
+## October 12 — agent entry follow-through
+
+Approved: support Hermes’s files-based website skill discovery, clearer first-screen task routes, host installation guidance, ClawHub categories/topics, and a no-spend rehearsal in the personal shopper. Implementation and qualification limits: [agent entry](docs/AGENT_ENTRY_2026-10.md). Release remains tracked with the personal-shopper PR.
+
+## October 12 — approved personal-agent shopping path
+
+Keeper approved the reviewed personal-agent skill and distribution plan.
+Implementation adds a storefront paste prompt, the installable shopper skill,
+served references and discovery links, using existing checkout. Publication
+and verification are tracked in [the release record](research/personal-agent-release-2026-10-12/README.md).
+The remaining qualification is a user-approved useful purchase and, separately,
+new-wallet onboarding. No new payment rail or authorization primitive is implied.
+
 
 ## October 10 — admin follow-through
 

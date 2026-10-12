@@ -36,6 +36,10 @@ Source-chain balance selection constrains a Gateway buyer. This does not prove
 that every Circle-wallet buyer is Arc-only or cannot pay another way. The
 keeper's explicit implementation decision is the authority to add this rail.
 
+## 2026-10-12 — Personal-agent shopping distribution
+
+Read [Skills documentation](https://www.skills.sh/docs), the [Skills CLI](https://github.com/vercel-labs/skills), [Coinbase's wallet skills](https://github.com/coinbase/agentic-wallet-skills), its [x402 guide](https://github.com/coinbase/agentic-wallet-skills/blob/main/skills/agentic-wallet/references/x402-pay.md), and [AIsa's skill](https://github.com/AIsa-team/nanopayment-x402/blob/main/SKILL.md). Skills supports named installation from a repository; leaderboard placement follows install telemetry. Coinbase documents Base x402 payment, amount ceilings and custom headers. AIsa documents a Gateway-specific signing domain, not drop-in compatibility with standard EVM exact payments. An unpaid live SCVD quote returned v2 exact/Base on this date. No wallet funding, settlement or named personal-host compatibility was established. The draft's provider setup remains conditional on actual host capabilities. Public skill source and its reference are the served bytes; no second wallet/payment implementation is added.
+
 
 ## 2026-10-07 — keeper-supplied discovery placements
 
@@ -2998,3 +3002,10 @@ inside the exact statement. A signature establishes wallet control only, not
 host ownership. No new x402, MPP or CAIP wire compatibility is claimed; network
 identifiers are declared context, and address/network pairs are not compared.
 Host-proof file placement is SCVD's existing convention, not an external standard.
+
+## 2026-10-12 — Hermes website skills and ClawHub catalog metadata
+
+- [Hermes skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills): website discovery uses `/.well-known/skills/index.json`, entries with name/description/files; URL and GitHub installation are separate sources. Search can include skills.sh and ClawHub. Format support is not evidence of payment capability.
+- [Hermes consumer source](https://github.com/NousResearch/hermes-agent/blob/ff2d02f998f9f9e45543eea30fb935f47e4504a7/tools/skills_hub_sources.py): WellKnownSkillSource reads index entries and fetches every relative file, requiring SKILL.md. The public store returned 404 for its expected index before this change.
+- [Vercel handler types](https://github.com/vercel-labs/skills-handler/blob/e546b7fef03edff0174298007247a61c54f38851/src/types.ts): index is `{skills: [{name, description, files}]}`; no digest field required. Existing digest-based discovery remains separately available.
+- [ClawHub publishing](https://docs.openclaw.ai/clawhub/publishing): at most three categories/five topics; finance and integrations fit the shopper. Metadata is explicitly passed for this skill only. Dry-run does not validate category slugs. Reserved endorsement topics excluded. Publication may precede public visibility while review is pending.

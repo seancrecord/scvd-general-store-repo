@@ -8,6 +8,7 @@ import {
   SCVD_EXTENSION_VERSION,
   SCVD_NAMESPACE,
   UCP_NAMESPACE,
+  UCP_RELEASE_BASE,
   UCP_SCHEMA_BASE,
   UCP_VERSION,
 } from "@/lib/ucp/version";
@@ -91,7 +92,11 @@ export function ucpProfile(env: Env): UcpProfile {
         [`${UCP_NAMESPACE}.shopping`]: [
           {
             version: UCP_VERSION,
+            // Full discovery links also serve readers that expect the
+            // platform declaration, though these are optional for a business.
+            spec: `${UCP_RELEASE_BASE}/specification/overview/`,
             transport: "rest",
+            schema: `${UCP_RELEASE_BASE}/services/shopping/rest.openapi.json`,
             endpoint: `${base}/ucp/v1`,
           },
         ],
@@ -109,12 +114,14 @@ export function ucpProfile(env: Env): UcpProfile {
         [`${UCP_NAMESPACE}.shopping.catalog.search`]: [
           {
             version: UCP_VERSION,
+            spec: `${UCP_RELEASE_BASE}/specification/shopping/catalog/search/`,
             schema: `${UCP_SCHEMA_BASE}/shopping/catalog_search.json`,
           },
         ],
         [`${UCP_NAMESPACE}.shopping.catalog.lookup`]: [
           {
             version: UCP_VERSION,
+            spec: `${UCP_RELEASE_BASE}/specification/shopping/catalog/lookup/`,
             schema: `${UCP_SCHEMA_BASE}/shopping/catalog_lookup.json`,
           },
         ],
@@ -128,12 +135,14 @@ export function ucpProfile(env: Env): UcpProfile {
               [`${UCP_NAMESPACE}.shopping.checkout`]: [
                 {
                   version: UCP_VERSION,
+                  spec: `${UCP_RELEASE_BASE}/specification/shopping/checkout/`,
                   schema: `${UCP_SCHEMA_BASE}/shopping/checkout.json`,
                 },
               ],
               [`${UCP_NAMESPACE}.shopping.order`]: [
                 {
                   version: UCP_VERSION,
+                  spec: `${UCP_RELEASE_BASE}/specification/shopping/order/`,
                   schema: `${UCP_SCHEMA_BASE}/shopping/order.json`,
                 },
               ],

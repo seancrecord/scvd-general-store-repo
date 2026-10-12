@@ -1,5 +1,6 @@
 import { largerWorkHtml } from "@/pages/offer-paths";
 import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
+import { PERSONAL_SHOPPER, personalShopperPrompt } from "@/store/personal-shopper";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
@@ -847,10 +848,10 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
      * THE CATEGORY, IN THE FIELD FOR IT (2026-09-02). alternateName
      * carries the store's names; knowsAbout carries category phrases as
      * topics; subjectOf links what has been written about the store
-     * under a byline. The storefront prose does not change: the
-     * identity noun stays on every sentence a person reads, and these
-     * are the machine fields a question in anyone's words resolves
-     * through. store/copy/asked-for.ts has the reasoning.
+     * under a byline. The writing section renders the same article
+     * facts with the keeper's authorship explicit. These are the
+     * machine fields a question in anyone's words resolves through.
+     * store/copy/asked-for.ts has the reasoning.
      */
     knowsAbout: ASKED_FOR_NOUNS,
     url: "https://scvd.store",
@@ -1162,11 +1163,14 @@ ${webmcpOriginTrialTags()}
     </header>
 
     <nav class="first-actions" data-first-actions aria-label="Start here">
-      <a class="door-cta" href="/menu">Browse the catalog</a>
-      <a class="door-cta" href="/try">Run a free preflight</a>
+      <a class="door-cta" href="/try">Check an endpoint · free</a>
+      <a class="door-cta" href="/conformance">Check a receipt · free</a>
+      <a class="door-cta" href="/menu/conformance_watch">Watch an endpoint</a>
+      <a class="door-cta" href="/operators">Get signed evidence</a>
       ${cheapest ? `<a class="door-cta" href="/menu/${escapeHtml(cheapest.id)}">Try ${escapeHtml(cheapest.name)} · ${escapeHtml(priceLabel(cheapest))}</a>` : ''}
       <a class="door-cta" href="/mcp.md">Connect through MCP</a>
     </nav>
+    <p class="shelf-more"><a href="#buy-with-agent">Buy with your agent →</a> · <a href="/menu">Browse the catalog</a></p>
     <p class="shelf-more"><a href="#larger-work">Have a larger job? Compare audits, evidence reports and custom work →</a></p>
 
     <p class="menu-meta">${escapeHtml(ENDPOINT_INSPECTION_DESCRIPTION)}</p>
@@ -1239,12 +1243,19 @@ ${webmcpOriginTrialTags()}
     </section>
 
     <section class="doors">
-      <div class="door door-human">
+      <div class="door door-human" id="buy-with-agent">
         <span class="pushpin"></span>
         <h3>${COPY.doorHumanHead}</h3>
         <p>${COPY.doorHumanBody}
         <a class="door-cta" href="/what">/what</a>.</p>
         <p class="door-small">${COPY.doorHumanSmall}</p>
+        <h3>Buy with your agent</h3>
+        <p class="door-small">Choose a signed good, approve its price, and have your agent bring back the receipt. Reading and quotes are free; each purchase is a separate decision.</p>
+        <label class="door-small" for="personal-shopper-prompt">Copy this into your agent:</label>
+        <textarea id="personal-shopper-prompt" class="personal-shopper-prompt" readonly rows="9">${escapeHtml(personalShopperPrompt(data.base ?? "https://scvd.store"))}</textarea>
+        <p class="door-small"><a class="door-cta" href="${PERSONAL_SHOPPER.path}">Read the shopping skill</a>. Payment needs a compatible wallet and an agent that can use it. Your agent should explain any setup before you fund it.</p>
+        <p class="door-small"><a class="door-cta" href="${PERSONAL_SHOPPER.hostsPath}">Choose your agent’s connection</a> — Hermes, OpenClaw, Claude, Codex and chat agents. You can ask for a no-spend rehearsal first: see the quote, missing capabilities and approvals before funding anything.</p>
+        <details><summary>Install the skill</summary><p class="door-small"><code>npx skills add seancrecord/scvd-general-store-repo --skill ${PERSONAL_SHOPPER.name}</code></p></details>
         <p class="door-small">${COPY.doorHumanHandoffLead}</p>
         <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffRead)}</code></p>
         <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffMcp)}</code></p>

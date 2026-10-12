@@ -1,5 +1,9 @@
 # scvd.store
 
+## Personal-agent connections
+
+Hermes discovers the skills at `https://scvd.store/.well-known/skills/index.json`. [Connection and no-spend rehearsal guidance](skills/scvd-personal-shopper/references/hosts.md) covers Hermes, OpenClaw, Skills CLI and chat sessions. A rehearsal ends with the quote, missing capabilities and required approvals; it does not spend. [Tested versus untested paths](docs/AGENT_ENTRY_2026-10.md).
+
 mcp-name: store.scvd/general-store
 
 [![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
@@ -79,6 +83,21 @@ index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
 [Find SCVD by protocol: x402, MPP, MCP, WebMCP, ERC-8004, A2A, OASF, skills and UCP](#on-other-peoples-records).
+
+## Buy with your personal agent
+
+[Copy the shopping prompt](https://scvd.store/#buy-with-agent), or install the
+[personal shopper skill](skills/scvd-personal-shopper/SKILL.md):
+
+```sh
+npx skills add seancrecord/scvd-general-store-repo --skill scvd-personal-shopper
+```
+
+Your agent reads the current menu, shows the price, helps with a compatible
+wallet if needed, and returns the artifact and verified receipt. Reading and
+quotes are free. Funding and each purchase need your approval. Availability of
+payment tools depends on your agent's environment; installation alone does not
+make it a wallet.
 
 ## The doors, by task
 

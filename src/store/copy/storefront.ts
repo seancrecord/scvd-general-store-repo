@@ -418,7 +418,7 @@ export const STOREFRONT_COPY = {
    */
   promiseHead: "THE PROMISE",
   promisePointer:
-    'The written commitment, the numbers per item, and the public record of whether it has been kept: <a href="/rights">/rights</a> and <a href="/fulfillment-log">/fulfillment-log</a>.',
+    '<a href="/rights#purchase-terms">Terms of purchase</a> · <a href="/rights#refund-policy">Refund policy</a> · <a href="/fulfillment-log">The delivery and refund record</a>.',
   regularsHead: "MONEY MOVES BOTH WAYS HERE",
   /** Pre-escaped HTML: carries the two room links and the pass. */
   regularsBody:

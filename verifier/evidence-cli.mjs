@@ -2,8 +2,8 @@
 import { open, mkdir, access, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { webcrypto } from "node:crypto";
-import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit } from "./evidence-bundle.js";
-import { EVIDENCE_REPORT_FORMAT, CHALLENGE_HEADERS_MAX_BYTES, readPaymentChallenge, renderEvidenceReport, checkDraftIdentifiers, EVIDENCE_REPORT_MAX_BYTES } from "./evidence-report.js";
+import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit, EVIDENCE_BUNDLE_FORMAT } from "./evidence-bundle.js";
+import { EVIDENCE_REPORT_FORMAT, CHALLENGE_HEADERS_MAX_BYTES, readPaymentChallenge, readAdvisoryScope, renderEvidenceReport, checkDraftIdentifiers, EVIDENCE_REPORT_MAX_BYTES } from "./evidence-report.js";
 import { CAPABILITIES, runtimeCapabilities } from "./x402-verify.js";
 
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
@@ -16,7 +16,8 @@ const HELP = `scvd-evidence — free export and offline verification
   export <verify-response-or-corpus-snapshot-url> --out <new-directory> [--evidence <local-file> ...]
   verify <bundle.json> --public-key <independently-trusted-public-key-hex>
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
-    [--evidence <local-file> ...] [--subject <exact-endpoint-url>]
+    [--evidence <local-file> ...]
+  Both verification commands support: [--subject <exact-endpoint-url>]
     [--format json|markdown] [--report-out <new-report.md>]
     [--challenge-headers <saved-HTTP-headers.txt>] [--check-identifiers <saved-draft.md>]
   capabilities
@@ -41,9 +42,13 @@ No credentials, payments or private keys. Evidence files must match a hash
 inside the signed payload. Existing directories are never overwritten.
 Verify and verify-source make no network requests. verify-source checks a saved
 original response using the same bundle verifier in memory,
-and prints findings plus the original file SHA-256 without repeating claims.
+and prints findings plus the input file SHA-256 without repeating claims.
+verify checks an exported bundle.json, not its detached payload.json. With any
+report option shown above, verify also prints compact findings; without report options
+it keeps the full signed_claims output. A bundle report hashes the bundle bytes,
+not an original HTTP response. Unsigned bundle context is never authenticated.
 With --format markdown --report-out, save a new report without overwriting any
-file and print a compact JSON receipt; otherwise verify-source writes no files.
+file and print a compact JSON receipt; otherwise neither verification command writes files.
 With --check-identifiers, scan a saved UTF-8 draft offline against identifiers
 from this verification. Long hex tokens (48+ digits) are compared, not prose or
 identifier roles. No text is changed; a later final answer is outside this check.
@@ -56,6 +61,8 @@ within a ${SUBJECT_OBSERVATIONS_MAX_BYTES}-byte compact JSON allowance; omitted 
 Pointers address signed_claims, not the unsigned response wrapper. Snapshot
 packaging time is separate from each row's observed_at; no freshness verdict.
 Markdown prints a generated report with exact identifiers and one-source scope.
+Advisory readings add bounded observed/unknown commentary beside signed codes;
+they are reader interpretations, not new signed claims or paid behavior tests.
 --challenge-headers requires --subject and reads the final saved HTTP 402 headers:
 its x402 v2 PAYMENT-REQUIRED offers remain unsigned; digest matches are historical
 address links only. No rail selection, address validation or payment authority.
@@ -68,6 +75,8 @@ export creates payload.json.ots: use an independent ots verifier with trusted
 Bitcoin headers to verify it. Context and filenames are unsigned metadata.
 `;
 
+// Only these fixed input-shape messages may escape; never echo input or errors.
+class InputFormError extends Error {}
 async function localBytes(path, maxBytes) {
   const handle = await open(path, "r");
   try {
@@ -205,13 +214,14 @@ async function main(args) {
   if (flags["--max-bytes"] && !/^\d+$/.test(flags["--max-bytes"])) throw new Error("invalid_byte_limit");
   const maxBytes = evidenceByteLimit(flags["--max-bytes"] === undefined ? undefined : Number(flags["--max-bytes"]));
   if (!input) throw new Error("missing_input");
-  if (flags["--format"] && (command !== "verify-source" || !["json", "markdown"].includes(flags["--format"]))) throw new Error("invalid_format");
-  if (flags["--check-identifiers"] && (command !== "verify-source" || flags["--report-out"])) throw new Error("invalid_identifier_check");
-  if (flags["--report-out"] && (command !== "verify-source" || flags["--format"] !== "markdown")) throw new Error("report_requires_markdown");
-  if (flags["--challenge-headers"] && (command !== "verify-source" || !flags["--subject"])) throw new Error("challenge_requires_subject");
+  const verifying = command === "verify-source" || command === "verify";
+  if (flags["--format"] && (!verifying || !["json", "markdown"].includes(flags["--format"]))) throw new Error("invalid_format");
+  if (flags["--report-out"] && (!verifying || flags["--format"] !== "markdown")) throw new Error("report_requires_markdown");
+  if (flags["--challenge-headers"] && (!verifying || !flags["--subject"])) throw new Error("challenge_requires_subject");
+  if (flags["--check-identifiers"] && (!verifying || flags["--report-out"])) throw new Error("invalid_identifier_check");
   if (flags["--subject"]) {
     const subject = new URL(flags["--subject"]);
-    if (!["verify-source", "sources"].includes(command) || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
+    if ((!verifying && command !== "sources") || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
     // Validate syntax without normalizing the exact requested evidence subject.
   }
   if (command === "sources") {
@@ -221,19 +231,27 @@ async function main(args) {
     console.log(JSON.stringify(reading));
     return;
   }
-  if (command === "verify-source") {
-    if (flags["--out"]) throw new Error("invalid_arguments");
+  if (verifying) {
+    if (flags["--out"] || (command === "verify" && evidence.length)) throw new Error("invalid_arguments");
     const bytes = await localBytes(input, maxBytes);
-    const attachments = await localAttachments(evidence, maxBytes);
-    const bundle = await createEvidenceBundle(JSON.parse(bytes.toString("utf8")), { attachments, maxBytes });
+    const document = JSON.parse(bytes.toString("utf8"));
+    if (command === "verify-source" && document?.format === EVIDENCE_BUNDLE_FORMAT) throw new InputFormError("This is an exported bundle. Use verify <bundle.json> with the independently trusted key and the same report options.");
+    if (document?.version === 1 && document?.source === "ward_round" && document?.round && !document?.signature) throw new InputFormError("This is a detached payload without its signature envelope. Use verify <bundle.json>, or verify-source <saved-response.json>, with the independently trusted key.");
+    if (command === "verify" && document?.format !== EVIDENCE_BUNDLE_FORMAT && (document?.snapshot || typeof document?.signed_payload === "string")) throw new InputFormError("This is a saved response, not a bundle. Use verify-source <saved-response.json> with the independently trusted key and the same report options.");
+    const bundle = command === "verify" ? document : await createEvidenceBundle(document, { attachments: await localAttachments(evidence, maxBytes), maxBytes });
     const result = await verifyEvidenceBundle(bundle, { publicKey: flags["--public-key"], maxBytes });
-    // The saved original is the transport. Reprinting a whole corpus defeated
+    process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
+    if (command === "verify" && !["--subject", "--format", "--report-out", "--challenge-headers", "--check-identifiers"].some(flag => flags[flag])) {
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    }
+    // The input file is retained separately. Reprinting a whole corpus defeated
     // the buyer's output budget even after its local signature check succeeded.
     const { signed_claims, ...findings } = result;
     const subject = flags["--subject"] ? { subject_evidence: subjectEvidence(result, flags["--subject"]) } : {};
     // Compact subject output prevents indentation of a nested signed row from
     // expanding past the allowance that was measured in its compact encoding.
-    const reading = { report_format: EVIDENCE_REPORT_FORMAT, ...findings, source_sha256: await evidenceDigest(bytes),
+    const reading = { report_format: EVIDENCE_REPORT_FORMAT, input_kind: command === "verify" ? "evidence_bundle" : "saved_response", ...findings, source_sha256: await evidenceDigest(bytes),
       signed_message_sha256: result.valid ? await evidenceDigest(new TextEncoder().encode(bundle.artifact.signed_payload)) : null,
       corpus_snapshots_verified: result.valid && signed_claims?.version === 1 && signed_claims?.source === "ward_round" && Array.isArray(signed_claims.round?.hosts) ? 1 : 0,
       ...subject,
@@ -242,6 +260,7 @@ async function main(args) {
         const known = typeof date === "string" && Number.isFinite(Date.parse(date));
         return { signed_claims_pointer: observation.signed_claims_pointer, observed_at: known ? date : null, status: known ? "recorded" : "unknown" };
       }) };
+    if (subject.subject_evidence) reading.advisory_readings = readAdvisoryScope(subject.subject_evidence);
     if (flags["--challenge-headers"]) reading.payment_challenge = await readPaymentChallenge(await localBytes(flags["--challenge-headers"], Math.min(maxBytes, CHALLENGE_HEADERS_MAX_BYTES)), subject.subject_evidence);
     if (flags["--check-identifiers"]) {
       const references = { source_sha256: reading.source_sha256, signed_message_sha256: reading.signed_message_sha256,
@@ -257,13 +276,6 @@ async function main(args) {
       console.log(JSON.stringify({ report_file: flags["--report-out"], source_sha256: reading.source_sha256, valid: reading.valid, evidence_complete: reading.evidence_complete }));
     } else console.log(flags["--format"] === "markdown" ? renderEvidenceReport(reading, maxBytes) : JSON.stringify(reading, null, flags["--subject"] ? undefined : 2));
     process.exitCode = !result.valid ? 1 : !result.evidence_complete ? 3 : reading.identifier_check && reading.identifier_check.status !== "all_candidates_recognized" ? 4 : 0;
-    return;
-  }
-  if (command === "verify") {
-    if (flags["--out"] || evidence.length) throw new Error("invalid_arguments");
-    const result = await verifyEvidenceBundle(JSON.parse((await localBytes(input, maxBytes)).toString("utf8")), { publicKey: flags["--public-key"], maxBytes });
-    console.log(JSON.stringify(result, null, 2));
-    process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
     return;
   }
   if (command !== "export" || !flags["--out"] || flags["--public-key"]) throw new Error("invalid_arguments");
@@ -287,4 +299,4 @@ async function main(args) {
   await writeFile(join(out, "README.txt"), HELP, { flag: "wx", mode: 0o600 });
   console.log(JSON.stringify({ exported: true, directory: out, signature_verified: false, timestamp_verified: false, issuer_snapshot_present: issuerDocument !== null }));
 }
-main(process.argv.slice(2)).catch(() => { console.error("Evidence command failed: check arguments, readable bounded input and a new output directory. Nothing was paid. Use --help."); process.exitCode = 2; });
+main(process.argv.slice(2)).catch(error => { console.error(error instanceof InputFormError ? error.message : "Evidence command failed: check arguments, readable bounded input and a new output directory. Nothing was paid. Use --help."); process.exitCode = 2; });

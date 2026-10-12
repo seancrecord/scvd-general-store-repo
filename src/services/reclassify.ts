@@ -1,3 +1,4 @@
+import { advanceCorrections, type CorrectionOptions } from "@/services/reclassification-progress";
 import { inferChannel } from "@/lib/channel";
 import { walkerKey, widestWalk, WALK_MIN_ITEMS, type Touch } from "@/lib/walkers";
 import { EVENT_TTL_SECONDS } from "@/lib/event-range";
@@ -103,6 +104,16 @@ const CORRECTIONS_KEY = "metric:corrections";
 
 export interface CorrectionSet {
   computed_at: string;
+  progress?: {
+    keys_selected: number;
+    event_key_read_attempts: number;
+    pages_read: number;
+    key_selection_budget: number;
+    complete: boolean;
+    through_key: string | null;
+    classifier_revision: string;
+    rebuilt_at: string;
+  };
   /** ISO month -> correction. */
   months: Record<string, MonthCorrection>;
   /** Actual scheduled read work, including cache warm-up or incomplete scans. */
@@ -139,10 +150,15 @@ async function* uncachedCorrectionPages(env: Env, scan: CorrectionScan): AsyncGe
   }
 }
 
-/**
- * Walks every event row, groups by month, and stores one correction
- * per month. Returns what it wrote, newest month first.
- */
+/** Experimental checkpointed collector. The scheduled job retains the deployed
+ * cache path until a like-for-like cost and completeness comparison qualifies it. */
+export async function recomputeIncrementalCorrections(env: Env, now: Date = new Date(), options: CorrectionOptions = {}): Promise<MonthCorrection[]> {
+  const set = await advanceCorrections(env, now, options);
+  await kvPut(env.COUNTERS, CORRECTIONS_KEY, JSON.stringify(set));
+  return Object.values(set.months).sort((a, b) => b.month.localeCompare(a.month));
+}
+
+/** Recompute the reference or cached correction without changing raw counters. */
 export async function recomputeCorrections(
   env: Env,
   now: Date = new Date(),
@@ -256,7 +272,6 @@ export async function recomputeCorrections(
   await kvPut(env.COUNTERS, CORRECTIONS_KEY, JSON.stringify(set));
   return written.sort((a, b) => b.month.localeCompare(a.month));
 }
-
 
 /**
  * HOUSE RECLASSIFICATION — the correction mechanism for family money

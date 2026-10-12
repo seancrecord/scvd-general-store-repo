@@ -1,5 +1,7 @@
 import { SELLER_DECLARATION_INPUT_SCHEMA, DECLARATION_READ_SCHEMA, DECLARATION_WRITE_SCHEMA } from "@/lib/seller-declaration-schema";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
+import { stampOperationTags } from "@/lib/openapi-navigation";
+import { ucpRecoveryPaths, UCP_RECOVERY_SCHEMAS } from "@/lib/ucp/checkout/discovery";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { getAddress } from "viem";
 import { ucpLaunchStatus } from "@/lib/ucp/launch";
@@ -1888,7 +1890,7 @@ const GUESTBOOK_ENTRY_SCHEMA: OpenApiObject = {
       format: "uri",
       description: "A rendered sticker for the entry, free to read forever.",
     },
-    cadence: CADENCE_SCHEMA,
+    cadence: { $ref: "#/components/schemas/ReadingCadence" },
   },
 };
 
@@ -1919,7 +1921,7 @@ const STAMP_SCHEMA: OpenApiObject = {
     verify_url: { type: "string", format: "uri" },
     svg_url: { type: "string", format: "uri" },
     note: { type: "string" },
-    cadence: CADENCE_SCHEMA,
+    cadence: { $ref: "#/components/schemas/ReadingCadence" },
   },
 };
 
@@ -1938,7 +1940,7 @@ const LETTER_RECEIPT_SCHEMA: OpenApiObject = {
       type: "string",
       description: "What happens to the letter's contents, said on the intake rather than in a policy nobody opens.",
     },
-    cadence: CADENCE_SCHEMA,
+    cadence: { $ref: "#/components/schemas/ReadingCadence" },
   },
 };
 
@@ -4700,7 +4702,7 @@ const IDEMPOTENCY_PARAMETER: OpenApiObject = {
    * what an unresolved admission refuses — is in every 402 body's
    * idempotency block and on /developers, where it is read once.
    */
-  description: `Optional: echo 402 idempotency.suggested_key or a private ${IDEMPOTENCY_KEY_MIN_LENGTH}–${IDEMPOTENCY_KEY_MAX_LENGTH}-character key (other lengths mean absent). Same key/item/inputs/paying wallet replays purchase/status without settling twice. Fresh payment without the key can charge again. Full rule: /developers.`,
+  description: "Reuse key/item/inputs/payer: no second settlement. Missing/invalid keys can charge again. Use a private key or 402 idempotency.suggested_key. /developers.",
   example: "scvd-your-own-high-entropy-value-0001",
 };
 
@@ -5447,8 +5449,9 @@ function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
         if (status === "429" && response["$ref"] === "#/components/responses/TooManyRequests") {
           return [status, { $ref: "#/components/responses/TooManyRequestsMetered" }];
         }
+        // Unmetered responses add nothing; keep their existing component reference.
+        if (!METERED_STATUSES.has(status)) return [status, response];
         const concrete = inlineSharedResponse(response);
-        if (!METERED_STATUSES.has(status)) return [status, concrete];
         return [
           status,
           {
@@ -6204,6 +6207,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ...A2A_OPENAPI_SCHEMAS,
         // Repeated request/response schemas, expanded unchanged (2026-09-23).
         // Keep purchase parameters and the paid 402 inline for shallow discovery readers.
+        ReadingCadence: CADENCE_SCHEMA,
+        ProbeUrlInput: URL_BODY,
         TradeOrder: TRADE_ORDER_BODY,
         StudyDoorShape: STUDY_DOOR_SHAPE_SCHEMA,
         DoorIndex: DOOR_INDEX_SCHEMA,
@@ -6236,6 +6241,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         // The disclosure block, written once (lib/disclosure).
         DisclosureBlock: DISCLOSURE_BLOCK_SCHEMA,
         CitedArtifact: { title: "Cited artifact", ...CITED_ARTIFACT_SCHEMA },
+        ...UCP_RECOVERY_SCHEMAS,
       },
       responses: { ...SHARED_RESPONSES, ...PAID_DOOR_RESPONSES },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
@@ -6322,6 +6328,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       })),
     },
     paths: {
+      ...ucpRecoveryPaths(c.env.STORE_BASE_URL, { "429": COMMON_RESPONSES["429"], "500": COMMON_RESPONSES["500"] }),
       "/menu.json": {
         get: {
           ...returns(
@@ -7570,7 +7577,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                   : "Reports the Solana rail read as an advisory rather than folding it into the verdict, so a verdict recorded today means what one recorded in week 34 meant."
               }`,
               "The x402 door to walk.",
-              URL_BODY,
+              { $ref: "#/components/schemas/ProbeUrlInput" },
             ), { $ref: "#/components/schemas/PreflightVerdict" })),
           },
         ]),
@@ -9196,6 +9203,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
   stampIdempotencyKey(document);
   stampCollections(document);
   stampAsyncJob(document);
+  stampOperationTags(document);
   return c.json(document);
 });
 
