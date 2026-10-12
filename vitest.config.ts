@@ -76,6 +76,8 @@ export default defineConfig({
         bindings: {
           // A plain (nonexistent) wallet address, not a token contract.
           PAY_TO_ADDRESS: "0x1111111111111111111111111111111111111111",
+          // Arc specs provide their own recipient and mocked Circle transport.
+          ARC_PAY_TO: "",
           /*
            * THE SUITE RUNS WITH UCP CHECKOUT OPEN (2026-09-18), on every
            * rail and every catalog item, because that is the state the

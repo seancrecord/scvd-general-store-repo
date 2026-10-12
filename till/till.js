@@ -223,6 +223,7 @@ const CHAIN_NAMES = {
   10: "Optimism",
   56: "BNB Chain",
   137: "Polygon",
+  5042: "Arc",
   8453: "Base",
   480: "World",
   42161: "Arbitrum One",
@@ -311,6 +312,13 @@ export function acceptProblems(accept, walletChainId) {
     problems.push(
       "extra.name / extra.version are absent — those are the token's EIP-712 domain, and a signature made with a guessed domain is invalid everywhere",
     );
+  }
+  if (extra?.name === "GatewayWalletBatched" && (
+    !ADDRESS_RE.test(extra.verifyingContract ?? "") || !Number.isSafeInteger(extra.minValiditySeconds) ||
+    extra.minValiditySeconds <= 0 || extra.minValiditySeconds > 7 * 24 * 60 * 60 ||
+    !Number.isSafeInteger(accept.maxTimeoutSeconds) || accept.maxTimeoutSeconds <= extra.minValiditySeconds ||
+    accept.maxTimeoutSeconds > extra.minValiditySeconds + MAX_AUTHORIZATION_SECONDS)) {
+    problems.push("Gateway signing domain or validity window is unavailable");
   }
   return problems;
 }
@@ -418,9 +426,10 @@ export function randomNonce(cryptoImpl) {
 /** The EIP-3009 authorization, built only from values the store sent. */
 export function buildAuthorization({ from, accept, nowSeconds, nonce }) {
   const asked = Number(accept.maxTimeoutSeconds);
+  const limit = accept.extra?.name === "GatewayWalletBatched" ? accept.maxTimeoutSeconds : MAX_AUTHORIZATION_SECONDS;
   const window =
     Number.isFinite(asked) && asked > 0
-      ? Math.min(Math.floor(asked), MAX_AUTHORIZATION_SECONDS)
+      ? Math.min(Math.floor(asked), limit)
       : MAX_AUTHORIZATION_SECONDS;
   return {
     from,
@@ -445,9 +454,8 @@ export function buildTypedData(accept, authorization) {
       name: accept.extra.name,
       version: accept.extra.version,
       chainId: evmChainId(accept.network),
-      // The token contract checks this against its own immutable
-      // DOMAIN_SEPARATOR. It is the asset, and nothing else.
-      verifyingContract: accept.asset,
+      // Gateway's signing contract is separate from the USDC asset.
+      verifyingContract: accept.extra.verifyingContract ?? accept.asset,
     },
     message: authorization,
   };

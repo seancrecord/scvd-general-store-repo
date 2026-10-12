@@ -1025,7 +1025,7 @@ function signedArtifactSchema(options: {
           signature_covers: {
             type: "string",
             description:
-              "Which fields the signature actually covers — named on the artifact rather than assumed, because a field shown beside a signature that the signature does not cover is the defect /corrections was opened for.",
+              "Fields covered by the signature. Other fields on the artifact are not covered.",
           },
           evidence_hash: { type: "string" },
           observed_at: { type: "string", format: "date-time" },
@@ -1053,7 +1053,7 @@ function signedArtifactSchema(options: {
       what_this_is_not: {
         type: "string",
         description:
-          "A dated observation against published criteria — never an endorsement, an uptime claim, or a score on whoever runs the endpoint. This store verifies artifacts; it does not rate actors.",
+          "Dated observation against published criteria; not endorsement, uptime assurance or an operator rating.",
       },
       ...(options.extras ?? {}),
     },
@@ -4505,7 +4505,6 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
     "message",
     "item_id",
     "deliverable",
-    "paid_usdc",
     "certificate",
     "signature",
     "public_key",
@@ -4520,7 +4519,9 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
       description:
         "The goods. Its shape is the item's own — a note, a reading, a record — which is why this field is deliberately untyped here rather than falsely narrowed to one item's payload.",
     },
-    paid_usdc: { type: "number" },
+    paid_usdc: { type: "number", description: "Settled amount on direct payment rails." },
+    accepted_usdc: { type: "number", description: "Gateway amount accepted for batching; not evidence of final settlement." },
+    gateway_payment: { type: "object", description: "Gateway acceptance state; read private purchase status for later batch settlement." },
     tip_usdc: {
       type: "number",
       description: "What was paid above the ask, where anything was.",
@@ -4595,7 +4596,7 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
  */
 const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
   type: "object",
-  required: ["message", "order_id", "status", "order_url", "paid_usdc"],
+  required: ["message", "order_id", "status", "order_url"],
   properties: {
     ...HUMAN_PROOF_REFERENCES,
     message: { type: "string" },
@@ -4619,7 +4620,9 @@ const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
       format: "uri",
       description: "Where to poll it.",
     },
-    paid_usdc: { type: "number" },
+    paid_usdc: { type: "number", description: "Settled amount on direct payment rails." },
+    accepted_usdc: { type: "number", description: "Gateway amount accepted for batching; not evidence of final settlement." },
+    gateway_payment: { type: "object", description: "Gateway acceptance state; read private purchase status for later batch settlement." },
     tip_usdc: { type: "number" },
     patron_number: { type: "integer" },
     badge_url: { type: "string", format: "uri" },
@@ -4699,8 +4702,7 @@ const IDEMPOTENCY_PARAMETER: OpenApiObject = {
    * what an unresolved admission refuses — is in every 402 body's
    * idempotency block and on /developers, where it is read once.
    */
-  description: "Reuse key/item/inputs/payer: no second settlement. Missing/invalid keys can charge again. Use a private key or 402 idempotency.suggested_key. /developers.",
-  example: "scvd-your-own-high-entropy-value-0001",
+  description: "Reuse key/item/inputs/payer; no second settlement. Use 402 idempotency.suggested_key. Missing/invalid keys risk another charge.",
 };
 
 const IDEMPOTENCY_PARAMETER_REF: OpenApiObject = {
@@ -5616,6 +5618,14 @@ const PAYMENT_REQUIRED_REF: OpenApiObject = {
   $ref: "#/components/schemas/PaymentRequiredChallenge",
 };
 
+// Reuse the standard response object; all payable accepts remain inline on
+// each operation for discovery readers that do not follow references.
+const PAYMENT_REQUIRED_RESPONSE: OpenApiObject = {
+  description: "Read x402 v2 terms in PAYMENT-REQUIRED or the body; retry this URL with a signed PAYMENT-SIGNATURE.",
+  headers: PAYMENT_CHALLENGE_HEADER_REFS,
+  content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
+};
+
 /**
  * A PAID OPERATION, DESCRIBED THE WAY A BUYER'S AGENT READS ONE.
  *
@@ -5848,12 +5858,7 @@ function paidOp(
         description: "Paid and delivered.",
         ...(markdown ? MARKDOWN_RESPONSE : JSON_RESPONSE),
       },
-      "402": {
-        description:
-          "Read x402 v2 terms in PAYMENT-REQUIRED or the body; retry this URL with a signed PAYMENT-SIGNATURE.",
-        headers: PAYMENT_CHALLENGE_HEADER_REFS,
-        content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
-      },
+      "402": { $ref: "#/components/responses/PaymentRequired" },
       ...COMMON_RESPONSES,
     },
   };
@@ -6203,7 +6208,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       schemas: {
         ...A2A_OPENAPI_SCHEMAS,
         // Repeated request/response schemas, expanded unchanged (2026-09-23).
-        // Keep purchase parameters and the paid 402 inline for shallow discovery readers.
+        // Keep purchase parameters and payment accepts inline for shallow discovery readers.
         ReadingCadence: CADENCE_SCHEMA,
         ProbeUrlInput: URL_BODY,
         TradeOrder: TRADE_ORDER_BODY,
@@ -6240,7 +6245,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         CitedArtifact: { title: "Cited artifact", ...CITED_ARTIFACT_SCHEMA },
         ...UCP_RECOVERY_SCHEMAS,
       },
-      responses: { ...SHARED_RESPONSES, ...PAID_DOOR_RESPONSES },
+      responses: { ...SHARED_RESPONSES, ...PAID_DOOR_RESPONSES, PaymentRequired: PAYMENT_REQUIRED_RESPONSE },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
       parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
     },
@@ -6336,7 +6341,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
             {
               type: "object",
               properties: MENU_SCHEMA.properties,
-              oneOf: [MENU_SCHEMA, {
+              // The full branch inherits these same properties from the parent.
+              oneOf: [{ type: MENU_SCHEMA.type, required: MENU_SCHEMA.required }, {
                 type: "object",
                 required: ["items", "total", "page", "pages", "next", "checkout"],
                 properties: {
@@ -6370,7 +6376,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             {
               type: "object",
               properties: MENU_ITEM_SCHEMA.properties,
-              oneOf: [MENU_ITEM_SCHEMA, {
+              oneOf: [{ type: MENU_ITEM_SCHEMA.type, required: MENU_ITEM_SCHEMA.required }, {
                 type: "object",
                 required: ["id", "required_params", "input_schema", "mcp_url", "checkout"],
                 properties: {

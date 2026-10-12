@@ -417,6 +417,7 @@ export function houseReceivingAddresses(env: Env): string[] {
     env.POLYGON_PAY_TO,
     env.ARBITRUM_PAY_TO,
     env.WORLD_PAY_TO,
+    env.ARC_PAY_TO,
   ]
     .filter((address): address is string => (address ?? "").trim().length > 0)
     .map((address) => address.trim().toLowerCase());

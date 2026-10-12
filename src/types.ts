@@ -198,6 +198,8 @@ export interface Env {
   /** Explicit checkout enablement; never inferred from another chain. */
   ARBITRUM_PAY_TO?: string;
   WORLD_PAY_TO?: string;
+  /** Own Arc Gateway receiving address; absent means no Arc checkout offer. */
+  ARC_PAY_TO?: string;
   WORLD_RPC_URL?: string;
   WORLD_RPC_URL_PRIMARY?: string;
   WORLD_RPC_URL_SECONDARY?: string;
@@ -565,6 +567,8 @@ export interface OrderRecord {
   created_at: string;
   sla_hours: number;
   paid_usdc: number;
+  /** Immutable admission evidence; later finality lives on the purchase. */
+  gateway_payment_at_issue?: import("@/lib/arc-gateway").GatewayPayment;
   tip_usdc: number;
   payer?: string;
   agent_name?: string;
@@ -628,6 +632,9 @@ export interface Certificate {
   network?: string;
   payer?: string;
   settlement_tx?: string;
+  /** Acceptance at issue time, separate from chain settlement; never revised after signing. */
+  gateway_payment?: import("@/lib/arc-gateway").GatewayPayment;
+  accepted_usdc?: number;
   /**
    * THE TRADE COUNTER'S FOUR (2026-09-03, services/trade-counter.ts).
    * A sale that came in through a marketplace's trade account was

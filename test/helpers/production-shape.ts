@@ -30,6 +30,7 @@ export const PRODUCTION_CHALLENGE_KEY = "fixture-native-checkout-hmac-key";
 export function productionShape(env: Env): Env {
   return {
     ...env,
+    ARC_PAY_TO: PRODUCTION_RECIPIENT,
     POLYGON_PAY_TO: PRODUCTION_RECIPIENT,
     ARBITRUM_PAY_TO: PRODUCTION_RECIPIENT,
     WORLD_PAY_TO: PRODUCTION_RECIPIENT,

@@ -1,3 +1,6 @@
+import { readGatewaySummary } from "@/services/gateway-sales";
+import { ARC_USDC } from "@/lib/arc-gateway";
+import { ARC_NETWORK } from "@/lib/payment-networks";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { BASE_USDC } from "@/lib/base-rpc";
 import { USDC_DECIMALS } from "@/lib/payments";
@@ -182,6 +185,7 @@ export interface StoreStats {
   organic_by_rail?: {
     base: number;
     polygon: number;
+    arc?: number;
     arbitrum?: number;
     world?: number;
     solana: number;
@@ -275,14 +279,19 @@ export interface BooksDiagnostics {
 export async function countDistinctOrganicBuyers(
   env: Env,
 ): Promise<number | null> {
-  const [listed, mpp] = await Promise.all([
+  const [listed, mpp, gatewayPayers] = await Promise.all([
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_SCAN_CAP }).catch(() => null),
     listKeys(env.COUNTERS, { prefix: MPP_PAYER_PREFIX, cap: PAYER_SCAN_CAP }).catch(() => null),
+    listKeys(env.COUNTERS, { prefix: "gateway:payer:", cap: PAYER_SCAN_CAP }).catch(() => null),
   ]);
-  if (!listed || listed.truncated || !mpp || mpp.truncated) return null;
+  if (!listed || listed.truncated || !mpp || mpp.truncated || !gatewayPayers || gatewayPayers.truncated) return null;
   const wallets = new Set<string>();
   for (const name of mpp.names) {
     const address = name.slice(MPP_PAYER_PREFIX.length);
+    if (address && !isHouseWallet(env, address)) wallets.add(address.toLowerCase());
+  }
+  for (const name of gatewayPayers.names) {
+    const address = name.slice("gateway:payer:".length);
     if (address && !isHouseWallet(env, address)) wallets.add(address.toLowerCase());
   }
   for (const name of listed.names) {
@@ -322,10 +331,11 @@ export async function computeStatsDiagnosed(
    * tally and the key-list that is the customer list. Neither reads
    * the other's result, and /stats is a free door.
    */
-  const [artifactsRaw, distinctOrganicBuyers, mpp] = await Promise.all([
+  const [artifactsRaw, distinctOrganicBuyers, mpp, gateway] = await Promise.all([
     kvGet(env.COUNTERS, KV_KEYS.patronNumber),
     countDistinctOrganicBuyers(env),
     readMppSales(env),
+    readGatewaySummary(env),
   ]);
   const artifactsIssued = parseInt(artifactsRaw ?? "0", 10);
   let organic = 0;
@@ -524,9 +534,24 @@ export async function computeStatsDiagnosed(
       nativeTill.house += counts.house;
     }
   }
+  if (gateway.organic + gateway.house > 0) {
+    stats.payment_sources.push({ protocol: "x402-gateway", currency: "USDC", organic: gateway.organic, house: gateway.house,
+      amounts: { network: ARC_NETWORK, asset: ARC_USDC, decimals: USDC_DECIMALS, organic_atomic: gateway.organic_amount_atomic, house_atomic: gateway.house_amount_atomic } });
+    stats.organic_settlements += gateway.organic;
+    stats.house_settlements += gateway.house;
+    stats.settled_purchases_total += gateway.organic + gateway.house;
+    if (stats.organic_by_rail) stats.organic_by_rail.arc = gateway.organic;
+    else if (!overshoot) stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0, arc: gateway.organic,
+      rail_not_recorded: organicSettlements, computed_at: new Date().toISOString() };
+    for (const [item, counts] of Object.entries(gateway.by_item)) {
+      const tally = tillByItem[item] ??= { organic: 0, house: 0 };
+      tally.organic += counts.organic; tally.house += counts.house;
+    }
+  }
   const rail = stats.organic_by_rail;
   stats.payments = paymentRollup(stats.payment_sources, rail ? [
     ...settlementNetworkLabels().map(row => ({ name: row.label, purchases: rail[row.key] ?? 0 })),
+    ...(gateway.organic ? [{ name: "Arc (Circle Gateway)", purchases: gateway.organic }] : []),
     { name: "Network not recorded", purchases: rail.rail_not_recorded },
   ] : null);
   return {
@@ -576,7 +601,7 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
       ? ` and ${rail.rail_not_recorded} settled before this store recorded the rail at the till, on a page that mints no certificate to carry one — a closed set that nothing can join`
       : "";
   const polygon = rail.polygon > 0 ? `, ${rail.polygon} in USDC on Polygon` : "";
-  const additional = `${rail.arbitrum ? `, ${rail.arbitrum} in USDC on Arbitrum` : ""}${rail.world ? `, ${rail.world} in USDC on World` : ""}`;
+  const additional = `${rail.arc ? `, ${rail.arc} in USDC on Arc through Circle Gateway` : ""}${rail.arbitrum ? `, ${rail.arbitrum} in USDC on Arbitrum` : ""}${rail.world ? `, ${rail.world} in USDC on World` : ""}`;
   return `Of the organic figure, ${rail.base} settled in USDC on Base${polygon}, ${rail.solana} in USDC on Solana${additional}${tail}.`;
 }
 

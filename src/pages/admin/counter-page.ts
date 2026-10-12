@@ -221,7 +221,7 @@ function orderRowHtml(order: OrderRecord): string {
       : `<p><em>Delivered:</em> ${escapeHtml(clipped(order.deliverable ?? "", 140))}</p>`;
   return `<li id="order-${escapeHtml(encodeURIComponent(order.order_id))}">
   <strong>${escapeHtml(order.order_id)}</strong>, ${escapeHtml(order.item_name)}
-  [${order.status}] paid $${order.paid_usdc} (tip $${order.tip_usdc})
+  [${order.status}] ${order.gateway_payment_at_issue ? "Gateway accepted" : "paid"} $${order.paid_usdc} (tip $${order.tip_usdc})
   patron #${order.patron_number}, ${escapeHtml(order.created_at.slice(0, 10))}
   ${order.agent_name ? `\u00B7 agent: ${escapeHtml(order.agent_name)}` : ""}
   ${order.callback_url ? `\u00B7 webhook on completion` : ""}

@@ -89,6 +89,7 @@ async function claimPatronNumber(
 }
 
 export interface MintOptions {
+  gateway?: import("@/lib/arc-gateway").GatewayPayment;
   itemId: string;
   agentName?: string;
   tipUsdc?: number;
@@ -221,7 +222,7 @@ async function prepareCertificate(
   if (options.agentName) {
     certificate.name = options.agentName;
   }
-  if (options.tipUsdc && options.tipUsdc > 0) {
+  if (!options.gateway && options.tipUsdc && options.tipUsdc > 0) {
     certificate.tip_usdc = options.tipUsdc;
   }
   /**
@@ -232,7 +233,8 @@ async function prepareCertificate(
    * shelf is the second one.
    */
   if (options.paidUsdc !== undefined && options.paidUsdc > 0) {
-    certificate.paid_usdc = options.paidUsdc;
+    if (options.gateway) { certificate.accepted_usdc = options.paidUsdc; certificate.gateway_payment = options.gateway; }
+    else certificate.paid_usdc = options.paidUsdc;
     certificate.asset = "USDC";
     // The rail that settled, never reconstructed (PAYMENT_RAILS.md):
     // the gate passes the settle response's network through, and only

@@ -296,6 +296,7 @@ export async function withReceiptHeader(
   },
 ): Promise<Record<string, string>> {
   try {
+    if (input.transaction?.startsWith("gateway:")) return headers;
     const headerName = Object.keys(headers).find(
       (name) => name.toLowerCase() === "payment-response",
     );

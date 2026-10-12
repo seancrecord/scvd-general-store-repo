@@ -480,12 +480,12 @@ optional disclosure block (`model`, `client`, `operator`,
 in a private census and, when a prior certificate's payer matches the
 payment, marks a returning buyer; it never changes a price or reaches
 a certificate (`src/lib/disclosure.ts`). We speak x402 **v2** (the current
-standard — `@x402/core` ecosystem) with USDC and the Coinbase Developer Platform as facilitator. The live
+standard — `@x402/core` ecosystem) with USDC, Coinbase Developer Platform for direct transfers, and Circle Gateway for configured Arc batched payments. The live
 `/rails` and `/menu.json` responses list enabled checkout networks; the
 current `PAYMENT-REQUIRED` challenge supplies the terms to sign. A
 statement or audit can inspect chains that checkout does not accept.
 
-Checkout integration supports Base, Polygon, Arbitrum, World, and Solana;
+Checkout integration supports Base, Polygon, Arbitrum, World, Solana, and Arc through Circle Gateway;
 the enabled set is determined by recipient configuration, not this list.
 Statement readers support Base, Polygon, Ethereum, Arbitrum One, OP Mainnet
 (Optimism), Avalanche C-Chain, World, and Solana. Individual observation tools have their own

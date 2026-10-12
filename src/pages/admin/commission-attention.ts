@@ -42,7 +42,7 @@ export function commissionAttention(
     <p>Briefs and quotes are unpaid. Proposed budgets are not revenue. Times are UTC.</p>
     ${section("Paid work to deliver", openOrders.map(order => {
       const due = Date.parse(order.created_at) + order.sla_hours * 3600_000;
-      return `<li><a href="#order-${escapeHtml(encodeURIComponent(order.order_id))}">${escapeHtml(order.item_name)} · ${escapeHtml(order.order_id)}</a> — paid ${order.paid_usdc} USDC · ${Number.isFinite(due) ? `due ${escapeHtml(new Date(due).toISOString())}` : "delivery date unavailable"}</li>`;
+      return `<li><a href="#order-${escapeHtml(encodeURIComponent(order.order_id))}">${escapeHtml(order.item_name)} · ${escapeHtml(order.order_id)}</a> — ${order.gateway_payment_at_issue ? "Gateway accepted" : "paid"} ${order.paid_usdc} USDC · ${Number.isFinite(due) ? `due ${escapeHtml(new Date(due).toISOString())}` : "delivery date unavailable"}</li>`;
     }), "orders")}
     ${section("Accepted request: check order", requestRows(groups.missing, "Order not in this reading; check its record before acting."), "requests")}
     ${section("New briefs", requestRows(groups.new, "Review brief, quote or decline"), "requests")}

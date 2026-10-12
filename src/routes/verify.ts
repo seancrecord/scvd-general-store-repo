@@ -455,8 +455,9 @@ function receiptPageHtml(
   // (retired items keep verifying forever; their receipts say what
   // the buyer's records say).
   const itemName = getMenuItem(cert.item)?.name ?? cert.item;
-  const money =
-    cert.paid_usdc !== undefined
+  const money = cert.gateway_payment
+    ? `$${cert.accepted_usdc ?? "unknown"} USDC — Gateway ${cert.gateway_payment.state} at issue; later batch settlement is on the private purchase status`
+    : cert.paid_usdc !== undefined
       ? `$${cert.paid_usdc} ${cert.asset ?? "USDC"}${cert.tip_usdc ? ` (includes $${cert.tip_usdc} tip)` : ""}`
       : cert.settled_via
         ? `Trade account — ${cert.trade_partner ?? "a marketplace"} collected its customer's payment; none reached this store`
@@ -529,7 +530,7 @@ function receiptPageHtml(
       <p class="menu-meta">Derived on this load from the signed fields above and the delivery-audit row for the settlement, never stored beside the receipt.</p>
       <ul>
         ${check(`Payment — <strong>${escapeHtml(checks.settlement.payment_state.replace(/_/g, " "))}</strong>.`)}
-        ${check(`Order of operations — <strong>${escapeHtml(checks.settlement.order_of_operations.replace(/_/g, " "))}</strong> <span class="menu-meta">(since ${DELIVER_FIRST_SINCE} the goods are produced first and the money moves at the last line before the signature; a delivery that fails takes nothing)</span>.`)}
+        ${check(`Order of operations — <strong>${escapeHtml(checks.settlement.order_of_operations.replace(/_/g, " "))}</strong> <span class="menu-meta">${cert.gateway_payment ? "Gateway acceptance precedes batch settlement; the signed receipt records the state at issue" : `since ${DELIVER_FIRST_SINCE} the goods are produced first and the money moves at the last line before the signature; a delivery that fails takes nothing`}</span>.`)}
         ${check(`Delivery audit — <strong>${escapeHtml(checks.settlement.delivery_audit.state.replace(/_/g, " "))}</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.delivery_audit.means)})</span>.`)}
         ${check(`Failed attempts on this receipt — <strong>none possible</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.failed_attempts.why)} ${escapeHtml(checks.settlement.failed_attempts.where)})</span>.`)}
       </ul>

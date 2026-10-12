@@ -1,3 +1,4 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
 import { EVENT_TTL_SECONDS } from "@/lib/event-range";
 import { SETTLEMENT_ACCOUNTING } from "@/lib/settlement-accounting";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
@@ -948,6 +949,7 @@ export interface SettlementSignals extends EventSignals {
 export type SettlementRail = "base" | "polygon" | "solana" | "arbitrum" | "world" | "other";
 
 export function railOf(network: string | undefined): SettlementRail | null {
+  if (network === ARC_NETWORK) return null; // Separate Gateway ledger, never a legacy Base tally.
   if (!network) {
     return null;
   }
@@ -1003,6 +1005,7 @@ async function recordSettlementKeyed(
   signals: SettlementSignals,
 ): Promise<void> {
   const month = metricsMonth();
+  if (signals.network === ARC_NETWORK) return; // Gateway has a per-purchase acceptance/finality ledger.
   const event = buildEvent(env, "settle", itemKey, signals);
   event.payment_protocol = SETTLEMENT_ACCOUNTING.protocol;
   event.payment_currency = SETTLEMENT_ACCOUNTING.currency;
