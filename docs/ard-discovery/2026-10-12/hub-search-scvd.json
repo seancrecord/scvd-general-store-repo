@@ -1,0 +1,15 @@
+{
+  "registry": "huggingface-hub-search",
+  "why": "hf-discover's README says a /search request is a live query to the Hub's agent-oriented search (agents=true) and, for MCP entries, adds filter=mcp-server, keeping only Spaces whose runtime stage is RUNNING. So the Hub's own answer predicts hf-discover's, and this build can read the Hub where it cannot POST to hf-discover.",
+  "checked_at": "2026-10-12T14:05:00Z",
+  "space": "keeper-scvd/scvd-x402-verifier",
+  "runtime": { "stage": "RUNNING", "hardware": "zero-a10g" },
+  "reads": [
+    { "query": "scvd", "agents": true, "filter": null, "results": ["gbgmbm/scvdfbx", "keeper-scvd/scvd-x402-verifier"] },
+    { "query": "scvd", "agents": true, "filter": "mcp-server", "results": ["keeper-scvd/scvd-x402-verifier"] },
+    { "query": "scvd x402 verifier", "agents": true, "filter": "mcp-server", "results": ["keeper-scvd/scvd-x402-verifier"] },
+    { "query": "verify x402 receipt", "agents": true, "filter": "mcp-server", "results": [] },
+    { "query": "x402 endpoint preflight", "agents": true, "filter": "mcp-server", "results": [] }
+  ],
+  "note": "The Hub search answers to the Space's name and not to the words in its README or tool descriptions: a purpose query returns nothing. That is the Hub's behaviour, not a gap in the Space, and names the limit of what hf-discover can surface for anyone who does not already know the name."
+}
