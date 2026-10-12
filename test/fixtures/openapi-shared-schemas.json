@@ -758,5 +758,53 @@
         }
       }
     }
+  },
+  {
+    "pointers": [
+      "/paths/~1api~1guestbook/post/responses/201/content/application~1json/schema/properties/cadence",
+      "/paths/~1api~1stamp/post/responses/201/content/application~1json/schema/properties/cadence",
+      "/paths/~1api~1letter/post/responses/201/content/application~1json/schema/properties/cadence"
+    ],
+    "schema": {
+      "type": "object",
+      "description": "When a human next reads this pile. Published on the intake rather than left to be wondered about.",
+      "properties": {
+        "every": {
+          "type": "string"
+        },
+        "next_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "note": {
+          "type": "string"
+        },
+        "nothing_is_lost": {
+          "type": "boolean",
+          "description": "That the queue is read in full rather than sampled — the thing a sender actually wants to know."
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1api~1preflight~1v1/post/requestBody/content/application~1json/schema",
+      "/paths/~1api~1preflight~1v2/post/requestBody/content/application~1json/schema",
+      "/paths/~1api~1preflight~1v3/post/requestBody/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "An https URL on a public host. Private, loopback, link-local and reserved-internal targets are refused, and so is this store's own hostname (a Worker cannot fetch itself)."
+        }
+      }
+    }
   }
 ]

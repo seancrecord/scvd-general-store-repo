@@ -556,11 +556,46 @@ scvd-evidence verify-source ./evidence/original.json \
 ```
 
 This saves a bounded report and prints a compact receipt. Existing files are
-never overwritten. The report keeps the original-file hash and signed-message
+never overwritten. The report keeps the input-file hash and signed-message
 hash distinct, counts the snapshots verified by this invocation, includes exact
 signed-subject rows and omissions, and labels missing observation dates unknown.
 A snapshot sequence is not a count of observations or authenticated weeks.
 The report is a derived reading; keep the original and separate issuer-key record.
+
+Unreleased source also adds `advisory_readings` beside retained signed-subject
+rows in JSON and Markdown. Each interpreted code carries `observed` and
+`unknown`: a missing declared retry key cannot establish missing retry
+protection, and a declared key does not prove it works. These are reader
+interpretations, not new signed claims. Unknown codes remain uninterpreted;
+omitted source rows and commentary entries are counted. The original rows and
+signature result stay unchanged. These source additions have not been published or passed a fresh native
+buyer cohort.
+
+Unreleased source accepts the same reporting options on `verify` for an exported
+`bundle.json`:
+
+```sh
+scvd-evidence verify ./evidence/export/bundle.json \
+  --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \
+  --subject 'https://merchant.example/paid?kind=one' \
+  --format markdown --report-out ./evidence/bundle-report.md
+```
+
+Use `verify-source` for a saved response and `verify` for an exported bundle.
+The export's detached `payload.json` has no signature envelope. Recognized
+wrong-file forms return exit 2 with the command to use; they create no report.
+Run the verifier as a standalone shell command in a restricted agent host.
+Do not append `echo` or chain bookkeeping commands; a host refusal concerns
+that invocation and does not establish an origin failure.
+
+With any report option, `verify` omits the full `signed_claims` dump and selects
+only verified subject rows. Without report options its full JSON result stays
+available. `input_kind` distinguishes `saved_response` from `evidence_bundle`;
+`source_sha256` hashes the exact input file. A bundle hash does not identify
+original HTTP response bytes. Unsigned bundle context remains unauthenticated.
+Keep the bundle and independently established key beside its derived report.
+Signature/binding exits, byte limits and exclusive output creation still apply.
+This October 12 source repair is unpublished and has no native buyer result.
 
 If the buyer also retained the original unpaid HTTP response headers, add
 `--challenge-headers ./evidence/challenge-headers.txt`. The command reads the last

@@ -57,6 +57,7 @@ const withRetry = withKvRetry;
 export async function bulkGetJson<T>(
   kv: Namespace,
   names: string[],
+  onRead?: (keys: number) => void,
 ): Promise<Map<string, T | null>> {
   const result = new Map<string, T | null>();
   for (let start = 0; start < names.length; start += CHUNK) {
@@ -65,11 +66,12 @@ export async function bulkGetJson<T>(
       // The array overload requires 2+ keys on some runtimes; keep it simple.
       const only = chunk[0]!;
       try {
+        onRead?.(1);
         result.set(only, await kv.get<T>(only, "json"));
       } catch {
         // A non-JSON row surfaces here too; text-read it (with retries
         // for server blips) and null only what genuinely won't parse.
-        const raw = await withRetry(() => kv.get(only));
+        const raw = await withRetry(() => { onRead?.(1); return kv.get(only); });
         try {
           result.set(only, raw === null ? null : (JSON.parse(raw) as T));
         } catch {
@@ -79,12 +81,13 @@ export async function bulkGetJson<T>(
       continue;
     }
     try {
+      onRead?.(chunk.length);
       const got = await kv.get<T>(chunk, "json");
       for (const [name, value] of got) {
         result.set(name, value);
       }
     } catch {
-      const raw = await withRetry(() => kv.get(chunk, "text"));
+      const raw = await withRetry(() => { onRead?.(chunk.length); return kv.get(chunk, "text"); });
       for (const [name, value] of raw) {
         if (value === null) {
           result.set(name, null);

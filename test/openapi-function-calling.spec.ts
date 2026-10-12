@@ -154,11 +154,17 @@ describe("every operation an LLM would call is typed, not described in prose", (
     expect(untyped.sort()).toEqual([]);
   });
 
-  it("gives every POST a typed request body instead of a sentence", async () => {
+  it("types each POST body and names the one parameter-only action", async () => {
     const document = await spec();
     const untyped: string[] = [];
     for (const entry of operations(document)) {
       if (entry.method !== "post") continue;
+      // UCP cancellation takes only the typed checkout id. Giving it a
+      // made-up JSON body would make the contract less accurate.
+      if (entry.path === "/ucp/v1/checkout-sessions/{id}/cancel") {
+        expect(entry.op["requestBody"]).toBeUndefined();
+        continue;
+      }
       const body = entry.op["requestBody"] as Record<string, unknown> | undefined;
       /*
        * WHATEVER MEDIA TYPE THE BODY DECLARES (widened 2026-09-15).
@@ -228,7 +234,10 @@ describe("the error model, typed", () => {
     const all = operations(document);
     for (const entry of all) {
       const responses = entry.op["responses"] as Record<string, Operation>;
-      for (const code of ["400", "404", "429", "500"]) {
+      // The UCP protocol owns its 404/409 envelopes; their wire shapes
+      // are checked against the route in openapi-cancellation.spec.ts.
+      const ucp = entry.path.startsWith("/ucp/");
+      for (const code of ucp ? ["429", "500"] : ["400", "404", "429", "500"]) {
         expect(
           responses[code],
           `${entry.method} ${entry.path} has no ${code}`,
@@ -238,7 +247,7 @@ describe("the error model, typed", () => {
         // times what it now writes down once.
         resolve(document, responses[code]);
       }
-      const problem = resolve(document, responses["400"])["content"] as Record<
+      const problem = resolve(document, responses[ucp ? "500" : "400"])["content"] as Record<
         string,
         unknown
       >;
@@ -255,7 +264,7 @@ describe("the error model, typed", () => {
      */
     const document = await spec();
     const all = operations(document);
-    const responses = all[0]?.op["responses"] as Record<string, Operation>;
+    const responses = all.find(entry => entry.path === "/api/preflight/v1")!.op["responses"] as Record<string, Operation>;
     const schema = resolve(document, responses["400"] as Operation);
     const content = schema["content"] as Record<string, Operation>;
     const problem = resolve(
