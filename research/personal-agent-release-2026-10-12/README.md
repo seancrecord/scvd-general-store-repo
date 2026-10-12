@@ -41,4 +41,6 @@ support before observing it.
 
 ## Release outcomes
 
-Pending PR, CI and publication readback.
+[PR #1008](https://github.com/seancrecord/scvd-general-store-repo/pull/1008) contains the release. The Skills CLI also installed the complete two-file skill in a disposable directory with telemetry disabled. The rendered handoff was inspected in the browser; its label, selectable prompt and install disclosure are present. A top-of-page link points to the handoff.
+
+Automatic approval review rejected enabling auto-merge because it would merge and deploy production changes and interpreted the keeper's approval as branch/PR authorization only. No retry or bypass was attempted. Explicit keeper approval for merge/deploy is required before that action. ClawHub publication waits for the canonical public URLs to exist. CI status and publication readback remain pending.
