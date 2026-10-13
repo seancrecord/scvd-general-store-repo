@@ -11,6 +11,16 @@ Public instructions explain supported evidence and stop on mismatches.
 [Scope, verification and replacement procedure](docs/BOUNTY_PAYMENT_MODE_2026-10.md).
 Release and replacement posting are authorized; both follow the PR/CI gate.
 
+## October 13 — admin reconciliation evidence export
+
+**Built; release requested.** The books page now offers a private, read-only
+JSON capture of the legacy settlement ledger, payer totals, monthly counters,
+house reclassifications and latest raise record. Missing records and scan limits
+are explicit; incomplete accounting reads withhold the comparison.
+[Scope, validation and remaining live readback](docs/RECONCILIATION_EXPORT_2026-10.md).
+The historical one-count discrepancy remains unresolved until the captured
+evidence supports a transaction-level explanation.
+
 ## October 12 — traffic and buying evidence at the desk
 
 Implemented on `codex/traffic-signal-readout`: show the existing monthly
