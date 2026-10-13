@@ -102,3 +102,24 @@ before merge.
 
 [Machine-readable check](readback.json). Original evidence remains under
 `/tmp/scvd-traffic-investigation`; no raw visitor rows were copied or published.
+
+## Approved PR release follow-up
+
+[PR #1016](https://github.com/seancrecord/scvd-general-store-repo/pull/1016)
+is open as a draft while the handover is pending. Refreshing the existing
+Wrangler session restored metadata access: the store uses namespace
+`1d3abae2047a4c339ac7f4d0f554c435`, and the live doors Worker has no Durable Object
+binding. A read-only KV snapshot retained 1,864 current-period challenge and
+venue counter keys under `/tmp/scvd-counter-handover/kv-before.json`.
+
+A Data Studio `SELECT` over today's ten daily SQL shards totals 279, while the
+KV snapshot totals 611. These are separate observations, not an atomic snapshot;
+the size of the difference confirms that a binding-only rollout risks lowering
+the published baseline. The SQL read issued no insert, update or ledger RPC.
+
+Automatic approval review rejected a temporary remote inspector because the
+existing ledger `read` method can seed missing SQL rows. That rejected command
+was not executed. Explicit permission has been requested to preserve the higher
+already-recorded traffic counter baselines before deployment. No event-based
+historical reconstruction or sales adjustment is proposed. Merge remains held
+until baseline preservation and the full CI gate are satisfied.

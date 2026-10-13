@@ -45,5 +45,30 @@
     "handover_prerequisite": "Compare live KV and SQL baselines; stop legacy writes and preserve the higher observed counter before rollout",
     "historical_counters_changed": false,
     "deployed": false
+  },
+  "release_followup": {
+    "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/1016",
+    "live_binding_read": "success after existing Wrangler session refresh",
+    "store_counter_namespace": "1d3abae2047a4c339ac7f4d0f554c435",
+    "doors_has_counter_binding": false,
+    "sql_daily_2026_10_13_shards": [
+      29,
+      31,
+      28,
+      26,
+      31,
+      29,
+      23,
+      21,
+      31,
+      30
+    ],
+    "sql_daily_sum": 279,
+    "kv_daily_sum": 611,
+    "kv_snapshot_keys": 1864,
+    "snapshot_path": "/tmp/scvd-counter-handover/kv-before.json",
+    "read_only_sql_method": "Cloudflare Data Studio SELECT query",
+    "handover_write_approval": "requested; pending",
+    "deployed": false
   }
 }
