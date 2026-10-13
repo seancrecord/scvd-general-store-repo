@@ -49,9 +49,9 @@ import { TRADE_PROPOSITION } from "@/store/trade-counter";
  *
  * Every token here is origin-bound and inert anywhere else, so these
  * are PUBLIC DATA, not secrets — the same class of thing as the DNS
- * record that proves we own the domain. Neither was registered for
- * subdomains or third-party injection: the narrowest grant that does
- * the job, and it matches what the store actually serves.
+ * record that proves we own the domain. Chrome is origin-only; the
+ * keeper's 2026-10-13 Edge renewal also covers subdomains. Neither
+ * grant permits third-party injection.
  *
  * WHEN A TRIAL ENDS the API goes back to feature-detection and
  * /webmcp.js keeps no-opping gracefully — no error, no broken page,
@@ -70,12 +70,11 @@ export const WEBMCP_ORIGIN_TRIAL_TOKENS: readonly {
       "AnY9gFUhvYlqmiw6Hxg8e8ZrnXjv32OUI6c4+jD1i1cRhvnw+rUYUGSaGiLFQZgwBbatEz6ZcGm1OL/Qm51ZDgkAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0=",
   },
   {
-    // Edge 150+. Registered by the keeper 2026-08-31; expires 2026-10-15
-    // — THIRTY-TWO DAYS BEFORE CHROME'S, which is exactly why the door
-    // battery reports the soonest of the two and not the first.
+    // Edge 150+. Renewed by the keeper 2026-10-13; expires 2026-11-27.
+    // Includes subdomains; Chrome now expires first.
     browser: "edge",
     token:
-      "A0e2lG+XKqhdeqtHOL7IqB0ohyilsql6Id8blCwWJH5ptWLTQTqt5Dy75GQrQemRMYjUUbv0zt0G44WDSRUns9EAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5MjA2OTkwN30=",
+      "A9FsMFiNyrUM4O5xHGogMAo/HlFBz1Dt8Mq1Gx0AsD9YVwoquYvjFGzYY75m7C7lKxPHJzLGBtX6tC/pR/0PBtUAAABdeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NTgwMTIxOCwiaXNTdWJkb21haW4iOnRydWV9",
   },
 ];
 

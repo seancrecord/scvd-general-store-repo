@@ -21,7 +21,10 @@ and the [current WebMCP registration](https://developer.microsoft.com/en-us/micr
 Renewal requires generating and serving a new token for the same origin;
 the trial's end date does not extend the token already served.
 The registration requires the keeper's sign-in and terms acceptance.
-No replacement token has been received at this read.
+The keeper supplied the replacement on October 13. Its payload binds WebMCP
+to `https://scvd.store:443`, expires November 27 at 17:40:18 UTC, includes
+subdomains, and does not enable third-party use. Payload decoding checks
+scope and expiry; vendor signature acceptance remains the browser's check.
 
 ## 2026-10-12 — x402 discovery payload size
 

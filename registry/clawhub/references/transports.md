@@ -73,7 +73,7 @@ Two practical notes, because this is a road still being paved:
 - WebMCP rides a per-browser **origin trial** — a signed grant bound
   to one origin, and each vendor runs its own programme with its own
   key. This store carries Chrome's and Edge's, the sooner of which
-  expires 2026-10-15. If your browser is on neither trial, none of
+  expires 2026-11-17. If your browser is on neither trial, none of
   this appears and every road above still works. Nothing here is
   load-bearing.
 - Read-only tools and quotes are free; `complete_store_purchase` may
