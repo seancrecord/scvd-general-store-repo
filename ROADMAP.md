@@ -1,5 +1,16 @@
 # ROADMAP — September 2026
 
+## October 13 — bounty payment-mode compatibility
+
+Keeper-authorized local repair after a walker caught a Gateway price on
+a bounty whose verifier requires an individual USDC Transfer. Posting
+now filters compatible EVM payment modes before sorting prices. A dated
+withdrawal preserves the affected listing's original terms, stops new
+walks and automated claims on it, and leaves paid history unchanged.
+Public instructions explain supported evidence and stop on mismatches.
+[Scope, verification and replacement procedure](docs/BOUNTY_PAYMENT_MODE_2026-10.md).
+Release and replacement posting are authorized; both follow the PR/CI gate.
+
 ## October 12 — traffic and buying evidence at the desk
 
 Implemented on `codex/traffic-signal-readout`: show the existing monthly
