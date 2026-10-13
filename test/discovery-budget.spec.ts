@@ -137,7 +137,7 @@ describe("the discovery documents stay small enough to be read", () => {
         return;
       }
       expect(res.status, `${path} did not answer 200`).toBe(200);
-      const bytes = (await res.text()).length;
+      const bytes = new TextEncoder().encode(await res.text()).byteLength;
       expect(
         bytes,
         `${path} is ${Math.round(bytes / 1024)} KB, past its ${Math.round(ceiling / 1024)} KB ceiling. ` +
