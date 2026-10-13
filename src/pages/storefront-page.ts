@@ -671,12 +671,13 @@ function productListJsonLd(base: string, paymentConfig?: PurchaseCapabilityConfi
       item: {
         "@type": "Product",
         name: item.name,
-        description: `${item.description} ${checkoutMethod(paymentConfig)}.`,
+        description: item.description,
         url: `${base}/menu/${item.id}`,
         image: `${base}${item.sample_url ?? "/og.png"}`,
         brand: { "@type": "Brand", name: STORE_SERVICE_NAME },
         offers: {
           "@type": "Offer",
+          "@id": `${base}/menu/${item.id}#offer`,
           price: String(item.price_usdc),
           ...offerCurrencyFields(paymentConfig),
           /**
@@ -979,15 +980,14 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
     // undated organization looks equally current whether it was
     // touched today or abandoned in the spring.
     dateModified: catalogLastUpdated(),
+    // These are the same offers described in full on the product nodes above.
+    // Join by identity: retain the distinct discovery description here, without
+    // repeating prices, availability and checkout terms for the whole catalog.
     makesOffer: MENU_ITEMS.map((item) => ({
-      "@type": "Offer",
+      "@id": `${base}/menu/${item.id}#offer`,
       name: item.name,
       description:
         SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
-      price: String(item.price_usdc),
-      ...offerCurrencyFields(paymentConfig),
-      availability: offerAvailability(item),
-      url: `${base}/menu/${item.id}`,
     })),
     /**
      * THE ROOMS, AS A GRAPH RATHER THAN AS PROSE. Until this was added
