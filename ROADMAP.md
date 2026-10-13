@@ -17,6 +17,16 @@ wording now states the historical counting and ratio limits. No sales or
 closed-day adjustment.
 [Readback, source trace and limits](research/skills-traffic-followup-2026-10-13/README.md).
 
+## October 13 — admin reconciliation evidence export
+
+**Built; release requested.** The books page now offers a private, read-only
+JSON capture of the legacy settlement ledger, payer totals, monthly counters,
+house reclassifications and latest raise record. Missing records and scan limits
+are explicit; incomplete accounting reads withhold the comparison.
+[Scope, validation and remaining live readback](docs/RECONCILIATION_EXPORT_2026-10.md).
+The historical one-count discrepancy remains unresolved until the captured
+evidence supports a transaction-level explanation.
+
 ## October 12 — traffic and buying evidence at the desk
 
 Implemented on `codex/traffic-signal-readout`: show the existing monthly

@@ -487,4 +487,5 @@ export const EVERY_ROOM: readonly { href: string; label: string }[] = [
   { href: "/admin/desvela-registry.json", label: "Registry Watch receipts (JSON)" },
   { href: "/admin/trade.json", label: "The trade counter (JSON)" },
   { href: "/admin/export/tax.csv", label: "Tax export (CSV)" },
+  { href: "/admin/export/reconciliation.json", label: "Reconciliation evidence (JSON)" },
 ];

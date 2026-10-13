@@ -299,7 +299,7 @@ export interface HouseReclassification {
   reason: string;
 }
 
-const RECLASS_PREFIX = "house_reclass:";
+export const RECLASS_PREFIX = "house_reclass:";
 const RECLASS_CAP = 100;
 
 /**

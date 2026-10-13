@@ -310,7 +310,7 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 // Applied before authentication so refusals also cannot be cached.
-for (const path of ["/admin/gateway", "/admin/purchases", "/admin/purchases/*", "/admin/evidence-pilot", "/admin/evidence-pilot/*"]) adminRoutes.use(path, async (c, next) => {
+for (const path of ["/admin/gateway", "/admin/purchases", "/admin/purchases/*", "/admin/evidence-pilot", "/admin/evidence-pilot/*", "/admin/export/reconciliation.json"]) adminRoutes.use(path, async (c, next) => {
   c.header("Cache-Control", "no-store");
   c.header("Vary", "Authorization, Accept");
   await next();
@@ -1549,6 +1549,18 @@ adminRoutes.post("/admin/repair/rail-seam", async (c) => {
   }
   const { reverseRailBookedBeforeSeam } = await import("@/services/payer-repair");
   return c.json(await reverseRailBookedBeforeSeam(c.env, transactions as string[]));
+});
+
+// A scoped private capture, separate from the page reads that mark alarms seen.
+adminRoutes.get("/admin/export/reconciliation.json", async (c) => {
+  const { exportReconciliationEvidence } = await import("@/services/reconciliation-export");
+  const capture = await exportReconciliationEvidence(c.env);
+  return c.body(JSON.stringify(capture, null, 2), 200, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Disposition": `attachment; filename="scvd-reconciliation-${capture.started_at.slice(0, 10)}.json"`,
+    "X-Content-Type-Options": "nosniff",
+    "X-Export-Complete": String(capture.complete),
+  });
 });
 
 /**
