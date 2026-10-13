@@ -1,21 +1,23 @@
 # ROADMAP — September 2026
 
-## October 13 — narrowed agent-entry follow-through
+## October 13 — Edge WebMCP renewal
 
-Keeper closed native-host tests, paid purchase/receipt verification, wallet
-onboarding and authenticated dashboard visual readback for now. These are
-skipped, not verified. skills.sh was checked: the shopper remains absent from
-the rendered directory while its public source and discovery index work.
-Traffic accounting: the local burst reproduction confirms the fast doors'
-unbound counter can lose increments while event rows survive. The shared-writer
-binding is corrected locally and tested. Release first needs a live baseline
-comparison and coordinated handover: already-seeded SQL can lag the legacy KV
-writer. The ten current daily shards have been preserved from observed values;
-the remaining 1,810 current-period baselines await explicit scope approval.
-Ward/census checks pass, live source failures remain disclosed, and public pulse
-wording now states the historical counting and ratio limits. No sales or
-closed-day adjustment.
-[Readback, source trace and limits](research/skills-traffic-followup-2026-10-13/README.md).
+Install the keeper-supplied Edge renewal and record its subdomain scope.
+The earliest browser expiry now belongs to Chrome; refresh the skill's
+published date and preserve the per-vendor origin and feature checks.
+Regression checks fail against the old grant. Full CI and live served-token
+readback gate release; token decoding alone does not verify the vendor signature.
+
+## October 13 — bounty payment-mode compatibility
+
+Keeper-authorized local repair after a walker caught a Gateway price on
+a bounty whose verifier requires an individual USDC Transfer. Posting
+now filters compatible EVM payment modes before sorting prices. A dated
+withdrawal preserves the affected listing's original terms, stops new
+walks and automated claims on it, and leaves paid history unchanged.
+Public instructions explain supported evidence and stop on mismatches.
+[Scope, verification and replacement procedure](docs/BOUNTY_PAYMENT_MODE_2026-10.md).
+Release and replacement posting are authorized; both follow the PR/CI gate.
 
 ## October 13 — admin reconciliation evidence export
 
