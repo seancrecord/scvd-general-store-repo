@@ -5,7 +5,7 @@
 The unpaid doors now reference the store's shared counter ledger in the release
 branch. Keeper-approved preservation completed for 1,820 observed current-period
 baselines, including today's ten shards; no sales or closed days were adjusted.
-Ward/census readers use separate saved observations. Pulse prose and field
+Ward/census readers use separate saved observations. Pulse HTML/JSON, admin porch prose and public field
 definitions now state historical undercounts and request-ratio limits. Full CI,
 fresh cutover preservation and live binding checks gate release in
 [PR #1016](https://github.com/seancrecord/scvd-general-store-repo/pull/1016).

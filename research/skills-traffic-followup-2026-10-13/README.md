@@ -194,3 +194,11 @@ an exact total for requests arriving during the mixed-writer transition.
 
 Local raw handover receipts and public snapshots remain under
 `/tmp/scvd-counter-handover`; no visitor-level data is published in this record.
+
+The final HTML sweep also found duplicated pre-delivery wording and unsupported
+upper-bound claims in the pulse page and admin porch ratio. Those now state the
+same recording limits as the JSON. No arithmetic, classification or counter
+values changed in that copy correction.
+The final four-file run passes 64 tests and typecheck. Restoring the old HTML
+produces two failures (37 pass); restoring the correction restores the tested
+source. Full CI remains required on the final commit.

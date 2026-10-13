@@ -76,6 +76,8 @@ describe("the funnel does not assert what it cannot check", () => {
     ).text();
     expect(html).not.toContain("Every settlement counted here minted a signed artifact —");
     expect(html).toContain("checked rather than asserted");
+    expect(html).toContain("delivers before settlement");
+    expect(html).not.toContain("counter is bumped before the handler");
   });
 });
 
