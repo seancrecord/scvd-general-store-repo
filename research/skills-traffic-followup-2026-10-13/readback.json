@@ -68,7 +68,7 @@
     "kv_snapshot_keys": 1864,
     "snapshot_path": "/tmp/scvd-counter-handover/kv-before.json",
     "read_only_sql_method": "Cloudflare Data Studio SELECT query",
-    "handover_write_approval": "Daily preservation authorized and executed; remaining 1810 keys require explicit scope approval after automatic review rejection.",
+    "handover_write_approval": "Keeper explicitly approved all 1810 remaining current-period traffic/timing/error baselines; preservation completed. Sales and closed days excluded.",
     "deployed": false
   },
   "public_reader_audit": {
@@ -97,7 +97,9 @@
       "referrals",
       "instrument client JSON maps",
       "referrer JSON maps"
-    ]
+    ],
+    "final_copy_and_metadata_tests_passed": 57,
+    "final_typecheck": "passed"
   },
   "daily_preservation": {
     "at": "2026-10-13T17:54:56.441Z",
@@ -107,6 +109,17 @@
     "operation": "raiseTo using saved or current counter value, whichever is higher",
     "sales_affected": false,
     "closed_days_affected": false,
-    "remaining_keys_pending": 1810
+    "remaining_keys_pending": 0
+  },
+  "current_period_preservation": {
+    "completed_at": "2026-10-13T19:56:55.086419+00:00",
+    "additional_keys": 1810,
+    "total_keys_including_daily": 1820,
+    "all_observed_floors_held": true,
+    "receipt_sha256": "a52ebe365cc3b5a8570c537d44f5248e99d69588850b97709b7ba53362e573d6",
+    "operation": "raiseTo; max of previously observed or current KV and existing SQL; never add snapshots",
+    "sales_affected": false,
+    "closed_days_affected": false,
+    "cutover_refresh_and_deployment": "Required after full CI; final release receipt tracked on PR #1016"
   }
 }

@@ -119,8 +119,8 @@ the published baseline. The SQL read issued no insert, update or ledger RPC.
 
 Automatic approval review rejected a temporary remote inspector because the
 existing ledger `read` method can seed missing SQL rows. That rejected command
-was not executed. Explicit permission has been requested to preserve the higher
-already-recorded traffic counter baselines before deployment. No event-based
+was not executed. The keeper subsequently approved preservation of the higher
+already-recorded traffic counter baselines; the completed operation is below. No event-based
 historical reconstruction or sales adjustment is proposed. Merge remains held
 until baseline preservation and the full CI gate are satisfied.
 
@@ -168,13 +168,29 @@ readings, so the baseline uses the per-key maximum across both snapshots. No
 counter totals were added together and no event-derived number was substituted.
 The operation excluded closed days, prior months and financial counters.
 
-The remaining proposed scope is 1,810 current-period keys: per-item challenges
+The keeper explicitly approved the remaining 1,810 current-period keys: per-item challenges
 (organic, house and infrastructure), request channels, venue markers, latency,
 errors and refusals. The total scope including the ten daily shards is 1,820.
-Automatic approval review allowed the daily preservation but rejected the wider
-batch as requiring explicit scope approval. That batch did not execute; approval
-is pending. The temporary helper is authenticated, limited to captured keys and
+The first wider request was rejected for missing explicit scope approval and did
+not execute. After the keeper approved that exact scope, all 1,810 keys completed
+at 19:56:55 UTC. Every returned SQL value met or exceeded both its saved baseline
+and current KV reading. A preview connection timeout was retried with the same
+idempotent operation. The helper is authenticated, limited to captured keys and
 floors, and has no lowering or reset operation. Sales and revenue are excluded.
+
+CI caught a stale test expecting the old settlement wording. Its assertion and
+comment now follow deliver-before-settle while retaining the delivery-evidence
+limit. The public count register also stops assigning porch limits to challenge
+counts, states historical missing samples and mirror lag, and defines null rates
+from recorded counts rather than claiming nothing was served. All 57 focused
+pulse, blind-spot and published-count checks pass; typecheck passes.
+
+Release still requires the complete CI gate, a fresh baseline preservation around
+the legacy-writer cutover, and verification that both live Workers reference the
+same namespace. [PR #1016](https://github.com/seancrecord/scvd-general-store-repo/pull/1016)
+tracks the final CI, merge, deployment and cutover receipt. This operation preserves
+observed floors; it cannot reconstruct historical lost increments or establish
+an exact total for requests arriving during the mixed-writer transition.
 
 Local raw handover receipts and public snapshots remain under
 `/tmp/scvd-counter-handover`; no visitor-level data is published in this record.

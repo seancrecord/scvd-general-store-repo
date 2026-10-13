@@ -1,5 +1,16 @@
 # ROADMAP — September 2026
 
+## October 13 — traffic counter handover and public-reader audit
+
+The unpaid doors now reference the store's shared counter ledger in the release
+branch. Keeper-approved preservation completed for 1,820 observed current-period
+baselines, including today's ten shards; no sales or closed days were adjusted.
+Ward/census readers use separate saved observations. Pulse prose and field
+definitions now state historical undercounts and request-ratio limits. Full CI,
+fresh cutover preservation and live binding checks gate release in
+[PR #1016](https://github.com/seancrecord/scvd-general-store-repo/pull/1016).
+[Evidence, skills.sh result and scope closures](research/skills-traffic-followup-2026-10-13/README.md).
+
 ## October 13 — Edge WebMCP renewal
 
 Install the keeper-supplied Edge renewal and record its subdomain scope.
