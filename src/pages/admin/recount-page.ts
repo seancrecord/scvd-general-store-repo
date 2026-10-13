@@ -14,6 +14,8 @@ import { cannotSeeHtml } from "@/pages/admin/reading-limits";
 
 export interface RecountPageData {
   recount: RecountResult;
+  /** Live deployment capability; omitted when it was not read. */
+  countersSerialized?: boolean;
   /** Month counters to compare against, when the caller has them. */
   counter_challenges_organic?: number;
   counter_settles_organic?: number;
@@ -28,12 +30,17 @@ function pct(part: number, whole: number): string {
 
 const CANNOT_SEE = [
   "Only comparable when the scan covers the same window as the counters. A partial scan against whole-month counters is not a disagreement, it is two different questions.",
-  "The counters are read-modify-write against KV and lose increments under a burst, so a counter short of its rows is the expected failure and not evidence of a lost sale.",
+  "Historical KV read-add-write counters could lose increments under concurrent traffic. A count difference alone does not establish that cause.",
   "This audits the counters against the rows the store kept. It cannot audit the rows against what actually happened.",
 ];
 
 export function renderRecountPage(data: RecountPageData): string {
   const r = data.recount;
+  const writer = data.countersSerialized === true
+    ? "Current writer: serialized counter ledger. Concurrent increments do not overwrite each other; its KV reporting mirrors may lag."
+    : data.countersSerialized === false
+      ? "Current writer: KV read-add-write fallback. Concurrent traffic can lose increments; the counter ledger binding is absent."
+      : "Current writer: unknown in this reading.";
   const recordedOrganic = r.as_recorded.organic;
   const reclassifiedOrganic = r.as_reclassified.organic;
 
@@ -85,16 +92,16 @@ export function renderRecountPage(data: RecountPageData): string {
     }
     const delta = rows - counter;
     let verdict: string;
-    if (r.capped && delta < 0) {
+    if (r.capped) {
       verdict =
-        "not comparable: the scan stopped at its cap, so these rows cover a shorter window than the counter. A shortfall here is arithmetic, not a defect.";
+        "not comparable: the scan stopped at its cap. These retained-row counts are partial; the difference does not establish a cause.";
     } else if (delta === 0) {
-      verdict = "rows and counter agree";
+      verdict = "counts agree in this reading; matching coverage and transactions are not established";
     } else if (delta > 0) {
-      verdict = "rows above counter: lost increments, the expected direction";
+      verdict = "retained rows above counter; cause not established — check timing, coverage and classification";
     } else {
       verdict =
-        "counter above rows, and the scan read every row there is: a counter wrote without a row, worth finding";
+        "counter above retained rows; cause not established — check retention, timing and classification";
     }
     return `<tr><td>${escapeHtml(label)}</td><td>${rows}</td><td>${counter}</td><td>${escapeHtml(verdict)}</td></tr>`;
   };
@@ -102,10 +109,11 @@ export function renderRecountPage(data: RecountPageData): string {
   const body = `
   <section>
     <h2>The recount</h2>
-    <p>The counters are read-modify-write against KV; they lose increments under
-    concurrent traffic and can read stale. The rows don't: one row per event,
-    unique key, no contention. This page asks the rows.</p>
-    <p><strong>${r.rows_scanned}</strong> rows read${r.capped ? " (scan hit its cap — older rows exist beyond this window)" : " (all rows in the log)"}.${deeperScanNote(r.capped)}
+    <p><strong>${writer}</strong></p>
+    <p>This page compares retained event rows with counters. Older KV counters
+    could lose increments; rows can also expire or fail to be retained. Neither
+    count alone identifies the cause of a difference.</p>
+    <p><strong>${r.rows_scanned}</strong> rows read${r.capped ? " (scan hit its cap — older rows exist beyond this window)" : " (all readable retained rows in the scan)"}.${deeperScanNote(r.capped)}
     Window: ${escapeHtml(r.oldest_row ?? "—")} → ${escapeHtml(r.newest_row ?? "—")}.</p>
     <p>By kind: ${Object.entries(r.by_kind)
       .map(([kind, count]) => `${escapeHtml(kind)} ${count}`)
@@ -140,16 +148,16 @@ export function renderRecountPage(data: RecountPageData): string {
     events of every kind. ${
       r.capped
         ? "<strong>The scan is capped, so these are two different windows and the row column is a floor.</strong> The reading column says so rather than leaving it to be worked out."
-        : "The scan read every row in the log, so the two are comparable."
+        : "The scan reached the end of the retained log. That does not establish complete coverage of the counter month: older rows may have expired."
     }</p>
     <table>
       <tr><th>metric</th><th>rows</th><th>counter</th><th>reading</th></tr>
       ${drift("organic challenges", reclassifiedOrganic, data.counter_challenges_organic)}
       ${drift("organic settles", r.settles.organic, data.counter_settles_organic)}
     </table>
-    <p>House settles in this window: ${r.settles.house}. Every settle is money that
-    actually moved on chain — that column is the one the books can't fake, because
-    it has an outside witness.</p>
+    <p>House settlement events in this window: ${r.settles.house}. These are
+    stored observations; this page performs no fresh chain verification and does
+    not establish payment or delivery for an individual purchase.</p>
   </section>`;
 
   return renderAdminShell("recount", body + cannotSeeHtml(CANNOT_SEE));
