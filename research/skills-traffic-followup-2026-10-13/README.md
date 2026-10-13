@@ -53,7 +53,7 @@ A defect exists in the pre-fix source configuration:
   ownership of a second trade counter.
 
 A read-only attempt to inspect both live Workers' binding metadata returned
-HTTP 401. Current live settings and the exact historical cause remain unverified;
+HTTP 401 on the initial attempt. Live settings were subsequently verified below; the exact historical cause remains unverified;
 the reproduced defect does not establish that it explains all 9,285 events.
 
 ### Local reproduction and correction
@@ -87,9 +87,9 @@ allow outstanding writes and KV propagation to settle, preserve the higher
 observed baseline through the existing ledger, and verify both Workers use that
 same authority. The baseline must come from existing counters, not the 16,114
 retained events. A partial or stale snapshot cannot establish a safe cutover.
-No production setting or historical counter has been changed, and this branch
-has not been committed, pushed or deployed. The full CI gate remains required
-before merge.
+At that checkpoint no production setting or historical counter had been changed.
+The subsequent PR and approved handover are recorded below. The full CI gate
+remains required before merge.
 
 ### Validation
 
@@ -123,3 +123,58 @@ was not executed. Explicit permission has been requested to preserve the higher
 already-recorded traffic counter baselines before deployment. No event-based
 historical reconstruction or sales adjustment is proposed. Merge remains held
 until baseline preservation and the full CI gate are satisfied.
+
+## October 13 — wards and public-reader audit
+
+The keeper approved preserving legitimate existing baselines and asked for the
+wards and public censuses to be checked too. Eight relevant test files passed
+107 checks: ward rounds, heartbeat, request census, buyer census exclusions,
+MPP census, observatory, pulse and house reclassification. Live house-marked
+reads of `/sources.json`, `/registry`, `/pulse.json`, `/observatory` and `/stats`
+all returned 200 with their expected JSON data.
+
+- The external ward census reads saved probes, not our visitor counters.
+  `/sources.json` reports `beating`, no missing weeks, and the October 11 round:
+  5,069 host rows against 12,855 known, with six of eight sources answering.
+  The known-source count is not a claim that every host was probed. Individual
+  source failures remain visible; this read did not rerun the external census.
+- `/registry` retains the same dated ward evidence. Its latest round reports
+  5,068 probed doors and 1,994 shape-ready; these do not derive from shop traffic.
+- The admin request census scans independent event rows with a cap and retained
+  date bounds. It does not use the lossy aggregate request counter as its input.
+- `/observatory` reads separate porch counters through the already-bound main
+  Worker; all four returned months report `truncated: false`. The per-isolate
+  write budget and scan cap remain disclosed. Its reader-class split is a
+  classification of requests, not verified identities.
+- `/pulse.json` DOES read affected challenge counters and latency buckets.
+  Its public method text was stale and now describes the shared writer,
+  historical lost samples, background failures, and request-ratio limitations.
+  Event-based machinery deductions cannot produce an exact buyer denominator
+  from separately counted request totals. No field name or arithmetic changed.
+- The hourly counter raise repairs settlement counters from settlement records;
+  it cannot repair unpaid request counts. Reclassification writes separate
+  correction records and does not overwrite the raw request counters.
+- Other best-effort summaries remain: referral counters and bounded client /
+  referrer JSON maps still read-modify-write KV. They are separate potential
+  undercounting paths, and are not fixed by adding the doors binding. No exact
+  visitor or buyer count is inferred from them.
+
+### Authorized daily baseline preservation
+
+The current ten daily shards were preserved at 17:54:56 UTC via `raiseTo`, using
+only the higher actually observed counter values. Their resulting sum was 831.
+Two saved KV readings had already shown individual shards falling from earlier
+readings, so the baseline uses the per-key maximum across both snapshots. No
+counter totals were added together and no event-derived number was substituted.
+The operation excluded closed days, prior months and financial counters.
+
+The remaining proposed scope is 1,810 current-period keys: per-item challenges
+(organic, house and infrastructure), request channels, venue markers, latency,
+errors and refusals. The total scope including the ten daily shards is 1,820.
+Automatic approval review allowed the daily preservation but rejected the wider
+batch as requiring explicit scope approval. That batch did not execute; approval
+is pending. The temporary helper is authenticated, limited to captured keys and
+floors, and has no lowering or reset operation. Sales and revenue are excluded.
+
+Local raw handover receipts and public snapshots remain under
+`/tmp/scvd-counter-handover`; no visitor-level data is published in this record.

@@ -68,7 +68,45 @@
     "kv_snapshot_keys": 1864,
     "snapshot_path": "/tmp/scvd-counter-handover/kv-before.json",
     "read_only_sql_method": "Cloudflare Data Studio SELECT query",
-    "handover_write_approval": "requested; pending",
+    "handover_write_approval": "Daily preservation authorized and executed; remaining 1810 keys require explicit scope approval after automatic review rejection.",
     "deployed": false
+  },
+  "public_reader_audit": {
+    "focused_tests_passed": 107,
+    "files": 8,
+    "public_http_status": 200,
+    "public_paths": [
+      "/sources.json",
+      "/registry",
+      "/pulse.json",
+      "/observatory",
+      "/stats"
+    ],
+    "ward_heartbeat": "beating",
+    "ward_latest": "2026-W41",
+    "ward_sources_answered": 6,
+    "ward_sources_asked": 8,
+    "ward_missing_weeks": [],
+    "source_gaps": [
+      "fuchss stale for 2 rounds",
+      "x402scan.com never answered, 6 failures"
+    ],
+    "monthly_observatory_truncated": false,
+    "pulse_copy_corrected_locally": true,
+    "unprotected_other_summaries": [
+      "referrals",
+      "instrument client JSON maps",
+      "referrer JSON maps"
+    ]
+  },
+  "daily_preservation": {
+    "at": "2026-10-13T17:54:56.441Z",
+    "keys": 10,
+    "saved_per_key_max_total": 827,
+    "returned_total": 831,
+    "operation": "raiseTo using saved or current counter value, whichever is higher",
+    "sales_affected": false,
+    "closed_days_affected": false,
+    "remaining_keys_pending": 1810
   }
 }

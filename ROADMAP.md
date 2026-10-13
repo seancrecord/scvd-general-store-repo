@@ -10,7 +10,11 @@ Traffic accounting: the local burst reproduction confirms the fast doors'
 unbound counter can lose increments while event rows survive. The shared-writer
 binding is corrected locally and tested. Release first needs a live baseline
 comparison and coordinated handover: already-seeded SQL can lag the legacy KV
-writer. No production repair or historical counter adjustment yet.
+writer. The ten current daily shards have been preserved from observed values;
+the remaining 1,810 current-period baselines await explicit scope approval.
+Ward/census checks pass, live source failures remain disclosed, and public pulse
+wording now states the historical counting and ratio limits. No sales or
+closed-day adjustment.
 [Readback, source trace and limits](research/skills-traffic-followup-2026-10-13/README.md).
 
 ## October 12 — traffic and buying evidence at the desk
