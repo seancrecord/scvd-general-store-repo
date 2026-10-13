@@ -1,5 +1,16 @@
 # ROADMAP — September 2026
 
+## October 13 — bounty payment-mode compatibility
+
+Keeper-authorized local repair after a walker caught a Gateway price on
+a bounty whose verifier requires an individual USDC Transfer. Posting
+now filters compatible EVM payment modes before sorting prices. A dated
+withdrawal preserves the affected listing's original terms, stops new
+walks and automated claims on it, and leaves paid history unchanged.
+Public instructions explain supported evidence and stop on mismatches.
+[Scope, verification and replacement procedure](docs/BOUNTY_PAYMENT_MODE_2026-10.md).
+Release and replacement posting are authorized; both follow the PR/CI gate.
+
 ## October 13 — admin reconciliation evidence export
 
 **Built; release requested.** The books page now offers a private, read-only
@@ -30,6 +41,16 @@ The historical receipt-and-adjustment audit is complete within the retained
 evidence. A stale Solana payer alias exists, but does not explain the one-count
 counter excess. No refund or counter adjustment is justified by this audit;
 retain the warning. [Evidence and limits](research/settle-reconciliation-2026-10-12/README.md).
+
+## October 13 — homepage reader budget
+
+Keeper-authorized follow-through removes repeated homepage checkout terms
+and joins Organization offers to their full Product offers by JSON-LD identity.
+Products, descriptions, prices, rails and merchant fields remain available.
+The populated all-rail fixture is checked against the live reader's unchanged
+200,000-byte ceiling. Regression observed failing before the repair; focused
+discovery checks, typecheck and production bundle pass. Full CI and production
+readback gate release. [Primary-source read](docs/SPEC_READS.md#2026-10-13--homepage-json-ld-identity-and-edge-renewal).
 
 ## October 12 — discovery budget and outreach follow-through
 

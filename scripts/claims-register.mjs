@@ -238,7 +238,7 @@ export const REGISTER = [
   {
     id: "bounties.refusal.spent-listing",
     file: "src/services/bounty-board.ts",
-    match: "There is no second try on a spent listing",
+    match: "One bounty pays once: read the board on the same minute you open your wallet",
     resolution: "derived",
     from: "claimBounty's `bounty.status !== \"open\"` refusal, taken against the status bountyStatusAt derives at read time",
     why: "Claim-shaped and correctly caught: it tells a stranger their money is gone. It is structural rather than dated — one bounty pays once because the claim door refuses any listing whose derived status is not open, and the row carries the door's own wording, which test/bounty-board.spec.ts drives against the live door. The day a spent listing could pay twice, the catalogue's drift test goes red before this sentence does.",

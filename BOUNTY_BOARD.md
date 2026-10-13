@@ -70,6 +70,34 @@ describe a board the other does not run.
 
 ## The rails (2026-09-09)
 
+### Payment mode eligibility (2026-10-13)
+
+On EVM rails, posting supports ordinary exact USDC payment with the
+default/EIP-3009 transfer method. The picker filters the token and payment
+metadata **before** sorting by price: an alternate signing contract,
+non-USDC signing domain, or unsupported declared transfer method cannot
+win by quoting a cheaper amount. Optional metadata omitted by older
+ordinary offers retains its legacy interpretation; this is not a paid
+conformance check. Solana and Algorand retain their own evidence rules.
+
+Gateway/batched settlement is not supported by the EVM bounty verifier.
+Both an ordinary purchase and a Gateway offer can say `scheme: exact`
+and quote the same USDC asset, while requiring different settlement
+evidence. Only the ordinary offer fits the individual payer-to-payTo
+USDC Transfer this board reads. A manual transfer followed by an unpaid
+HTTP request is not a commissioned purchase. A real purchase whose
+delivery fails remains a valid observation; report the failure honestly.
+
+The October 13 correction withdraws `bty_af4ww9tx` from new walks and
+automated claims without rewriting its captured terms. The withdrawal is
+visible in the board JSON and room, with a route to keeper review for
+anyone who already spent money. Paid history stays paid. A replacement
+uses a new id and a fresh compatible challenge. The withdrawal register
+is `src/store/bounty-withdrawals.ts`; posting, board status and claiming
+read the same eligibility rule. These local changes take effect on deployment.
+
+### Supported chains
+
 Doors on any chain the claim verifier reads can be posted: Base,
 Polygon, Ethereum, Arbitrum, OP Mainnet, Avalanche, World, Solana and
 Algorand.
