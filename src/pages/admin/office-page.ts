@@ -384,12 +384,13 @@ export function takeSectionHtml(
    */
   const bridge = (() => {
     if (!allTime) return "";
+    if (take.truncated) return "<p><small>Certificate totals are partial; comparison with the storefront is inconclusive.</small></p>";
     const diff = allTime.organic - take.total.organic_sales;
     if (diff === 0) {
       return `<p><small>The storefront's organic figure matches this table exactly right now (${allTime.organic}).</small></p>`;
     }
     if (diff > 0) {
-      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The count difference is ${diff}; it does not identify the sales or establish missing delivery. Compare per-item coverage and classification under <a href="#no-certificate">settled at the till, no certificate</a> below. Counter timing, classification changes and scan coverage can also move this difference.</small></p>`;
+      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The count difference is ${diff}; it does not identify the sales or establish missing delivery. Compare per-item coverage and classification under <a href="#no-certificate">counter and certificate comparison</a> below. Counter timing, classification changes and scan coverage can also move this difference.</small></p>`;
     }
     return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}).</strong> Penny pages cannot explain a negative gap. The difference is ${take.total.organic_sales - allTime.organic}; compare timing, scan coverage and classification before attributing it to missed counters.</small></p>`;
   })();
@@ -420,7 +421,7 @@ export function takeSectionHtml(
     <small>(the storefront's number; +${allTime.house} house)</small> ·
     <strong>${money(t.organic_usdc)}</strong> on certificates <small>(+${money(t.house_usdc)} house)</small></p>
     <p><strong>${t.organic_sales}</strong> certificate-backed sales appear in this read${noCert !== null && noCert >= 0 ? `; the count difference is <strong>${noCert}</strong>, not an identified set of penny-page sales` : ""}.
-    Money below is the certificates' money; the penny pages' pennies are on the till table further down.</p>`
+    Amounts below come from certificates; the counter comparison further down uses list-price estimates.</p>`
     : `<p style="font-size:1.25em"><strong>${money(t.organic_usdc)}</strong> organic on certificates, all-time
     <small>(+${money(t.house_usdc)} house)</small> ·
     <strong>${t.organic_sales}</strong> certificate${t.organic_sales === 1 ? "" : "s"}</p>`;
@@ -463,45 +464,10 @@ export function takeSectionHtml(
 }
 
 /**
- * SETTLED AT THE TILL, NO CERTIFICATE (2026-09-02; the keeper, on
- * "the take says 21, organic says 23": "why wouldn't we show both").
- * The till counts every settle by item; the take counts certificates
- * by item. Subtract, per item, and what is left is the money the
- * certificate walk cannot see: the penny pages by design, and — if it
- * ever happens — a shelf item that settled and minted nothing, which
- * is the one row here that should never be green. Then the two
- * totals are added back together in front of the reader, so the
- * storefront's number is arrived at on the page rather than explained
- * in a footnote.
- *
- * Money for a no-certificate row is the LIST price times the count:
- * the till records that a settle happened, not what was paid, and the
- * chain on the receiving wallets is the amount's backstop, same as the
- * tax drawer says. Counts are raw till counters; the reclassification
- * ledger moves family settles to house in the totals only and cannot
- * say which item they were on, so a remainder is printed rather than
- * absorbed.
- */
-/**
- * THE ROWS, DERIVED WITHOUT TRUSTING EITHER CLASSIFICATION (2026-09-02,
- * the keeper: "something is very incorrect here"). The first version
- * subtracted organic certificates from organic till counts and house
- * from house. But the till classifies a settle when it happens and a
- * certificate is classified when it is READ, against today's
- * house-wallet list — so every settle the reclassification ledger
- * later moved from organic to house showed up here as an organic sale
- * with no certificate, in red, with "chase it" beside it. Nineteen of
- * twenty-one rows were that ledger wearing a missing certificate.
- *
- * So the difference is taken on the TOTAL per item, which neither
- * classification can move: settles the till booked, less certificates
- * that exist, is the count with no certificate behind it. The ledger's
- * effect is then printed as its own named number per item — settles
- * the till booked organic that certificates now class house — and
- * only what is left after that reads as organic money with nothing
- * behind it. A house row with no certificate is the proprietors' own
- * test or a failed mint on our own wallet, said in those words rather
- * than in red.
+ * Aggregate count differences, not a transaction join. The historical field
+ * names below remain internal bookkeeping: classification offsets and positive
+ * remainders cannot identify a missing certificate, charge or failed delivery.
+ * List-price values are estimates, never amounts paid or missing money.
  */
 export interface NoCertificateRow {
   item: string;
@@ -566,7 +532,7 @@ function noCertificateHtml(
   till: Record<string, TillItemCount> | null,
 ): string {
   if (!till) {
-    return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
+    return `<h3 id="no-certificate">Counter and certificate comparison</h3>
     <p><small>The per-item till counters are not cached on the desk; <a href="/admin/take">the take</a> walks them and derives these rows.</small></p>`;
   }
   const rows = noCertificateRows(take, till);
@@ -579,9 +545,9 @@ function noCertificateHtml(
   }, 0);
   const table =
     rows.length === 0
-      ? "<p>Every settle on the till has a certificate behind it.</p>"
+      ? "<p>No positive count difference in the inspected items. This does not establish transaction matches or delivery.</p>"
       : `<table border="1" cellpadding="4">
-      <tr><th>item</th><th>booked at the till</th><th>certificates</th><th>no certificate</th><th>of which organic today</th><th>moved to house since booking</th><th>why</th></tr>
+      <tr><th>item</th><th>booked at the till</th><th>certificates</th><th>positive count difference (list estimate)</th><th>organic allocation (list estimate)</th><th>house classification offset</th><th>reading</th></tr>
       ${rows
         .map(
           (row) => `<tr>
@@ -589,20 +555,20 @@ function noCertificateHtml(
         <td>${row.booked}</td>
         <td>${row.certificates}</td>
         <td><strong>${row.no_certificate}</strong> (${money(row.no_certificate * row.list_price)} at list)</td>
-        <td>${row.organic_no_certificate > 0 ? `<strong>${money(row.organic_no_certificate * row.list_price)}</strong> (${row.organic_no_certificate})` : "0"}</td>
+        <td>${row.organic_no_certificate > 0 ? `<strong>${row.organic_no_certificate}</strong> (${money(row.organic_no_certificate * row.list_price)} at list)` : "0"}</td>
         <td>${row.moved_to_house_since_booking}</td>
         <td>${
           row.penny_page
             ? `penny page at ${money(row.list_price)} list; delivers the page, mints nothing`
             : row.organic_no_certificate > 0
-              ? `<strong style="color:#8c2f1b">organic money with no certificate behind it — a mint that failed, or a settle that bought nothing. Chase it.</strong>`
-              : `house: the proprietors' own settles with no certificate behind them — a test, or a mint that failed on our own wallet. Not a customer's money.`
+              ? `<strong style="color:#8c2f1b">Count difference to investigate; no missing transaction or failed delivery identified.</strong>`
+              : `House allocation of the count difference; this does not identify a test or a failed mint.`
         }</td>
       </tr>`,
         )
         .join("\n")}
       <tr>
-        <td><strong>No certificate, total</strong></td>
+        <td><strong>Positive count differences, total</strong></td>
         <td></td>
         <td></td>
         <td><strong>${noCertOrganic + noCertHouse}</strong></td>
@@ -613,19 +579,18 @@ function noCertificateHtml(
     </table>`;
   const reconcile = (() => {
     if (!allTime) return "";
+    if (take.truncated) return "<p><strong>Partial certificate reading.</strong> The storefront comparison is withheld because the certificate scan hit its cap.</p>";
     const explained = take.total.organic_sales + noCertOrganic;
     const remainder = allTime.organic - explained;
-    const sum = `${take.total.organic_sales} on certificates + ${noCertOrganic} with no certificate = ${explained}`;
+    const sum = `${take.total.organic_sales} certificate counts + ${noCertOrganic} positive count differences = ${explained}`;
     if (remainder === 0) {
-      return `<p><strong>${sum}</strong>, which is the storefront's ${allTime.organic}. The books reconcile.${movedTotal > 0 ? ` (${movedTotal} settle${movedTotal === 1 ? "" : "s"} the till booked organic now class house by today's wallet list — the reclassification ledger, shown per item above rather than counted as missing money.)` : ""}</p>`;
+      return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}. The aggregate counts agree; this does not prove that individual payments have certificates or were delivered.</p>`;
     }
-    if (remainder > 0) {
-      return `<p><strong style="color:#8c2f1b">${sum}, but the storefront says ${allTime.organic}: ${remainder} organic settle${remainder === 1 ? "" : "s"} unaccounted for.</strong> Neither the certificates nor the till's per-item rows carry ${remainder === 1 ? "it" : "them"}; the chain on the receiving wallets is where to look.</p>`;
-    }
-    return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}: ${-remainder} more here than there. The storefront applies the reclassification ledger to its total and the certificates apply today's wallet list per row; ${movedTotal} settle${movedTotal === 1 ? "" : "s"} moved to house since booking are shown per item above. What is left over is not extra money; if it is not that ledger, the chain on the receiving wallets is where to look.</p>`;
+    return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}: ${Math.abs(remainder)} ${remainder > 0 ? "more on the storefront" : "more in this comparison"}. This is an aggregate difference, not identified missing sales or extra money. Compare timing, coverage and classification, then inspect transaction records before proposing a correction.</p>`;
   })();
-  return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
-    <p><small>The till counts every settle by item when it happens; certificates are classified when they are read, against today's house-wallet list. So the difference is taken on the total per item — booked less certificates — and the reclassification ledger's effect is printed as its own column instead of reading as missing money. Amounts are list price × count: the till records that a settle happened, not what was paid, and the chain on the receiving wallets is the backstop.</small></p>
+  return `<h3 id="no-certificate">Counter and certificate comparison</h3>
+    <p><small>Positive differences between per-item till counters and certificate counts. Classification offsets are arithmetic estimates, not identified reclassifications. Timing, retention and scan coverage can also change the comparison. List estimates are current list price × count, not amounts paid or missing money.</small></p>
+    ${take.truncated ? "<p><strong>Partial certificate reading: differences below are inconclusive.</strong></p>" : ""}
     ${table}
     ${reconcile}`;
 }

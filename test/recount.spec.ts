@@ -126,9 +126,8 @@ describe("the drift verdict knows what it is allowed to conclude", () => {
     );
   });
 
-  it("still names a real shortfall when the scan read every row", () => {
-    // The direction that IS a defect must survive the fix — the point
-    // was never to silence the verdict, only to qualify it.
+  it("keeps a counter excess visible without inferring its cause", () => {
+    // Exhausting retained rows does not establish full monthly coverage.
     const page = renderRecountPage({
       recount: {
         rows_scanned: 10,
@@ -143,6 +142,23 @@ describe("the drift verdict knows what it is allowed to conclude", () => {
       counter_challenges_organic: 500,
       counter_settles_organic: 0,
     });
-    expect(page).toContain("a counter wrote without a row");
+    expect(page).toContain("counter above retained rows; cause not established");
   });
+});
+
+it.each([true, false, undefined])("states writer mode %s without claiming rows prove payment or the full month", countersSerialized => {
+  const recount = {
+    rows_scanned: 2, capped: false, by_kind: { settle: 2 },
+    as_recorded: { organic: 0, house: 0, infrastructure: 0 },
+    as_reclassified: { organic: 0, house: 0, infrastructure: 0 },
+    reclassified_organic_to_infrastructure: 0, movers: [],
+    settles: { organic: 2, house: 0, infrastructure: 0 },
+  };
+  const page = renderRecountPage({ recount, countersSerialized, counter_settles_organic: 1 });
+  expect(page).toContain(countersSerialized === true ? "Current writer: serialized" : countersSerialized === false ? "Current writer: KV read-add-write" : "Current writer: unknown");
+  expect(page).toContain("cause not established");
+  expect(page).not.toContain("lost increments, the expected direction");
+  expect(page).not.toContain("Every settle is money that");
+  expect(page).toContain("no fresh chain verification");
+  expect(page).not.toContain("the two are comparable");
 });
