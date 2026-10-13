@@ -4,6 +4,8 @@ import { readGatewayTransfer, gatewayNeedsCheck, isGatewayFinal, type GatewayPay
 import type { PurchaseIntent } from '@/services/purchase-intent';
 import { atomicToUsdc, tipFromPaid } from '@/lib/payments';
 import { sendAlert } from '@/lib/alerts';
+import { indexSettledSale, itemKeyFromPath } from '@/lib/metrics';
+import { channelForDoor } from '@/services/mpp-sales';
 import type { Env } from '@/types';
 
 export interface GatewaySale {
@@ -34,6 +36,28 @@ export async function publishGatewaySale(env: Env, record: PurchaseIntent): Prom
     amount_atomic: record.terms.amount, tip_atomic: tipAtomic, network: ARC_NETWORK, house: record.gateway_house === true, ...(item ? { item } : {}), payment: record.payment.gateway };
   if (!env.COUNTER_LEDGER) throw new Error("Gateway ledger unavailable");
   await env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${record.created_at.slice(0, 7)}/gateway-sales`)).recordGatewaySale(row);
+  /*
+   * THE SHOP WINDOW, ON FINALITY ONLY (2026-10-13). recordSettlement
+   * returns before its index write for this network, so a Gateway sale
+   * was counted at /stats and never shown in the glass. It hangs there
+   * on the same condition the summary above counts it: a confirmed or
+   * completed batch, never an accepted-but-pending one and never a
+   * failed one. This function runs on every reconciliation pass, so the
+   * row is keyed by the purchase's own instant and id and a repeat is
+   * the same put. Swallowed on failure: decoration fails open, and a
+   * KV blip here must not disturb the reconciliation that called us.
+   */
+  if (isGatewayFinal(record.payment.gateway)) {
+    await indexSettledSale(env, {
+      item: record.item?.id ?? itemKeyFromPath(record.path),
+      house: row.house,
+      at: record.created_at,
+      id: record.id,
+      channel: channelForDoor(record.door),
+      payment_protocol: "x402-gateway",
+      payment_network: ARC_NETWORK,
+    }).catch(() => undefined);
+  }
 }
 
 /** Called inside the purchase Durable Object. Empty history or an API failure
