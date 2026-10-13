@@ -1,5 +1,17 @@
 # ROADMAP — September 2026
 
+## October 13 — traffic counter handover and public-reader audit
+
+The unpaid doors now reference the store's shared counter ledger in the release
+branch. Keeper-approved preservation completed for 1,820 observed current-period
+baselines, including today's ten shards; no sales or closed days were adjusted.
+Ward/census readers use separate saved observations. Pulse HTML/JSON, admin porch prose and public field
+definitions now state historical undercounts and request-ratio limits. All 308
+pulse-related checks pass locally. Full CI,
+fresh cutover preservation and live binding checks gate release in
+[PR #1016](https://github.com/seancrecord/scvd-general-store-repo/pull/1016).
+[Evidence, skills.sh result and scope closures](research/skills-traffic-followup-2026-10-13/README.md).
+
 ## October 13 — Edge WebMCP renewal
 
 Install the keeper-supplied Edge renewal and record its subdomain scope.
@@ -90,8 +102,9 @@ Keeper approved the reviewed personal-agent skill and distribution plan.
 Implementation adds a storefront paste prompt, the installable shopper skill,
 served references and discovery links, using existing checkout. Publication
 and verification are tracked in [the release record](research/personal-agent-release-2026-10-12/README.md).
-The remaining qualification is a user-approved useful purchase and, separately,
-new-wallet onboarding. No new payment rail or authorization primitive is implied.
+Keeper skipped the purchase qualification and new-wallet onboarding on October 13.
+They remain unverified, with no outstanding action in this batch. No new payment
+rail or authorization primitive is implied.
 
 
 ## October 10 — admin follow-through

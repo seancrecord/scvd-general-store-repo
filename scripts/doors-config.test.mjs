@@ -21,7 +21,10 @@ test("the doors Worker is its own name, entry and route, and nothing of the stor
   assert.equal(doors.main, "../src/doors.ts");
   assert.deepEqual(doors.routes, [{ pattern: "scvd.store/api/buy/*", zone_name: "scvd.store" }]);
   assert.equal(doors.triggers, undefined, "the wards run in the store; a second cron would double every round");
-  assert.equal(doors.durable_objects, undefined, "the trade counter lives in the store");
+  assert.deepEqual(doors.durable_objects?.bindings, [{
+    ...store.durable_objects.bindings.find((binding) => binding.name === "COUNTER_LEDGER"),
+    script_name: store.name,
+  }], "unpaid quotes must use the store's counter writer; doors owns no object class");
   assert.equal(doors.migrations, undefined);
   assert.equal(store.routes.some((r) => r.custom_domain === true && r.pattern === "scvd.store"), true, "the store keeps its custom domain");
 });
