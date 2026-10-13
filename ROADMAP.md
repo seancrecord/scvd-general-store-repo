@@ -1,5 +1,14 @@
 # ROADMAP — September 2026
 
+## October 12 — traffic and buying evidence at the desk
+
+Implemented on `codex/traffic-signal-readout`: show the existing monthly
+unclassified, recognized infrastructure and house request counters together;
+label the daily x402 table in UTC and distinguish request ratios from buyer
+conversion. Infrastructure totals now use the retained item counters rather
+than retired channel counters. No new instrumentation or classification.
+Checks, limits and release state: [traffic readout](docs/TRAFFIC_READOUT_2026-10.md).
+
 ## October 12 — Arc checkout and historical settlement audit
 
 Keeper approved both, with full checkout rather than a pilot. Arc integration
