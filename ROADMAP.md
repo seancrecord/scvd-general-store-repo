@@ -1,14 +1,13 @@
 # ROADMAP — September 2026
 
-## October 12 — discovery budget and outreach follow-through
+## October 12 — traffic and buying evidence at the desk
 
-Keeper approved fixing the oversized discovery documents, completing the live
-site checks, and reviewing outreach alerts. Both discovery catalogs now link
-to the existing full item specification while keeping every purchase option
-and input schema inline. The size guard measures UTF-8 bytes and a populated
-publication shelf. [Scope and validation](docs/CATALOG_FOLLOW_THROUGH_2026-10.md).
-Outreach review uses unpaid probes, preserves missing historical claims, and
-sends no messages. Settlement counts remain unchanged.
+Implemented on `codex/traffic-signal-readout`: show the existing monthly
+unclassified, recognized infrastructure and house request counters together;
+label the daily x402 table in UTC and distinguish request ratios from buyer
+conversion. Infrastructure totals now use the retained item counters rather
+than retired channel counters. No new instrumentation or classification.
+Checks, limits and release state: [traffic readout](docs/TRAFFIC_READOUT_2026-10.md).
 
 ## October 12 — Arc checkout and historical settlement audit
 
@@ -21,6 +20,16 @@ The historical receipt-and-adjustment audit is complete within the retained
 evidence. A stale Solana payer alias exists, but does not explain the one-count
 counter excess. No refund or counter adjustment is justified by this audit;
 retain the warning. [Evidence and limits](research/settle-reconciliation-2026-10-12/README.md).
+
+## October 12 — discovery budget and outreach follow-through
+
+Keeper approved fixing the oversized discovery documents, completing the live
+site checks, and reviewing outreach alerts. Both discovery catalogs now link
+to the existing full item specification while keeping every purchase option
+and input schema inline. The size guard measures UTF-8 bytes and a populated
+publication shelf. [Scope and validation](docs/CATALOG_FOLLOW_THROUGH_2026-10.md).
+Outreach review uses unpaid probes, preserves missing historical claims, and
+sends no messages. Settlement counts remain unchanged.
 
 ## October 12 — agent entry follow-through
 

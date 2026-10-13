@@ -170,10 +170,22 @@ const CHANNEL_MEANING: Record<string, string> = {
     "referred by the x402 Bazaar / x402scan catalog: discovery is working",
   unknown: "no user-agent and no referrer: bare fetches, hard to plan around",
   infrastructure:
-    "known crawlers and scanners: the noise floor, never counted as customers",
+    "known crawlers and scanners: recognized on unpaid requests; a settled payment is separate evidence",
 };
 
-/** The funnel: porch visits -> 402s -> settles, per channel, organic only. */
+/** Item counters retain the infrastructure split; channel counters no longer do. */
+function challengeTotals(ledger: MonthLedger) {
+  return Object.values(ledger.items).reduce(
+    (totals, row) => ({
+      unclassified: totals.unclassified + row.challenges,
+      infrastructure: totals.infrastructure + row.challengesInfra,
+      house: totals.house + row.challengesHouse,
+    }),
+    { unclassified: 0, infrastructure: 0, house: 0 },
+  );
+}
+
+/** Independent event counts per channel; no identity joins between stages. */
 function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
   const porchByChannel: Record<string, number> = {};
   for (const buckets of Object.values(porch.surfaces)) {
@@ -220,18 +232,16 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
     .join("\n");
   return `
     <table border="1" cellpadding="4">
-      <tr><th>source</th><th>porch visits</th><th>402s</th><th>settles</th><th>conversion</th></tr>
+      <tr><th>source</th><th>porch visits</th><th>402s</th><th>settles</th><th>settles / 402s</th></tr>
       ${rows}
     </table>
-    <p>Organic only; infrastructure and house are kept out of every column. Read it left to right: who shows up, who reaches a shelf, who pays.</p>
+    <p>Traffic columns exclude recognized infrastructure and house requests; unrecognized crawlers can remain. Settles exclude house purchases. These are event ratios, not joined buyer journeys; source labels can change between requests.</p>
     <p><small>Off the books but on file: house settles ${
       Object.entries(ledger.channelsHouse)
         .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
         .join(" \u00B7 ") || "none"
     } \u00B7 infrastructure 402s ${
-      Object.entries(ledger.channels402Infra)
-        .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
-        .join(" \u00B7 ") || "none"
+      challengeTotals(ledger).infrastructure
     }</small></p>
     <p><strong>Venue markers (?src=)</strong>: ${venueLines || "none yet; they appear when papers get handed out with per-venue markers"}</p>
     <p><small><strong>WHAT THIS TABLE CANNOT SEE, and it is not the same gap in both halves.</strong>
@@ -256,13 +266,30 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
     <details><summary>What each source means</summary><ul>${legend}</ul></details>`;
 }
 
-/** Last 14 days with any traffic: 402s vs settles, organic. */
+/** Monthly request classification beside the raw daily x402 counters. */
 function trendHtml(ledger: MonthLedger): string {
+  const totals = challengeTotals(ledger);
+  const traffic = `
+    <p><strong>Traffic recorded this month (${escapeHtml(ledger.month)}, x402)</strong></p>
+    <table border="1" cellpadding="4">
+      <tr><th>request category</th><th>recorded requests</th></tr>
+      <tr><td>Unclassified 402 requests</td><td>${totals.unclassified}</td></tr>
+      <tr><td>Recognized crawler / infrastructure 402s</td><td>${totals.infrastructure}</td></tr>
+      <tr><td>House / test 402 requests</td><td>${totals.house}</td></tr>
+    </table>
+    ${ledger.truncated ? "<p><strong>Month scan hit its cap; these counts are floors.</strong></p>" : ""}
+    <p><small>Unclassified is the bucket previously labelled “organic 402s”: it may include unrecognized crawlers.
+    Requests are not unique visitors or evidence of buying intent. A rise in these requests alone does not establish demand.
+    Crawler and house splits are available by month, not by day.</small></p>
+    <p><small>Investigate a spike: <a href="/admin/census">payment-signature census</a>,
+    <a href="/admin/funnel">payment stages and refusals</a>, or
+    <a href="/admin/recount">retained-event recount</a>. Those readings have their own retention and completeness limits;
+    a user-agent string does not identify a buyer.</small></p>`;
   const days = Object.entries(ledger.days).sort((a, b) =>
     b[0].localeCompare(a[0]),
   );
   if (days.length === 0) {
-    return "<p>No day-level rows yet; the trend starts counting from this deploy.</p>";
+    return `${traffic}<p>No day-level rows recorded in this reading.</p>`;
   }
   const rows = days
     .slice(0, 14)
@@ -273,9 +300,11 @@ function trendHtml(ledger: MonthLedger): string {
     .join("\n");
   const total = days.reduce((sum, [, counts]) => sum + counts.settles, 0);
   return `
-    <p><small>${escapeHtml(ledger.month)} by day, newest first, up to fourteen days with traffic. A day's count is that day's alone; the month's total is ${total}.</small></p>
+    ${traffic}
+    <p><small>${escapeHtml(ledger.month)} by day in UTC, newest first, up to fourteen days with traffic.
+    A local evening can span two UTC days. A day's count is that day's alone; the month's raw outside x402 sales total is ${total}.</small></p>
     <table border="1" cellpadding="4">
-      <tr><th>day</th><th>organic 402s</th><th>organic sales that day</th><th></th></tr>
+      <tr><th>day (UTC)</th><th>unclassified 402 requests</th><th>outside x402 sales that day</th><th></th></tr>
       ${rows}
     </table>`;
 }
@@ -608,10 +637,7 @@ function glanceHtml(data: OfficePageData): string {
   const organicSettles = totals?.organic;
   const revenueUsdc = totals?.revenue_usdc;
   const revenueHouseUsdc = totals?.house_revenue_usdc;
-  const organic402s = Object.values(ledger.items).reduce(
-    (sum, row) => sum + row.challenges,
-    0,
-  );
+  const unclassified402s = challengeTotals(ledger).unclassified;
   const reclassNote =
     reclass && reclass.settles > 0
       ? `<p><small>After the reclassification ledger: ${reclass.settles} settle${reclass.settles === 1 ? "" : "s"} and $${reclass.usdc.toFixed(2)} this month moved organic → house (walker wallets listed late; story at /corrections). The raw counters are untouched — this line does the subtraction in the open.</small></p>`
@@ -622,12 +648,12 @@ function glanceHtml(data: OfficePageData): string {
       <strong>${revenueUsdc === undefined ? "unavailable" : `$${revenueUsdc.toFixed(2)}`}</strong> organic revenue
       <small>(${revenueHouseUsdc === undefined ? "unavailable" : `+$${revenueHouseUsdc.toFixed(2)}`} house)</small> \u00B7
       <strong>${organicSettles ?? "unavailable"}</strong> organic sale${organicSettles === 1 ? "" : "s"} <small>this month${data.allTime ? `, of ${data.allTime.organic} all-time` : ""}</small> \u00B7
-      <strong>${organic402s}</strong> organic 402s \u00B7
+      <strong>${unclassified402s}</strong> unclassified 402 requests \u00B7
       <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
-      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 organic 402s per porch visit <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
+      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 unclassified 402s per porch visit <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
-    <p><small>Monthly sales and revenue include x402 and MPP. The asks, daily trend, sources and conversion tables below cover x402 only.</small></p>
+    <p><small>Monthly sales and revenue include x402 and MPP. The asks, daily trend, sources and request ratios below cover x402 only. Unclassified requests may include crawlers; they are not a count of buyers.</small></p>
     ${reclassNote}
     ${
       data.allTime
@@ -671,10 +697,10 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
           .join("\n");
   return `
     <table border="1" cellpadding="4">
-      <tr><th>item</th><th>402s organic</th><th>settled organic</th><th>conversion</th><th>verifies</th><th>tiers</th></tr>
+      <tr><th>item</th><th>unclassified 402 requests</th><th>settled organic</th><th>settles / 402s</th><th>verifies</th><th>tiers</th></tr>
       ${rows}
     </table>
-    <p>Organic numbers only in the main columns; house counts ride alongside as (+Nh), stored, never mixed. Conversion is organic-only. Channel-level funnel lives in Sources above.</p>
+    <p>Main request counts exclude recognized infrastructure and house traffic; unrecognized crawlers can remain. House counts ride alongside as (+Nh), infrastructure as (+Ni). Settles exclude house purchases. Settles / 402s is an event ratio, not buyer conversion. Verifies count reads, not proof that a buyer verified delivery. Source counts live above.</p>
     <p>Paying wallets (${payers.length} on file, newest first):</p>
     <ul>${payerLines}</ul>`;
 }
@@ -803,7 +829,7 @@ function porchHtml(porch: PorchLedger): string {
       <tr><th>surface</th><th>kind</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
-    <p><strong>Organic 402s per organic porch visit: ${porch.porchToPurchase === null ? "not available" : porch.porchToPurchase}</strong>. This is a ratio of requests, not a purchase conversion rate. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;
+    <p><strong>Unclassified 402s per unclassified porch visit: ${porch.porchToPurchase === null ? "not available" : porch.porchToPurchase}</strong>. This is a ratio of requests, not a purchase conversion rate. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> records the stage and reason for a refusal. Input refusals alone do not establish payment intent.</p>`;
 }
 
 /**
