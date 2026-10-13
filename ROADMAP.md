@@ -1,5 +1,18 @@
 # ROADMAP — September 2026
 
+## October 13 — narrowed agent-entry follow-through
+
+Keeper closed native-host tests, paid purchase/receipt verification, wallet
+onboarding and authenticated dashboard visual readback for now. These are
+skipped, not verified. skills.sh was checked: the shopper remains absent from
+the rendered directory while its public source and discovery index work.
+Traffic accounting: the local burst reproduction confirms the fast doors'
+unbound counter can lose increments while event rows survive. The shared-writer
+binding is corrected locally and tested. Release first needs a live baseline
+comparison and coordinated handover: already-seeded SQL can lag the legacy KV
+writer. No production repair or historical counter adjustment yet.
+[Readback, source trace and limits](research/skills-traffic-followup-2026-10-13/README.md).
+
 ## October 12 — traffic and buying evidence at the desk
 
 Implemented on `codex/traffic-signal-readout`: show the existing monthly
@@ -41,8 +54,9 @@ Keeper approved the reviewed personal-agent skill and distribution plan.
 Implementation adds a storefront paste prompt, the installable shopper skill,
 served references and discovery links, using existing checkout. Publication
 and verification are tracked in [the release record](research/personal-agent-release-2026-10-12/README.md).
-The remaining qualification is a user-approved useful purchase and, separately,
-new-wallet onboarding. No new payment rail or authorization primitive is implied.
+Keeper skipped the purchase qualification and new-wallet onboarding on October 13.
+They remain unverified, with no outstanding action in this batch. No new payment
+rail or authorization primitive is implied.
 
 
 ## October 10 — admin follow-through

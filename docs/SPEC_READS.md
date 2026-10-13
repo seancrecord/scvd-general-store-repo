@@ -1,5 +1,19 @@
 # Spec reads — the store's positions on adjacent protocols
 
+
+## 2026-10-13 — shared counter binding for unpaid quotes
+
+Read Cloudflare's [Wrangler configuration](https://developers.cloudflare.com/workers/wrangler/configuration/)
+and [Durable Object environments](https://developers.cloudflare.com/durable-objects/reference/environments/):
+`script_name` references the existing class owner's namespace; the doors Worker
+needs no class export or migration. Read [development binding support](https://developers.cloudflare.com/workers/local-development/bindings-per-env/)
+and [Data Studio](https://developers.cloudflare.com/durable-objects/observability/data-studio/)
+for the production baseline inspection. Remote development can reference Durable
+Objects; ordinary local remote bindings cannot. Local SQL tests establish the
+counter behavior, not KV propagation timing or historical visitor identities.
+Production binding metadata confirms the missing doors connection on October 13;
+handover and release evidence are recorded in the [accounting follow-up](../research/skills-traffic-followup-2026-10-13/README.md).
+
 ## 2026-10-12 — x402 discovery payload size
 
 Re-read the resource-entry and forward-compatibility sections of the primary

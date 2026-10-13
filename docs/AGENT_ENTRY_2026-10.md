@@ -1,5 +1,10 @@
 # Agent entry and no-spend rehearsal — October 12, 2026
 
+**Keeper scope update, October 13:** native-host tests, paid purchase/receipt
+verification, wallet onboarding and authenticated dashboard visual readback are
+skipped/closed for now. The qualification matrix preserves evidence limits;
+its unobserved cells are not outstanding tasks. [Current follow-up](../research/skills-traffic-followup-2026-10-13/README.md).
+
 The keeper asked to open the front door further for Grok, Hermes, ClawHub and
 other agents, with clearer descriptions and forward-looking improvements.
 This extends the personal-shopper release; it changes no payment mechanism.

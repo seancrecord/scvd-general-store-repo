@@ -146,14 +146,13 @@ beforeAll(async () => {
   const bound = storeBinding();
   handed = bound.handed;
   // What doors/wrangler.jsonc provides, and nothing it does not: the
-  // doors hold no Durable Object namespace of any kind (2026-10-02 —
-  // the bench read one through the store's env here and never saw the
-  // live 500; test/doors-labor-bench.spec.ts is the case).
+  // doors reference the store's COUNTER_LEDGER, but own no classes and
+  // have none of the other namespaces (the missing bench binding once
+  // hid a live 500; test/doors-labor-bench.spec.ts is the case).
   doorsEnv = {
     ...storeEnv,
     STORE: bound.binding,
     PAID_RECOVERIES: undefined,
-    COUNTER_LEDGER: undefined,
     SIGNALS: undefined,
     TRADE_NONCES: undefined,
     A2A_KITS: undefined,

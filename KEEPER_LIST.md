@@ -26,6 +26,12 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **CLOSED FOR NOW October 13 — agent-entry qualifications.** Keeper skipped
+  native-host tests, paid purchase/receipt verification, wallet onboarding and
+  the authenticated dashboard visual check. No further press is waiting on
+  these. skills.sh check and the next traffic-accounting investigation are
+  recorded in [the follow-up](research/skills-traffic-followup-2026-10-13/README.md).
+
 - **Defects 0.22.0 published October 7 — no repeat press.** The dry run and
   publication succeeded; public latest and all 31 packed files match source.
   A fresh installed consumer and npm signature/provenance verification pass.

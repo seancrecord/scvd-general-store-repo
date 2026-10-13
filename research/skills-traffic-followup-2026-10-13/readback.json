@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-10-13T16:16:59.258836+00:00",
+  "skills_sh": {
+    "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-personal-shopper",
+    "browser_result": "404; scvd-personal-shopper is not available in this repository",
+    "suggested_existing_skill": "scvd-general-store",
+    "public_source_http": 200,
+    "public_source_bytes": 5030,
+    "website_files_index_http": 200,
+    "website_files_index_contains_shopper": true,
+    "install_repeated": false,
+    "telemetry_emitted": false
+  },
+  "traffic": {
+    "snapshot_hashes_match": true,
+    "listed_keys": 34014,
+    "unique_keys": 34014,
+    "read_rows": 34014,
+    "nonhouse_noninfra_challenge_events": 16114,
+    "distinct_saved_record_shapes": 16114,
+    "event_dates": {
+      "2026-10-11": 16114
+    },
+    "daily_counter": 6829,
+    "daily_shards": 10,
+    "live_binding_read": "HTTP 401; not verified",
+    "source_configuration": "doors has no COUNTER_LEDGER; store does",
+    "historical_cause_proven": false
+  },
+  "skipped_for_now": [
+    "Native host installation and rehearsal",
+    "Paid purchase, delivery and receipt verification",
+    "New-wallet onboarding",
+    "Authenticated dashboard visual readback"
+  ],
+  "local_accounting_followup": {
+    "fallback_burst_requests": 20,
+    "fallback_event_rows": 20,
+    "fallback_daily_count": 1,
+    "protected_burst_count": 20,
+    "protected_count_after_shared_writer_request": 21,
+    "binding_fix": "local only; references store CounterLedger",
+    "config_regression_before_fix": "1 failed, 4 passed",
+    "config_regression_after_fix": "5 passed",
+    "handover_prerequisite": "Compare live KV and SQL baselines; stop legacy writes and preserve the higher observed counter before rollout",
+    "historical_counters_changed": false,
+    "deployed": false
+  }
+}
