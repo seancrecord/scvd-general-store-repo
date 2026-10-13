@@ -1,5 +1,28 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-13 — homepage JSON-LD identity and Edge renewal
+
+Read [W3C JSON-LD 1.1 node identifiers](https://www.w3.org/TR/json-ld11/#node-identifiers)
+and [Schema.org's data model](https://schema.org/docs/datamodel.html).
+A node's properties may be joined through the same absolute `@id`.
+The homepage's Organization now references the same Offer identities that
+its Product nodes describe fully. Names and distinct discovery descriptions
+remain on the Organization references; all prices, payment methods,
+availability, return policies and shipping details remain inline on Products.
+The checkout sentence also stays on each Offer instead of being repeated
+in its Product description. Every product remains listed.
+
+This is a serialization change, not evidence of better search ranking.
+Consumers reading only one JSON-LD script must resolve same-document
+identities to recover the complete graph.
+
+Read Microsoft's [origin-trial documentation](https://learn.microsoft.com/en-us/microsoft-edge/origin-trials/)
+and the [current WebMCP registration](https://developer.microsoft.com/en-us/microsoft-edge/origin-trials/trials/0b76fe60-b266-458e-a285-04e375c0c31a).
+Renewal requires generating and serving a new token for the same origin;
+the trial's end date does not extend the token already served.
+The registration requires the keeper's sign-in and terms acceptance.
+No replacement token has been received at this read.
+
 ## 2026-10-12 — x402 discovery payload size
 
 Re-read the resource-entry and forward-compatibility sections of the primary

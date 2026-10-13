@@ -32,6 +32,16 @@ evidence. A stale Solana payer alias exists, but does not explain the one-count
 counter excess. No refund or counter adjustment is justified by this audit;
 retain the warning. [Evidence and limits](research/settle-reconciliation-2026-10-12/README.md).
 
+## October 13 — homepage reader budget
+
+Keeper-authorized follow-through removes repeated homepage checkout terms
+and joins Organization offers to their full Product offers by JSON-LD identity.
+Products, descriptions, prices, rails and merchant fields remain available.
+The populated all-rail fixture is checked against the live reader's unchanged
+200,000-byte ceiling. Regression observed failing before the repair; focused
+discovery checks, typecheck and production bundle pass. Full CI and production
+readback gate release. [Primary-source read](docs/SPEC_READS.md#2026-10-13--homepage-json-ld-identity-and-edge-renewal).
+
 ## October 12 — discovery budget and outreach follow-through
 
 Keeper approved fixing the oversized discovery documents, completing the live
