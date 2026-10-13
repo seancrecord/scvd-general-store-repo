@@ -1,5 +1,15 @@
 # ROADMAP — September 2026
 
+## October 12 — discovery budget and outreach follow-through
+
+Keeper approved fixing the oversized discovery documents, completing the live
+site checks, and reviewing outreach alerts. Both discovery catalogs now link
+to the existing full item specification while keeping every purchase option
+and input schema inline. The size guard measures UTF-8 bytes and a populated
+publication shelf. [Scope and validation](docs/CATALOG_FOLLOW_THROUGH_2026-10.md).
+Outreach review uses unpaid probes, preserves missing historical claims, and
+sends no messages. Settlement counts remain unchanged.
+
 ## October 12 — Arc checkout and historical settlement audit
 
 Keeper approved both, with full checkout rather than a pilot. Arc integration

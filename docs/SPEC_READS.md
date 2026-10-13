@@ -1,5 +1,20 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-12 — x402 discovery payload size
+
+Re-read the resource-entry and forward-compatibility sections of the primary
+[x402 discovery proposal at its inspected revision](https://github.com/whawk46/x402/blob/3b6d7785946a65a257c869c9584213d1b7af33e9/specs/extensions/discovery.md).
+Upstream [PR 2979](https://github.com/x402-foundation/x402/pull/2979) remains open;
+this is a draft, not a ratified standard. It permits complete payment entries
+or bare pointers and requires unknown fields to be ignored. It does not
+require this store's custom listing specification in every entry.
+
+Both manifests retain all advertised resources, full `accepts`, input schemas,
+and purchase links. The repeated custom `spec` moves to `spec_url`: the
+existing free `/menu/:id` response, requested as `application/json`, carries
+its unchanged full `spec`. The maker's mark remains inline. No payment
+protocol, verification rule, price, or recipient changes.
+
 ## 2026-10-12 — Arc Gateway checkout
 
 Read Circle's primary [seller integration](https://developers.circle.com/gateway-nanopayments/howtos/x402-seller),

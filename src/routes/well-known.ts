@@ -433,7 +433,7 @@ async function structuredPaidResources(env: Env) {
    * of one string is a cheap price for that not happening.
    *
    * C1: the fact block tops every catalog entry; S1: the uniform spec
-   * rides each resource (indexers that don't know the field ignore it).
+   * is one free hop away; payment terms and input schemas stay inline.
    */
   const menuResources = MENU_ITEMS.map((item) => ({
     accepts: manifestAccepts(env, priceTiersUsdc(item)),
@@ -451,13 +451,19 @@ async function structuredPaidResources(env: Env) {
     fulfillment: item.fulfillment,
     // The same schema Bazaar, the MCP tools, and the listing spec all
     // read, published under the name an indexer looks for. Our own
-    // `spec.inputs` says it too, but only to a reader who knows our
+    // linked `spec.inputs` says it too, but only to a reader who knows our
     // vocabulary; this one is the standard field. Investigated
     // 2026-07-27: a catalog scoring us on "input schema" was finding
     // nothing here to score.
     inputSchema: { type: "object", ...buyInputSchema(item) },
     ...buyerLinks(item, base),
-    spec: listingSpec(item, base),
+    // The full spec repeats inputs and verification prose across the
+    // catalog. Keep it at the existing free item contract so a populated
+    // shelf remains below discovery readers' byte budgets.
+    spec_url: `${base}/menu/${item.id}`,
+    ...(listingSpec(item, base).outputs.made_by
+      ? { made_by: listingSpec(item, base).outputs.made_by }
+      : {}),
   }));
   const almanacResources = (await listAlmanacEntries(env)).map((entry) => ({
     accepts: manifestAccepts(env, pennyPageTiersUsdc()),
