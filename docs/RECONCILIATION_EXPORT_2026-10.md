@@ -30,3 +30,7 @@ and tax-export behavior. Typecheck and all production bundle dry-runs passed.
 Full required CI and authenticated live readback remain release gates. After
 release, obtain the capture and compare transaction records with payer/item/month
 totals; the current pasted evidence still does not justify a correction.
+
+The first full CI run caught the missing entry in the back shelf's “every room”
+list. The download is now listed there as well as on the books page, retaining
+the existing admin reachability guard without an exception for this route.
