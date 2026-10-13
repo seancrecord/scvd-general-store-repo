@@ -22,7 +22,7 @@ const attention = (html: string) => html.match(/<section id="needs-attention">([
 describe("the counter's revenue work at a glance", () => {
   it("surfaces an unanswered brief before reference material and links the existing controls", () => {
     const html = renderCounterPage(data({ commissions: [brief("req_new")] }), now);
-    expect(html).not.toContain("Nothing needs your hands.");
+    expect(html).not.toContain("No required work in this reading.");
     expect(html).toContain("1 brief or quote to review");
     expect(attention(html)).toContain("New briefs (1)");
     expect(attention(html)).toContain('href="#request-req_new"');
@@ -75,7 +75,7 @@ describe("the counter's revenue work at a glance", () => {
   it("never claims a quiet desk when a source failed or the request scan is incomplete", () => {
     for (const extra of [{ loadNotes: ["orders unavailable"] }, { commissionsIncomplete: true }]) {
       const html = renderCounterPage(data(extra), now);
-      expect(html).not.toContain("Nothing needs your hands.");
+      expect(html).not.toContain("No required work in this reading.");
       expect(html).toContain("Partial reading");
     }
   });
@@ -93,10 +93,23 @@ describe("the counter's revenue work at a glance", () => {
       status: "quoted", quote_usdc: 100, quote_expires_at: `2026-10-${15 + index}T12:00:00Z`,
     }));
     const html = renderCounterPage(data({ commissions }), now);
-    expect(html).toContain("Nothing needs your hands.");
+    expect(html).toContain("No required work in this reading.");
     expect(attention(html)).toContain("Waiting on buyer (7)");
     expect(attention(html)).toContain("See all 7; first 5 shown above");
     expect(attention(html)).not.toContain("Brief waiting_6");
     expect(html).toContain('id="request-waiting_6"');
   });
+});
+
+it("separates optional tip review from required work at a quiet desk", () => {
+  const html = renderCounterPage(data({ tips: [
+    { id: "tip_waiting", tip: "Read this", status: "pending_review", date: now.toISOString() },
+    { id: "tip_done", tip: "Filed", status: "approved", date: now.toISOString() },
+  ] }), now);
+  expect(html).toContain("No required work in this reading.");
+  expect(html).toContain("Optional review:");
+  expect(html).toContain('href="#tips"');
+  expect(html).toContain("1 tip awaiting review");
+  expect(html).not.toContain("Nothing needs your hands.");
+  expect(html).not.toContain("1 thing needs your hands");
 });

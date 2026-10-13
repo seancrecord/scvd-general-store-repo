@@ -11,13 +11,23 @@ Public instructions explain supported evidence and stop on mismatches.
 [Scope, verification and replacement procedure](docs/BOUNTY_PAYMENT_MODE_2026-10.md).
 Release and replacement posting are authorized; both follow the PR/CI gate.
 
+## October 13 — admin reporting clarity
+
+**Implemented; PR and merge authorized, pending required CI.** Inflow withholds rates when coverage is
+incomplete or windows differ. Office compares aggregate counts without claiming
+missing payments or delivery. Recount identifies the current counter writer and
+the limits of retained event rows. Counter separates required work from optional
+tip review. Accounting records and moderation state are unchanged.
+Regressions fail on the prior source; focused tests, typecheck and production
+bundle checks pass. [Scope and validation](docs/ADMIN_REPORTING_CLARITY_2026-10.md).
+
 ## October 13 — admin reconciliation evidence export
 
-**Built; release requested.** The books page now offers a private, read-only
+**Released in [PR #1017](https://github.com/seancrecord/scvd-general-store-repo/pull/1017); live export read back October 13.** The books page offers a private, read-only
 JSON capture of the legacy settlement ledger, payer totals, monthly counters,
 house reclassifications and latest raise record. Missing records and scan limits
 are explicit; incomplete accounting reads withhold the comparison.
-[Scope, validation and remaining live readback](docs/RECONCILIATION_EXPORT_2026-10.md).
+[Scope, validation and live readback](docs/RECONCILIATION_EXPORT_2026-10.md).
 The historical one-count discrepancy remains unresolved until the captured
 evidence supports a transaction-level explanation.
 

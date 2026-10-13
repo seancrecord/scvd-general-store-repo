@@ -38,20 +38,18 @@ describe("the take shows both counts", () => {
     ).text();
     expect(html).toContain('id="no-certificate"');
     expect(html).toContain(`<code>${page}</code>`);
-    // Two organic penny settles at the $0.01 list price.
-    // Two organic penny settles, no certificates: the organic-today
-    // column carries them at the $0.01 list price. The booked total may
-    // also hold a house settle left by the test above; the regex reads
-    // the organic column, which is the one that means money.
+    // The difference stays a count, with a separately labelled list-price estimate.
     expect(html).toMatch(
       new RegExp(
-        `${page}</code></td>\\s*<td>\\d+</td>\\s*<td>0</td>\\s*<td><strong>\\d+</strong> \\(\\$0\\.0\\d at list\\)</td>\\s*<td><strong>\\$0\\.02</strong> \\(2\\)`,
+        `${page}</code></td>\\s*<td>\\d+</td>\\s*<td>0</td>\\s*<td><strong>\\d+</strong> \\(\\$0\\.0\\d at list\\)</td>\\s*<td><strong>2</strong> \\(\\$0\\.02 at list\\)`,
       ),
     );
     expect(html).toContain("penny page at $0.01 list");
-    // The arithmetic is on the page: certificates + no-certificate = storefront.
-    expect(html).toMatch(/\d+ on certificates \+ 2 with no certificate = \d+/);
-    expect(html).toContain("The books reconcile.");
+    // Matching aggregate arithmetic is not transaction reconciliation.
+    expect(html).toMatch(/\d+ certificate counts \+ 2 positive count differences = \d+/);
+    expect(html).toContain("The aggregate counts agree");
+    expect(html).not.toContain("The books reconcile.");
+    expect(html).toContain("not amounts paid or missing money");
   });
 });
 
@@ -83,11 +81,40 @@ describe("the ledger is not missing money (2026-09-02)", () => {
       moved_to_house_since_booking: 0,
     });
     // daily_fortune: two organic settles, no certificates at all — the
-    // one shape that is money with nothing behind it.
+    // positive aggregate difference; not a proven missing payment.
     expect(byItem.get("daily_fortune")).toMatchObject({
       no_certificate: 2,
       organic_no_certificate: 2,
     });
     expect(rows[0]?.item).toBe("daily_fortune");
+  });
+});
+
+// No transaction IDs are supplied here: no branch may claim a transaction match.
+describe("aggregate differences stay aggregate", () => {
+  const take = {
+    lines: [], items: [],
+    total: { kind: "other" as const, label: "Total", organic_usdc: 0, house_usdc: 0, organic_sales: 0, house_sales: 0 },
+    rails: { base: { sales: 0, usdc: 0 }, solana: { sales: 0, usdc: 0 }, unknown: { sales: 0, usdc: 0 } },
+    refund_usdc: 0, unknown_wallet_sales: 0, truncated: false,
+  };
+  it.each([0, 1, 2])("qualifies the comparison against storefront count %i", async organic => {
+    const { takeSectionHtml } = await import("@/pages/admin/office-page");
+    const html = takeSectionHtml(take, { organic, house: 0 }, { daily_fortune: { organic: 1, house: 0 } });
+    expect(html).not.toContain("a mint that failed");
+    expect(html).not.toContain("The books reconcile");
+    expect(html).not.toContain("unaccounted for");
+    expect(html).toContain("no missing transaction or failed delivery identified");
+    expect(html).toContain(organic === 1 ? "The aggregate counts agree" : "aggregate difference, not identified missing sales");
+  });
+  it("does not turn equal totals or a capped certificate scan into verified books", async () => {
+    const { takeSectionHtml } = await import("@/pages/admin/office-page");
+    const complete = takeSectionHtml(take, { organic: 0, house: 0 }, {});
+    expect(complete).not.toContain("Every settle on the till has a certificate");
+    expect(complete).toContain("No positive count difference");
+    const partial = takeSectionHtml({ ...take, truncated: true }, { organic: 0, house: 0 }, {});
+    expect(partial).toContain("Partial certificate reading");
+    expect(partial).not.toContain("The aggregate counts agree");
+    expect(partial).not.toContain("matches this table exactly");
   });
 });

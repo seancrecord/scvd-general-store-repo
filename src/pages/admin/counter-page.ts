@@ -674,6 +674,7 @@ export function renderCounterPage(data: CounterPageData, now: Date = new Date())
   const heldTrainTags = data.trainTags.filter(
     (tag) => tag.status === "declined",
   ).length;
+  const pendingTips = data.tips.filter(tip => tip.status === "pending_review").length;
   const needsHands =
     attention.reviewCount + attention.missingCount +
     openOrders +
@@ -687,7 +688,7 @@ export function renderCounterPage(data: CounterPageData, now: Date = new Date())
     <h2>At a glance</h2>
     <p style="font-size:1.1em">${
       needsHands === 0
-        ? incomplete ? "<strong>Partial reading.</strong> Loaded records show no work needing your hands; check the load notes before treating the desk as clear." : "<strong>Nothing needs your hands.</strong> The rest of this page is reference."
+        ? incomplete ? "<strong>Partial reading.</strong> Loaded records show no work needing your hands; check the load notes before treating the desk as clear." : "<strong>No required work in this reading.</strong> Waiting quotes and optional review remain below."
         : `<strong>${needsHands} thing${needsHands === 1 ? "" : "s"} need${needsHands === 1 ? "s" : ""} your hands:</strong>
           ${openOrders ? ` <a href="#orders">${openOrders} open order${openOrders === 1 ? "" : "s"}</a> ·` : ""}
           ${attention.reviewCount ? ` <a href="#needs-attention">${attention.reviewCount} brief${attention.reviewCount === 1 ? "" : "s"} or quote${attention.reviewCount === 1 ? "" : "s"} to review</a> ·` : ""}
@@ -697,6 +698,7 @@ export function renderCounterPage(data: CounterPageData, now: Date = new Date())
           ${pendingRefunds ? ` <a href="#queues">${pendingRefunds} refund${pendingRefunds === 1 ? "" : "s"} to pay</a> ·` : ""}
           ${lettersWaiting ? ` <a href="#mailbox">${lettersWaiting} letter${lettersWaiting === 1 ? "" : "s"} to answer</a>` : ""}`
     }</p>
+    ${pendingTips ? `<p><strong>Optional review:</strong> <a href="#tips">${incomplete ? "At least " : ""}${pendingTips} tip${pendingTips === 1 ? "" : "s"} awaiting review</a>. No Gazette edition is scheduled.</p>` : ""}
     ${
       /*
        * NO LINE FOR TAGS HELD OFF THE WALL (2026-09-04, the keeper:
@@ -784,7 +786,7 @@ export function renderCounterPage(data: CounterPageData, now: Date = new Date())
       })</summary>
       ${trainHtml(data.trainTags)}
     </details>
-    <details ${data.tips.some((tip) => tip.status === "pending_review") ? "open" : ""}>
+    <details id="tips" ${data.tips.some((tip) => tip.status === "pending_review") ? "open" : ""}>
       <summary>Trading Post tips (${data.tips.filter((tip) => tip.status !== "rejected").length} in the jar${
         data.tips.some((tip) => tip.status === "rejected")
           ? `, ${data.tips.filter((tip) => tip.status === "rejected").length} rejected`

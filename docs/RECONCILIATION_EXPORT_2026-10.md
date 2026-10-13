@@ -1,7 +1,9 @@
 # Admin reconciliation evidence export — October 13
 
-Keeper approved the scoped admin download and its PR/merge. Production capture
-and accounting investigation follow deployment; no correction is claimed.
+Released in [PR #1017](https://github.com/seancrecord/scvd-general-store-repo/pull/1017),
+merged October 13 after all required CI passed. The keeper supplied a production
+capture that day; its bounded comparison was independently recomputed. No
+accounting correction is justified or claimed.
 
 The reconciliation page links **Download reconciliation evidence** at
 `/admin/export/reconciliation.json`, behind the existing admin authentication.
@@ -27,9 +29,15 @@ Seven focused test files passed (38 tests), covering authentication, attachment
 headers, field selection, absence of accounting writes, arithmetic, incomplete
 reads and malformed records alongside existing reconciliation, counter-raise
 and tax-export behavior. Typecheck and all production bundle dry-runs passed.
-Full required CI and authenticated live readback remain release gates. After
-release, obtain the capture and compare transaction records with payer/item/month
-totals; the current pasted evidence still does not justify a correction.
+All four CI test shards and the required check passed before merge. The
+keeper-provided live capture completed from 17:49:20.402Z to 17:49:21.904Z on
+October 13 with no reported accounting scan gaps. Independent recomputation
+found 579 raw counter purchases, 578 derived payer purchases and 542 retained
+settlement rows; the founding allowance makes the displayed counter total 580.
+The one-count difference persists. Six added settlement records and matching
+counter/payer increases explain the change since the earlier capture; the 536
+prior records agree on exported fields. This validates the bounded export and
+its arithmetic, not transaction-level payment or delivery. No correction was made.
 
 The first full CI run caught the missing entry in the back shelf's “every room”
 list. The download is now listed there as well as on the books page, retaining

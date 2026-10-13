@@ -59,7 +59,7 @@ describe("an answered letter is done, filed or not", () => {
     // The count lets go the moment the work is done — archiving is
     // housekeeping, not the job.
     expect(answered).not.toContain("letter to answer");
-    expect(answered).toContain("Nothing needs your hands.");
+    expect(answered).toContain("No required work in this reading.");
     // And the letter itself has not gone anywhere.
     expect(answered).toContain(letterId);
     expect(answered).toContain("1 in the box, all answered");
@@ -125,7 +125,7 @@ describe("a decision already made is not work", () => {
 
     await setTagStatus(testEnv, painted.record.id, "declined");
     const decided = await counter();
-    expect(decided).toContain("Nothing needs your hands.");
+    expect(decided).toContain("No required work in this reading.");
     // The glance no longer carries the decision...
     expect(decided).not.toContain("reversible any time");
     // ...but the drawer still holds it, and the reversal is one press.
