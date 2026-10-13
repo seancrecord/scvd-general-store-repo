@@ -43,6 +43,9 @@ import {
 } from "@/services/launch-check";
 import type { Env } from "@/types";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { EVM_USDC_DOMAIN } from "@/lib/payments";
+import { declaredTransferMethod, DEFAULT_TRANSFER_METHOD } from "@/lib/value-checks";
+import { BOUNTY_WITHDRAWALS } from "@/store/bounty-withdrawals";
 
 /**
  * THE BOUNTY BOARD (BOUNTY_BOARD.md) — mystery shoppers for the x402
@@ -368,7 +371,7 @@ export interface BountyRecord {
   distinct_payer_required?: boolean;
   opened_block: number;
   expires_at: string;
-  status: "open" | "paid" | "expired";
+  status: "open" | "paid" | "expired" | "withdrawn";
   claim?: {
     tx_hash: string;
     payer: string;
@@ -436,6 +439,32 @@ interface AcceptEntry {
   maxAmountRequired?: string;
   payTo?: string;
   asset?: string;
+  extra?: unknown;
+}
+
+/**
+ * `exact` describes the amount, not the settlement mechanism. Gateway
+ * also advertises `exact` USDC but settles balances in batches; our
+ * claim reader requires a payer-to-payTo token Transfer. Filter before
+ * sorting prices, or the cheap batch quote wins a bounty it cannot prove.
+ * Missing optional metadata retains the ordinary legacy interpretation.
+ */
+function ordinaryEvmTransfer(entry: AcceptEntry): boolean {
+  if (entry.extra === undefined) return true;
+  if (!entry.extra || typeof entry.extra !== "object" || Array.isArray(entry.extra)) {
+    return false;
+  }
+  const extra = entry.extra as Record<string, unknown>;
+  if (extra["name"] !== undefined &&
+      extra["name"] !== EVM_USDC_DOMAIN.name && extra["name"] !== "USDC") return false;
+  if (extra["version"] !== undefined && extra["version"] !== EVM_USDC_DOMAIN.version) return false;
+  if (extra["verifyingContract"] !== undefined &&
+      (typeof extra["verifyingContract"] !== "string" ||
+       !isSameAddress(extra["verifyingContract"], entry.asset ?? ""))) return false;
+  if (extra["assetTransferMethod"] !== undefined &&
+      (typeof extra["assetTransferMethod"] !== "string" ||
+       declaredTransferMethod({ extra }) !== DEFAULT_TRANSFER_METHOD)) return false;
+  return true;
 }
 
 function decodeBase64Json(value: string): unknown {
@@ -597,7 +626,7 @@ export async function openBounty(
     existing.some(
       (record) =>
         record.domain === domain &&
-        record.status === "open" &&
+        bountyStatusAt(record, now) === "open" &&
         currentWeekKey(new Date(record.opened_at)) === weekKey,
     )
   ) {
@@ -704,6 +733,8 @@ export async function openBounty(
       } =>
         pair.chain !== null &&
         (pair.entry.scheme ?? "exact") === "exact" &&
+        isSameAddress(pair.entry.asset ?? "", pair.chain.usdc) &&
+        ordinaryEvmTransfer(pair.entry) &&
         Number.isFinite(amountUsd(pair.entry)),
     )
     .sort((a, b) =>
@@ -753,7 +784,7 @@ export async function openBounty(
    */
   if (wanted && !chosenPair && !chosenSolana && !chosenAlgorand) {
     throw new BountyRefused(
-      `this door quotes ${input.rail} but no payable USDC entry on it that this store can verify — nothing is posted`,
+      `this door quotes ${input.rail} but no payable USDC entry in a payment mode this store can verify — EVM claims need an individual payer-to-payTo USDC transfer, not Gateway or batched settlement; nothing is posted`,
       "rail-not-offered",
     );
   }
@@ -769,7 +800,7 @@ export async function openBounty(
   const railCaip2 = bountyChain?.caip2 ?? (chosenSolana ? SOLANA_CHAIN : ALGORAND_CHAIN);
   if (!chosen?.payTo || !assetMatches) {
     throw new BountyRefused(
-      `no payable USDC rail this store reads (${bountyRailNames()}) could be read from the door's 402 — the claim verifier would have nothing to verify against`,
+      `no payable USDC rail this store reads (${bountyRailNames()}) could be read from the door's 402 in a payment mode it can verify — EVM claims need an individual payer-to-payTo USDC transfer, not Gateway or batched settlement`,
       "no-usdc-rail",
     );
   }
@@ -871,9 +902,14 @@ export async function openBounty(
  * test that would refuse their claim.
  */
 export function bountyStatusAt(
-  record: Pick<BountyRecord, "status" | "expires_at">,
+  record: Pick<BountyRecord, "bounty_id" | "status" | "expires_at">,
   now: Date,
 ): BountyRecord["status"] {
+  // A withdrawal changes eligibility, never the original price or a
+  // paid claim. Apply it on reads so old KV records cannot keep offering it.
+  if (record.status !== "paid" && BOUNTY_WITHDRAWALS[record.bounty_id]) {
+    return "withdrawn";
+  }
   if (record.status === "open" && now.toISOString() > record.expires_at) {
     return "expired";
   }
@@ -886,7 +922,14 @@ export async function bountyBoard(env: Env, now: Date = new Date()) {
   const weekKey = currentWeekKey(now);
   const spent = await weekSpent(env, weekKey);
   const bounties = records
-    .map((record) => ({ ...record, status: bountyStatusAt(record, now) }))
+    .map((record) => {
+      const status = bountyStatusAt(record, now);
+      return {
+        ...record,
+        status,
+        ...(status === "withdrawn" ? { withdrawal: BOUNTY_WITHDRAWALS[record.bounty_id] } : {}),
+      };
+    })
     .sort((a, b) => b.opened_at.localeCompare(a.opened_at));
   return {
     bounties,
@@ -1137,7 +1180,7 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     refused_when:
       "it was already paid to someone else's settlement, or its status is anything but open",
     then_what:
-      "There is no second try on a spent listing, and nothing this store can do after the fact. One bounty pays once: read the board on the same minute you open your wallet.",
+      "One bounty pays once: read the board on the same minute you open your wallet. A withdrawn listing pays no automated claim; its withdrawal gives the reason and how to send evidence to the keeper if you already spent money.",
     matches: /not open/,
   },
   {
@@ -1190,7 +1233,7 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     refused_when:
       "the settlement carries no USDC transfer of exactly the captured amount from your payer to the payTo this store captured when it opened the bounty",
     then_what:
-      "This is the honest loss mode, and the only one that costs a careful walker money: the door's price moved between the posting and your walk, so what you paid is real and unclaimable. Compare the live 402 against the bounty's amount_usd BEFORE you pay. The claim is released; the door keeps its price.",
+      "The receipt does not match the captured terms. This can mean price or recipient drift, a different asset, or a payment mode this verifier cannot read; it does not by itself prove which happened. Compare the live 402 and its payment mode BEFORE you pay. Stop on a mismatch; a separate manual transfer is not a commissioned purchase. The claim is released.",
     matches: /no USDC transfer of|carry no transfer of/,
   },
   {
@@ -1266,6 +1309,11 @@ export async function claimBounty(
   if (!bounty) {
     throw new BountyRefused(
       "no bounty under that id — the board is /api/bounties",
+    );
+  }
+  if (bountyStatusAt(bounty, now) === "withdrawn") {
+    throw new BountyRefused(
+      `that bounty is withdrawn, not open — ${BOUNTY_WITHDRAWALS[bounty.bounty_id]?.reason ?? "contact the keeper before spending"}`,
     );
   }
   /*
