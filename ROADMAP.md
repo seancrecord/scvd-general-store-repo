@@ -1,5 +1,13 @@
 # ROADMAP — September 2026
 
+## October 13 — Edge WebMCP renewal
+
+Install the keeper-supplied Edge renewal and record its subdomain scope.
+The earliest browser expiry now belongs to Chrome; refresh the skill's
+published date and preserve the per-vendor origin and feature checks.
+Regression checks fail against the old grant. Full CI and live served-token
+readback gate release; token decoding alone does not verify the vendor signature.
+
 ## October 13 — bounty payment-mode compatibility
 
 Keeper-authorized local repair after a walker caught a Gateway price on

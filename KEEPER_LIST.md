@@ -2083,11 +2083,11 @@ what you ruled and what is still yours to look at.
 - **World ID** (#52 remainder). Your enrollment.
 - **`launch_check` on Polygon.** Fund the field wallet
   with Polygon USDC. Not a code task.
-- **Browser origin trials.** September 16 UTC live reading confirms both
-  tokens are present: Edge expires 2026-10-15; Chrome expires 2026-11-17.
-  Renew the earlier Edge grant before it ends. The door reader already
-  derives the soonest expiry from both tokens; this is an advance warning,
-  not a current outage. Evidence: `docs/PAYMENT_REACH_QUALIFICATION_2026-09-16.md`.
+- **Browser origin trials.** Edge renewal supplied by the keeper October 13,
+  covering scvd.store and subdomains through November 27. Chrome now expires
+  first, November 17; renew that grant next. The door reader derives the
+  soonest expiry from both tokens. The replacement is in the release branch;
+  full CI and live token readback gate completion.
 
 ### Housekeeping, your machine
 

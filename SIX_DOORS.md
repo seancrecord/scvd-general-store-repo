@@ -169,6 +169,10 @@ one dated observation that expires on 2026-09-30 and gets re-taken. The
 soonest thing that will move it is Edge's origin trial ending
 2026-10-15, which the battery turns `partial` thirty days ahead of.
 
+October 13 renewal: the keeper supplied a new Edge token expiring November 27.
+Chrome now carries the earlier November 17 expiry. The dated September
+reading above retains the grants it observed.
+
 ### What it took, and what that cost
 
 Four merges in two days closed three misses. The work that mattered

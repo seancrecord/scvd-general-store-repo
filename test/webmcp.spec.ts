@@ -20,6 +20,9 @@ import { WEBMCP_ORIGIN_TRIAL_TOKENS } from "@/pages/storefront-page";
  */
 
 const BASE = "https://scvd.store";
+// Fixed renewal review: the live door reader owns moving-clock expiry alerts.
+const TRIAL_REVIEW_AT = Date.UTC(2026, 9, 13);
+const TRIAL_REVIEW_MIN_VALID_UNTIL = TRIAL_REVIEW_AT + 7 * 24 * 60 * 60 * 1000;
 
 describe("the free instrument subset retains its declared effects", () => {
   it("registers free instruments with honest metering hints", () => {
@@ -175,11 +178,9 @@ describe("the door itself", () => {
         "https://scvd.store:443",
       );
       expect(payload["feature"], `${browser} token feature`).toBe("WebMCP");
-      // NARROWEST GRANT THAT DOES THE JOB. Neither trial was registered
-      // for subdomains (nothing is served off one) or for third-party
-      // injection (we never inject our token into anybody else's
-      // origin). Both would be wider than what the store does.
-      expect(payload["isSubdomain"], `${browser} subdomain grant`).toBeFalsy();
+      // The keeper's renewed Edge grant includes subdomains. Chrome's
+      // remains origin-only; neither permits third-party injection.
+      expect(payload["isSubdomain"] === true, `${browser} subdomain grant`).toBe(browser === "edge");
       expect(payload["isThirdParty"], `${browser} third-party grant`).toBeFalsy();
       // A token quietly expiring is a silent no-op in the browser —
       // no error, nothing on the page. Surface it here instead.
@@ -189,18 +190,16 @@ describe("the door itself", () => {
       ).toBe("number");
       expect(
         (payload["expiry"] as number) * 1000,
-        `${browser} origin trial has EXPIRED — that door is shut and the page does not say so`,
-      ).toBeGreaterThan(Date.now());
+        `${browser} origin trial must cover the reviewed renewal window`,
+      ).toBeGreaterThan(TRIAL_REVIEW_MIN_VALID_UNTIL);
     }
   });
 
   it("names the soonest expiry, because the door shuts on the earliest one", () => {
     /*
-     * Edge's trial ends 2026-10-15 and Chrome's 2026-11-17. A reader
-     * that reported the first token, or the longest-lived one, would
-     * call the browser door healthy for a month after it had already
-     * closed in Edge. The door battery reads every token and reports
-     * the soonest; this pins the same property in the source of truth.
+     * Renewals can change which vendor expires first. The door battery
+     * must read every token and report the soonest, rather than assuming
+     * a fixed vendor or choosing the longest-lived token.
      */
     const expiries = WEBMCP_ORIGIN_TRIAL_TOKENS.map((entry) => {
       const decoded = atob(entry.token);
@@ -212,9 +211,8 @@ describe("the door itself", () => {
     });
     const soonest = Math.min(...expiries);
     expect(expiries.length).toBeGreaterThanOrEqual(2);
-    // The soonest is a real date in the future, and it is NOT simply
-    // whichever token happens to be listed first.
-    expect(soonest * 1000).toBeGreaterThan(Date.now());
+    // Both grants cover the fixed review window and carry distinct expiries.
+    expect(soonest * 1000).toBeGreaterThan(TRIAL_REVIEW_MIN_VALID_UNTIL);
     expect(Math.max(...expiries)).toBeGreaterThan(soonest);
   });
 
