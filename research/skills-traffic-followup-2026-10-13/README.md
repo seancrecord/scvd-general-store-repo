@@ -202,3 +202,8 @@ values changed in that copy correction.
 The final four-file run passes 64 tests and typecheck. Restoring the old HTML
 produces two failures (37 pass); restoring the correction restores the tested
 source. Full CI remains required on the final commit.
+
+A later CI shard caught the latency disclosure guard requiring the old
+last-write-wins mechanism to remain named. The method now names it explicitly
+as historical behavior. All 19 specs referencing the pulse report pass locally
+(308 checks), and typecheck passes. This includes the latency disclosure guard.

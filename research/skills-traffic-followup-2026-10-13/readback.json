@@ -101,7 +101,12 @@
     "final_copy_and_metadata_tests_passed": 57,
     "final_typecheck": "passed",
     "final_html_admin_and_metadata_tests_passed": 64,
-    "html_regression_against_old_route": "2 failed, 37 passed; corrected source restored"
+    "html_regression_against_old_route": "2 failed, 37 passed; corrected source restored",
+    "all_pulse_referencing_specs": {
+      "files": 19,
+      "passed": 308,
+      "typecheck": "passed"
+    }
   },
   "daily_preservation": {
     "at": "2026-10-13T17:54:56.441Z",
