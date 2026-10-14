@@ -48,7 +48,7 @@ statsRoutes.get("/stats", async (c) => {
      */
     till_by_item: books.till_by_item,
     till_by_item_note:
-      "Settles per item, all time, with x402 and native MPP combined. Legacy x402 rows are raw: later wallet-level house corrections affect totals but cannot be assigned to items. The native MPP rows include their per-item house corrections. Founding purchases without an item counter are absent; these rows need not sum to the corrected headline total. Never a ranking.",
+      "Settles per item, all time, with direct x402, native MPP and confirmed Circle Gateway payments combined. Gateway acceptance alone is excluded. Legacy x402 rows are raw: later wallet-level house corrections affect totals but cannot be assigned to items. The native MPP rows include their per-item house corrections. Founding purchases without an item counter are absent; these rows need not sum to the corrected headline total. Never a ranking.",
     track_record: trackRecordLine(stats, base),
     house_flag_policy: HOUSE_FLAG_POLICY,
     identity_policy: IDENTITY_POLICY,
@@ -66,7 +66,7 @@ statsRoutes.get("/stats", async (c) => {
     ...(stats.organic_by_rail
       ? {
           rail_split_method:
-            `The x402 split combines the till's network counters, certificate-era records before that meter, and documented single-network history and hand placements. Corrected native MPP sales add to Base from their own settlement ledger. ${settlementNetworkLabels().map(row => row.key).join(" + ")} + rail_not_recorded equals organic_settlements when the split is available. rail_not_recorded means the network was not established; it does not establish the sale's age. A contradictory legacy split remains withheld even when native MPP has a valid network reading.`,
+            `The x402 split combines the till's network counters, certificate-era records before that meter, and documented single-network history and hand placements. Corrected native MPP sales add to Base from their own settlement ledger. Confirmed Circle Gateway payments add to Arc from their own per-purchase ledger. ${settlementNetworkLabels().map(row => row.key).join(" + ")} + arc + rail_not_recorded equals organic_settlements when the split is available. rail_not_recorded means the network was not established; it does not establish the sale's age. A contradictory legacy split remains withheld even when native MPP has a valid network reading.`,
         }
       : {}),
     /**

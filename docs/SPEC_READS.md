@@ -1,5 +1,100 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-13 — additive earning path
+
+Read the public [bounty contract](https://scvd.store/api/bounties),
+[field study](https://scvd.store/field-study),
+[conformance desk](https://scvd.store/conformance),
+[attestation scope](https://scvd.store/attestation),
+[developer guide](https://scvd.store/developers), and
+[Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features).
+Free artifact checks do not establish every statement in a report. No special
+AI schema is required. Local Tab documentation supplies expense, coverage and
+reminder scope; no current npm version is asserted. No paid flow, private
+study or controlled answer-engine panel ran in this read.
+[Implementation](EARNING_PATH_BUILD_2026-10.md).
+## 2026-10-13 — homepage JSON-LD identity and Edge renewal
+
+Read [W3C JSON-LD 1.1 node identifiers](https://www.w3.org/TR/json-ld11/#node-identifiers)
+and [Schema.org's data model](https://schema.org/docs/datamodel.html).
+A node's properties may be joined through the same absolute `@id`.
+The homepage's Organization now references the same Offer identities that
+its Product nodes describe fully. Names and distinct discovery descriptions
+remain on the Organization references; all prices, payment methods,
+availability, return policies and shipping details remain inline on Products.
+The checkout sentence also stays on each Offer instead of being repeated
+in its Product description. Every product remains listed.
+
+This is a serialization change, not evidence of better search ranking.
+Consumers reading only one JSON-LD script must resolve same-document
+identities to recover the complete graph.
+
+Read Microsoft's [origin-trial documentation](https://learn.microsoft.com/en-us/microsoft-edge/origin-trials/)
+and the [current WebMCP registration](https://developer.microsoft.com/en-us/microsoft-edge/origin-trials/trials/0b76fe60-b266-458e-a285-04e375c0c31a).
+Renewal requires generating and serving a new token for the same origin;
+the trial's end date does not extend the token already served.
+The registration requires the keeper's sign-in and terms acceptance.
+The keeper supplied the replacement on October 13. Its payload binds WebMCP
+to `https://scvd.store:443`, expires November 27 at 17:40:18 UTC, includes
+subdomains, and does not enable third-party use. Payload decoding checks
+scope and expiry; vendor signature acceptance remains the browser's check.
+
+## 2026-10-12 — x402 discovery payload size
+
+Re-read the resource-entry and forward-compatibility sections of the primary
+[x402 discovery proposal at its inspected revision](https://github.com/whawk46/x402/blob/3b6d7785946a65a257c869c9584213d1b7af33e9/specs/extensions/discovery.md).
+Upstream [PR 2979](https://github.com/x402-foundation/x402/pull/2979) remains open;
+this is a draft, not a ratified standard. It permits complete payment entries
+or bare pointers and requires unknown fields to be ignored. It does not
+require this store's custom listing specification in every entry.
+
+Both manifests retain all advertised resources, full `accepts`, input schemas,
+and purchase links. The repeated custom `spec` moves to `spec_url`: the
+existing free `/menu/:id` response, requested as `application/json`, carries
+its unchanged full `spec`. The maker's mark remains inline. No payment
+protocol, verification rule, price, or recipient changes.
+
+## 2026-10-12 — Arc Gateway checkout
+
+Read Circle's primary [seller integration](https://developers.circle.com/gateway-nanopayments/howtos/x402-seller),
+[buyer integration](https://developers.circle.com/gateway-nanopayments/howtos/x402-buyer),
+[seller reconciliation](https://developers.circle.com/gateway-nanopayments/howtos/x402-seller-reconciliation),
+[batched settlement](https://developers.circle.com/gateway-nanopayments/concepts/batched-settlement),
+[supported networks](https://developers.circle.com/gateway-nanopayments/supported-networks),
+[EIP-3009 signing](https://developers.circle.com/gateway-nanopayments/howtos/eip-3009-signing),
+and [SDK documentation](https://developers.circle.com/sdks/gateway-nanopayments-sdk).
+Also inspected the published `@circle-fin/x402-batching` 3.5.0 package without
+installing it. The implementation uses the existing x402 client interface and
+EVM scheme, with no new signing dependency.
+
+The live mainnet `/v1/x402/supported` response from
+`https://gateway-api.circle.com` supplies Arc `eip155:5042`, `exact`, and
+`extra.name=GatewayWalletBatched`, `version=1`, verifying contract
+`0x77777777dcc4d5a8b6e418fd04d8997ef11000ee`, minimum validity 604800 seconds.
+The signing contract differs from USDC's asset address
+`0x3600000000000000000000000000000000000000`. Arc's native gas representation
+uses 18 decimals; its ERC-20 payment interface uses six. Some prose examples
+show a shorter validity; the live supported metadata and SDK agree on seven
+days. The quote uses that minimum plus 100 seconds.
+
+The transfer API's amount unit was checked against a public completed transfer,
+`707fbaaf-779a-4e27-ab0f-a86892d26903`, and its Arc batch transaction
+`0x3c25182cae376935ecd7b8bbee9211023f79ddcf3c978b98d86c4bf7eab737f7`:
+API amount `500` corresponds to a 500-atomic-unit recipient credit. No payment
+was made by this task. API acceptance, per-transfer confirmation, and receipt
+of a batch on chain are distinct facts. A shared batch hash cannot be used as
+an individual purchase identity. Read-only transfer lookup matches nonce,
+payer, recipient, both networks, token and exact atomic amount.
+
+Source-chain balance selection constrains a Gateway buyer. This does not prove
+that every Circle-wallet buyer is Arc-only or cannot pay another way. The
+keeper's explicit implementation decision is the authority to add this rail.
+
+## 2026-10-12 — Personal-agent shopping distribution
+
+Read [Skills documentation](https://www.skills.sh/docs), the [Skills CLI](https://github.com/vercel-labs/skills), [Coinbase's wallet skills](https://github.com/coinbase/agentic-wallet-skills), its [x402 guide](https://github.com/coinbase/agentic-wallet-skills/blob/main/skills/agentic-wallet/references/x402-pay.md), and [AIsa's skill](https://github.com/AIsa-team/nanopayment-x402/blob/main/SKILL.md). Skills supports named installation from a repository; leaderboard placement follows install telemetry. Coinbase documents Base x402 payment, amount ceilings and custom headers. AIsa documents a Gateway-specific signing domain, not drop-in compatibility with standard EVM exact payments. An unpaid live SCVD quote returned v2 exact/Base on this date. No wallet funding, settlement or named personal-host compatibility was established. The draft's provider setup remains conditional on actual host capabilities. Public skill source and its reference are the served bytes; no second wallet/payment implementation is added.
+
+
 ## 2026-10-07 — keeper-supplied discovery placements
 
 Opened the six public listing pages supplied by the keeper: ChatGPT, Deside,
@@ -2887,6 +2982,43 @@ Source hashes, validation and release limits: [PS6 record](../research/endpoint-
 and [implementation](ENDPOINT_INSPECTION_2026-09-28.md). Buyer/model qualification
 was excluded by keeper direction.
 
+### 2026-10-13 — reserved contribution tasks
+
+Read Cloudflare's [SQLite Durable Object storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and the local Durable Objects skill. The implementation uses one object per
+posted task, synchronous SQL decisions and writes, and crypto before reading
+mutable state. The existing bounty, field-study and letter implementations
+were checked before adding this separate no-purchase workflow. No new payment
+protocol or signing mechanism is implemented; payment recording is explicitly
+a keeper report. [Contract and release limits](../CONTRIBUTION_WORK.md).
+
+
+### 2026-10-14 — contribution recovery and isolated preview
+
+Re-read Cloudflare's [SQLite storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and the installed Wrangler development-command help/config schema alongside
+[Wrangler commands](https://developers.cloudflare.com/workers/wrangler/commands/).
+The local preview uses `--local`, disposable storage and local-only auth. Its
+upstream protocol is set to HTTPS inside the local runner so the application's
+HTTPS redirect middleware can run unchanged while the browser connects locally.
+Reservation alarm setup precedes a fresh capacity read; no asynchronous operation
+splits the final capacity decision and SQL write. The failure-injection evidence
+and browser limitations are in the [build record](EARNING_PATH_BUILD_2026-10.md).
+
+
+### 2026-10-14 — native contribution forms and discovery parity
+
+Read MDN's [Origin header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin)
+and [Referrer-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy)
+references after native form submissions were refused. A no-referrer policy
+can produce an opaque origin on non-CORS POSTs. Admin contribution forms now
+use same-origin policy, preserving the strict origin gate and suppressing
+off-site referrers. The local runner's store origin also matches its HTTPS
+upstream; the browser still connects to disposable local HTTP.
+
+The actual browser flow now completes; the sixth increment in the
+[build record](EARNING_PATH_BUILD_2026-10.md) supersedes the prior browser
+limitation and records its local-only scope.
 ## 2026-10-07 — JCS input boundary
 
 RFC 8785 sections 3.1 and 3.2.2.2 read October 6 for the pilot prerequisite:
@@ -2961,3 +3093,27 @@ inside the exact statement. A signature establishes wallet control only, not
 host ownership. No new x402, MPP or CAIP wire compatibility is claimed; network
 identifiers are declared context, and address/network pairs are not compared.
 Host-proof file placement is SCVD's existing convention, not an external standard.
+
+## 2026-10-12 — Hermes website skills and ClawHub catalog metadata
+
+- [Hermes skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills): website discovery uses `/.well-known/skills/index.json`, entries with name/description/files; URL and GitHub installation are separate sources. Search can include skills.sh and ClawHub. Format support is not evidence of payment capability.
+- [Hermes consumer source](https://github.com/NousResearch/hermes-agent/blob/ff2d02f998f9f9e45543eea30fb935f47e4504a7/tools/skills_hub_sources.py): WellKnownSkillSource reads index entries and fetches every relative file, requiring SKILL.md. The public store returned 404 for its expected index before this change.
+- [Vercel handler types](https://github.com/vercel-labs/skills-handler/blob/e546b7fef03edff0174298007247a61c54f38851/src/types.ts): index is `{skills: [{name, description, files}]}`; no digest field required. Existing digest-based discovery remains separately available.
+- [ClawHub publishing](https://docs.openclaw.ai/clawhub/publishing): at most three categories/five topics; finance and integrations fit the shopper. Metadata is explicitly passed for this skill only. Dry-run does not validate category slugs. Reserved endorsement topics excluded. Publication may precede public visibility while review is pending.
+
+
+## 2026-10-12 — complete website skill installation
+
+Read [Cloudflare's discovery RFC v0.2.0](https://github.com/cloudflare/agent-skills-discovery-rfc#archive-distribution)
+and the installed official `skills@1.5.26` consumer (`WellKnownProvider`). The
+consumer tries the RFC index before the files-based index and returns the first
+successful catalog. An RFC `skill-md` entry installs only that file; references
+require `type: archive`, with the digest covering the archive's raw bytes.
+
+Observed on production after PR #1008: website installation omitted both
+references even though the newer files-based index enumerated them. GitHub
+installation was complete. Correction: publish a deterministic tar.gz for the
+shopper's RFC entry, generated from the same canonical text. Keep the readable
+SKILL.md, references and Hermes files-based index at their existing URLs. The
+actual Skills CLI then installed all three files from the local HTTPS Worker,
+with byte parity. No payment mechanism or instruction bytes changed.

@@ -1,5 +1,112 @@
 # ROADMAP — September 2026
 
+## October 13 — traffic counter handover and public-reader audit
+
+The unpaid doors now reference the store's shared counter ledger in the release
+branch. Keeper-approved preservation completed for 1,820 observed current-period
+baselines, including today's ten shards; no sales or closed days were adjusted.
+Ward/census readers use separate saved observations. Pulse HTML/JSON, admin porch prose and public field
+definitions now state historical undercounts and request-ratio limits. All 308
+pulse-related checks pass locally. Full CI,
+fresh cutover preservation and live binding checks gate release in
+[PR #1016](https://github.com/seancrecord/scvd-general-store-repo/pull/1016).
+[Evidence, skills.sh result and scope closures](research/skills-traffic-followup-2026-10-13/README.md).
+
+## October 13 — Edge WebMCP renewal
+
+Install the keeper-supplied Edge renewal and record its subdomain scope.
+The earliest browser expiry now belongs to Chrome; refresh the skill's
+published date and preserve the per-vendor origin and feature checks.
+Regression checks fail against the old grant. Full CI and live served-token
+readback gate release; token decoding alone does not verify the vendor signature.
+
+## October 13 — bounty payment-mode compatibility
+
+Keeper-authorized local repair after a walker caught a Gateway price on
+a bounty whose verifier requires an individual USDC Transfer. Posting
+now filters compatible EVM payment modes before sorting prices. A dated
+withdrawal preserves the affected listing's original terms, stops new
+walks and automated claims on it, and leaves paid history unchanged.
+Public instructions explain supported evidence and stop on mismatches.
+[Scope, verification and replacement procedure](docs/BOUNTY_PAYMENT_MODE_2026-10.md).
+Release and replacement posting are authorized; both follow the PR/CI gate.
+
+## October 13 — admin reporting clarity
+
+**Implemented; PR and merge authorized, pending required CI.** Inflow withholds rates when coverage is
+incomplete or windows differ. Office compares aggregate counts without claiming
+missing payments or delivery. Recount identifies the current counter writer and
+the limits of retained event rows. Counter separates required work from optional
+tip review. Accounting records and moderation state are unchanged.
+Regressions fail on the prior source; focused tests, typecheck and production
+bundle checks pass. [Scope and validation](docs/ADMIN_REPORTING_CLARITY_2026-10.md).
+
+## October 13 — admin reconciliation evidence export
+
+**Released in [PR #1017](https://github.com/seancrecord/scvd-general-store-repo/pull/1017); live export read back October 13.** The books page offers a private, read-only
+JSON capture of the legacy settlement ledger, payer totals, monthly counters,
+house reclassifications and latest raise record. Missing records and scan limits
+are explicit; incomplete accounting reads withhold the comparison.
+[Scope, validation and live readback](docs/RECONCILIATION_EXPORT_2026-10.md).
+The historical one-count discrepancy remains unresolved until the captured
+evidence supports a transaction-level explanation.
+
+## October 12 — traffic and buying evidence at the desk
+
+Implemented on `codex/traffic-signal-readout`: show the existing monthly
+unclassified, recognized infrastructure and house request counters together;
+label the daily x402 table in UTC and distinguish request ratios from buyer
+conversion. Infrastructure totals now use the retained item counters rather
+than retired channel counters. No new instrumentation or classification.
+Checks, limits and release state: [traffic readout](docs/TRAFFIC_READOUT_2026-10.md).
+
+## October 12 — Arc checkout and historical settlement audit
+
+Keeper approved both, with full checkout rather than a pilot. Arc integration
+is implemented locally on `codex/arc-gateway-checkout`; the keeper supplied the recipient
+and both Worker configs now carry it. Release remains pending validation and
+the normal release gate. [Implementation and checks](docs/ARC_GATEWAY_2026-10.md).
+
+The historical receipt-and-adjustment audit is complete within the retained
+evidence. A stale Solana payer alias exists, but does not explain the one-count
+counter excess. No refund or counter adjustment is justified by this audit;
+retain the warning. [Evidence and limits](research/settle-reconciliation-2026-10-12/README.md).
+
+## October 13 — homepage reader budget
+
+Keeper-authorized follow-through removes repeated homepage checkout terms
+and joins Organization offers to their full Product offers by JSON-LD identity.
+Products, descriptions, prices, rails and merchant fields remain available.
+The populated all-rail fixture is checked against the live reader's unchanged
+200,000-byte ceiling. Regression observed failing before the repair; focused
+discovery checks, typecheck and production bundle pass. Full CI and production
+readback gate release. [Primary-source read](docs/SPEC_READS.md#2026-10-13--homepage-json-ld-identity-and-edge-renewal).
+
+## October 12 — discovery budget and outreach follow-through
+
+Keeper approved fixing the oversized discovery documents, completing the live
+site checks, and reviewing outreach alerts. Both discovery catalogs now link
+to the existing full item specification while keeping every purchase option
+and input schema inline. The size guard measures UTF-8 bytes and a populated
+publication shelf. [Scope and validation](docs/CATALOG_FOLLOW_THROUGH_2026-10.md).
+Outreach review uses unpaid probes, preserves missing historical claims, and
+sends no messages. Settlement counts remain unchanged.
+
+## October 12 — agent entry follow-through
+
+Approved: support Hermes’s files-based website skill discovery, clearer first-screen task routes, host installation guidance, ClawHub categories/topics, and a no-spend rehearsal in the personal shopper. Implementation and qualification limits: [agent entry](docs/AGENT_ENTRY_2026-10.md). Release remains tracked with the personal-shopper PR.
+
+## October 12 — approved personal-agent shopping path
+
+Keeper approved the reviewed personal-agent skill and distribution plan.
+Implementation adds a storefront paste prompt, the installable shopper skill,
+served references and discovery links, using existing checkout. Publication
+and verification are tracked in [the release record](research/personal-agent-release-2026-10-12/README.md).
+Keeper skipped the purchase qualification and new-wallet onboarding on October 13.
+They remain unverified, with no outstanding action in this batch. No new payment
+rail or authorization primitive is implied.
+
+
 ## October 10 — admin follow-through
 
 **Implemented:** the counter now puts paid work, unanswered
@@ -132,6 +239,28 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 13 — earning-path implementation
+
+Keeper authorized the additive path: optional bounty/study completion summaries,
+free checks, concise earning answers and Tab expense-task discovery on existing
+surfaces. [Build and validation](docs/EARNING_PATH_BUILD_2026-10.md).
+Implemented on `codex/earning-path`; existing shopping payouts and budgets are unchanged.
+Private follow-through, a due-date keeper queue, and optional self-reported
+arrival context are also built locally; no acquisition conclusions are inferred.
+October 14 adds task-specific work packets, state-aware next actions, explicit
+availability reasons, and relevant optional completion suggestions including
+Tab for an explicitly declared expense-tracking job. Recovery checks now preserve
+failed keeper forms and their original identifiers, and schedule privacy cleanup
+before saving reservations. The local browser now completes the keeper flow,
+and the existing bounty page lists posted contributions in HTML, Markdown and
+JSON with bounded pagination and explicit availability.
+Four scoped, unfunded first-batch drafts are on the keeper desk, and the
+[broader job inventory](docs/AGENT_JOB_PORTFOLIO_2026-10.md) names the next
+experiments. Keeper delegated merge timing October 14; release status is in
+the build record. The [no-purchase contribution workflow](CONTRIBUTION_WORK.md) includes:
+keeper-posted terms, reserved slots, private evidence, review disposition and
+separately recorded keeper payment. Release creates no posted brief or reward commitment.
+[Full direction](docs/AGENT_INTENT_AND_COMPLETION_2026-10.md).
 ## October 7 — next eligible work
 
 Research Comparison's release and public discovery are verified; R1 moves to

@@ -39,6 +39,7 @@ import type { Certificate, Env } from "@/types";
 export const DELIVER_FIRST_SINCE = "2026-08-10";
 
 export type PaymentState =
+  | "gateway_recorded_at_issue"
   | "settled_on_chain"
   | "settled_via_trade_account"
   | "settled_transaction_not_recorded"
@@ -52,8 +53,9 @@ export type DeliveryAuditState =
 
 export interface SettlementState {
   payment_state: PaymentState;
+  gateway_payment_at_issue?: Certificate["gateway_payment"];
   delivery_state: "delivered";
-  order_of_operations: "delivered_then_settled" | "settled_then_delivered";
+  order_of_operations: "delivered_then_settled" | "settled_then_delivered" | "prepared_then_gateway_accepted";
   delivery_audit: {
     state: DeliveryAuditState;
     means: string;
@@ -90,6 +92,14 @@ export async function settlementStateFor(
   env: Env,
   cert: Certificate,
 ): Promise<SettlementState> {
+  if (cert.gateway_payment) return {
+    payment_state: "gateway_recorded_at_issue", gateway_payment_at_issue: cert.gateway_payment,
+    delivery_state: "delivered", order_of_operations: "prepared_then_gateway_accepted",
+    delivery_audit: { state: "not_applicable", means: "This certificate records Gateway acceptance at issue time. Its private purchase status tracks subsequent batch settlement and delivery evidence." },
+    failed_attempts: { on_this_receipt: "none_possible", why: "Acceptance is not final settlement. A later failed batch does not revoke goods already accepted for fulfillment.",
+      where: "Read the private purchase-status handle returned with the purchase; do not pay again to recover its goods." },
+    derived_from: "The certificate's signed gateway_payment and accepted_usdc fields. No live batch settlement is inferred from the immutable receipt.",
+  };
   let audit: DeliveryAuditState = "not_applicable";
   if (cert.settlement_tx) {
     try {

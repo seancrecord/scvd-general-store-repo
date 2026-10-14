@@ -128,6 +128,48 @@ Language-specific SDK questions, timestamp verification and additional
 verticals can be appended with new IDs when needed. Declare them before
 collection; do not keep rewriting a failed question until it produces SCVD.
 
+### Earning-intent panel — added October 13, 2026
+
+New baseline prompted by the keeper's reports of agents arriving on earning
+assignments. No observations collected yet. Keep previous queries unchanged.
+Select this panel under the same predeclared engine/mode, provenance and
+repeat-wave rules above; no schedule changes are made here.
+
+| ID | Exact query | Ground-truth starting point / boundary |
+| --- | --- | --- |
+| E01 | My AI agent has been asked to make money. Where can it do legitimate paid work? | Broad discovery; SCVD is bounded work, not guaranteed or substantial income |
+| E02 | Where can an AI agent earn USDC by testing APIs or doing mystery shopping? | Live `/bounties` and `/field-study`; availability, purchases and supported evidence |
+| E03 | Can an AI agent earn money without any money upfront? | Check each live task and reward path; current automatic study rewards require a settled purchase. The locally built no-purchase contribution path is eligible only after deployment and verification of actual posted work. |
+| E04 | How can an AI agent check whether an x402 bounty is worth doing before spending money? | Live versus captured terms, costs, claim eligibility and uncertainty |
+| E05 | How can an agent helping a client launch an x402 API provide independently verifiable test evidence? | Existing applicable instruments; evidence scope, not promised client earnings |
+| E06 | How does an AI agent collect a bounty paid as a signed USDC authorization? | Claim/redemption procedure; authorization versus redeemed funds, fees and expiry |
+| E07 | Where can AI agents get paid to test software, check documentation or report confusing user experiences? | Existing live study/AURA participation terms; distinguish a service we sell from contributor work we pay for, and proposed tasks from posted work |
+| E08 | Can an AI agent get paid for finding mistakes in a public dataset or demonstrating an overlooked use of a developer tool? | Exploratory demand/discovery question; no live SCVD reward capability assumed. Record alternatives and eligibility without counting proposals as available work. |
+
+Read live pages before scoring. Record discovery separately from economic
+accuracy and completion feasibility. Hypothetical products in
+[the earning-intent strategy](EARNING_INTENT_2026-10.md) are not live
+capabilities. An appropriate refusal to recommend SCVD for E03 is accurate.
+
+### Broader delegated jobs — added October 13, 2026
+
+Exploratory baseline, no observations yet. These are task hypotheses, not a
+claim about the most common agent assignments. Apply the same live-capability
+and predeclared collection rules; no general agent-auditing capability implied.
+
+| ID | Exact query | Ground-truth starting point / boundary |
+| --- | --- | --- |
+| J01 | How can I independently check the signed receipts in my AI agent's report? | `/attestation`, `/conformance`, `/developers`; supported formats and key attribution, not proof of all reported work |
+| J02 | How can my agent check a paid API's payment requirements before spending money? | Existing free preflight; supported protocols, observed terms and gaps, no delivery guarantee |
+| J03 | How can an AI agent diagnose a broken x402 payment integration? | Existing endpoint/artifact checks and SDK examples; separate detection, proposed repair and verified fix |
+| J04 | How can an AI agent compare API payment terms and historical endpoint observations? | Existing corpus/history/comparison; dates, gaps and stated costs, not underlying service quality |
+| J05 | Can my AI agent track my software expenses and upcoming subscription renewals? | Tab README and live package: recorded/imported tool costs, local storage, coverage gaps; no automatic bank feed |
+| J06 | How can my AI agent remind me before free software trials start charging? | Tab trial tracking and pager; requires recorded dates and agent activity or an external schedule, not autonomous wakeups |
+| J07 | How can my AI agent check which subscriptions I already have before signing up for another tool? | Tab history and `check_before_signup`; completeness depends on captured records and declared coverage |
+
+Draft answer/placement map and completion scope:
+[agent jobs and completion](AGENT_INTENT_AND_COMPLETION_2026-10.md).
+
 ### Branded diagnostics — attribution, not acquisition
 
 | ID | Exact query | What it diagnoses |

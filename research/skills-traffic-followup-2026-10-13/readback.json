@@ -1,0 +1,132 @@
+{
+  "checked_at": "2026-10-13T16:16:59.258836+00:00",
+  "skills_sh": {
+    "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-personal-shopper",
+    "browser_result": "404; scvd-personal-shopper is not available in this repository",
+    "suggested_existing_skill": "scvd-general-store",
+    "public_source_http": 200,
+    "public_source_bytes": 5030,
+    "website_files_index_http": 200,
+    "website_files_index_contains_shopper": true,
+    "install_repeated": false,
+    "telemetry_emitted": false
+  },
+  "traffic": {
+    "snapshot_hashes_match": true,
+    "listed_keys": 34014,
+    "unique_keys": 34014,
+    "read_rows": 34014,
+    "nonhouse_noninfra_challenge_events": 16114,
+    "distinct_saved_record_shapes": 16114,
+    "event_dates": {
+      "2026-10-11": 16114
+    },
+    "daily_counter": 6829,
+    "daily_shards": 10,
+    "live_binding_read": "HTTP 401; not verified",
+    "source_configuration": "doors has no COUNTER_LEDGER; store does",
+    "historical_cause_proven": false
+  },
+  "skipped_for_now": [
+    "Native host installation and rehearsal",
+    "Paid purchase, delivery and receipt verification",
+    "New-wallet onboarding",
+    "Authenticated dashboard visual readback"
+  ],
+  "local_accounting_followup": {
+    "fallback_burst_requests": 20,
+    "fallback_event_rows": 20,
+    "fallback_daily_count": 1,
+    "protected_burst_count": 20,
+    "protected_count_after_shared_writer_request": 21,
+    "binding_fix": "local only; references store CounterLedger",
+    "config_regression_before_fix": "1 failed, 4 passed",
+    "config_regression_after_fix": "5 passed",
+    "handover_prerequisite": "Compare live KV and SQL baselines; stop legacy writes and preserve the higher observed counter before rollout",
+    "historical_counters_changed": false,
+    "deployed": false
+  },
+  "release_followup": {
+    "pr": "https://github.com/seancrecord/scvd-general-store-repo/pull/1016",
+    "live_binding_read": "success after existing Wrangler session refresh",
+    "store_counter_namespace": "1d3abae2047a4c339ac7f4d0f554c435",
+    "doors_has_counter_binding": false,
+    "sql_daily_2026_10_13_shards": [
+      29,
+      31,
+      28,
+      26,
+      31,
+      29,
+      23,
+      21,
+      31,
+      30
+    ],
+    "sql_daily_sum": 279,
+    "kv_daily_sum": 611,
+    "kv_snapshot_keys": 1864,
+    "snapshot_path": "/tmp/scvd-counter-handover/kv-before.json",
+    "read_only_sql_method": "Cloudflare Data Studio SELECT query",
+    "handover_write_approval": "Keeper explicitly approved all 1810 remaining current-period traffic/timing/error baselines; preservation completed. Sales and closed days excluded.",
+    "deployed": false
+  },
+  "public_reader_audit": {
+    "focused_tests_passed": 107,
+    "files": 8,
+    "public_http_status": 200,
+    "public_paths": [
+      "/sources.json",
+      "/registry",
+      "/pulse.json",
+      "/observatory",
+      "/stats"
+    ],
+    "ward_heartbeat": "beating",
+    "ward_latest": "2026-W41",
+    "ward_sources_answered": 6,
+    "ward_sources_asked": 8,
+    "ward_missing_weeks": [],
+    "source_gaps": [
+      "fuchss stale for 2 rounds",
+      "x402scan.com never answered, 6 failures"
+    ],
+    "monthly_observatory_truncated": false,
+    "pulse_copy_corrected_locally": true,
+    "unprotected_other_summaries": [
+      "referrals",
+      "instrument client JSON maps",
+      "referrer JSON maps"
+    ],
+    "final_copy_and_metadata_tests_passed": 57,
+    "final_typecheck": "passed",
+    "final_html_admin_and_metadata_tests_passed": 64,
+    "html_regression_against_old_route": "2 failed, 37 passed; corrected source restored",
+    "all_pulse_referencing_specs": {
+      "files": 19,
+      "passed": 308,
+      "typecheck": "passed"
+    }
+  },
+  "daily_preservation": {
+    "at": "2026-10-13T17:54:56.441Z",
+    "keys": 10,
+    "saved_per_key_max_total": 827,
+    "returned_total": 831,
+    "operation": "raiseTo using saved or current counter value, whichever is higher",
+    "sales_affected": false,
+    "closed_days_affected": false,
+    "remaining_keys_pending": 0
+  },
+  "current_period_preservation": {
+    "completed_at": "2026-10-13T19:56:55.086419+00:00",
+    "additional_keys": 1810,
+    "total_keys_including_daily": 1820,
+    "all_observed_floors_held": true,
+    "receipt_sha256": "a52ebe365cc3b5a8570c537d44f5248e99d69588850b97709b7ba53362e573d6",
+    "operation": "raiseTo; max of previously observed or current KV and existing SQL; never add snapshots",
+    "sales_affected": false,
+    "closed_days_affected": false,
+    "cutover_refresh_and_deployment": "Required after full CI; final release receipt tracked on PR #1016"
+  }
+}

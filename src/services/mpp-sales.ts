@@ -5,8 +5,9 @@ import { getMenuItem } from "@/store";
 import { publicationFamilyForPath, PUBLICATION_FAMILIES } from "@/lib/payments";
 import type { Env } from "@/types";
 import { purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
-import { monthsSinceOpening } from "@/lib/metrics";
+import { indexSettledSale, itemKeyFromPath, monthsSinceOpening } from "@/lib/metrics";
 import { kvGet } from "@/lib/kv-retry";
+import type { Channel } from "@/types";
 
 export const MPP_SALES_PREFIX = "mpp:sales:";
 export const MPP_PAYER_PREFIX = "mpp:payer:";
@@ -98,6 +99,35 @@ export async function recordMppSale(env: Env, record: PurchaseIntent): Promise<v
   const sale = mppSaleEvidence(record);
   if (!env.COUNTER_LEDGER) throw new Error("MPP sales ledger unavailable");
   await env.COUNTER_LEDGER.get(env.COUNTER_LEDGER.idFromName(`${sale.month}/mpp-sales`)).recordMppSale(sale);
+  /*
+   * AND THE SHOP WINDOW, AFTER THE BOOKS (2026-10-13). The front page's
+   * "over the counter" reads one prefix the x402 till writes and this
+   * ledger never did, so a native sale was in /stats and not in the
+   * glass. The row is keyed by the purchase's own instant and id, so
+   * the alarm re-entering this function before `accounted` lands puts
+   * the same key again rather than hanging a second row. Swallowed on
+   * failure: the window is decoration and fails open (AT_SCALE rule 7);
+   * the books above are already written and must not be re-run for it.
+   */
+  await indexSettledSale(env, {
+    item: record.item?.id ?? itemKeyFromPath(record.path),
+    house: sale.house,
+    at: record.created_at,
+    id: record.id,
+    channel: channelForDoor(record.door),
+    payment_protocol: "mpp",
+    payment_network: record.terms.network,
+  }).catch(() => undefined);
+}
+
+/**
+ * The till infers a channel from headers it no longer has by the time a
+ * purchase record is accounted; the door the record came through is
+ * the same fact, already retained. "http" is the plain door, which the
+ * till calls "direct".
+ */
+export function channelForDoor(door: PurchaseIntent["door"]): Channel {
+  return door === "http" ? "direct" : door;
 }
 
 function validateCounts(row: MppItemSummary): void {

@@ -1,3 +1,4 @@
+import { contributionRoutes } from "@/routes/contribution-tasks";
 import { sellerDeclarationRoutes } from "@/routes/seller-declarations";
 import { evidencePilotRoutes } from "@/routes/evidence-pilot";
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
@@ -336,6 +337,7 @@ app.route("/", replayRoutes);
 app.route("/", luckyRoutes);
 app.route("/", cardRoutes);
 app.route("/", badgeRoutes);
+app.route("/", contributionRoutes);
 app.route("/", adminRoutes);
 
 /**
@@ -1419,6 +1421,7 @@ export { PaidRecoveryStore } from "@/services/paid-recovery";
 export { A2ATaskStore } from "@/services/a2a-tasks";
 
 export { A2AKitStore } from "@/services/a2a-kit";
+export { ContributionTask } from "@/services/contribution-task";
 export { BountyClaimLocks } from "@/services/bounty-claim-locks";
 export { CounterLedger } from "@/services/counter-ledger";
 export { SignalStore } from "@/services/signal-store";

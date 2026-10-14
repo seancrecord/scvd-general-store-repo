@@ -22,5 +22,5 @@ it.each(["capped", "unreadable"])("carries a %s request scan through the real co
   expect(response.status).toBe(200);
   const html = await response.text();
   expect(html).toContain("Partial reading");
-  expect(html).not.toContain("Nothing needs your hands.");
+  expect(html).not.toContain("No required work in this reading.");
 });

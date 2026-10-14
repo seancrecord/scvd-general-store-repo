@@ -34,10 +34,10 @@ export function renderFilesPage(issues: GazetteIssue[] = [], loadNotes: string[]
     <h2>The tax file</h2>
     <p><a href="/admin/export/tax.csv">Download the money ledger as CSV</a> —
     every certificate-backed sale (date, amount, tip, payer, settlement tx,
-    house flag) plus refunds as their own negative rows. Hand it to a
-    crypto-aware accountant as-is; every row verifies independently on a
-    chain explorer by its tx.</p>
-    <p><small>What it deliberately does NOT contain: penny-page settles
+    house flag), confirmed Gateway purchases, and refunds as their own negative rows.
+    Gateway rows carry an individual purchase ID and a shared batch transaction;
+    their per-sale confirmation comes from Circle transfer history.</p>
+    <p><small>Coverage: legacy penny-page settles
     (Almanac) mint no certificates and are not itemized — the chain record
     on the receive wallets is the backstop for those. House rows are
     flagged, never omitted: whether a self-purchase is income is the

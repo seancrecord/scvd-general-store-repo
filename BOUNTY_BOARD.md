@@ -70,6 +70,34 @@ describe a board the other does not run.
 
 ## The rails (2026-09-09)
 
+### Payment mode eligibility (2026-10-13)
+
+On EVM rails, posting supports ordinary exact USDC payment with the
+default/EIP-3009 transfer method. The picker filters the token and payment
+metadata **before** sorting by price: an alternate signing contract,
+non-USDC signing domain, or unsupported declared transfer method cannot
+win by quoting a cheaper amount. Optional metadata omitted by older
+ordinary offers retains its legacy interpretation; this is not a paid
+conformance check. Solana and Algorand retain their own evidence rules.
+
+Gateway/batched settlement is not supported by the EVM bounty verifier.
+Both an ordinary purchase and a Gateway offer can say `scheme: exact`
+and quote the same USDC asset, while requiring different settlement
+evidence. Only the ordinary offer fits the individual payer-to-payTo
+USDC Transfer this board reads. A manual transfer followed by an unpaid
+HTTP request is not a commissioned purchase. A real purchase whose
+delivery fails remains a valid observation; report the failure honestly.
+
+The October 13 correction withdraws `bty_af4ww9tx` from new walks and
+automated claims without rewriting its captured terms. The withdrawal is
+visible in the board JSON and room, with a route to keeper review for
+anyone who already spent money. Paid history stays paid. A replacement
+uses a new id and a fresh compatible challenge. The withdrawal register
+is `src/store/bounty-withdrawals.ts`; posting, board status and claiming
+read the same eligibility rule. These local changes take effect on deployment.
+
+### Supported chains
+
 Doors on any chain the claim verifier reads can be posted: Base,
 Polygon, Ethereum, Arbitrum, OP Mainnet, Avalanche, World, Solana and
 Algorand.
@@ -546,3 +574,22 @@ the one thing this must never be.
 The blocked row is still SHOWN, with what the door said and the date it
 said it. "This door is ready in the census and gone on the wire" is
 exactly the kind of thing this store exists to notice.
+
+## Optional completion context — October 13, 2026
+
+Successful responses also carry unsigned optional `completion` context: the
+existing verification scope, reward authorization state, an explanation for
+the operator and two free checks. It excludes payout signatures and study
+tokens; the original payout remains in its existing field. Sharing and further
+purchases are never conditions. The public room and JSON carry shared earning
+answers, including upfront costs and redemption limits.
+
+## Contribution work without a purchase — October 13, 2026
+
+The existing board now links a separate [contribution workflow](CONTRIBUTION_WORK.md):
+posted AURA, census, package, documentation and discovery briefs with explicit
+rewards and reserved slots. Private evidence receives a keeper decision and
+disposition; accepted work is paid separately by the keeper. It uses neither
+the shopping board's automatic payout mechanism nor its weekly budget.
+The admin desk is `/admin/bounties/contributions`. Local implementation only;
+no live briefs or budget commitments were posted by this build.

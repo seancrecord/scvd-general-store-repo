@@ -26,6 +26,12 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **CLOSED FOR NOW October 13 — agent-entry qualifications.** Keeper skipped
+  native-host tests, paid purchase/receipt verification, wallet onboarding and
+  the authenticated dashboard visual check. No further press is waiting on
+  these. skills.sh check and the next traffic-accounting investigation are
+  recorded in [the follow-up](research/skills-traffic-followup-2026-10-13/README.md).
+
 - **Defects 0.22.0 published October 7 — no repeat press.** The dry run and
   publication succeeded; public latest and all 31 packed files match source.
   A fresh installed consumer and npm signature/provenance verification pass.
@@ -1318,6 +1324,17 @@ what you ruled and what is still yours to look at.
 
 ### Decisions that unblock the roadmap
 
+- **RULED October 12 — full Arc Gateway checkout and historical receipt audit.**
+  “I want to do both. no pilots just add it as long as it doesnt mess anything up.”
+  This settles the earlier Circle deeper/listing-only and pilot sequencing for
+  this scope. Implementation and release checks are on ROADMAP, not this desk.
+  **Recipient supplied October 12.** Public address is recorded identically
+  in both Worker configs. No key or credential was requested.
+  Gateway transfer history supplies per-sale confirmation; no automatic
+  withdrawal or independently walked Arc receive wallet is claimed. The
+  historical audit changed no counts and found no refund basis.
+
+
 - **RULED October 9 — CV1 seller declarations next.** Keeper agreed to the
   recommendation and requested contextual funnel/paid follow-through. Free to
   submit and read; an accepted declaration is an ask within the existing sweep
@@ -2072,11 +2089,11 @@ what you ruled and what is still yours to look at.
 - **World ID** (#52 remainder). Your enrollment.
 - **`launch_check` on Polygon.** Fund the field wallet
   with Polygon USDC. Not a code task.
-- **Browser origin trials.** September 16 UTC live reading confirms both
-  tokens are present: Edge expires 2026-10-15; Chrome expires 2026-11-17.
-  Renew the earlier Edge grant before it ends. The door reader already
-  derives the soonest expiry from both tokens; this is an advance warning,
-  not a current outage. Evidence: `docs/PAYMENT_REACH_QUALIFICATION_2026-09-16.md`.
+- **Browser origin trials.** Edge renewal supplied by the keeper October 13,
+  covering scvd.store and subdomains through November 27. Chrome now expires
+  first, November 17; renew that grant next. The door reader derives the
+  soonest expiry from both tokens. The replacement is in the release branch;
+  full CI and live token readback gate completion.
 
 ### Housekeeping, your machine
 

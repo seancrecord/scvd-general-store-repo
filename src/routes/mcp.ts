@@ -1,3 +1,4 @@
+import { gatewayCharged } from "@/lib/arc-gateway";
 import { ReceiptEvidenceUnavailable } from "@/lib/receipt-context";
 import { storeLinks } from "@/lib/store-links";
 import { decodePaymentHeader } from "@/lib/decline-diagnosis";
@@ -1115,8 +1116,8 @@ async function callPurchaseTool(
       // This cache is read only after payer verification. Its original
       // transaction is an existing purchase, never a new unpaid request.
       const failure = {
-        error: "Your purchase is already paid, but we could not encode its saved response. Retry the identical request with the same payment and idempotency key to retrieve it without another charge.",
-        code: "delivery_failed", charged: true, charged_again: false,
+        error: "Your purchase is retained, but we could not encode its saved response. Retry the identical request with the same payment and idempotency key to retrieve it without another charge.",
+        code: "delivery_failed", charged: outcome.body.gateway_payment ? null : true, charged_again: false,
         ...(replayedTransaction ? { transaction: replayedTransaction } : {}),
         ...(typeof outcome.body.paid_usdc === "number" ? { paid_usdc: outcome.body.paid_usdc } : {}),
         ...(typeof outcome.body.verify_url === "string" ? { verify_url: outcome.body.verify_url } : {}),
@@ -1275,7 +1276,7 @@ async function callPurchaseTool(
     // door's 2xx: the goods join the durable record before any reply.
     if (settled && outcome.completeDelivery) await outcome.completeDelivery(response);
     const flat = flattenPurchase(response);
-    if (outcome.recovered) Object.assign(flat, { paid_retry: true, charged: true, charged_again: false });
+    if (outcome.recovered) Object.assign(flat, { paid_retry: true, charged: settled?.gateway ? gatewayCharged(settled.gateway) : true, charged_again: false });
     // Preserve the actual protocol receipt across an idempotent retry. Never
     // reconstruct it from the current challenge or a guessed default rail.
     const encodedReceipt = settled && Object.entries(settled.settleHeaders)

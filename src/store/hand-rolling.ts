@@ -46,7 +46,7 @@ export const HAND_ROLLING = {
 
   /** The trap, stated first because it is the one that costs a night. */
   domain_warning:
-    "The EIP-712 domain name for USDC on Base MAINNET is \"USD Coin\". On Base SEPOLIA it is \"USDC\". Same token, same symbol, different domain — so a client built against the testnet and pointed at mainnet signs authorizations that are invalid everywhere, with no error you can see on your side. This is the most common way a hand-rolled client fails here, and it cannot be worked around: the domain's verifyingContract is the USDC contract itself, which checks against its own immutable DOMAIN_SEPARATOR. A wrong-domain authorization reverts on chain, so no store can choose to accept it.",
+    "The EIP-712 domain name for USDC on Base MAINNET is \"USD Coin\". On Base SEPOLIA it is \"USDC\". Same token, same symbol, different domain — so a client built against the testnet and pointed at mainnet signs authorizations that are invalid everywhere, with no error you can see on your side. This is the most common way a hand-rolled client fails here, and it cannot be worked around: the domain's verifyingContract is the USDC contract itself, which checks against its own immutable DOMAIN_SEPARATOR. A wrong-domain authorization reverts on chain, so no store can choose to accept it. For an offer whose extra.name is GatewayWalletBatched, use extra.verifyingContract instead of the asset address, copy extra.name and extra.version, and honor its minValiditySeconds and maxTimeoutSeconds. Gateway acceptance precedes batch settlement; keep the private purchase recovery handle.",
 
   /** Exact values. Copy them; do not retype them. */
   eip712: {

@@ -1,3 +1,5 @@
+import { CONTRIBUTION_PATHS } from "@/lib/contribution-task-schema";
+import { CONTRIBUTION_PROPOSITION, CONTRIBUTION_MONEY, CONTRIBUTION_FREE } from "@/store/contribution-tasks";
 import { ucpRecoveryPaths } from "@/lib/ucp/checkout/discovery";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY, SELLER_DECLARATIONS_PATH } from "@/store/seller-declarations";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
@@ -107,6 +109,7 @@ export interface Feature {
 }
 
 export const FEATURES: readonly Feature[] = [
+  {id: "contribution_work", name: "Contribution work", room: "/bounties", proposition: CONTRIBUTION_PROPOSITION, for_money: CONTRIBUTION_MONEY, free_first: CONTRIBUTION_FREE, doors: CONTRIBUTION_PATHS, named_on: ["/field-study"], opened: "2026-10-13"},
   { id: "seller_declarations", name: "Seller declarations", room: SELLER_DECLARATIONS_PATH,
     proposition: DECLARATION_PROPOSITION, for_money: DECLARATION_MONEY, free_first: DECLARATION_FREE,
     doors: ["/api/seller-declaration"], named_on: ["/operators", "/corpus", "/evidence-pilot"], opened: "2026-10-09" },

@@ -136,7 +136,8 @@
       // The buyer-signals maps' one writer (2026-09-21): no cap on a map
       // the store itself bounds, and the one cap that stays is returned
       // with the reading. services/signal-store.ts.
-      { "name": "SIGNALS", "class_name": "SignalStore" }
+      { "name": "SIGNALS", "class_name": "SignalStore" },
+      { "name": "CONTRIBUTION_TASKS", "class_name": "ContributionTask" }
     ]
   },
   "migrations": [
@@ -152,10 +153,13 @@
     // One writer per counter; the tally that lost counts under a burst.
     { "tag": "v6-counter-ledger", "new_sqlite_classes": ["CounterLedger"] },
     // The signal maps' one writer; the capped KV maps stay as the fail-open path.
-    { "tag": "v7-signal-store", "new_sqlite_classes": ["SignalStore"] }
+    { "tag": "v7-signal-store", "new_sqlite_classes": ["SignalStore"] },
+    { "tag": "v8-contribution-tasks", "new_sqlite_classes": ["ContributionTask"] }
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",
+    // Public Arc recipient chosen by the keeper on October 12. Deploy with the Gateway integration.
+    "ARC_PAY_TO": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
     // UCP checkout is NOT a var here, on purpose: its switch lives in
     // secrets (below), where the keeper turns it on one rail and one
     // item at a time without a deploy, and where a deploy cannot wipe

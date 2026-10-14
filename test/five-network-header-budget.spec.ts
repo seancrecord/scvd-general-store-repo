@@ -24,7 +24,7 @@ const receiver = "0x3333333333333333333333333333333333333333";
  * live number. The lane rides the bindings now, so the widest quote
  * this file measures is the widest quote a stock Node client gets.
  */
-const bindings = { ...env, FIELD_WALLET_KEY: quoteEnv.FIELD_WALLET_KEY, POLYGON_PAY_TO: receiver, ARBITRUM_PAY_TO: receiver, WORLD_PAY_TO: receiver, SOLANA_PAY_TO: "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE" , MPP_CHECKOUT_ENABLED: "true", MPP_CHALLENGE_KEY: "fixture-native-checkout-hmac-key"} as unknown as Env;
+const bindings = { ...env, FIELD_WALLET_KEY: quoteEnv.FIELD_WALLET_KEY, ARC_PAY_TO: receiver, POLYGON_PAY_TO: receiver, ARBITRUM_PAY_TO: receiver, WORLD_PAY_TO: receiver, SOLANA_PAY_TO: "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE" , MPP_CHECKOUT_ENABLED: "true", MPP_CHALLENGE_KEY: "fixture-native-checkout-hmac-key"} as unknown as Env;
 beforeAll(async () => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-09-06T12:00:00Z"));
@@ -60,7 +60,7 @@ const EDGE_HEADER_BYTES = 450;
 const get = (path: string) => app.request(base + path, { headers: { Accept: "application/json" } }, bindings);
 type Offers = { "offer-receipt": { info: { offers: { signature: string; acceptIndex: number }[] } } };
 
-it("fits every five-network menu and publication quote within stock Node response headers", async () => {
+it("fits every enabled-network menu and publication quote within stock Node response headers", async () => {
   const paths = await Promise.all(MENU_ITEMS.map(async item => `/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`));
   for (const [path, field] of [["/almanac", "entries"], ["/gazette", "issues"], ["/zodiac/archive", "pages"]]) {
     const index = await (await get(`${path}?view=compact`)).json() as Record<string, { buy_url: string }[]>;
@@ -92,8 +92,9 @@ it("keeps every wide-quote signature verifiable in the body when its header mirr
   const response = await get("/api/buy/graffiti_on_a_train?tag=fixture");
   const quote = decodePaymentRequired(response);
   expect(quote.extensions?.["offer-receipt"]).toBeUndefined();
-  expect(quote.extensions?.bazaar).toBeDefined();
+  expect(quote.extensions?.bazaar).toBeUndefined();
   const body = await response.json() as { extensions: Offers };
+  expect(body.extensions).toHaveProperty("bazaar");
   const offers = body.extensions["offer-receipt"].info.offers;
   expect(offers.length).toBe(quote.accepts.length);
   for (const offer of offers) {

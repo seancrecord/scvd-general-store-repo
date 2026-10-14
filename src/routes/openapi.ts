@@ -1,3 +1,4 @@
+import { CONTRIBUTION_OPENAPI, CONTRIBUTION_SCHEMAS, CONTRIBUTION_RESPONSES } from "@/lib/contribution-task-schema";
 import { SELLER_DECLARATION_INPUT_SCHEMA, DECLARATION_READ_SCHEMA, DECLARATION_WRITE_SCHEMA } from "@/lib/seller-declaration-schema";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { stampOperationTags } from "@/lib/openapi-navigation";
@@ -45,7 +46,7 @@ import {
   PREFLIGHT_VERSIONS,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
-import { buyInputSchema, buyInputExample, itemsRequiring, CITED_ARTIFACT_FIELD, CITED_ARTIFACT_SCHEMA } from "@/lib/bazaar-discovery";
+import { AGENT_NAME_SCHEMA, PURCHASE_PURPOSE_SCHEMA, buyInputSchema, buyInputExample, itemsRequiring, CITED_ARTIFACT_FIELD, CITED_ARTIFACT_SCHEMA } from "@/lib/bazaar-discovery";
 import { DISCLOSURE_FIELDS, DISCLOSURE_LINE, DISCLOSURE_PROPERTIES, type DisclosureField } from "@/lib/disclosure";
 import {
   openForBusinessTiersUsdc,
@@ -354,6 +355,8 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
  * and are excluded by rule, not by name.
  */
 export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
+  "/bounties": "Live contribution capacity is no-store in every representation.",
+  "/api/bounties/contributions": "Live capacity is no-store; reservations read authoritative task state.",
   "/health": "no-store by design: a liveness line that must never be a cached yes",
   "/bell": "an HTML room, not a machine-readable document: lib/conditional-get.ts tags the representations an agent polls, and this GET exists to put a form in front of a person. The bell's machine door is POST /api/bell, which is outside conditional GET by method.",
   "/bot-auth/observe": "no-store: each observation verifies the current signed request and current key status",
@@ -1022,11 +1025,7 @@ function signedArtifactSchema(options: {
             description: "ed25519 over the canonical form of the fields this object declares.",
           },
           public_key: { type: "string" },
-          signature_covers: {
-            type: "string",
-            description:
-              "Which fields the signature actually covers — named on the artifact rather than assumed, because a field shown beside a signature that the signature does not cover is the defect /corrections was opened for.",
-          },
+          signature_covers: { $ref: "#/components/schemas/ArtifactSignatureScope" },
           evidence_hash: { type: "string" },
           observed_at: { type: "string", format: "date-time" },
           criteria: {
@@ -1036,25 +1035,12 @@ function signedArtifactSchema(options: {
           ...(options.verdict ? { verdict: options.verdict } : {}),
         },
       },
-      [certificateKey]: {
-        type: "string",
-        ...(certificateKey === "certificate" ? { format: "uri" } : {}),
-        description: certificateKey === "certificate"
-          ? "The free verification URL for the certificate binding this report's evidence_hash."
-          : "The certificate minted by the purchase. GET /api/verify/{cert_id} — free, forever, no account — and its attests field carries this record's evidence_hash.",
-      },
+      [certificateKey]: certificateKey === "certificate" ? {
+        type: "string", format: "uri", description: "The free verification URL for the certificate binding this report's evidence_hash.",
+      } : { $ref: "#/components/schemas/ArtifactCertificateId" },
       [timestampKey]: { type: "string", format: "date-time" },
-      how_to_verify: {
-        type: "array",
-        items: { type: "string" },
-        description:
-          "The steps a stranger runs without asking the buyer OR this store to be honest.",
-      },
-      what_this_is_not: {
-        type: "string",
-        description:
-          "A dated observation against published criteria — never an endorsement, an uptime claim, or a score on whoever runs the endpoint. This store verifies artifacts; it does not rate actors.",
-      },
+      how_to_verify: { $ref: "#/components/schemas/ArtifactVerificationSteps" },
+      what_this_is_not: { $ref: "#/components/schemas/ArtifactLimit" },
       ...(options.extras ?? {}),
     },
   };
@@ -2899,11 +2885,43 @@ const CONFORMANCE_FIXTURES_SCHEMA: OpenApiObject = {
   },
 };
 
+/** Optional unsigned context; it never changes the payout contract. */
+const CONTRIBUTION_COMPLETION_SCHEMA: OpenApiObject = {
+  type: "object",
+  properties: {
+    optional: { type: "boolean", const: true },
+    task_id: { type: "string" },
+    kind: { type: "string", enum: ["bounty", "field_study", "contribution"] },
+    reward_usd: { type: "number" },
+    reward_state: { type: "string", enum: ["authorized", "accepted_pending_payment", "payment_reported"] },
+    redemption_state: { type: "string", const: "not_observed" },
+    reward_note: { type: "string" },
+    what_was_verified: { type: "string" },
+    what_was_not: { type: "string" },
+    for_your_human: { type: "string" },
+    sharing: { type: "string" },
+    evidence_scope: { type: "string", format: "uri" },
+    free_next_steps: { type: "array", maxItems: 2, items: {
+      type: "object", properties: {
+        name: { type: "string" }, url: { type: "string", format: "uri" },
+        cost: { type: "string", const: "free" }, how: { type: "string" }, scope: { type: "string" },
+      },
+    } },
+  },
+};
+
+const EARNING_ANSWERS_SCHEMA: OpenApiObject = {
+  type: "array", items: { type: "object", properties: {
+    id: { type: "string" }, question: { type: "string" }, answer: { type: "string" },
+  } },
+};
+
 /** The bounty board: what is on offer, and the budget that bounds it. */
 const BOUNTIES_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["what_this_is", "bounties", "the_rules"],
   properties: {
+    earning_answers: { $ref: "#/components/schemas/EarningAnswers" },
     what_this_is: { type: "string" },
     board: { type: "string" },
     bounties: { type: "array", items: { type: "object" } },
@@ -2935,6 +2953,7 @@ const FIELD_STUDY_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["what_this_is", "price", "how_to_call", "errors", "security"],
   properties: {
+    earning_answers: { $ref: "#/components/schemas/EarningAnswers" },
     what_this_is: { type: "string" },
     price: { type: "string" },
     how_to_call: { type: "string" },
@@ -3021,6 +3040,7 @@ const STUDY_DEBRIEF_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["study_id", "reward_usd", "reward_breakdown", "legs", "payout"],
   properties: {
+    completion: { $ref: "#/components/schemas/ContributionCompletion" },
     study_id: { type: "string" },
     reward_usd: { type: "number" },
     reward_breakdown: {
@@ -4090,6 +4110,7 @@ const CORPUS_DIFF_SCHEMA: OpenApiObject = {
 const BOUNTY_CLAIM_SCHEMA: OpenApiObject = {
   type: "object",
   properties: {
+    completion: { $ref: "#/components/schemas/ContributionCompletion" },
     payer: { type: "string" },
     status: { type: "string" },
     message: { type: "string" },
@@ -4505,7 +4526,6 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
     "message",
     "item_id",
     "deliverable",
-    "paid_usdc",
     "certificate",
     "signature",
     "public_key",
@@ -4520,7 +4540,9 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
       description:
         "The goods. Its shape is the item's own — a note, a reading, a record — which is why this field is deliberately untyped here rather than falsely narrowed to one item's payload.",
     },
-    paid_usdc: { type: "number" },
+    paid_usdc: { type: "number", description: "Settled amount on direct payment rails." },
+    accepted_usdc: { type: "number", description: "Gateway amount accepted for batching; not evidence of final settlement." },
+    gateway_payment: { type: "object", description: "Gateway acceptance state; read private purchase status for later batch settlement." },
     tip_usdc: {
       type: "number",
       description: "What was paid above the ask, where anything was.",
@@ -4595,7 +4617,7 @@ const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
  */
 const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
   type: "object",
-  required: ["message", "order_id", "status", "order_url", "paid_usdc"],
+  required: ["message", "order_id", "status", "order_url"],
   properties: {
     ...HUMAN_PROOF_REFERENCES,
     message: { type: "string" },
@@ -4619,7 +4641,9 @@ const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
       format: "uri",
       description: "Where to poll it.",
     },
-    paid_usdc: { type: "number" },
+    paid_usdc: { type: "number", description: "Settled amount on direct payment rails." },
+    accepted_usdc: { type: "number", description: "Gateway amount accepted for batching; not evidence of final settlement." },
+    gateway_payment: { type: "object", description: "Gateway acceptance state; read private purchase status for later batch settlement." },
     tip_usdc: { type: "number" },
     patron_number: { type: "integer" },
     badge_url: { type: "string", format: "uri" },
@@ -4699,8 +4723,7 @@ const IDEMPOTENCY_PARAMETER: OpenApiObject = {
    * what an unresolved admission refuses — is in every 402 body's
    * idempotency block and on /developers, where it is read once.
    */
-  description: "Reuse key/item/inputs/payer: no second settlement. Missing/invalid keys can charge again. Use a private key or 402 idempotency.suggested_key. /developers.",
-  example: "scvd-your-own-high-entropy-value-0001",
+  description: "Reuse key/item/inputs/payer; no re-settlement. Key: 402 idempotency.suggested_key. Missing/invalid keys risk recharge.",
 };
 
 const IDEMPOTENCY_PARAMETER_REF: OpenApiObject = {
@@ -5173,7 +5196,7 @@ const MENU_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["as_of", "checked_at", "description", "store", "items"],
   properties: {
-    payments: PAYMENT_ROLLUP_SCHEMA,
+    payments: { $ref: "#/components/schemas/PaymentRollup" },
     as_of: {
       type: "string",
       description: "ISO week the catalog was last written, e.g. 2026-W35.",
@@ -5616,6 +5639,14 @@ const PAYMENT_REQUIRED_REF: OpenApiObject = {
   $ref: "#/components/schemas/PaymentRequiredChallenge",
 };
 
+// Reuse the standard response object; all payable accepts remain inline on
+// each operation for discovery readers that do not follow references.
+const PAYMENT_REQUIRED_RESPONSE: OpenApiObject = {
+  description: "Read x402 v2 terms in PAYMENT-REQUIRED or the body; retry this URL with a signed PAYMENT-SIGNATURE.",
+  headers: PAYMENT_CHALLENGE_HEADER_REFS,
+  content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
+};
+
 /**
  * A PAID OPERATION, DESCRIBED THE WAY A BUYER'S AGENT READS ONE.
  *
@@ -5848,12 +5879,7 @@ function paidOp(
         description: "Paid and delivered.",
         ...(markdown ? MARKDOWN_RESPONSE : JSON_RESPONSE),
       },
-      "402": {
-        description:
-          "Read x402 v2 terms in PAYMENT-REQUIRED or the body; retry this URL with a signed PAYMENT-SIGNATURE.",
-        headers: PAYMENT_CHALLENGE_HEADER_REFS,
-        content: { "application/json": { schema: PAYMENT_REQUIRED_REF } },
-      },
+      "402": { $ref: "#/components/responses/PaymentRequired" },
       ...COMMON_RESPONSES,
     },
   };
@@ -5954,11 +5980,9 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     type: "object",
     title: `${item.name} request`,
-    description: `Query parameters for GET /api/buy/${item.id}. Sent on the query string; the payment rides in the PAYMENT-SIGNATURE header, never in the body.`,
+    description: "GET query; payment header: PAYMENT-SIGNATURE (never body).",
     properties: Object.fromEntries(
-      Object.entries(schema.properties)
-        .filter(([name]) => !isDisclosureField(name))
-        .map(([name, definition]) => [name, name === CITED_ARTIFACT_FIELD ? CITED_ARTIFACT_REF : definition]),
+      Object.entries(schema.properties).filter(([name]) => !isDisclosureField(name)).map(([name, value]) => [name, name === "purpose" ? { $ref: "#/components/schemas/PurchasePurpose" } : name === "agent_name" ? { $ref: "#/components/schemas/AgentName" } : name === CITED_ARTIFACT_FIELD ? CITED_ARTIFACT_REF : value]),
     ),
     ...(schema.required && schema.required.length > 0
       ? { required: [...schema.required] }
@@ -6202,8 +6226,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
         description: "Private recovery.status_token returned by a catalogue purchase. This capability reads only its original purchase status." } },
       schemas: {
         ...A2A_OPENAPI_SCHEMAS,
+        ...CONTRIBUTION_SCHEMAS,
+        ArtifactSignatureScope: {"type": "string", "description": "Fields covered by the signature. Other fields on the artifact are not covered."},
+        ArtifactLimit: {"type": "string", "description": "Dated observation against published criteria; not endorsement, uptime assurance or an operator rating."},
+        ArtifactCertificateId: {"type": "string", "description": "The certificate minted by the purchase. GET /api/verify/{cert_id} — free, forever, no account — and its attests field carries this record's evidence_hash."},
+        ArtifactVerificationSteps: {"type": "array", "items": {"type": "string"}, "description": "The steps a stranger runs without asking the buyer OR this store to be honest."},
+        ContributionCompletion: CONTRIBUTION_COMPLETION_SCHEMA,
+        EarningAnswers: EARNING_ANSWERS_SCHEMA,
+        PurchasePurpose: PURCHASE_PURPOSE_SCHEMA,
+        AgentName: AGENT_NAME_SCHEMA,
+        PaymentRollup: PAYMENT_ROLLUP_SCHEMA,
         // Repeated request/response schemas, expanded unchanged (2026-09-23).
-        // Keep purchase parameters and the paid 402 inline for shallow discovery readers.
+        // Keep purchase parameters and payment accepts inline for shallow discovery readers.
         ReadingCadence: CADENCE_SCHEMA,
         ProbeUrlInput: URL_BODY,
         TradeOrder: TRADE_ORDER_BODY,
@@ -6240,7 +6274,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         CitedArtifact: { title: "Cited artifact", ...CITED_ARTIFACT_SCHEMA },
         ...UCP_RECOVERY_SCHEMAS,
       },
-      responses: { ...SHARED_RESPONSES, ...PAID_DOOR_RESPONSES },
+      responses: { ...SHARED_RESPONSES, ...CONTRIBUTION_RESPONSES, ...PAID_DOOR_RESPONSES, PaymentRequired: PAYMENT_REQUIRED_RESPONSE },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
       parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
     },
@@ -6325,6 +6359,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
       })),
     },
     paths: {
+      ...Object.fromEntries(Object.entries(CONTRIBUTION_OPENAPI).map(([path, operations]) => [path,
+        Object.fromEntries(Object.entries(operations).map(([method, operation]) => [method, {
+          ...operation, security: [], responses: { ...operation.responses, ...COMMON_RESPONSES },
+        }])),
+      ])),
       ...ucpRecoveryPaths(c.env.STORE_BASE_URL, { "429": COMMON_RESPONSES["429"], "500": COMMON_RESPONSES["500"] }),
       "/menu.json": {
         get: {
@@ -6336,7 +6375,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
             {
               type: "object",
               properties: MENU_SCHEMA.properties,
-              oneOf: [MENU_SCHEMA, {
+              // The full branch inherits these same properties from the parent.
+              oneOf: [{ type: MENU_SCHEMA.type, required: MENU_SCHEMA.required }, {
                 type: "object",
                 required: ["items", "total", "page", "pages", "next", "checkout"],
                 properties: {
@@ -6370,7 +6410,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             {
               type: "object",
               properties: MENU_ITEM_SCHEMA.properties,
-              oneOf: [MENU_ITEM_SCHEMA, {
+              oneOf: [{ type: MENU_ITEM_SCHEMA.type, required: MENU_ITEM_SCHEMA.required }, {
                 type: "object",
                 required: ["id", "required_params", "input_schema", "mcp_url", "checkout"],
                 properties: {
@@ -7614,7 +7654,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "Look at a door: what this store holds about it",
           `One live preflight (the same single probe and limiter as /api/preflight/${PREFLIGHT_VERSION_NEXT}) folded with the held half: rounds probed of rounds since first sighting, the tier with its fraction, the last signed verdict, the passport decision, and now against held. Counts with denominators, never a score. Refuses this store's own host like the audit does. Free.`,
           "The x402 door to look at.",
-          URL_BODY,
+          { $ref: "#/components/schemas/ProbeUrlInput" },
         ), LOOK_VERDICT_SCHEMA)),
       },
       "/a2a-desk.json": { get: { security: [], summary: "Free A2A repair desk contract, prices, authorization fixture and limits", responses: { ...COMMON_RESPONSES, "200": { description: "The desk contract", content: { "application/json": { schema: A2A_SCHEMA_REFERENCES.get(A2A_DESK_SCHEMA)! } } } } } },
@@ -7635,7 +7675,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Check what a page serves a machine reader",
             "One GET, one moment: title, meta description, canonical, robots, headings, JSON-LD, link shape — read from the HTML as served, scripts never run, and the report names that blind spot on itself. Free. The signed version is /api/buy/onpage_audit.",
             "The page to read, as served.",
-            URL_BODY,
+            { $ref: "#/components/schemas/ProbeUrlInput" },
           ),
           ONPAGE_VERDICT_SCHEMA,
         ),
@@ -7670,11 +7710,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/bounties": {
         get: returns(
-  freeOp(
+          {...freeOp(
             "The Bounty Board",
-            "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
-          ),
-          { $ref: "#/components/schemas/Bounties" },
+            "Posted no-purchase contribution briefs and paid mystery-shopping bounties, with terms and live capacity. HTML, Markdown or JSON; no-store. Free.",
+          ), parameters: [{name: "contribution_cursor", in: "query", schema: {type: "string"}, description: "Opaque cursor from contribution_list; resumes only the contribution briefs."}]},
+          {type: "object", allOf: [{$ref: "#/components/schemas/Bounties"}], properties: {
+            contribution_list: {type: "object", properties: {tasks: {type: "array", items: {$ref: "#/components/schemas/ContributionTask"}}, truncated: {type: "boolean"}, cursor: {type: ["string", "null"]}, indexing_note: {type: "string"}, unavailable: {type: "boolean"}, error: {type: "string"}}},
+          }},
         ),
       },
       "/credit": {

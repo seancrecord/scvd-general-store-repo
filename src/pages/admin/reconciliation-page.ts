@@ -520,6 +520,12 @@ export function renderReconciliationPage(
   <section>
     <p>Every way this store audits its own money, one page, verdicts
     first. An incomplete reading cannot establish that the books agree.</p>
+    <p><a href="/admin/export/reconciliation.json" download>Download reconciliation evidence</a></p>
+    <p><small>One private JSON file with legacy settlement records, payer totals,
+    monthly counters, house reclassifications and the latest raise record.
+    Missing or unreadable records and scan limits are marked in the file.
+    Downloading changes no accounting records. This is a sequence of reads,
+    not an atomic snapshot or proof of delivery.</small></p>
   </section>
 
   ${howToReadTheMoneyHtml(null, data.countersSerialized ?? false, data.lastRaise ?? null)}

@@ -170,10 +170,22 @@ const CHANNEL_MEANING: Record<string, string> = {
     "referred by the x402 Bazaar / x402scan catalog: discovery is working",
   unknown: "no user-agent and no referrer: bare fetches, hard to plan around",
   infrastructure:
-    "known crawlers and scanners: the noise floor, never counted as customers",
+    "known crawlers and scanners: recognized on unpaid requests; a settled payment is separate evidence",
 };
 
-/** The funnel: porch visits -> 402s -> settles, per channel, organic only. */
+/** Item counters retain the infrastructure split; channel counters no longer do. */
+function challengeTotals(ledger: MonthLedger) {
+  return Object.values(ledger.items).reduce(
+    (totals, row) => ({
+      unclassified: totals.unclassified + row.challenges,
+      infrastructure: totals.infrastructure + row.challengesInfra,
+      house: totals.house + row.challengesHouse,
+    }),
+    { unclassified: 0, infrastructure: 0, house: 0 },
+  );
+}
+
+/** Independent event counts per channel; no identity joins between stages. */
 function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
   const porchByChannel: Record<string, number> = {};
   for (const buckets of Object.values(porch.surfaces)) {
@@ -220,18 +232,16 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
     .join("\n");
   return `
     <table border="1" cellpadding="4">
-      <tr><th>source</th><th>porch visits</th><th>402s</th><th>settles</th><th>conversion</th></tr>
+      <tr><th>source</th><th>porch visits</th><th>402s</th><th>settles</th><th>settles / 402s</th></tr>
       ${rows}
     </table>
-    <p>Organic only; infrastructure and house are kept out of every column. Read it left to right: who shows up, who reaches a shelf, who pays.</p>
+    <p>Traffic columns exclude recognized infrastructure and house requests; unrecognized crawlers can remain. Settles exclude house purchases. These are event ratios, not joined buyer journeys; source labels can change between requests.</p>
     <p><small>Off the books but on file: house settles ${
       Object.entries(ledger.channelsHouse)
         .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
         .join(" \u00B7 ") || "none"
     } \u00B7 infrastructure 402s ${
-      Object.entries(ledger.channels402Infra)
-        .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
-        .join(" \u00B7 ") || "none"
+      challengeTotals(ledger).infrastructure
     }</small></p>
     <p><strong>Venue markers (?src=)</strong>: ${venueLines || "none yet; they appear when papers get handed out with per-venue markers"}</p>
     <p><small><strong>WHAT THIS TABLE CANNOT SEE, and it is not the same gap in both halves.</strong>
@@ -256,13 +266,30 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
     <details><summary>What each source means</summary><ul>${legend}</ul></details>`;
 }
 
-/** Last 14 days with any traffic: 402s vs settles, organic. */
+/** Monthly request classification beside the raw daily x402 counters. */
 function trendHtml(ledger: MonthLedger): string {
+  const totals = challengeTotals(ledger);
+  const traffic = `
+    <p><strong>Traffic recorded this month (${escapeHtml(ledger.month)}, x402)</strong></p>
+    <table border="1" cellpadding="4">
+      <tr><th>request category</th><th>recorded requests</th></tr>
+      <tr><td>Unclassified 402 requests</td><td>${totals.unclassified}</td></tr>
+      <tr><td>Recognized crawler / infrastructure 402s</td><td>${totals.infrastructure}</td></tr>
+      <tr><td>House / test 402 requests</td><td>${totals.house}</td></tr>
+    </table>
+    ${ledger.truncated ? "<p><strong>Month scan hit its cap; these counts are floors.</strong></p>" : ""}
+    <p><small>Unclassified is the bucket previously labelled “organic 402s”: it may include unrecognized crawlers.
+    Requests are not unique visitors or evidence of buying intent. A rise in these requests alone does not establish demand.
+    Crawler and house splits are available by month, not by day.</small></p>
+    <p><small>Investigate a spike: <a href="/admin/census">payment-signature census</a>,
+    <a href="/admin/funnel">payment stages and refusals</a>, or
+    <a href="/admin/recount">retained-event recount</a>. Those readings have their own retention and completeness limits;
+    a user-agent string does not identify a buyer.</small></p>`;
   const days = Object.entries(ledger.days).sort((a, b) =>
     b[0].localeCompare(a[0]),
   );
   if (days.length === 0) {
-    return "<p>No day-level rows yet; the trend starts counting from this deploy.</p>";
+    return `${traffic}<p>No day-level rows recorded in this reading.</p>`;
   }
   const rows = days
     .slice(0, 14)
@@ -273,9 +300,11 @@ function trendHtml(ledger: MonthLedger): string {
     .join("\n");
   const total = days.reduce((sum, [, counts]) => sum + counts.settles, 0);
   return `
-    <p><small>${escapeHtml(ledger.month)} by day, newest first, up to fourteen days with traffic. A day's count is that day's alone; the month's total is ${total}.</small></p>
+    ${traffic}
+    <p><small>${escapeHtml(ledger.month)} by day in UTC, newest first, up to fourteen days with traffic.
+    A local evening can span two UTC days. A day's count is that day's alone; the month's raw outside x402 sales total is ${total}.</small></p>
     <table border="1" cellpadding="4">
-      <tr><th>day</th><th>organic 402s</th><th>organic sales that day</th><th></th></tr>
+      <tr><th>day (UTC)</th><th>unclassified 402 requests</th><th>outside x402 sales that day</th><th></th></tr>
       ${rows}
     </table>`;
 }
@@ -355,12 +384,13 @@ export function takeSectionHtml(
    */
   const bridge = (() => {
     if (!allTime) return "";
+    if (take.truncated) return "<p><small>Certificate totals are partial; comparison with the storefront is inconclusive.</small></p>";
     const diff = allTime.organic - take.total.organic_sales;
     if (diff === 0) {
       return `<p><small>The storefront's organic figure matches this table exactly right now (${allTime.organic}).</small></p>`;
     }
     if (diff > 0) {
-      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The count difference is ${diff}; it does not identify the sales or establish missing delivery. Compare per-item coverage and classification under <a href="#no-certificate">settled at the till, no certificate</a> below. Counter timing, classification changes and scan coverage can also move this difference.</small></p>`;
+      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The count difference is ${diff}; it does not identify the sales or establish missing delivery. Compare per-item coverage and classification under <a href="#no-certificate">counter and certificate comparison</a> below. Counter timing, classification changes and scan coverage can also move this difference.</small></p>`;
     }
     return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}).</strong> Penny pages cannot explain a negative gap. The difference is ${take.total.organic_sales - allTime.organic}; compare timing, scan coverage and classification before attributing it to missed counters.</small></p>`;
   })();
@@ -391,7 +421,7 @@ export function takeSectionHtml(
     <small>(the storefront's number; +${allTime.house} house)</small> ·
     <strong>${money(t.organic_usdc)}</strong> on certificates <small>(+${money(t.house_usdc)} house)</small></p>
     <p><strong>${t.organic_sales}</strong> certificate-backed sales appear in this read${noCert !== null && noCert >= 0 ? `; the count difference is <strong>${noCert}</strong>, not an identified set of penny-page sales` : ""}.
-    Money below is the certificates' money; the penny pages' pennies are on the till table further down.</p>`
+    Amounts below come from certificates; the counter comparison further down uses list-price estimates.</p>`
     : `<p style="font-size:1.25em"><strong>${money(t.organic_usdc)}</strong> organic on certificates, all-time
     <small>(+${money(t.house_usdc)} house)</small> ·
     <strong>${t.organic_sales}</strong> certificate${t.organic_sales === 1 ? "" : "s"}</p>`;
@@ -434,45 +464,10 @@ export function takeSectionHtml(
 }
 
 /**
- * SETTLED AT THE TILL, NO CERTIFICATE (2026-09-02; the keeper, on
- * "the take says 21, organic says 23": "why wouldn't we show both").
- * The till counts every settle by item; the take counts certificates
- * by item. Subtract, per item, and what is left is the money the
- * certificate walk cannot see: the penny pages by design, and — if it
- * ever happens — a shelf item that settled and minted nothing, which
- * is the one row here that should never be green. Then the two
- * totals are added back together in front of the reader, so the
- * storefront's number is arrived at on the page rather than explained
- * in a footnote.
- *
- * Money for a no-certificate row is the LIST price times the count:
- * the till records that a settle happened, not what was paid, and the
- * chain on the receiving wallets is the amount's backstop, same as the
- * tax drawer says. Counts are raw till counters; the reclassification
- * ledger moves family settles to house in the totals only and cannot
- * say which item they were on, so a remainder is printed rather than
- * absorbed.
- */
-/**
- * THE ROWS, DERIVED WITHOUT TRUSTING EITHER CLASSIFICATION (2026-09-02,
- * the keeper: "something is very incorrect here"). The first version
- * subtracted organic certificates from organic till counts and house
- * from house. But the till classifies a settle when it happens and a
- * certificate is classified when it is READ, against today's
- * house-wallet list — so every settle the reclassification ledger
- * later moved from organic to house showed up here as an organic sale
- * with no certificate, in red, with "chase it" beside it. Nineteen of
- * twenty-one rows were that ledger wearing a missing certificate.
- *
- * So the difference is taken on the TOTAL per item, which neither
- * classification can move: settles the till booked, less certificates
- * that exist, is the count with no certificate behind it. The ledger's
- * effect is then printed as its own named number per item — settles
- * the till booked organic that certificates now class house — and
- * only what is left after that reads as organic money with nothing
- * behind it. A house row with no certificate is the proprietors' own
- * test or a failed mint on our own wallet, said in those words rather
- * than in red.
+ * Aggregate count differences, not a transaction join. The historical field
+ * names below remain internal bookkeeping: classification offsets and positive
+ * remainders cannot identify a missing certificate, charge or failed delivery.
+ * List-price values are estimates, never amounts paid or missing money.
  */
 export interface NoCertificateRow {
   item: string;
@@ -537,7 +532,7 @@ function noCertificateHtml(
   till: Record<string, TillItemCount> | null,
 ): string {
   if (!till) {
-    return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
+    return `<h3 id="no-certificate">Counter and certificate comparison</h3>
     <p><small>The per-item till counters are not cached on the desk; <a href="/admin/take">the take</a> walks them and derives these rows.</small></p>`;
   }
   const rows = noCertificateRows(take, till);
@@ -550,9 +545,9 @@ function noCertificateHtml(
   }, 0);
   const table =
     rows.length === 0
-      ? "<p>Every settle on the till has a certificate behind it.</p>"
+      ? "<p>No positive count difference in the inspected items. This does not establish transaction matches or delivery.</p>"
       : `<table border="1" cellpadding="4">
-      <tr><th>item</th><th>booked at the till</th><th>certificates</th><th>no certificate</th><th>of which organic today</th><th>moved to house since booking</th><th>why</th></tr>
+      <tr><th>item</th><th>booked at the till</th><th>certificates</th><th>positive count difference (list estimate)</th><th>organic allocation (list estimate)</th><th>house classification offset</th><th>reading</th></tr>
       ${rows
         .map(
           (row) => `<tr>
@@ -560,20 +555,20 @@ function noCertificateHtml(
         <td>${row.booked}</td>
         <td>${row.certificates}</td>
         <td><strong>${row.no_certificate}</strong> (${money(row.no_certificate * row.list_price)} at list)</td>
-        <td>${row.organic_no_certificate > 0 ? `<strong>${money(row.organic_no_certificate * row.list_price)}</strong> (${row.organic_no_certificate})` : "0"}</td>
+        <td>${row.organic_no_certificate > 0 ? `<strong>${row.organic_no_certificate}</strong> (${money(row.organic_no_certificate * row.list_price)} at list)` : "0"}</td>
         <td>${row.moved_to_house_since_booking}</td>
         <td>${
           row.penny_page
             ? `penny page at ${money(row.list_price)} list; delivers the page, mints nothing`
             : row.organic_no_certificate > 0
-              ? `<strong style="color:#8c2f1b">organic money with no certificate behind it — a mint that failed, or a settle that bought nothing. Chase it.</strong>`
-              : `house: the proprietors' own settles with no certificate behind them — a test, or a mint that failed on our own wallet. Not a customer's money.`
+              ? `<strong style="color:#8c2f1b">Count difference to investigate; no missing transaction or failed delivery identified.</strong>`
+              : `House allocation of the count difference; this does not identify a test or a failed mint.`
         }</td>
       </tr>`,
         )
         .join("\n")}
       <tr>
-        <td><strong>No certificate, total</strong></td>
+        <td><strong>Positive count differences, total</strong></td>
         <td></td>
         <td></td>
         <td><strong>${noCertOrganic + noCertHouse}</strong></td>
@@ -584,19 +579,18 @@ function noCertificateHtml(
     </table>`;
   const reconcile = (() => {
     if (!allTime) return "";
+    if (take.truncated) return "<p><strong>Partial certificate reading.</strong> The storefront comparison is withheld because the certificate scan hit its cap.</p>";
     const explained = take.total.organic_sales + noCertOrganic;
     const remainder = allTime.organic - explained;
-    const sum = `${take.total.organic_sales} on certificates + ${noCertOrganic} with no certificate = ${explained}`;
+    const sum = `${take.total.organic_sales} certificate counts + ${noCertOrganic} positive count differences = ${explained}`;
     if (remainder === 0) {
-      return `<p><strong>${sum}</strong>, which is the storefront's ${allTime.organic}. The books reconcile.${movedTotal > 0 ? ` (${movedTotal} settle${movedTotal === 1 ? "" : "s"} the till booked organic now class house by today's wallet list — the reclassification ledger, shown per item above rather than counted as missing money.)` : ""}</p>`;
+      return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}. The aggregate counts agree; this does not prove that individual payments have certificates or were delivered.</p>`;
     }
-    if (remainder > 0) {
-      return `<p><strong style="color:#8c2f1b">${sum}, but the storefront says ${allTime.organic}: ${remainder} organic settle${remainder === 1 ? "" : "s"} unaccounted for.</strong> Neither the certificates nor the till's per-item rows carry ${remainder === 1 ? "it" : "them"}; the chain on the receiving wallets is where to look.</p>`;
-    }
-    return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}: ${-remainder} more here than there. The storefront applies the reclassification ledger to its total and the certificates apply today's wallet list per row; ${movedTotal} settle${movedTotal === 1 ? "" : "s"} moved to house since booking are shown per item above. What is left over is not extra money; if it is not that ledger, the chain on the receiving wallets is where to look.</p>`;
+    return `<p><strong>${sum}</strong>, against the storefront's ${allTime.organic}: ${Math.abs(remainder)} ${remainder > 0 ? "more on the storefront" : "more in this comparison"}. This is an aggregate difference, not identified missing sales or extra money. Compare timing, coverage and classification, then inspect transaction records before proposing a correction.</p>`;
   })();
-  return `<h3 id="no-certificate">Settled at the till, no certificate</h3>
-    <p><small>The till counts every settle by item when it happens; certificates are classified when they are read, against today's house-wallet list. So the difference is taken on the total per item — booked less certificates — and the reclassification ledger's effect is printed as its own column instead of reading as missing money. Amounts are list price × count: the till records that a settle happened, not what was paid, and the chain on the receiving wallets is the backstop.</small></p>
+  return `<h3 id="no-certificate">Counter and certificate comparison</h3>
+    <p><small>Positive differences between per-item till counters and certificate counts. Classification offsets are arithmetic estimates, not identified reclassifications. Timing, retention and scan coverage can also change the comparison. List estimates are current list price × count, not amounts paid or missing money.</small></p>
+    ${take.truncated ? "<p><strong>Partial certificate reading: differences below are inconclusive.</strong></p>" : ""}
     ${table}
     ${reconcile}`;
 }
@@ -608,10 +602,7 @@ function glanceHtml(data: OfficePageData): string {
   const organicSettles = totals?.organic;
   const revenueUsdc = totals?.revenue_usdc;
   const revenueHouseUsdc = totals?.house_revenue_usdc;
-  const organic402s = Object.values(ledger.items).reduce(
-    (sum, row) => sum + row.challenges,
-    0,
-  );
+  const unclassified402s = challengeTotals(ledger).unclassified;
   const reclassNote =
     reclass && reclass.settles > 0
       ? `<p><small>After the reclassification ledger: ${reclass.settles} settle${reclass.settles === 1 ? "" : "s"} and $${reclass.usdc.toFixed(2)} this month moved organic → house (walker wallets listed late; story at /corrections). The raw counters are untouched — this line does the subtraction in the open.</small></p>`
@@ -622,12 +613,12 @@ function glanceHtml(data: OfficePageData): string {
       <strong>${revenueUsdc === undefined ? "unavailable" : `$${revenueUsdc.toFixed(2)}`}</strong> organic revenue
       <small>(${revenueHouseUsdc === undefined ? "unavailable" : `+$${revenueHouseUsdc.toFixed(2)}`} house)</small> \u00B7
       <strong>${organicSettles ?? "unavailable"}</strong> organic sale${organicSettles === 1 ? "" : "s"} <small>this month${data.allTime ? `, of ${data.allTime.organic} all-time` : ""}</small> \u00B7
-      <strong>${organic402s}</strong> organic 402s \u00B7
+      <strong>${unclassified402s}</strong> unclassified 402 requests \u00B7
       <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
-      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 organic 402s per porch visit <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
+      ${data.porchLedger.porchToPurchase !== null ? `\u00B7 unclassified 402s per porch visit <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
-    <p><small>Monthly sales and revenue include x402 and MPP. The asks, daily trend, sources and conversion tables below cover x402 only.</small></p>
+    <p><small>Monthly sales and revenue include x402 and MPP. The asks, daily trend, sources and request ratios below cover x402 only. Unclassified requests may include crawlers; they are not a count of buyers.</small></p>
     ${reclassNote}
     ${
       data.allTime
@@ -671,10 +662,10 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
           .join("\n");
   return `
     <table border="1" cellpadding="4">
-      <tr><th>item</th><th>402s organic</th><th>settled organic</th><th>conversion</th><th>verifies</th><th>tiers</th></tr>
+      <tr><th>item</th><th>unclassified 402 requests</th><th>settled organic</th><th>settles / 402s</th><th>verifies</th><th>tiers</th></tr>
       ${rows}
     </table>
-    <p>Organic numbers only in the main columns; house counts ride alongside as (+Nh), stored, never mixed. Conversion is organic-only. Channel-level funnel lives in Sources above.</p>
+    <p>Main request counts exclude recognized infrastructure and house traffic; unrecognized crawlers can remain. House counts ride alongside as (+Nh), infrastructure as (+Ni). Settles exclude house purchases. Settles / 402s is an event ratio, not buyer conversion. Verifies count reads, not proof that a buyer verified delivery. Source counts live above.</p>
     <p>Paying wallets (${payers.length} on file, newest first):</p>
     <ul>${payerLines}</ul>`;
 }
@@ -803,7 +794,7 @@ function porchHtml(porch: PorchLedger): string {
       <tr><th>surface</th><th>kind</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
-    <p><strong>Organic 402s per organic porch visit: ${porch.porchToPurchase === null ? "not available" : porch.porchToPurchase}</strong>. This is a ratio of requests, not a purchase conversion rate. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;
+    <p><strong>Unclassified 402s per unclassified porch visit: ${porch.porchToPurchase === null ? "not available" : porch.porchToPurchase}</strong>. This is a ratio of requests, not a purchase conversion rate. No cookies and no IP retention means no unique heads; this is the honest rate. Porch rate caps and scanners that hit buy routes without browsing can raise this ratio; missing challenge increments can lower it. Historical losses remain unresolved, so the ratio is not a guaranteed ceiling or floor on buying activity; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> records the stage and reason for a refusal. Input refusals alone do not establish payment intent.</p>`;
 }
 
 /**

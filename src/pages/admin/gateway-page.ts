@@ -1,0 +1,7 @@
+import { renderAdminShell } from '@/pages/admin/layout';
+import { escapeHtml } from '@/lib/sanitize';
+import type { readGatewaySales } from '@/services/gateway-sales';
+export function renderGatewayPage(reading: Awaited<ReturnType<typeof readGatewaySales>>) {
+  const rows = reading.rows.sort((a,b) => b.created_at.localeCompare(a.created_at)).map(row => `<tr><td>${escapeHtml(row.created_at)}</td><td>${escapeHtml(row.path)}</td><td>${escapeHtml(row.payment.state)}</td><td>${escapeHtml(row.amount_atomic)} atomic USDC</td><td><a href="/admin/purchases/${encodeURIComponent(row.purchase_id)}">Inspect purchase</a></td></tr>`).join('');
+  return renderAdminShell('gateway', `<p>${reading.pending.purchases} pending · ${reading.confirmed.purchases} confirmed or completed · ${reading.failed} failed.</p><p>Settlement states come from Circle transfer history. These payments are separate from the legacy counters and their reconciliation. An accepted payment is not yet confirmed revenue. A certificate records the state at issue time; the purchase record carries later updates.</p>${reading.truncated || reading.unreadable ? `<p><strong>Partial reading:</strong> scan capped: ${reading.truncated}; unreadable rows: ${reading.unreadable}.</p>` : ''}<table border="1" cellpadding="4"><tr><th>Created</th><th>Purchase</th><th>Payment state</th><th>Amount</th><th>Evidence</th></tr>${rows}</table><p>This reads published purchase records, not all money in the receiving wallet. No refund, counter repair or payment is submitted here.</p>`);
+}

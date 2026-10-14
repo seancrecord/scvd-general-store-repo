@@ -1,3 +1,6 @@
+import { readGatewaySales, isGatewayFinal } from '@/services/gateway-sales';
+import { ARC_USDC } from '@/lib/arc-gateway';
+import { atomicToUsdc } from '@/lib/payments';
 import { isHouseWallet } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -52,6 +55,8 @@ export interface TaxRow {
   settlement_tx: string;
   house_flagged: "house" | "organic" | "unknown";
   refund_status: string;
+  purchase_id?: string;
+  payment_protocol?: string;
 }
 
 export async function taxRows(
@@ -91,6 +96,19 @@ export async function taxRows(
       refund_status: "",
     });
   }
+  // Gateway certificates sign acceptance, not paid revenue. Export one row
+  // from each confirmed authorization, including pages with no certificate.
+  const gateway = await readGatewaySales(env);
+  const gatewayCerts = new Map([...values.values()].flatMap(record =>
+    record?.certificate.gateway_payment ? [[record.certificate.gateway_payment.reference, record.certificate] as const] : []));
+  for (const sale of gateway.rows) {
+    if (!isGatewayFinal(sale.payment)) continue;
+    const cert = gatewayCerts.get(sale.payment.reference);
+    rows.push({ date: sale.created_at, row_type: "sale", cert_id: cert?.cert_id ?? "", item: sale.item ?? sale.path,
+      patron_number: String(cert?.patron_number ?? ""), amount_usdc: atomicToUsdc(sale.amount_atomic), tip_usdc: atomicToUsdc(sale.tip_atomic),
+      asset: ARC_USDC, network: sale.network, payer: sale.payer, settlement_tx: sale.payment.batch_transaction ?? "",
+      house_flagged: sale.house ? "house" : "organic", refund_status: "", purchase_id: sale.purchase_id, payment_protocol: "x402-gateway" });
+  }
   const refunds = await listRefunds(env);
   for (const refund of refunds) {
     rows.push({
@@ -116,7 +134,7 @@ export async function taxRows(
     });
   }
   rows.sort((a, b) => a.date.localeCompare(b.date));
-  return { rows, truncated: listed.names.length >= CERT_SCAN_CAP };
+  return { rows, truncated: listed.truncated || gateway.truncated || gateway.unreadable > 0 };
 }
 
 const COLUMNS: (keyof TaxRow)[] = [
@@ -133,6 +151,8 @@ const COLUMNS: (keyof TaxRow)[] = [
   "settlement_tx",
   "house_flagged",
   "refund_status",
+  "purchase_id",
+  "payment_protocol",
 ];
 
 function csvCell(value: string | number): string {
@@ -144,7 +164,7 @@ function csvCell(value: string | number): string {
 export function taxCsv(rows: TaxRow[]): string {
   const lines = [COLUMNS.join(",")];
   for (const row of rows) {
-    lines.push(COLUMNS.map((column) => csvCell(row[column])).join(","));
+    lines.push(COLUMNS.map((column) => csvCell(row[column] ?? "")).join(","));
   }
   return `${lines.join("\n")}\n`;
 }

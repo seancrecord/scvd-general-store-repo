@@ -1,3 +1,6 @@
+import { contributionGuide } from "@/store/contribution-tasks";
+import { agentJobAnswers } from "@/store/agent-jobs";
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/store/seller-declarations";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
@@ -197,6 +200,8 @@ find out.
 
 Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): ${PREFLIGHT_VERSIONS.map((version) => `[preflight ${version}](${base}/api/preflight/${version})`).join(" · ")} · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [calling-card setup](${base}/bot-auth) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
 
+Personal-agent shopping: [skill](${base}${PERSONAL_SHOPPER.path}) · [paste prompt](${base}/#buy-with-agent).
+
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [the week read whole](${base}/ledger) · [our own month, signed](${base}/store-month) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train) · [Open for Business, for sellers](${base}/open-for-business)
@@ -208,9 +213,6 @@ Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.js
 For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [trade.json](${base}/trade.json) · [trade.md](${base}/trade.md) · [the trade contract](${base}/api/trade/contract) · [the listing feed](${base}/api/trade/catalog) · [the sandbox check desk](${base}/api/trade/sandbox/check) · [trade ledger](${base}/api/trade/ledger) · [health](${base}/health)
 
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/.well-known/scvd-signing-key) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
-
-Every one of those is described in its own section below. This list is
-the map; the sections are the territory.
 
 Well well. Come in then.
 
@@ -313,6 +315,8 @@ Receiver: ${base}${CALLING_CARD_PATHS.observe}. Opt-in reports: ${base}${CALLING
 Free directory check: POST ${base}/api/bot-auth/check. signature_agent_card signs that reading.
 
 ## More ways to use the store
+
+Jobs: ${base}/what · ${base}/bounties.
 
 BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point
 rather than a pitch: the cheapest useful things here cost nothing.
@@ -487,14 +491,13 @@ ${menu}
 Machine-readable catalog: ${base}/menu.json (markdown if your Accept
 header prefers text/markdown; one item at \`${base}/menu/{item_id}\`)
 Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
+Personal-agent shopping, wallet setup and approved purchases: ${base}${PERSONAL_SHOPPER.path}
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
-Skills discovery index (Agent Skills Discovery RFC v0.2.0: including the
-focused x402 buyer verification skill,
-each with the SHA-256 digest of the file it points at):
-${base}/.well-known/agent-skills/index.json — the digested copies at
-\`${base}/.well-known/agent-skills/{name}/SKILL.md\`
+Skills with file lists (Hermes / Skills CLI): ${base}/.well-known/skills/index.json.
+Digest-based RFC v0.2.0 index: ${base}/.well-known/agent-skills/index.json.
+Both serve the same skills and supporting files; digested artifacts: \`${base}/.well-known/agent-skills/{name}/SKILL.md\`.
 Canonical ERC-8004 identity and endpoint-domain acknowledgment:
 ${base}/.well-known/agent-registration.json
 Public discovery records by protocol, with observation dates and limits:
@@ -785,7 +788,7 @@ with a badge at \`${base}/badges/{patron_number}.svg\`, verify anything at
 ${base}/.well-known/scvd-signing-key.
 
 WHAT THE CERTIFICATE BINDS, inside the signed bytes rather than beside
-them: cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
+them (Gateway certificates instead sign accepted_usdc and gateway_payment at issue, with later batch state on private purchase status): cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
 not the tip), asset, network, payer, and settlement_tx. The payer is
 the paying wallet address — chain-verifiable by anyone, unlike the
 optional name, which is whatever the buyer chose. settlement_tx is the
@@ -1749,6 +1752,17 @@ canonical form — changing a word is a new version with a new
 signature. Each clause ships with the check you can run without
 asking us.
 
+## Jobs for your agent
+
+${contributionGuide(base).proposition}
+${contributionGuide(base).for_money}
+${contributionGuide(base).free_first}
+Posted briefs, available slots, private submission and review request shapes: ${base}/api/bounties/contributions.
+Reserve before starting; general letters are not reward claims. A reported payment is the keeper's statement, not chain verification.
+
+
+${agentJobAnswers(base).map(({ question, answer }) => `${question}\n${answer}`).join("\n\n")}
+
 ## Money that flows the other way
 
 Three doors here pay YOU, which is unusual enough to say plainly.
@@ -1996,7 +2010,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     page: "/menu",
     title: "The shelf, the prices, and the money that flows back",
     blurb:
-      "Every item with its price, fulfilment and house rules; the free shelf; the reading room; how prices are set and signed; and the three doors where money moves toward you rather than away.",
+      "Prices, fulfilment, house rules, free tools, reading, contribution work and shopping rewards.",
   },
   {
     slug: "trust",
@@ -2062,6 +2076,7 @@ const SECTION_AREAS: Record<string, string> = {
   "Prices, by the convention": "menu",
   "The reading room": "menu",
   "How prices are set, signed": "menu",
+  "Jobs for your agent": "menu",
   "Money that flows the other way": "menu",
   "The commission desk, declines published": "menu",
   "The trade counter — marketplaces buying on account": "menu",

@@ -1,5 +1,7 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { Hono } from "hono";
-import { sha256Hex } from "@/lib/idempotency";
+import { skillArchive } from "@/lib/skill-archive";
+import { sha256HexBytes } from "@/lib/idempotency";
 import { renderExecutionContract } from "@/routes/execution-contract";
 import { renderSkillMarkdown } from "@/routes/skill";
 import { VERIFICATION_SKILL } from "@/store/verification-skill";
@@ -49,9 +51,11 @@ interface PublishedSkill {
   /** Agent Skills name: 1–64 chars, lowercase alphanumeric and hyphens. */
   name: string;
   render(env: Env): Promise<string> | string;
+  files?: Readonly<Record<string, string>>;
 }
 
 const PUBLISHED_SKILLS: readonly PublishedSkill[] = [
+  { name: PERSONAL_SHOPPER.name, render: () => PERSONAL_SHOPPER.markdown, files: PERSONAL_SHOPPER.files },
   {
     name: "scvd-general-store",
     render: (env) => renderSkillMarkdown(env, { live: false }),
@@ -65,6 +69,10 @@ const PUBLISHED_SKILLS: readonly PublishedSkill[] = [
     render: () => VERIFICATION_SKILL.markdown,
   },
 ];
+
+function skillArchivePath(name: string): string {
+  return `/.well-known/agent-skills/${name}/skill.tar.gz`;
+}
 
 export function skillArtifactPath(name: string): string {
   return `/.well-known/agent-skills/${name}/SKILL.md`;
@@ -95,7 +103,7 @@ export interface AgentSkillsIndex {
   $schema: string;
   skills: {
     name: string;
-    type: "skill-md";
+    type: "skill-md" | "archive";
     description: string;
     url: string;
     digest: string;
@@ -106,24 +114,63 @@ export async function agentSkillsIndex(env: Env): Promise<AgentSkillsIndex> {
   const base = env.STORE_BASE_URL;
   const skills = await Promise.all(
     PUBLISHED_SKILLS.map(async (skill) => {
-      const artifact = await skill.render(env);
+      const markdown = await skill.render(env);
+      const bundled = Object.keys(skill.files ?? {}).length > 0;
+      const artifact = bundled
+        ? await skillArchive({ "SKILL.md": markdown, ...skill.files })
+        : new TextEncoder().encode(markdown);
       return {
         name: skill.name,
-        type: "skill-md" as const,
-        description: frontmatterDescription(artifact),
-        url: `${base}${skillArtifactPath(skill.name)}`,
-        digest: `sha256:${await sha256Hex(artifact)}`,
+        type: bundled ? "archive" as const : "skill-md" as const,
+        description: frontmatterDescription(markdown),
+        url: `${base}${bundled ? skillArchivePath(skill.name) : skillArtifactPath(skill.name)}`,
+        digest: `sha256:${await sha256HexBytes(artifact)}`,
       };
     }),
   );
   return { $schema: AGENT_SKILLS_SCHEMA, skills };
 }
 
+// Hermes and the Skills CLI use Vercel's files-based index. Keep the
+// digest-based RFC index too: these are two consumer formats over one catalog.
+export const WELL_KNOWN_SKILLS_PATH = "/.well-known/skills";
+export async function wellKnownSkillsIndex(env: Env) {
+  return { skills: await Promise.all(PUBLISHED_SKILLS.map(async (skill) => ({
+    name: skill.name,
+    description: frontmatterDescription(await skill.render(env)),
+    files: ["SKILL.md", ...Object.keys(skill.files ?? {})],
+  }))) };
+}
+
 export const agentSkillsIndexRoutes = new Hono<HonoEnv>();
+
+agentSkillsIndexRoutes.get(`${WELL_KNOWN_SKILLS_PATH}/index.json`, async (c) =>
+  c.json(await wellKnownSkillsIndex(c.env)),
+);
+
+agentSkillsIndexRoutes.get(`${WELL_KNOWN_SKILLS_PATH}/:name/*`, async (c) => {
+  const skill = PUBLISHED_SKILLS.find(row => row.name === c.req.param("name"));
+  const prefix = `${WELL_KNOWN_SKILLS_PATH}/${c.req.param("name")}/`;
+  const file = c.req.path.slice(prefix.length);
+  // Only published text is addressable; no filesystem lookup or proxy fetch.
+  const body = file === "SKILL.md" ? await skill?.render(c.env)
+    : skill?.files && Object.hasOwn(skill.files, file) ? skill.files[file] : undefined;
+  if (body === undefined) return c.json({ error: "no such skill file" }, 404);
+  return c.text(body, 200, { "Content-Type": "text/markdown; charset=utf-8" });
+});
 
 agentSkillsIndexRoutes.get(AGENT_SKILLS_INDEX_PATH, async (c) =>
   c.json(await agentSkillsIndex(c.env)),
 );
+
+// The Skills CLI prefers this RFC index over the files-based index. A skill
+// with references must be an archive here, or it installs only SKILL.md.
+agentSkillsIndexRoutes.get("/.well-known/agent-skills/:name/skill.tar.gz", async (c) => {
+  const skill = PUBLISHED_SKILLS.find(row => row.name === c.req.param("name"));
+  if (!skill?.files || Object.keys(skill.files).length === 0) return c.json({ error: "no such skill archive" }, 404);
+  const bytes = await skillArchive({ "SKILL.md": await skill.render(c.env), ...skill.files });
+  return new Response(bytes, { headers: { "Content-Type": "application/gzip" } });
+});
 
 agentSkillsIndexRoutes.get("/.well-known/agent-skills/:name/SKILL.md", async (c) => {
   const skill = PUBLISHED_SKILLS.find((row) => row.name === c.req.param("name"));
@@ -136,3 +183,9 @@ agentSkillsIndexRoutes.get("/.well-known/agent-skills/:name/SKILL.md", async (c)
     "Content-Type": "text/markdown; charset=utf-8",
   });
 });
+
+for (const [file, body] of Object.entries(PERSONAL_SHOPPER.files)) {
+  agentSkillsIndexRoutes.get(`/.well-known/agent-skills/${PERSONAL_SHOPPER.name}/${file}`, (c) =>
+    c.text(body, 200, { "Content-Type": "text/markdown; charset=utf-8" }),
+  );
+}

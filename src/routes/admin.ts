@@ -1,3 +1,4 @@
+import { adminContributionRoutes } from "@/routes/contribution-tasks";
 import { adminEvidencePilotRoutes } from "@/routes/admin-evidence-pilot";
 import { inflowAuthorizationText } from "@/lib/inflow-authorization";
 import { readCommerceMonthLedger } from "@/services/commerce-month";
@@ -310,7 +311,7 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 // Applied before authentication so refusals also cannot be cached.
-for (const path of ["/admin/purchases", "/admin/purchases/*", "/admin/evidence-pilot", "/admin/evidence-pilot/*"]) adminRoutes.use(path, async (c, next) => {
+for (const path of ["/admin/gateway", "/admin/purchases", "/admin/purchases/*", "/admin/evidence-pilot", "/admin/evidence-pilot/*", "/admin/export/reconciliation.json"]) adminRoutes.use(path, async (c, next) => {
   c.header("Cache-Control", "no-store");
   c.header("Vary", "Authorization, Accept");
   await next();
@@ -321,6 +322,7 @@ for (const path of ["/admin/purchases", "/admin/purchases/*", "/admin/evidence-p
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 adminRoutes.route("/admin/purchases", adminPurchaseRoutes);
+adminRoutes.route("/admin/bounties/contributions", adminContributionRoutes);
 adminRoutes.route("/admin/evidence-pilot", adminEvidencePilotRoutes);
 
 /**
@@ -1551,6 +1553,18 @@ adminRoutes.post("/admin/repair/rail-seam", async (c) => {
   return c.json(await reverseRailBookedBeforeSeam(c.env, transactions as string[]));
 });
 
+// A scoped private capture, separate from the page reads that mark alarms seen.
+adminRoutes.get("/admin/export/reconciliation.json", async (c) => {
+  const { exportReconciliationEvidence } = await import("@/services/reconciliation-export");
+  const capture = await exportReconciliationEvidence(c.env);
+  return c.body(JSON.stringify(capture, null, 2), 200, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Disposition": `attachment; filename="scvd-reconciliation-${capture.started_at.slice(0, 10)}.json"`,
+    "X-Content-Type-Options": "nosniff",
+    "X-Export-Complete": String(capture.complete),
+  });
+});
+
 /**
  * THE TAX DRAWER: the whole money ledger as one CSV — sale rows off
  * the certificates, refund rows as their own offsetting events,
@@ -2243,6 +2257,7 @@ adminRoutes.get("/admin/recount", async (c) => {
       recount,
       counter_challenges_organic: counterChallenges,
       counter_settles_organic: counterSettles,
+      countersSerialized: (await import("@/lib/counter-ledger")).countersSerialized(c.env),
     }),
   );
 });
@@ -2338,6 +2353,14 @@ adminRoutes.get("/admin/buyers", async (c) => {
  * page held the row: who paid, on which transaction, for what. JSON by
  * Accept, like the purchase inspection it links to.
  */
+adminRoutes.get("/admin/gateway", async (c) => {
+  const { readGatewaySales } = await import("@/services/gateway-sales");
+  const reading = await readGatewaySales(c.env);
+  if (!wantsHtml(c.req.header("Accept"))) return c.json(reading);
+  const { renderGatewayPage } = await import("@/pages/admin/gateway-page");
+  return c.html(renderGatewayPage(reading));
+});
+
 adminRoutes.get("/admin/mpp-sales", async (c) => {
   const { readMppSaleEvidence } = await import("@/services/mpp-sales");
   const listing = await readMppSaleEvidence(c.env);
@@ -3530,12 +3553,15 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
     `${Math.round((part / Math.max(1, whole)) * 100)}%`;
   const sole = census.by_exclusivity.sole;
   const shared = census.by_exclusivity.shared;
-  const headline = census.windows_equal
+  const ratesComparable = census.windows_equal && !census.addresses_capped &&
+    census.windows.length > 0 && census.windows.every(window =>
+      !window.truncated && !window.unread && window.addresses_unread === 0);
+  const headline = ratesComparable
     ? `<strong>${sole.received} of ${sole.watched}</strong> (${pct(sole.received, sole.watched)})
        addresses that <strong>only one door advertised</strong> received USDC over the window below.`
     : `<strong>At least ${sole.received} of ${sole.watched}</strong> sole-advertised addresses received USDC —
-       <strong>a floor, not a rate</strong>: the chains below were not walked over the same window,
-       so no percentage is stated.`;
+       <strong>a floor, not a rate</strong>: the address set or chain windows below are incomplete or unequal,
+       so no activity percentage is stated.`;
   const shape = census.distribution;
   return c.html(
     renderAdminShell(
@@ -3563,6 +3589,7 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       the next rung has to be a bought good, not a cleverer read of the same rows.</p>
 
       <h2>Who sent it</h2>
+      <p><small>Transfer shares below describe the observed sample only; they are not market-wide activity rates.</small></p>
       <p>A market has many payers; a dust campaign has one sprayer; a facilitator has one sender;
       an operator funding itself sends from a wallet it also advertised. All four look identical
       in a transfer count.</p>
@@ -3574,7 +3601,7 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
         <strong>${census.senders.single_sender_receivers}</strong> addresses took their entire inflow from one sender</li>
         <li><strong>${census.senders.broadcasters}</strong> sender${census.senders.broadcasters === 1 ? "" : "s"} reached 10+ of these
         addresses, accounting for <strong>${census.senders.broadcaster_share_pct === null ? "n/a" : `${census.senders.broadcaster_share_pct}%`}</strong>
-        of all transfers — the spray signature</li>
+        of observed transfers — the spray signature</li>
         <li><strong>${census.senders.from_advertised}</strong> transfers came from an address advertised in a 402 itself</li>
       </ul>
 
@@ -3583,9 +3610,9 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       own record of who advertised it, not guessed from the wallet.</p>
       <ul>
         <li><strong>Sole-advertised</strong>: ${sole.received} of ${sole.watched} received
-        (${pct(sole.received, sole.watched)}), ${sole.transfers} transfers</li>
+        ${ratesComparable ? `(${pct(sole.received, sole.watched)})` : "(observed floor; rate withheld)"}, ${sole.transfers} transfers</li>
         <li><strong>Shared</strong>: ${shared.received} of ${shared.watched} received
-        (${pct(shared.received, shared.watched)}), ${shared.transfers} transfers</li>
+        ${ratesComparable ? `(${pct(shared.received, shared.watched)})` : "(observed floor; rate withheld)"}, ${shared.transfers} transfers</li>
       </ul>
 
       <h2>How the traffic is shaped</h2>

@@ -42,8 +42,9 @@ import { kvGet, kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
  * infrastructure diet), so this walk can only find machinery that was
  * recorded as organic and is known to be machinery TODAY. A crawler
  * nobody has identified yet is invisible here exactly as it is
- * invisible everywhere else, and the corrected figure is therefore an
- * upper bound on organic rather than a certified one.
+ * invisible to this named-client half. Behaviour can identify additional
+ * walks, but subtracting event-derived machinery from independently counted
+ * quotes with historical losses establishes neither an exact count nor a bound.
  *
  * TIME-SENSITIVE BY CONSTRUCTION. Event rows carry a 90-day TTL. Every
  * row this correction depends on ages out eventually, and once it does
@@ -299,7 +300,7 @@ export interface HouseReclassification {
   reason: string;
 }
 
-const RECLASS_PREFIX = "house_reclass:";
+export const RECLASS_PREFIX = "house_reclass:";
 const RECLASS_CAP = 100;
 
 /**

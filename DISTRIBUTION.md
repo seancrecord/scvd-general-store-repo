@@ -1,5 +1,31 @@
 # SCVD distribution: channels and records
 
+## October 12 — production readback
+
+PR #1008 is live. The public GitHub install includes the complete shopper. A website installer readback found that the preferred RFC index omitted supporting files; the follow-up packages them together without changing skill content. ClawHub 1.0.0 is public with a clean scan; a temporary install matched all three source files. Current evidence is in the [release record](research/personal-agent-release-2026-10-12/README.md).
+
+## October 12 — Hermes and personal-agent entry
+
+The personal-shopper release now includes both website skill-discovery formats, canonical supporting files, host recipes and a no-spend rehearsal. [Qualification matrix](docs/AGENT_ENTRY_2026-10.md); [ClawHub metadata](registry/scvd-personal-shopper/catalog.json). An installable artifact is not a qualified payment integration. Publication/readback status stays in the [release record](research/personal-agent-release-2026-10-12/README.md).
+
+## October 12 — personal-agent shopping
+
+The personal shopper skill is packaged at `skills/scvd-personal-shopper/` and
+served with its wallet reference through the Agent Skills discovery index.
+The storefront's `/#buy-with-agent` prompt leads to those same instructions.
+Portable plugin wrappers advance together to 0.2.7; their directory-based skill
+discovery includes the new folder. The paid protocol and wallet custody stay
+with the existing merchant/client and the user's chosen provider.
+
+Install after the release reaches main:
+`npx skills add seancrecord/scvd-general-store-repo --skill scvd-personal-shopper`.
+ClawHub is a separate new `scvd-personal-shopper` publication; the general-store
+skill's version and publication receipt are unchanged. Release outcomes are in
+[the release record](research/personal-agent-release-2026-10-12/README.md).
+Native execution in Muse or consumer chat hosts, new-wallet funding and a paid
+end-to-end purchase remain unqualified. A public listing is not that evidence.
+
+
 ## October 7 listing reconciliation
 
 [Six public placements checked](research/discovery-presence-2026-10-07/README.md):

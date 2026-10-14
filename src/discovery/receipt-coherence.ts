@@ -16,6 +16,7 @@ export const RECEIPT_COHERENCE_CLASS = RECEIPT_COHERENCE_FAMILY.id;
 export interface ReceiptCertSide {
   item: string;
   paid_usdc?: number;
+  accepted_usdc?: number;
   tip_usdc?: number;
   saw?: string;
 }
@@ -72,7 +73,7 @@ export function receiptRowVerdict(input: {
   if (booked === undefined) {
     not_observed.push({
       field: "price_usdc",
-      reason: "free shelf — no payment moved, so no list price was booked",
+      reason: input.cert.accepted_usdc !== undefined ? "Gateway acceptance is recorded; this immutable certificate does not establish settled revenue" : "free shelf — no payment moved, so no list price was booked",
     });
   } else if (!usdcEqual(input.catalog.price_usdc, booked)) {
     disagreements.push({

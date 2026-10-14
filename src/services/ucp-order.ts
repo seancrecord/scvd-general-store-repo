@@ -113,6 +113,7 @@ function storedOrderFrom(
       network: purchase.payment.network ?? purchase.terms.network,
       transaction: purchase.payment.transaction,
       ...(purchase.payment.payer ? { payer: purchase.payment.payer } : {}),
+      ...(purchase.payment.gateway ? { gateway: purchase.payment.gateway } : {}),
       paid_usdc: purchase.payment.paidUsdc,
       tip_usdc: purchase.payment.tipUsdc,
     },
@@ -141,6 +142,14 @@ async function bookUcpSale(env: Env, order: StoredUcpOrder, item: MenuItem): Pro
     transaction: order.settlement.transaction,
     ...(order.settlement.payer ? { payer: order.settlement.payer } : {}),
     declaredSource: "ucp",
+    /*
+     * THE DOOR, STAMPED BY THE ROUTE THAT KNOWS IT (2026-10-14). The
+     * channel is inferred from headers this booking no longer has, so
+     * without this flag every UCP settle filed under "unknown" and the
+     * per-channel counter the home page reads for the UCP figure never
+     * moved. The route sets it, never the caller — lib/channel.ts.
+     */
+    viaUcp: true,
   }).catch((error) => console.error("ucp settle count lost:", String(error)));
 }
 

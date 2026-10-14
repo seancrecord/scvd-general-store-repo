@@ -705,4 +705,7 @@ code {
   background: var(--teal); color: var(--night) !important; text-shadow: none;
   box-shadow: 0 0 22px rgba(93,230,200,0.35);
 }
+
+.personal-shopper-prompt { display: block; box-sizing: border-box; width: 100%; margin: .6rem 0; padding: .8rem; font: inherit; font-size: .9rem; line-height: 1.5; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 3px; resize: vertical; }
+.personal-shopper-prompt:focus { outline: 2px solid currentColor; outline-offset: 3px; }
 `;

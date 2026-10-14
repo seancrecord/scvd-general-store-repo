@@ -684,7 +684,8 @@ export async function fulfillPurchase(
   if (payment.payer) {
     mintOptions.payer = payment.payer;
   }
-  if (payment.transaction) {
+  if (payment.gateway) mintOptions.gateway = payment.gateway;
+  if (payment.transaction && !payment.gateway) {
     mintOptions.settlementTx = payment.transaction;
   }
   if (payment.network) {
@@ -759,7 +760,7 @@ export async function fulfillPurchase(
     ? await accrueCredit(
         env,
         minted.certificate.payer,
-        minted.certificate.paid_usdc ?? item.price_usdc,
+        minted.certificate.paid_usdc ?? minted.certificate.accepted_usdc ?? item.price_usdc,
       ).catch(() => null)
     : null;
   if (checkpoint) {
@@ -804,7 +805,7 @@ export async function fulfillPurchase(
    */
   let holoRebate: Awaited<ReturnType<typeof accrueCredit>> = null;
   if (minted.certificate.payer && creditClaimed && (await holdsRailHolo(env, minted.certificate.payer).catch(() => false))) {
-    holoRebate = await accrueCredit(env, minted.certificate.payer, minted.certificate.paid_usdc ?? item.price_usdc, new Date(), "rail_holo").catch(() => null);
+    holoRebate = await accrueCredit(env, minted.certificate.payer, minted.certificate.paid_usdc ?? minted.certificate.accepted_usdc ?? item.price_usdc, new Date(), "rail_holo").catch(() => null);
   }
   if (checkpoint) {
     if (creditClaimed) holoRebate = await checkpoint.save("holo_rebate", holoRebate);
@@ -825,11 +826,12 @@ export async function fulfillPurchase(
    */
   const paidPhrase = payment.trade
     ? `through ${payment.trade.partner_name}'s trade account (listed trade price $${payment.trade.trade_price_usd})`
-    : `for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC`;
+    : `for $${minted.certificate.paid_usdc ?? minted.certificate.accepted_usdc ?? item.price_usdc} USDC`;
   const receiptAmount = payment.trade
     ? `via ${payment.trade.partner_name}`
-    : `$${minted.certificate.paid_usdc ?? item.price_usdc} USDC`;
+    : `$${minted.certificate.paid_usdc ?? minted.certificate.accepted_usdc ?? item.price_usdc} USDC`;
   const patronBlock = {
+    ...(payment.gateway ? { gateway_payment: payment.gateway, payment_note: "Circle Gateway accepted this payment. Its batch settlement is tracked separately in your private purchase status." } : {}),
     ...(privateRecovery ? { recovery: privateRecovery } : {}),
     buyer_guidance: buyerGuidance(item, env.STORE_BASE_URL, typeof input.spotCheckHost === "string" ? { host: input.spotCheckHost } : {}),
     patron_number: minted.patronNumber,
@@ -860,7 +862,7 @@ export async function fulfillPurchase(
     // The link set (2026-09-21): the same roster every envelope carries, the next step for this item, the attest loop.
     store_links: storeLinks(env.STORE_BASE_URL, {
       item: item.id,
-      ...(payment.transaction ? { settlement: { tx: payment.transaction, item: item.id } } : {}),
+      ...(payment.transaction && !payment.gateway ? { settlement: { tx: payment.transaction, item: item.id } } : {}),
     }),
     verification:
       "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
@@ -879,7 +881,7 @@ export async function fulfillPurchase(
      */
     ...(() => {
       // Built by the same function the link set uses (lib/store-links.ts attestLoop), so the two cannot disagree; this key kept for readers that learned it.
-      const loop = payment.transaction ? attestLoop(env.STORE_BASE_URL, { tx: payment.transaction, item: item.id }) : undefined;
+      const loop = payment.transaction && !payment.gateway ? attestLoop(env.STORE_BASE_URL, { tx: payment.transaction, item: item.id }) : undefined;
       return loop
         ? {
             attest_this_purchase: {
@@ -908,7 +910,7 @@ export async function fulfillPurchase(
      * buyer an instruction that cannot execute is the class of thing
      * this shop files corrections about.
      */
-    ...(payment.transaction && payment.network && !isHouseWallet(env, payment.payer ?? "")
+    ...(payment.transaction && !payment.gateway && payment.network && !isHouseWallet(env, payment.payer ?? "")
       ? {
           feedback_invite: feedbackInvite({
             base: env.STORE_BASE_URL,
@@ -1119,7 +1121,7 @@ export async function fulfillPurchase(
               refunds: `Through ${payment.trade.partner_name}, who collected the payment. This store took none and cannot return any.`,
             },
           }
-        : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),
+        : payment.gateway ? { accepted_usdc: payment.paidUsdc, accepted_tip_usdc: payment.tipUsdc } : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),
       ...(goods.extras ?? {}),
       ...patronBlock,
       ...disclosureBlock,
@@ -1140,6 +1142,7 @@ export async function fulfillPurchase(
     tipUsdc: payment.tipUsdc,
     patronNumber: minted.patronNumber,
     certId: minted.certificate.cert_id,
+    ...(payment.gateway ? { gatewayPayment: payment.gateway } : {}),
   };
   if (payment.payer) {
     orderOptions.payer = payment.payer;
@@ -1211,8 +1214,7 @@ export async function fulfillPurchase(
         status: "completed",
         deliverable: note,
         order_url: `${env.STORE_BASE_URL}/api/order/${order.order_id}`,
-        paid_usdc: payment.paidUsdc,
-        tip_usdc: payment.tipUsdc,
+        ...(payment.gateway ? { accepted_usdc: payment.paidUsdc, accepted_tip_usdc: payment.tipUsdc } : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),
         ...patronBlock,
         ...disclosureBlock,
       };
@@ -1227,8 +1229,7 @@ export async function fulfillPurchase(
     status: order.status,
     sla_hours: order.sla_hours,
     order_url: `${env.STORE_BASE_URL}/api/order/${order.order_id}`,
-    paid_usdc: payment.paidUsdc,
-    tip_usdc: payment.tipUsdc,
+    ...(payment.gateway ? { accepted_usdc: payment.paidUsdc, accepted_tip_usdc: payment.tipUsdc } : { paid_usdc: payment.paidUsdc, tip_usdc: payment.tipUsdc }),
     ...patronBlock,
     ...disclosureBlock,
   };

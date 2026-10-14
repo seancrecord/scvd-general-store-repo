@@ -1,3 +1,4 @@
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DELIVERY_ORDER } from "@/store/copy/position";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { PURCHASE_RECOVERY_GUIDANCE } from "@/lib/purchase-status-contract";
@@ -104,6 +105,8 @@ metadata:
 # ${STORE_METADATA.name}
 
 ${buyerQuickStart(base)}
+
+Shopping with a personal agent: ${base}${PERSONAL_SHOPPER.path}. Free quotes, approved purchases, wallet setup when needed, and receipt verification.
 
 ${paymentNetworkGuide(env)}
 
@@ -479,7 +482,8 @@ ${PURCHASE_RECOVERY_GUIDANCE}
 |---|---|---|---|
 ${menuTable}
 
-- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — for the network named on the receipt — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
+- Gateway certificates sign accepted_usdc and gateway_payment at issue; they omit paid_usdc and settlement_tx. The private purchase status carries later batch settlement.
+- What a direct-payment certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — for the network named on the receipt — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
 - Say why you're buying, and it rides the receipt: any purchase takes an optional \`purpose\` query parameter (up to 280 chars) — what this purchase is for, in your words — recorded verbatim and SIGNED into the certificate. The signature proves you said it, dated; it does not prove it was true. That is intent evidence your operator can hold later, and no other x402 store records it
 - Cite the receipt your own runtime already signed: any purchase takes an optional \`cited_artifact\` parameter — \`<format>:<reference>\`, e.g. \`dsse:art_e415901189dc1613\` — recorded verbatim and SIGNED into the certificate. The store never fetches or verifies it; it gives your runtime's approval chain and this store's third-party certificate one shared link, held by a party to neither.
 - Record your authorization BEFORE you spend: buy \`the_mandate\` (a dime) with your claimed instructions in the \`mandate\` parameter, then cite the returned id on any later purchase with \`mandate_id=m_…\` — it rides that certificate, signed, and the store refuses ids it cannot resolve. Chain-of-custody, not truth-of-intent: it proves what you claimed and when, held by a party that is neither you nor your operator. If your operator (or a counterparty) holds an ed25519 key, have them counter-sign it free with \`POST ${base}/api/mandate/{id}\` — the record then carries two independently checkable signatures over one text, which is the answer when somebody says the agent wrote its own authorization. It is also how two parties record what they agreed before work starts: one mandate, two attestations, and no verdict from us

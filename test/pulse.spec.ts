@@ -342,7 +342,7 @@ describe("the pulse has a face", () => {
     ).text();
     expect(page).toContain("READ THE DENOMINATOR BEFORE THE RATE");
     // The sentence that stops a thin number being read as a market verdict.
-    expect(page).toContain("fact about our reach");
+    expect(page).toContain("Recorded requests do not measure unique agents");
     // And why an em dash is not a zero.
     expect(page).toContain("undefined, not zero");
   });

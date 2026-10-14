@@ -39,6 +39,7 @@ export interface CertificatesAgainstSettles {
   certificates_total: number;
   certificates_with_payer: number;
   native_certificates: number;
+  gateway_certificates: number;
   protocol_unavailable: number;
   certificates_truncated: boolean;
   /** The payer-row walk hit its cap: wallets_without_row may name wallets whose row was never read (2026-09-19). */
@@ -78,6 +79,7 @@ export async function certificatesAgainstSettles(
   let total = 0;
   let withPayer = 0;
   let native = 0;
+  let gateway = 0;
   let unavailable = 0;
   /*
    * A READING STAYS A HANDFUL OF READS (2026-09-28). This shelf sits on
@@ -103,6 +105,7 @@ export async function certificatesAgainstSettles(
     total += 1;
     if (!cert.payer) continue;
     const protocol = await certificateProtocol(env, cert, context);
+    if (protocol === "gateway") { gateway += 1; continue; }
     if (protocol === "mpp") { native += 1; continue; }
     if (protocol === "unavailable") { unavailable += 1; continue; }
     withPayer += 1;
@@ -136,6 +139,7 @@ export async function certificatesAgainstSettles(
     certificates_total: total,
     certificates_with_payer: withPayer,
     native_certificates: native,
+    gateway_certificates: gateway,
     protocol_unavailable: unavailable,
     certificates_truncated: certKeys.truncated,
     payer_rows_truncated: payerKeys.truncated,
@@ -146,7 +150,7 @@ export async function certificatesAgainstSettles(
     wallets_disagreeing: disagreeing,
     wallets_without_row: withoutRow,
     reading: readCertificates(settles, withPayer, rowPurchases, disagreeing) +
-      ` Native MPP certificates excluded from this legacy comparison: ${native}. Protocol undetermined: ${unavailable}; these are not established legacy sales. This reading consults the two ledgers only, never the per-settlement retained record${settleKeys.truncated ? ", and the settle-key list hit its cap" : ""}; the books sweep asks the retained record about the residue.`,
+      ` Gateway certificates excluded from this legacy comparison: ${gateway}. Native MPP certificates excluded from this legacy comparison: ${native}. Protocol undetermined: ${unavailable}; these are not established legacy sales. This reading consults the two ledgers only, never the per-settlement retained record${settleKeys.truncated ? ", and the settle-key list hit its cap" : ""}; the books sweep asks the retained record about the residue.`,
   };
 }
 

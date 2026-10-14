@@ -65,7 +65,7 @@ describe("the tax drawer", () => {
     const csv = await response.text();
     const lines = csv.trim().split("\n");
     expect(lines[0]).toBe(
-      "date,row_type,cert_id,item,patron_number,amount_usdc,tip_usdc,asset,network,payer,settlement_tx,house_flagged,refund_status",
+      "date,row_type,cert_id,item,patron_number,amount_usdc,tip_usdc,asset,network,payer,settlement_tx,house_flagged,refund_status,purchase_id,payment_protocol",
     );
 
     const houseRow = lines.find((line) => line.includes(house.certificate.cert_id));

@@ -1,3 +1,4 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
 import { EVENT_TTL_SECONDS } from "@/lib/event-range";
 import { SETTLEMENT_ACCOUNTING } from "@/lib/settlement-accounting";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
@@ -447,6 +448,67 @@ async function writeSaleIndex(env: Env, event: MetricEvent): Promise<void> {
     Math.random().toString(36).slice(2, 8),
   );
   await kvPut(env.COUNTERS, key, JSON.stringify(event), {
+    expirationTtl: EVENT_TTL_SECONDS,
+  });
+}
+
+/**
+ * THE SAME SECOND HOME, FOR A SALE THE x402 TILL NEVER SAW (2026-10-13).
+ *
+ * The window read `sellevt:` and the x402 till wrote it, and for a
+ * month that was every sale. Then two more ledgers opened — the
+ * native MPP books (services/mpp-sales.ts) and the Gateway's
+ * per-purchase acceptance ledger (services/gateway-sales.ts) — and
+ * recordSettlement returns before the index write for the second
+ * (`network === ARC_NETWORK`) and is never called for the first. The
+ * books at /stats fold both into the organic total; the glass stayed
+ * silent over them. The keeper asked why on 2026-10-13.
+ *
+ * This is the one door those ledgers use to hang their sale in the
+ * window, and it is deliberately NOT recordSettlement: that function
+ * moves two dozen counters the native books already keep on their own
+ * terms, and running it would double-count every one of them.
+ *
+ * DETERMINISTIC ON PURPOSE. The x402 writer stamps Date.now() and a
+ * random suffix because it runs exactly once per settle. Both native
+ * paths are re-entered by design — the purchase record's alarm
+ * re-accounts until it has written `accounted`, and the Gateway row is
+ * re-published on every reconciliation pass — so this keys the row by
+ * the sale's own instant and its own id, and a repeat is the same put
+ * to the same key rather than a second row in the glass.
+ *
+ * The row carries only what the window reads (kind, item, house, at)
+ * plus the accounting source, so a reader of the index can tell the
+ * rails apart without a wallet ever reaching the prefix.
+ */
+export async function indexSettledSale(
+  env: Env,
+  sale: {
+    /** The till's spelling of the item: a menu id, or a path with colons. */
+    item: string;
+    house: boolean;
+    /** When the sale happened, ISO. Also the key's clock. */
+    at: string;
+    /** The purchase id or another stable handle; only its head reaches the key. */
+    id: string;
+    channel: Channel;
+    payment_protocol: string;
+    payment_network?: string;
+  },
+): Promise<void> {
+  const stamp = new Date(sale.at).getTime();
+  if (!Number.isFinite(stamp)) throw new Error("sale instant unreadable");
+  const event: MetricEvent = {
+    kind: "settle",
+    item: sale.item,
+    channel: sale.channel,
+    house: sale.house,
+    at: new Date(stamp).toISOString(),
+    payment_protocol: sale.payment_protocol,
+    payment_currency: SETTLEMENT_ACCOUNTING.currency,
+  };
+  if (sale.payment_network) event.payment_network = sale.payment_network;
+  await kvPut(env.COUNTERS, KV_KEYS.saleEvent(invertedTimestamp(stamp), sale.id.slice(0, 12)), JSON.stringify(event), {
     expirationTtl: EVENT_TTL_SECONDS,
   });
 }
@@ -948,6 +1010,7 @@ export interface SettlementSignals extends EventSignals {
 export type SettlementRail = "base" | "polygon" | "solana" | "arbitrum" | "world" | "other";
 
 export function railOf(network: string | undefined): SettlementRail | null {
+  if (network === ARC_NETWORK) return null; // Separate Gateway ledger, never a legacy Base tally.
   if (!network) {
     return null;
   }
@@ -1003,6 +1066,7 @@ async function recordSettlementKeyed(
   signals: SettlementSignals,
 ): Promise<void> {
   const month = metricsMonth();
+  if (signals.network === ARC_NETWORK) return; // Gateway has a per-purchase acceptance/finality ledger.
   const event = buildEvent(env, "settle", itemKey, signals);
   event.payment_protocol = SETTLEMENT_ACCOUNTING.protocol;
   event.payment_currency = SETTLEMENT_ACCOUNTING.currency;

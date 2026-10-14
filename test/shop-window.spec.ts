@@ -1,7 +1,16 @@
-import { env, SELF } from "cloudflare:test";
+import { env, runInDurableObject, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { recordSettlement } from "@/lib/metrics";
+import { BASE_USDC } from "@/lib/base-rpc";
+import { ARC_USDC } from "@/lib/arc-gateway";
+import { ARC_NETWORK, BASE_NETWORK } from "@/lib/payment-networks";
+import { mppEvmPurchasePayment } from "@/lib/purchase-payment";
+import { publishGatewaySale } from "@/services/gateway-sales";
+import { recordMppSale } from "@/services/mpp-sales";
+import type { PurchaseIntent } from "@/services/purchase-intent";
+import { getMenuItem } from "@/store";
+import type { PaymentRequirements } from "@x402/core/types";
 import {
   nameForItemKey,
   readShopWindow,
@@ -296,6 +305,101 @@ describe("the shop window", () => {
     expect(source).not.toContain("innerHTML");
     expect(source).toContain("textContent");
     expect(source).toContain("/shop-window.json");
+  });
+});
+
+/**
+ * EVERY RAIL IN THE GLASS (2026-10-13). The window read the prefix the
+ * x402 till writes, and for a month that was every sale. Then the
+ * native MPP books and the Gateway's acceptance ledger opened, both
+ * folded into /stats, and neither wrote the index — so the keeper
+ * could sell something and watch the front page say nothing had
+ * crossed the counter. These drive the same booking functions the
+ * purchase record's alarm calls, not a hand-written row, so a ledger
+ * that stops writing the index fails here.
+ */
+describe("the shop window and the other rails", () => {
+  const MONTH = new Date().toISOString().slice(0, 7);
+  const ledger = (name: string) =>
+    testEnv.COUNTER_LEDGER!.get(testEnv.COUNTER_LEDGER!.idFromName(`${MONTH}/${name}`));
+
+  beforeEach(async () => {
+    await clearPrefix(KV_KEYS.saleEventPrefix);
+    for (const prefix of ["mpp:", "gateway_sale:", "gateway:"]) await clearPrefix(prefix);
+    for (const name of ["mpp-sales", "gateway-sales"]) {
+      await runInDurableObject(ledger(name), async (_instance, state) => { await state.storage.deleteAll(); });
+    }
+  });
+
+  async function mppRecord(house: boolean): Promise<PurchaseIntent> {
+    const payer = OUTSIDER;
+    const terms: PaymentRequirements = { scheme: "exact", network: BASE_NETWORK, asset: BASE_USDC,
+      amount: "5000", payTo: `0x${"22".repeat(20)}`, maxTimeoutSeconds: 300, extra: {} };
+    const authorization = { from: payer, to: terms.payTo, value: terms.amount,
+      nonce: `0x${crypto.randomUUID().replaceAll("-", "").repeat(2)}`, validAfter: "0", validBefore: "2000000000" };
+    const payment_context = await mppEvmPurchasePayment(terms, payer, authorization, "a".repeat(64));
+    return { version: 2, id: payment_context.identity, token: "t", path: "/api/buy/small_blessing", door: "mcp",
+      payer, terms, item: getMenuItem("small_blessing"), request: "{}", created_at: new Date().toISOString(), state: "settled",
+      authorization: payment_context.authorization, payment_proof: payment_context.proof_digest,
+      payment_context, request_digest: "b".repeat(64),
+      payment: { transaction: `0x${crypto.randomUUID().replaceAll("-", "").repeat(2)}`, payer, network: terms.network,
+        paidUsdc: 0.005, tipUsdc: 0, settleHeaders: {} },
+      mpp: { challenge_id: "c", house } };
+  }
+
+  it("hangs a native MPP sale in the glass once, however many times the books re-account it", async () => {
+    const record = await mppRecord(false);
+    // The alarm re-enters recordMppSale until `accounted` lands.
+    await recordMppSale(testEnv, record);
+    await recordMppSale(testEnv, record);
+
+    const glass = await readShopWindow(testEnv);
+    expect(glass.sales.map((sale) => sale.name)).toEqual(["A Small Blessing"]);
+    expect(glass.sales[0]?.href).toBe("/menu/small_blessing");
+  });
+
+  it("keeps a house MPP purchase out, the same as the x402 till does", async () => {
+    await recordMppSale(testEnv, await mppRecord(true));
+    expect((await readShopWindow(testEnv)).sales).toEqual([]);
+  });
+
+  // One instant for every pass: the ledger refuses a row whose evidence
+  // moved between publications, and so should the glass.
+  const GATEWAY_CREATED_AT = new Date().toISOString();
+  function gatewayRecord(state: "received" | "confirmed" | "failed", house = false): PurchaseIntent {
+    const id = "f".repeat(64);
+    const terms: PaymentRequirements = { scheme: "exact", network: ARC_NETWORK, asset: ARC_USDC,
+      amount: "2000", payTo: `0x${"33".repeat(20)}`, maxTimeoutSeconds: 604800, extra: {} };
+    return { version: 1, id, token: "t", path: "/api/buy/hello", door: "http", payer: OUTSIDER, terms,
+      item: getMenuItem("hello"), request: "", created_at: GATEWAY_CREATED_AT, state: "settled", gateway_house: house,
+      payment: { transaction: `gateway:${id}`, payer: OUTSIDER, network: ARC_NETWORK, paidUsdc: 0.002, tipUsdc: 0, settleHeaders: {},
+        gateway: { reference: `gateway:${id}`, nonce: `0x${"ab".repeat(32)}`, state,
+          ...(state === "confirmed" ? { batch_transaction: `0x${"cd".repeat(32)}` } : {}) } } };
+  }
+
+  it("shows a Gateway sale only once its batch is final, and only once", async () => {
+    /*
+     * The Gateway accepts at authorization and lands the batch later.
+     * /stats counts the sale on finality and so does the glass: an
+     * accepted-but-pending row is a receivable, not a thing that sold.
+     */
+    await publishGatewaySale(testEnv, gatewayRecord("received"));
+    expect((await readShopWindow(testEnv)).sales).toEqual([]);
+
+    await publishGatewaySale(testEnv, gatewayRecord("confirmed"));
+    await publishGatewaySale(testEnv, gatewayRecord("confirmed"));
+    const glass = await readShopWindow(testEnv);
+    expect(glass.sales.map((sale) => sale.name)).toEqual(["A Signed Hello"]);
+  });
+
+  it("never shows a Gateway batch that failed", async () => {
+    await publishGatewaySale(testEnv, gatewayRecord("failed"));
+    expect((await readShopWindow(testEnv)).sales).toEqual([]);
+  });
+
+  it("keeps a house Gateway purchase out of the glass", async () => {
+    await publishGatewaySale(testEnv, gatewayRecord("confirmed", true));
+    expect((await readShopWindow(testEnv)).sales).toEqual([]);
   });
 });
 

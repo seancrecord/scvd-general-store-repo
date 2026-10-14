@@ -116,6 +116,8 @@ const DURABLE_TRANSACTION_WRITES: Record<string, readonly string[]> = {
     'await txn.put("purchase", { ...latest, reconciliation: update.reconciliation });',
     'await txn.put("purchase", proposal);',
     'await txn.put("purchase", next);',
+    // Gateway reconciliation merges into the same Durable Object transaction.
+    'await txn.put("purchase", merged);',
     'await txn.put("attempt", { digest, token, purchase } satisfies RecoveryAttempt);',
     'await txn.put("attempt", { ...prior, response });',
     'await txn.put("artifact", record);',

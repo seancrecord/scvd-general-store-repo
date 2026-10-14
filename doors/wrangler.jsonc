@@ -13,7 +13,7 @@
    * KV is not the store's 402.
    *
    * WHAT MUST NOT BE HERE: cron triggers (the wards run in the store),
-   * the Durable Object (the trade counter lives in the store; its
+   * owned Durable Objects (the trade counter lives in the store; its
    * routes are not under /api/buy/), a custom domain (the store keeps
    * it; the route below sits beside it and wins on its own paths).
    *
@@ -53,6 +53,13 @@
   "services": [
     { "binding": "STORE", "service": "scvd-general-store-repo" }
   ],
+  // Reference the store's existing writer: unpaid quotes and store requests
+  // must increment the same counters. No class or migration belongs here.
+  "durable_objects": {
+    "bindings": [
+      { "name": "COUNTER_LEDGER", "class_name": "CounterLedger", "script_name": "scvd-general-store-repo" }
+    ]
+  },
   "kv_namespaces": [
     { "binding": "ORDERS", "id": "4a23f9dd93f4434aad98295e592c8805" },
     { "binding": "GUESTBOOK", "id": "93c5a5a59fbe4fa6ad96ed9af3852d70" },
@@ -64,6 +71,8 @@
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",
+    // Public Arc recipient chosen by the keeper on October 12. Deploy with the Gateway integration.
+    "ARC_PAY_TO": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
     "STORE_BASE_URL": "https://scvd.store",
     "BASE_RPC_URL": "https://mainnet.base.org",
     "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"

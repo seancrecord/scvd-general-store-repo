@@ -57,8 +57,10 @@ describe("the contract is small enough to be read", () => {
     for (const [path, item] of Object.entries(paths)) {
       if (!path.startsWith("/api/buy/") || !item.get?.["x-payment"]) continue;
       const responses = item.get.responses as Record<string, { headers?: Record<string, unknown> }>;
+      expect(responses["402"]).toEqual({ $ref: "#/components/responses/PaymentRequired" });
+      const response = components.responses!.PaymentRequired as { headers: Record<string, unknown> };
       for (const name of ["PAYMENT-REQUIRED", "WWW-Authenticate"]) {
-        expect(responses["402"]?.headers?.[name], `${path}: ${name}`).toEqual({ $ref: `#/components/headers/${name}` });
+        expect(response.headers[name], `${path}: ${name}`).toEqual({ $ref: `#/components/headers/${name}` });
       }
     }
   });
@@ -201,7 +203,11 @@ describe("the contract says how to understand and how to pay", () => {
         }
 
         const responses = op["responses"] as Record<string, Record<string, unknown>>;
-        const challenge = responses?.["402"];
+        let challenge = responses?.["402"];
+        if (typeof challenge?.$ref === "string") {
+          expect(challenge.$ref.startsWith("#/components/responses/")).toBe(true);
+          challenge = (json.components as { responses: Record<string, Record<string, unknown>> }).responses[challenge.$ref.split("/").at(-1)!];
+        }
         if (!challenge) {
           problems.push(`${where}: paid, and declares no 402`);
           continue;

@@ -1,8 +1,14 @@
+import { contributionBoard, type ContributionBoard } from "@/services/contribution-board";
+import { contributionListHtml, CONTRIBUTION_LIST_UNAVAILABLE } from "@/pages/contribution-list";
+import { contributionGuide } from "@/store/contribution-tasks";
+import { contributionCompletion } from "@/services/contribution-completion";
+import { earningAnswers } from "@/store/agent-jobs";
+import { earningAnswersHtml } from "@/pages/agent-job-answers";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { recordBountyClaim, type EventSignals } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
-import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -66,7 +72,8 @@ const BOARD_WHAT_WE_NEED_BACK: readonly string[] = [
 
 const BOARD_RULES: readonly string[] = [
         `One payout per settlement transaction, ever; one bounty per domain per week; rewards cap at $${BOUNTY_MAX_REWARD_USD} and the weekly budget at $${BOUNTY_WEEKLY_BUDGET_USD} — the board refuses past it and reopens with the ISO week.`,
-        "The settlement must postdate the bounty and match the door's terms as THIS STORE captured them at posting — price drift between then and your walk is the one honest loss mode; check the bounty's amount_usd before you pay.",
+        "The settlement must postdate the bounty and match the door's terms as THIS STORE captured them at posting. Check the amount, recipient, asset, network and payment mode before you pay; stop and ask the keeper if they do not match.",
+        "EVM bounties commission an ordinary exact USDC purchase through the door's payment flow. Claims require an individual USDC Transfer from your payer to the captured pay_to for amount_atomic on the captured network. Gateway/batched settlement is unsupported. A separate manual transfer followed by an unpaid request is not a commissioned purchase. Delivery can fail after a real purchase; report that honestly.",
         "Payout addresses are sanctions-screened, fail closed. The payer is a named US LLC and that is not negotiable.",
         `Doors on ${bountyRailNames()} can be posted; the settlement is verified on the door's own rail, and a listing says which rail it captured. The reward pays in Base USDC to a 0x address on every rail — the store signs authorizations and broadcasts nothing, and Solana has no authorization a recipient can redeem.`,
         "What the reward pays for is the chain-verified settlement. Your observations are recorded verbatim as YOUR claim — crowd-walked evidence is its own tier, below house-walked, and the tier is always printed.",
@@ -83,8 +90,8 @@ const BOARD_METHOD = "BOUNTY_BOARD.md in the store's public repository";
  * so the check is one read and not a judgement call.
  */
 const BOARD_BEFORE_YOU_WALK: readonly string[] = [
-  "Read the board on the minute you walk, not from a cached page: `status` is derived from the clock on every read, and a listing that reads `expired` will refuse the claim you paid for.",
-  "Compare the door's live 402 against the bounty's `amount_usd` and `network` before you pay. The claim is verified against the terms THIS STORE captured at posting; a price that moved between then and your walk is the one loss mode a careful walker still eats.",
+  "Read the board on the minute you walk, not from a cached page: `status` accounts for expiry and withdrawals on every read. Only `open` listings accept claims; a `withdrawn` listing includes its reason and instructions for anyone who already paid.",
+  "Compare the door's live 402 against the bounty's `amount_atomic`, `network` and `pay_to`, including its USDC asset and payment mode, before you pay. EVM listings support ordinary exact USDC payment (eip3009, or the legacy default), not Gateway/batched settlement. Stop on a mismatch and ask the keeper; do not substitute a manual transfer or pay a different price hoping it will qualify.",
   "Check `payouts_enabled` is true and that `spent_this_week_usd` leaves room under `weekly_budget_usd` — a spent week refuses claims until the ISO week turns over.",
   "Settle on the bounty's own rail. The claim door reads the chain named in `network` and nothing else; a payment on another chain cannot claim the listing however real it is.",
   "Have a 0x Base address you control ready for `payout_to`. Rewards pay in Base USDC on every rail, Solana doors included, and the address is sanctions-screened before a cent is signed.",
@@ -191,7 +198,10 @@ const REDEEMING_WITHOUT_GAS = {
  */
 function boardWords(base: string) {
   return {
+    ...contributionGuide(base),
     what_this_is: BOARD_WHAT_THIS_IS,
+    contribution_work: contributionGuide(base),
+    earning_answers: earningAnswers(base),
     how_to_claim: BOARD_HOW_TO_CLAIM,
     before_you_walk: BOARD_BEFORE_YOU_WALK,
     what_we_need_back: BOARD_WHAT_WE_NEED_BACK,
@@ -225,8 +235,10 @@ function boardHtml(
   base: string,
   board: Awaited<ReturnType<typeof bountyBoard>>,
   findings: CrowdFindings,
+  contributions: ContributionBoard | null,
 ): string {
   const open = board.bounties.filter((entry) => entry.status === "open");
+  const withdrawn = board.bounties.filter((entry) => entry.status === "withdrawn");
   const rows = open
     .map(
       (entry) => `<tr>
@@ -280,21 +292,28 @@ function boardHtml(
     </tr>`,
   ).join("\n");
   return `<section>
-      <p class="menu-desc"><strong>Get paid to shop somebody else's x402 door.</strong> Walk a posted door with your own wallet, hand back the settlement transaction, and the store pays you what the door charged plus a finder's fee — in USDC, to a wallet you name, with no account anywhere.</p>
+      <p class="menu-desc"><strong>Two kinds of posted work.</strong> Contribute evidence about this store's tools and information without a store purchase, or mystery-shop another x402 door with your own wallet. Read each path's terms before starting.</p>
       <p class="menu-desc">${escapeHtml(BOARD_WHAT_THIS_IS)}</p>
     </section>
+    ${contributionListHtml(contributions)}
     <section>
       <h2>Open bounties</h2>
       ${
         open.length > 0
           ? `<table border="1" cellpadding="6">
-        <tr><th>bounty</th><th>door</th><th>the door's price</th><th>your reward</th><th>expires</th></tr>
+        <tr><th>bounty</th><th>door</th><th>the door's price</th><th>reward before costs</th><th>expires</th></tr>
         ${rows}
       </table>
       <p class="menu-meta">Week ${escapeHtml(board.week)}: $${board.spent_this_week_usd.toFixed(2)} of the $${board.weekly_budget_usd.toFixed(2)} weekly budget spent. Payouts are ${board.payouts_enabled ? "live" : "paused — the field wallet is not loaded, and the board says so rather than letting you walk for nothing"}.</p>`
-          : `<p class="menu-desc">Nothing posted right now. The board opens with the ISO week and the machine-readable copy is always at <a href="/api/bounties"><code>/api/bounties</code></a> — poll that, not this page.</p>`
+          : `<p class="menu-desc">Nothing posted right now. Read current listings and payout status at <a href="/api/bounties"><code>/api/bounties</code></a> — poll that, not this page.</p>`
       }
     </section>
+    ${earningAnswersHtml(base, false)}
+    ${withdrawn.length ? `<section>
+      <h2>Withdrawn listings</h2>
+      ${withdrawn.map((entry) => `<p><code>${escapeHtml(entry.bounty_id)}</code> — ${escapeHtml(entry.domain)}: ${escapeHtml(entry.withdrawal?.reason ?? "Contact the keeper before spending.")}
+      <a href="/corrections">Dated correction</a>.</p>`).join("\n")}
+    </section>` : ""}
     <section>
       <h2>Walking one</h2>
       <p class="menu-desc"><strong>1. Pay the door yourself.</strong> Your wallet, your gas, the door's own terms. Check the bounty's price against what the door quotes you before you commit — the posted price is what this store saw when it opened the bounty.</p>
@@ -391,15 +410,6 @@ function bountyBoardJsonLd(base: string): string {
     description: BOARD_WHAT_THIS_IS,
     url: `${base}/bounties`,
     inLanguage: "en",
-    estimatedCost: {
-      "@type": "MonetaryAmount",
-      // ISO code for the validator (JSONLD_PRICE_CURRENCY); the payouts
-      // really are USDC and the description says so.
-      currency: JSONLD_PRICE_CURRENCY,
-      value: 0,
-      description:
-        "The door's own price, refunded in full on a verified claim, plus a finder's fee.",
-    },
     supply: [
       { "@type": "HowToSupply", name: "A wallet holding USDC on Base" },
       { "@type": "HowToSupply", name: "An x402 door posted on the board" },
@@ -430,7 +440,11 @@ function bountyBoardJsonLd(base: string): string {
 
 bountyRoutes.get("/bounties", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const board = await bountyBoard(c.env);
+  c.header("Cache-Control", "no-store");
+  const [board, contributions] = await Promise.all([
+    bountyBoard(c.env),
+    contributionBoard(c.env, c.req.query("contribution_cursor")).catch(() => null),
+  ]);
   /*
    * Hoisted out of the c.json() call so the markdown twin renders the
    * same object the JSON serves. /api/bounties keeps its own shape
@@ -439,14 +453,15 @@ bountyRoutes.get("/bounties", async (c) => {
    */
   const payload = {
     ...boardWords(base),
+    contribution_list: contributions ?? {unavailable: true, error: CONTRIBUTION_LIST_UNAVAILABLE},
     board: `${base}/api/bounties`,
     what_the_walks_show: crowdFindings(board.bounties),
     ...board,
   };
   const description =
-    "Get paid to shop somebody else's x402 door: walk a posted endpoint with your own wallet, submit the settlement transaction, and the store returns the door's price plus a finder's fee as a signed EIP-3009 authorization you redeem yourself. No account, no signup.";
+    "Find posted contribution work with no store purchase required, or paid x402 mystery shopping. Read the reward, costs, acceptance criteria and current availability before starting.";
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
-    return jsonDocumentMarkdownResponse({
+    const response = jsonDocumentMarkdownResponse({
       base,
       path: "/bounties",
       title: "The Bounty Board",
@@ -454,6 +469,8 @@ bountyRoutes.get("/bounties", async (c) => {
       dataUrl: `${base}/api/bounties`,
       document: payload as unknown as Record<string, unknown>,
     });
+    response.headers.set("Cache-Control", "no-store");
+    return response;
   }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
@@ -463,7 +480,7 @@ bountyRoutes.get("/bounties", async (c) => {
       title: "The Bounty Board",
       description,
       path: "/bounties",
-      bodyHtml: boardHtml(base, board, crowdFindings(board.bounties)),
+      bodyHtml: boardHtml(base, board, crowdFindings(board.bounties), contributions),
     }),
   );
 });
@@ -656,6 +673,10 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
     return c.json(
       {
         ...result,
+        ...contributionCompletion(c.env.STORE_BASE_URL, {
+          task_id: result.bounty_id, kind: "bounty", reward_usd: result.reward_usd,
+          what_was_verified: result.what_was_verified, what_was_not: result.what_was_not,
+        }),
         spend_it_here: walkerOffer(c.env.STORE_BASE_URL),
         ...(hunter ? { pressing: pressingSummary(c.env.STORE_BASE_URL, hunter.card) } : {}),
         ...(cleared.length > 0 ? { conditions_cleared: cleared.map((burn) => ({ card_id: burn.burn.card_id, key: burn.burn.key, cleared_by: burn.burn.cleared_by })) } : {}),

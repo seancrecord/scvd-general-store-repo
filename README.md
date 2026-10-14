@@ -1,5 +1,9 @@
 # scvd.store
 
+## Personal-agent connections
+
+Hermes discovers the skills at `https://scvd.store/.well-known/skills/index.json`. [Connection and no-spend rehearsal guidance](skills/scvd-personal-shopper/references/hosts.md) covers Hermes, OpenClaw, Skills CLI and chat sessions. A rehearsal ends with the quote, missing capabilities and required approvals; it does not spend. [Tested versus untested paths](docs/AGENT_ENTRY_2026-10.md).
+
 mcp-name: store.scvd/general-store
 
 [![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
@@ -79,6 +83,21 @@ index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
 [Find SCVD by protocol: x402, MPP, MCP, WebMCP, ERC-8004, A2A, OASF, skills and UCP](#on-other-peoples-records).
+
+## Buy with your personal agent
+
+[Copy the shopping prompt](https://scvd.store/#buy-with-agent), or install the
+[personal shopper skill](skills/scvd-personal-shopper/SKILL.md):
+
+```sh
+npx skills add seancrecord/scvd-general-store-repo --skill scvd-personal-shopper
+```
+
+Your agent reads the current menu, shows the price, helps with a compatible
+wallet if needed, and returns the artifact and verified receipt. Reading and
+quotes are free. Funding and each purchase need your approval. Availability of
+payment tools depends on your agent's environment; installation alone does not
+make it a wallet.
 
 ## The doors, by task
 
@@ -200,6 +219,10 @@ What people arrive here to do, and where each door is:
   verified facts alone and never from what you wrote; defects are
   wanted and deliberately not priced. Its weekly budget is kept
   separate from the bounty board's. [FIELD_STUDY.md](FIELD_STUDY.md).
+- **Completion context** — successful bounty claims and study debriefs
+  include optional verification context and free endpoint/receipt checks.
+  Sharing and further purchases are not conditions of payment. Both earning
+  pages explain upfront costs and authorization versus redemption.
 - **Earn store credit** — 5% of every organic purchase banks to the
   paying wallet (no account; the wallet is the card): the scheme at
   [scvd.store/credit](https://scvd.store/credit), a single balance at
@@ -461,12 +484,12 @@ optional disclosure block (`model`, `client`, `operator`,
 in a private census and, when a prior certificate's payer matches the
 payment, marks a returning buyer; it never changes a price or reaches
 a certificate (`src/lib/disclosure.ts`). We speak x402 **v2** (the current
-standard — `@x402/core` ecosystem) with USDC and the Coinbase Developer Platform as facilitator. The live
+standard — `@x402/core` ecosystem) with USDC, Coinbase Developer Platform for direct transfers, and Circle Gateway for configured Arc batched payments. The live
 `/rails` and `/menu.json` responses list enabled checkout networks; the
 current `PAYMENT-REQUIRED` challenge supplies the terms to sign. A
 statement or audit can inspect chains that checkout does not accept.
 
-Checkout integration supports Base, Polygon, Arbitrum, World, and Solana;
+Checkout integration supports Base, Polygon, Arbitrum, World, Solana, and Arc through Circle Gateway;
 the enabled set is determined by recipient configuration, not this list.
 Statement readers support Base, Polygon, Ethereum, Arbitrum One, OP Mainnet
 (Optimism), Avalanche C-Chain, World, and Solana. Individual observation tools have their own
@@ -931,6 +954,11 @@ cover source and package installation.
 publishes the retained September 11 experiment, raw records, reproduction
 instructions and limits. Production checkpoint issuance is parked.
 
+Contribution work: [the no-purchase workflow](CONTRIBUTION_WORK.md) adds
+keeper-posted briefs, reservations and private review to the existing bounty
+board. Acceptance and keeper-reported payment are separate states. Editable
+first-batch drafts await explicit terms and posting; this change posts no work.
+[Implementation and release record](docs/EARNING_PATH_BUILD_2026-10.md).
 ### From a quick check to larger work
 
 [Choose an outcome in the operators’ room](https://scvd.store/operators): an
