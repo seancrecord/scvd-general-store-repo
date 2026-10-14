@@ -2010,7 +2010,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     page: "/menu",
     title: "The shelf, the prices, and the money that flows back",
     blurb:
-      "Every item with its price, fulfilment and house rules; the free shelf; the reading room; how prices are set and signed; and the ways money moves toward you rather than away.",
+      "Prices, fulfilment, house rules, free tools, reading, contribution work and shopping rewards.",
   },
   {
     slug: "trust",

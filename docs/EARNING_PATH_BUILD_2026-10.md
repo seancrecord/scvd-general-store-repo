@@ -318,3 +318,10 @@ Cloudflare's branch preview log confirms its upload cannot apply the pending
 Durable Object migration. This is a deployment-method limitation: the migration
 must run through the normal main `wrangler deploy` after the merge gate passes;
 no preview upload or production deployment was forced to work around it.
+
+Production-shape CI also caught the short guide at 27,042 characters, above
+its unchanged 27,000-character alarm. The same failure was reproduced locally
+before shortening only the changed menu-index description. The complete guide
+and its fingerprints are unchanged. All 26 production-guide, modular-guide and
+earning-path tests pass, as does typecheck. The corrected head still needs all
+four full CI shards and the merge gate; no budget or test limit was raised.
