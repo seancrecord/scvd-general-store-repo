@@ -49,7 +49,7 @@ export function prepareHandoff(root,selection,out,frozen=null) {
   const final=run.cell.host==='codex'?events.filter(e=>e.type==='item.completed'&&e.item?.type==='agent_message').at(-1)?.item.text:events.filter(e=>e.type==='result').at(-1)?.result;
   if(typeof final!=='string'||!final.trim())throw Error('No buyer final report to hand off.');
   const pinned=readRecipientVerifier(frozen?.plan);
-  const machinery=pinned??['evidence-bundle.js','x402-verify.js'].map(file=>({file,bytes:fs.readFileSync(new URL('../verifier/'+file,import.meta.url))}));
+  const machinery=[...(pinned??['evidence-bundle.js','x402-verify.js'].map(file=>({file,bytes:fs.readFileSync(new URL('../verifier/'+file,import.meta.url))}))),{file:'recipient-inspect.mjs',bytes:fs.readFileSync(new URL('./lib/recipient-inspect.mjs',import.meta.url))}];
   const manifest={...(frozen?.plan.evidence_workflow?{evidence_workflow:frozen.plan.evidence_workflow}:{}),...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),...(pinned?{verifier:frozen.plan.recipient.verifier}:{}),schema_version:1,scope:selection.scope,citation_policy:unclassified?'unclassified':'reviewer_declared',subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
     ...(observationPolicy?{observation_policy:observationPolicy}:{}),
     selection_sha256:hash(JSON.stringify(selection)),capture_state:run.retained_artifacts.state,capture_issues:run.retained_artifacts.issues??[],

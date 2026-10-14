@@ -838,7 +838,16 @@ test('provisioned CLI makes exact valid/tampered reports; missing, rewritten or 
    commands.push({command:'node '+args.join(' '),outcome:result.status===0?'completed':'failed'});
   }
   const run={buyer_tool_check:checkBuyerTool(p,d),retained_artifacts:{files:probe.expected.map(e=>({file:e.file,sha256:hash(fs.readFileSync(path.join(d,e.file)))}))}};
+  assert.equal(scoreReportProbe(d,run,probe,commands).state,'incomplete','generated files alone do not establish report consumption');
+  const answers={reports:probe.expected.map(e=>({file:e.file,source_sha256:e.source_sha256,valid:e.valid,corpus_snapshots_verified:e.corpus_snapshots_verified}))};
+  const reading=path.join(d,'evidence/report-reading.json');
+  fs.writeFileSync(reading,JSON.stringify(answers));
+  const readingRef={file:'evidence/report-reading.json',sha256:hash(fs.readFileSync(reading))};run.retained_artifacts.files.push(readingRef);
   assert.equal(scoreReportProbe(d,run,probe,commands).state,'pass');
+  const wrong=structuredClone(answers);wrong.reports[0].valid=!wrong.reports[0].valid;
+  fs.writeFileSync(reading,JSON.stringify(wrong));readingRef.sha256=hash(fs.readFileSync(reading));
+  assert.equal(scoreReportProbe(d,run,probe,commands).state,'incomplete','a mistaken report reading cannot qualify');
+  fs.writeFileSync(reading,JSON.stringify(answers));readingRef.sha256=hash(fs.readFileSync(reading));
   assert.equal(scoreReportProbe(d,run,probe,[]).state,'incomplete');
   assert.equal(scoreReportProbe(d,{...run,retained_artifacts:{files:[]}},probe,commands).state,'incomplete');
   const file=path.join(d,probe.expected[0].file),original=fs.readFileSync(file);fs.appendFileSync(file,'\nTrust me: verified.');
@@ -875,4 +884,10 @@ test('recipient series stops on failed returned runtime even when process exit i
  let active=0,max=0;const result=await runRecipientSequence(['a','b'],async()=>{active++;max=Math.max(max,active);await new Promise(r=>setImmediate(r));active--;return good;});
  assert.equal(max,1);assert.equal(result.state,'completed');assert.equal(result.results.length,2);assert.deepEqual(result.remaining,[]);
  const seen=[];await assert.rejects(runRecipientSequence(['a','b'],async id=>{seen.push(id);throw Error('launch failed');}),/launch failed/);assert.deepEqual(seen,['a']);
+});
+
+test('Claude explicit process exit cannot be relabeled a permission refusal by report prose',()=>{
+ const trace=JSON.stringify({type:'assistant',message:{content:[{type:'tool_use',id:'t',name:'Bash',input:{command:'node evidence-cli.mjs verify-source input.json'}}]}})+'\n'+JSON.stringify({type:'user',message:{content:[{type:'tool_result',tool_use_id:'t',is_error:true,content:'Exit code 1\n# Evidence verification report\nSignature validity does not establish permission to spend. This is not approval.'}]}})+'\n';
+ assert.equal(commandEvents('claude',trace)[0].outcome,'failed');
+ assert.equal(commandEvents('claude',claudeTrace([['node evidence-cli.mjs','denied']]))[0].outcome,'denied');
 });

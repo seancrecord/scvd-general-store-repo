@@ -555,12 +555,22 @@ scvd-evidence verify-source ./evidence/original.json \
   --format markdown --report-out ./evidence/verification-report.md
 ```
 
-This saves a bounded report and prints a compact receipt. Existing files are
+This saves a bounded report and prints a compact receipt. The source candidate
+also supports `--report-stdout`: add it to display the exact saved Markdown in
+that same invocation. Check installed `--help` before using it; source support
+does not establish npm publication. Read the displayed findings before interpreting
+the evidence. Without that option, the receipt output remains unchanged. Existing files are
 never overwritten. The report keeps the input-file hash and signed-message
 hash distinct, counts the snapshots verified by this invocation, includes exact
 signed-subject rows and omissions, and labels missing observation dates unknown.
 A snapshot sequence is not a count of observations or authenticated weeks.
 The report is a derived reading; keep the original and separate issuer-key record.
+
+The source candidate places known advisory observations and remaining unknowns
+before the Markdown evidence block. This is reader commentary derived from
+verified exact-subject rows, not new signed claims. A missing signed-offer
+field in the inspected placements does not establish its absence elsewhere.
+Unknown or omitted codes remain unresolved; signed rows and JSON stay unchanged.
 
 Unreleased source also adds `advisory_readings` beside retained signed-subject
 rows in JSON and Markdown. Each interpreted code carries `observed` and
