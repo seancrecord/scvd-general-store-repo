@@ -26,6 +26,14 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Contribution round — one press, no local rehearsal (October 14).**
+  The prepared round is available from `/admin/bounties/contributions` after
+  this change deploys: **Post first round — $10 maximum**. Four briefs at
+  $2.50 each, one slot each, closing October 21 at 23:59 UTC; review and payment
+  periods are three days each. Same field wallet, existing program caps unchanged.
+  Repeating the press recovers the same round. Posting creates commitments;
+  acceptance and payment remain separate. [Full terms](CONTRIBUTION_WORK.md).
+
 - **CLOSED FOR NOW October 13 — agent-entry qualifications.** Keeper skipped
   native-host tests, paid purchase/receipt verification, wallet onboarding and
   the authenticated dashboard visual check. No further press is waiting on

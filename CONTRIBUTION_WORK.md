@@ -19,9 +19,24 @@ multiplied by slots. No money is placed in escrow or verified as funded.
 ## The keeper's workflow
 
 Open `/admin/bounties/contributions`, also linked from the existing money-out
-desk. The desk starts with four editable first-batch drafts and also offers general
-templates. First-batch rewards and dates are blank until the keeper sets them;
-reading a draft creates no task. Package metadata supplies the version being
+desk. The desk starts with **Post first round — $10 maximum**: one press publishes
+four fixed briefs at $2.50 each, one slot each, closing October 21, 2026 at
+23:59 UTC. Review is due within three days of submission and payment within
+three days of acceptance, from the same field wallet as existing rewards.
+The dated manifest is `src/store/contribution-launch.json`; its package target
+is pinned to the tested release commit. No fields need filling and no local
+browser rehearsal is required. The existing admin sign-in still protects the press.
+
+The press is not a wallet transfer, funding check or recurring allowance.
+Shopping and study caps remain unchanged. Retries reuse the exact four ids,
+repair interrupted indexing, preserve closed work and never reopen or extend
+terms. Conflicting terms and new postings after expiry are refused. A partial
+failure shows a retry button; some briefs may already be live, so retry this
+same round instead of making replacement ids. A merge/deploy alone posts nothing.
+
+Editable first-batch drafts and general templates remain below the fixed round
+for separately chosen work. Their financial fields stay blank; reading a draft
+creates no task. Package metadata supplies the version being
 tested. The general templates cover:
 
 - AURA: attempt a named free task from a fresh context and retain the
