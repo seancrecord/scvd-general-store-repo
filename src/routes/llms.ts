@@ -1,6 +1,12 @@
 import { contributionGuide } from "@/store/contribution-tasks";
 import { agentJobAnswers } from "@/store/agent-jobs";
+import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
+import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/store/seller-declarations";
+import { AURA_WALK_WHY } from "@/store/aura-walk";
+import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
+import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
+import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
 import { nativeCheckoutGuide, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { ucpGuideParagraph } from "@/lib/ucp/launch";
 import { A2A_CURRENT_VERSION, A2A_LEGACY_VERSION } from "@/lib/a2a-version";
@@ -50,7 +56,7 @@ import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
 import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
-import { askedForBlock } from "@/store/copy/asked-for";
+import { askedForBlock, writingDiscoveryText, WRITING_HEADING, WRITING_DISCLOSURE, WRITTEN_ABOUT, writerRecognitionText } from "@/store/copy/asked-for";
 import {
   CLI_INSTALL,
   CLI_PACKAGE,
@@ -150,7 +156,7 @@ ${base}/agents.md is the same store in the agents.md convention.
 
 Reach for this store when you need one of these:
 
-- **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/v2). POST a URL — or call the preflight_endpoint tool if you are connected to our MCP server — and get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
+- **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}). POST a URL — or call the preflight_endpoint tool if you are connected to our MCP server — and get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
 - **When you hold a signed offer or receipt and cannot tell if it is good** — [free conformance desk](${base}/api/conformance/v1), or the check_conformance MCP tool. Any issuer's artifact, including our competitors'.
 - **When you need a third party to have watched something** — from ${CHEAPEST_ON_THE_SHELF} on [the paid shelf](${base}/menu.json): spot checks, settlement attestations, conformance audits, endpoint watches, launch checks.
 - **When you need to verify something this store signed** — [verify](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) (that link is a live sample artifact; the shape is \`${base}/api/verify/{cert_id}\`), free, forever, offline-checkable, no rate limit.
@@ -165,14 +171,18 @@ store" further down.
 
 ## Words people use for what this store does
 
-${askedForBlock()}
+${askedForBlock().replace(writingDiscoveryText(), `${WRITING_HEADING}. ${WRITING_DISCLOSURE} ${WRITTEN_ABOUT.map((piece) => `[${piece.where}](${piece.url})`).join("; ")}. ${writerRecognitionText()} Authors, dates and evidence: ${base}/#writing-recognition.`)}
+
+## ${WRITING_HEADING}
+
+${writingDiscoveryText()}
 
 ## Start here, by what you came to do
 
 If you want to do one thing and leave, these are the calls. Nothing
 below costs money unless it says so.
 
-- **Check an x402 door before paying it** — \`POST ${base}/api/preflight/v2\`. Free. Shape and whether its payTo can be credited; never a promise the goods arrive.
+- **Check an x402 door before paying it** — \`POST ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}\`. Free. Shape and whether its payTo can be credited; never a promise the goods arrive.
 - **Check a signed offer or receipt somebody handed you** — \`POST ${base}/api/conformance/v1\`. Free, on anyone's artifacts including our competitors' and our own.
 - **Check something WE signed, without trusting us** — \`GET ${base}/api/verify/{id}\`. Free forever, the exact bytes, verifiable offline.
 - **See what the x402 market actually looks like** — [${base}/registry](${base}/registry) for what the listings are worth, [${base}/inflows](${base}/inflows) for what arrived at the addresses they advertise. Free, JSON on the same URLs.
@@ -188,7 +198,9 @@ find out.
 
 ## Every door, in one list
 
-Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [calling-card setup](${base}/bot-auth) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
+Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): ${PREFLIGHT_VERSIONS.map((version) => `[preflight ${version}](${base}/api/preflight/${version})`).join(" · ")} · [conformance desk](${base}/api/conformance/v1) · [the look: what we hold about a door](${base}/api/look/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [calling-card setup](${base}/bot-auth) · [the practice till](${base}/try) · [preflight a batch of doors](${base}/api/preflight/batch) · [ask this store a question](${base}/ask)
+
+Personal-agent shopping: [skill](${base}${PERSONAL_SHOPPER.path}) · [paste prompt](${base}/#buy-with-agent).
 
 How this works: [how it works](${base}/how-it-works) · [how-it-works.json](${base}/how-it-works.json)
 
@@ -202,9 +214,6 @@ For marketplaces reselling the shelf: [the trade counter](${base}/trade) · [tra
 
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/.well-known/scvd-signing-key) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
-Every one of those is described in its own section below. This list is
-the map; the sections are the territory.
-
 Well well. Come in then.
 
 We're a general store in ${STORE_METADATA.location}, where you're
@@ -214,6 +223,14 @@ survives a context reset, out-of-band checks, and the labor of a
 named human. Your operator can read every receipt.
 
 ## At the counter
+
+${EVIDENCE_PILOT.name}: ${base}${EVIDENCE_PILOT.path}.
+${PILOT_PROPOSITION} ${PILOT_MONEY} ${PILOT_FREE}
+
+Seller declarations: ${base}/seller-declarations.
+${DECLARATION_PROPOSITION} ${DECLARATION_FREE} ${DECLARATION_MONEY}
+GET ${base}/api/seller-declaration explains proof, submission and dated comparisons.
+The weekly changes feed carries declaration_mismatches with declarations_compared; later declarations never rewrite an earlier week.
 
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
 \`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
@@ -260,21 +277,15 @@ the single most common "stuck repeating 402"). Free, one probe, one
 moment — a shape check, never an uptime claim. Building an x402
 seller? Run it before you list anywhere.
 
-TWO BATTERIES ARE SERVED, AND THAT IS DELIBERATE.
-${base}/api/preflight/v2 folds one more check into the verdict: on
-Solana, whether the payTo actually owns a USDC token account and can
-therefore be credited at all. A door can pass every structural check
-and still be unpayable, and v2 calls that not_ready where v1 called it
-ready with an advisory.
+VERSIONED BATTERIES KEEP OLDER READINGS COMPARABLE.
+Current: ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}. It adds these
+verdict checks to the frozen v1 core: ${BATTERY_ADDS[PREFLIGHT_VERSION_NEXT].join(", ")}.
+Discovery/schema and offer/challenge contradictions prevent ready when observed;
+optional extensions remain optional. Schema checking is bounded and offer
+signatures are not verified. Resource-description absence stays advisory.
 
-v1 has NOT changed and will not. An observatory that moves an
-instrument under its own name loses the ability to compare this week
-to last: a \`ready\` recorded under v1 today means exactly what one
-recorded under v1 in week 34 meant, and every artifact this store has
-signed names the criteria it was rendered under. So both run. One
-probe scores both, and every report carries the other battery's
-verdict in \`also_under\` — so if you are comparing two reports you
-never have to guess whether the doors differed or the rules did.
+Served versions: ${PREFLIGHT_VERSIONS.join(", ")}. A single probe supplies the
+comparison in \`also_under\`. Old signed reports retain their bytes and criteria.
 
 The unversioned ${base}/api/preflight keeps answering under v1, so an
 existing caller's verdicts stay comparable to the ones it already
@@ -361,12 +372,15 @@ answered now the way the last signed round saw it. Never a score, never
 a threshold: two kinds of fact with their denominators, and the line is
 yours to draw.
 
-For anyone who runs a door: ${base}/operators is the shelf from your
-side, in the order a launch happens — before you launch, the week you
-launch, standing, and when something goes wrong — with the free
-instrument named first at each moment and every price read off the
-shelf when the page is served. A reading order, never a ranking, and
-nothing there certifies anyone.
+Free seller declarations and dated address comparisons: ${base}/seller-declarations.
+For a customer or internal review: ${base}${EVIDENCE_PILOT.path}.
+
+Agent shopping audit (The Aura Walk): ${AURA_WALK_WHY}
+Scope, current price, delivery window and free first step: ${base}/operators#shopping-audit.
+Larger customer-review reports and scoped platform work: ${base}/operators.
+
+Compare free checks, watches, review reports and custom work: ${base}/operators.
+Each path names its price, delivery and limits.
 
 The same weeks by calendar month, for a citation: ${base}/corpus/month
 — doors named, probed, payable and not at the month's closing week,
@@ -477,14 +491,13 @@ ${menu}
 Machine-readable catalog: ${base}/menu.json (markdown if your Accept
 header prefers text/markdown; one item at \`${base}/menu/{item_id}\`)
 Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
+Personal-agent shopping, wallet setup and approved purchases: ${base}${PERSONAL_SHOPPER.path}
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
-Skills discovery index (Agent Skills Discovery RFC v0.2.0: including the
-focused x402 buyer verification skill,
-each with the SHA-256 digest of the file it points at):
-${base}/.well-known/agent-skills/index.json — the digested copies at
-\`${base}/.well-known/agent-skills/{name}/SKILL.md\`
+Skills with file lists (Hermes / Skills CLI): ${base}/.well-known/skills/index.json.
+Digest-based RFC v0.2.0 index: ${base}/.well-known/agent-skills/index.json.
+Both serve the same skills and supporting files; digested artifacts: \`${base}/.well-known/agent-skills/{name}/SKILL.md\`.
 Canonical ERC-8004 identity and endpoint-domain acknowledgment:
 ${base}/.well-known/agent-registration.json
 Public discovery records by protocol, with observation dates and limits:
@@ -775,7 +788,7 @@ with a badge at \`${base}/badges/{patron_number}.svg\`, verify anything at
 ${base}/.well-known/scvd-signing-key.
 
 WHAT THE CERTIFICATE BINDS, inside the signed bytes rather than beside
-them: cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
+them (Gateway certificates instead sign accepted_usdc and gateway_payment at issue, with later batch state on private purchase status): cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
 not the tip), asset, network, payer, and settlement_tx. The payer is
 the paying wallet address — chain-verifiable by anyone, unlike the
 optional name, which is whatever the buyer chose. settlement_tx is the
@@ -1236,9 +1249,7 @@ steps by which a look at somebody else's door becomes evidence a
 stranger can check without trusting us — the knock, the reading, the
 signature, the hash chain, the Bitcoin anchor — and every step names
 the thing you can go and verify yourself. It also says, in the place
-a buyer actually meets it, what happens to money here: the store
-delivers first and settles after, so a delivery that fails takes
-nothing and there is no refund queue to join. Prices and cadence in
+a buyer actually meets it, what happens to money here. ${DELIVERY_ORDER} Prices and cadence in
 it are read off the live shelf, never typed. It is free, needs no
 key, and the human page is at ${base}/how-it-works.
 
@@ -1401,14 +1412,16 @@ said so: ${base}/fixtures.json, then \`${base}/fixtures/{set}/{name}.json\`.
 
 The second wire, read only (since 2026-09-04): a door that speaks the
 Machine Payments Protocol answers 402 with WWW-Authenticate: Payment
-and no PAYMENT-REQUIRED header. The free preflight reads that from the
-same one GET: protocols_spoken says which wires the door speaks (x402,
+alongside or without a PAYMENT-REQUIRED header. The free preflight reads the
+same captured response: protocols_spoken says which wires the door speaks (x402,
 mpp, both, neither), and the mpp block carries the MPP battery's own
 named checks and advisories. The verdict keeps meaning x402-ready,
 permanently — a door on the other wire reads not_ready there and that
 is a fact about the wire, never a defect. ${UNPAID_READ_NOTE}
 Rehearse the shape at ${base}/api/practice/mpp-shape, and a tipping
 door's challenge list at ${base}/api/practice/mpp-tiers.
+
+${ENDPOINT_INSPECTION_GUIDANCE}
 
 Every class also carries both halves of the remediation: what the
 operator does to clear it and what the buyer does when a door shows
@@ -1973,7 +1986,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     page: "/developers",
     title: "Building against this store",
     blurb:
-      "The x402 purchase flow end to end, practising against a live till, what breaks a first client, the retry-safety mechanisms, the CLI, and the standards this store implements so you can check it without asking us.",
+      "Payment instructions, practice, recovery, the CLI and supported standards. Capability limits and deliberate refusals are in the linked accountability guide.",
   },
   {
     slug: "conformance",
@@ -2003,9 +2016,9 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     slug: "trust",
     path: "/trust",
     page: "/trust",
-    title: "Accountability: corrections, keys, wind-down",
+    title: "Capabilities, limits and accountability",
     blurb:
-      "What happens when we get it wrong, what a lost or stolen key costs and the succession protocol for it, who owns what you bought, what we rest on, our own wallets, and what happens if the lights go off.",
+      "Capability boundaries and deliberate refusals; corrections, keys and succession; ownership, dependencies, our wallets and winding down.",
   },
 ];
 
@@ -2018,12 +2031,14 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
  * store with a hole in it and nothing says so.
  */
 const SECTION_AREAS: Record<string, string> = {
+  [WRITING_HEADING]: "trust",
   "At the counter": "menu",
   "Practicing on us": "developers",
   "How paying works here": "developers",
   "Standards, so you can check us without asking us": "developers",
-  // P12: the declined positions file where a scorecard reader looks.
-  "What we don't do, on purpose": "developers",
+  // Capability boundaries belong with accountability. Keeping this section
+  // whole there leaves payment instructions readable with every rail enabled.
+  "What we don't do, on purpose": "trust",
   "The obstacle course — rehearse failure before it costs you": "developers",
   "Visiting properly": "developers",
   "Privacy, structurally": "developers",
@@ -2190,7 +2205,7 @@ ${others}
  * The preamble, the two sections a reader needs before anything else,
  * a map of the area files, and nothing else. Under our
  * local 30,000-character reading budget with room to spare, and every
- * sentence in it is the same sentence it was yesterday.
+ * area section retains its full prose. Writing references link to their evidence.
  */
 export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig): string {
   const { preamble, sections } = splitGuide(storeGuideText(base, paymentConfig));
@@ -2209,11 +2224,8 @@ export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig
 
 ${kept.map((section) => section.text).join("")}## The rest of this file, by area
 
-This is the index. The store's full prose is long on purpose — the
-evidence is the product — so it is served in one document at
-${base}/llms-full.txt and split by area below. Nothing here is a
-summary of what is over there; each file carries the sections
-themselves.
+The complete guide is at ${base}/llms-full.txt.
+The area files below carry its full sections, not summaries.
 
 ${map}
 
@@ -2285,7 +2297,7 @@ for (const area of LLMS_AREAS) {
 for (const alias of ["/docs", "/api"] as const) {
   llmsRoutes.get(`${alias}/llms.txt`, (c) => {
     const base = c.env.STORE_BASE_URL;
-    const body = llmsForArea(base, "developers");
+    const body = llmsForArea(base, "developers", c.env);
     return c.text(body ?? "", body ? 200 : 404, {
       Link: `<${base}/developers/llms.txt>; rel="canonical"`,
     });

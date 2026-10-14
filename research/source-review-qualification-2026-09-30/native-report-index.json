@@ -1,0 +1,26 @@
+[
+  {
+    "file": "codex-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/codex/events.jsonl",
+    "source_sha256": "d4fcab022af06aa5bffa09af251a16df64ea6ed3c848d875ef39a28138d24b55",
+    "final_line": 30,
+    "final_text_sha256": "3dfe143fe5acc9a26c1cc994a89ab52cace374b1d4ab02b12db4cda25dea5bfb"
+  },
+  {
+    "file": "claude-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/claude/events.jsonl",
+    "source_sha256": "bb14e7cdb2fa5e0892554d15c22299584d273b8e8e2fb8c11de1b999e2155512",
+    "final_line": 147,
+    "final_text_sha256": "d5057f6b7170cc1a29b4c886ba8f9469f19356ef5b9f7c09ab51c5e71540bbf2"
+  },
+  {
+    "file": "recipient-qualification.md",
+    "completed_final": true,
+    "source_trace": "qualification/recipient/events.jsonl",
+    "source_sha256": "0bddba776c800f4dc65364400b3cea8e3f01fda513e3b76ab6361536c99fb6e9",
+    "final_line": 25,
+    "final_text_sha256": "5ee8a772bde3be3c062fefc9734409864124b32358020025511817dd014e6fe0"
+  }
+]

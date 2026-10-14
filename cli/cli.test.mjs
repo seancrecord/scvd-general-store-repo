@@ -612,3 +612,147 @@ test("compact corpus rejects unreadable successful pages and does not apply pagi
   assert.equal(result.code, 2);
   assert.equal(calls, 0);
 });
+
+/**
+ * scvd init — THE ONE COMMAND THAT WRITES, tested in a home and a
+ * project that are both temporary directories, so nothing here can
+ * touch the machine's real host configuration. Every test asserts the
+ * negative space too: what was NOT written, and that the server was
+ * never called (init makes no network request at all).
+ */
+import { mkdtempSync, mkdirSync as mkdirSyncT, writeFileSync as writeFileSyncT, existsSync as existsSyncT, readFileSync as readFileSyncT, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+function tempDirs(hosts = []) {
+  const root = mkdtempSync(join(tmpdir(), "scvd-init-"));
+  const home = join(root, "home");
+  const project = join(root, "project");
+  mkdirSyncT(home); mkdirSyncT(project);
+  for (const host of hosts) mkdirSyncT(join(home, host), { recursive: true });
+  return { root, home, project };
+}
+
+async function runInit(args, { home, project }) {
+  return new Promise((resolve) => {
+    execFile(
+      process.execPath,
+      [CLI, "--base", "https://store.example", "init", ...args],
+      { cwd: project, env: { ...process.env, HOME: home } },
+      (error, stdout, stderr) => resolve({ code: error?.code ?? 0, stdout, stderr }),
+    );
+  });
+}
+
+test("init --dry-run names the files and the entry, and writes nothing", async () => {
+  const dirs = tempDirs([".claude", ".cursor"]);
+  try {
+    const result = await runInit(["--dry-run"], dirs);
+    assert.equal(result.code, 0);
+    assert.match(result.stdout, /found: Claude Code, Cursor/);
+    assert.match(result.stdout, /\.mcp\.json: add scvd-store → https:\/\/store\.example\/mcp/);
+    assert.match(result.stdout, /\.cursor\/mcp\.json: add scvd-store → https:\/\/store\.example\/mcp/);
+    assert.match(result.stdout, /Dry run: nothing written/);
+    assert.equal(existsSyncT(join(dirs.project, ".mcp.json")), false);
+    assert.equal(existsSyncT(join(dirs.project, ".cursor")), false);
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init --yes writes both project files in each host's shape and keeps a neighbour's entry", async () => {
+  const dirs = tempDirs([".claude", ".cursor"]);
+  try {
+    writeFileSyncT(join(dirs.project, ".mcp.json"), JSON.stringify({ mcpServers: { other: { command: "npx", args: ["-y", "other"] } }, extra: true }, null, 2));
+    const result = await runInit(["--yes"], dirs);
+    assert.equal(result.code, 0, result.stderr);
+    assert.match(result.stdout, /wrote \.mcp\.json/);
+    assert.match(result.stdout, /wrote \.cursor\/mcp\.json/);
+    const claude = JSON.parse(readFileSyncT(join(dirs.project, ".mcp.json"), "utf8"));
+    assert.deepEqual(claude.mcpServers["scvd-store"], { type: "http", url: "https://store.example/mcp" });
+    assert.deepEqual(claude.mcpServers.other, { command: "npx", args: ["-y", "other"] });
+    assert.equal(claude.extra, true);
+    const cursor = JSON.parse(readFileSyncT(join(dirs.project, ".cursor", "mcp.json"), "utf8"));
+    assert.deepEqual(cursor, { mcpServers: { "scvd-store": { url: "https://store.example/mcp" } } });
+    // Nothing outside the project.
+    assert.deepEqual(readdirSync(dirs.home).sort(), [".claude", ".cursor"]);
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init never overwrites a same-named entry that differs: exit 1, bytes untouched", async () => {
+  const dirs = tempDirs([".claude"]);
+  try {
+    const before = JSON.stringify({ mcpServers: { "scvd-store": { type: "http", url: "https://somewhere.else/mcp" } } }, null, 2);
+    writeFileSyncT(join(dirs.project, ".mcp.json"), before);
+    const result = await runInit(["--yes"], dirs);
+    assert.equal(result.code, 1);
+    assert.match(result.stdout, /KEPT AS IS/);
+    assert.match(result.stdout, /somewhere\.else/);
+    assert.equal(readFileSyncT(join(dirs.project, ".mcp.json"), "utf8"), before);
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init reports an identical entry as already there and exits 0 without rewriting", async () => {
+  const dirs = tempDirs([".claude"]);
+  try {
+    const before = `${JSON.stringify({ mcpServers: { "scvd-store": { type: "http", url: "https://store.example/mcp" } } })}\n`;
+    writeFileSyncT(join(dirs.project, ".mcp.json"), before);
+    const result = await runInit(["--yes"], dirs);
+    assert.equal(result.code, 0);
+    assert.match(result.stdout, /already there, unchanged/);
+    assert.equal(readFileSyncT(join(dirs.project, ".mcp.json"), "utf8"), before);
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init without a terminal and without --yes prints the plan, writes nothing, exits 2", async () => {
+  const dirs = tempDirs([".claude"]);
+  try {
+    const result = await runInit([], dirs);
+    assert.equal(result.code, 2);
+    assert.match(result.stdout, /Re-run with --yes to consent/);
+    assert.equal(existsSyncT(join(dirs.project, ".mcp.json")), false);
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init prints a Codex snippet and never writes under the home directory", async () => {
+  const dirs = tempDirs([".codex"]);
+  try {
+    const result = await runInit(["--yes"], dirs);
+    assert.equal(result.code, 0, result.stderr);
+    assert.match(result.stdout, /Codex: print only/);
+    assert.match(result.stdout, /\[mcp_servers\.scvd-store\]/);
+    assert.match(result.stdout, /url = "https:\/\/store\.example\/mcp"/);
+    assert.deepEqual(readdirSync(join(dirs.home, ".codex")), []);
+    assert.equal(existsSyncT(join(dirs.project, ".mcp.json")), false);
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init with no host found still offers the portable .mcp.json, and --verifier wires the free door", async () => {
+  const dirs = tempDirs([]);
+  try {
+    const result = await runInit(["--verifier", "--yes", "--json"], dirs);
+    assert.equal(result.code, 0, result.stderr);
+    const plan = JSON.parse(result.stdout);
+    assert.deepEqual(plan.found, []);
+    assert.equal(plan.server, "scvd-verifier");
+    assert.equal(plan.url, "https://store.example/mcp/verifier");
+    assert.equal(plan.written.length, 1);
+    const claude = JSON.parse(readFileSyncT(join(dirs.project, ".mcp.json"), "utf8"));
+    assert.deepEqual(claude.mcpServers["scvd-verifier"], { type: "http", url: "https://store.example/mcp/verifier" });
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init's flags belong to init, and init takes no positional argument", async () => {
+  const dirs = tempDirs([".claude"]);
+  try {
+    const stray = await run(["menu", "--yes"], () => ({ json: {} }));
+    assert.equal(stray.code, 2);
+    assert.match(stray.stderr, /belong to init/);
+    const positional = await runInit(["somewhere"], dirs);
+    assert.equal(positional.code, 2);
+  } finally { rmSync(dirs.root, { recursive: true, force: true }); }
+});
+
+test("init is in the help, beside the credential line that still holds", async () => {
+  const result = await run(["--help"], () => ({ json: {} }));
+  assert.match(result.stdout, /scvd init \[--dry-run\]/);
+  assert.match(result.stdout, /never asks\s*\n?for a credential|never asks for a credential/);
+});

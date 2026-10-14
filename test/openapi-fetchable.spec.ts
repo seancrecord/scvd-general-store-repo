@@ -57,8 +57,10 @@ describe("the contract is small enough to be read", () => {
     for (const [path, item] of Object.entries(paths)) {
       if (!path.startsWith("/api/buy/") || !item.get?.["x-payment"]) continue;
       const responses = item.get.responses as Record<string, { headers?: Record<string, unknown> }>;
+      expect(responses["402"]).toEqual({ $ref: "#/components/responses/PaymentRequired" });
+      const response = components.responses!.PaymentRequired as { headers: Record<string, unknown> };
       for (const name of ["PAYMENT-REQUIRED", "WWW-Authenticate"]) {
-        expect(responses["402"]?.headers?.[name], `${path}: ${name}`).toEqual({ $ref: `#/components/headers/${name}` });
+        expect(response.headers[name], `${path}: ${name}`).toEqual({ $ref: `#/components/headers/${name}` });
       }
     }
   });
@@ -201,7 +203,11 @@ describe("the contract says how to understand and how to pay", () => {
         }
 
         const responses = op["responses"] as Record<string, Record<string, unknown>>;
-        const challenge = responses?.["402"];
+        let challenge = responses?.["402"];
+        if (typeof challenge?.$ref === "string") {
+          expect(challenge.$ref.startsWith("#/components/responses/")).toBe(true);
+          challenge = (json.components as { responses: Record<string, Record<string, unknown>> }).responses[challenge.$ref.split("/").at(-1)!];
+        }
         if (!challenge) {
           problems.push(`${where}: paid, and declares no 402`);
           continue;
@@ -255,7 +261,22 @@ describe("the contract says how to understand and how to pay", () => {
        * money to find out.
        */
       for (const [name, property] of Object.entries(properties)) {
-        if (!property["description"]) {
+        /*
+         * A property may be a reference into components (the cited
+         * artifact, 2026-10-01, by the disclosure block's byte
+         * arithmetic): the description then lives once, on the
+         * component, and resolving it is what a reader does. A
+         * dangling reference is its own failure here, named.
+         */
+        let described: Record<string, unknown> | undefined = property;
+        const ref = property["$ref"];
+        if (typeof ref === "string") {
+          let target: unknown = json;
+          for (const part of ref.slice(2).split("/")) target = (target as Record<string, unknown> | undefined)?.[part];
+          described = target as Record<string, unknown> | undefined;
+          if (!described) problems.push(`${path}: ${name} references ${ref}, which the document does not define`);
+        }
+        if (!described?.["description"]) {
           problems.push(`${path}: ${name} has no description`);
         }
       }

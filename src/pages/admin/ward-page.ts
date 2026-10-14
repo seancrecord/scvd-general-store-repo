@@ -14,10 +14,9 @@ import type { Heartbeat } from "@/services/ward-heartbeat";
  * fresh outreach leads; newly-fixed are outreach that worked or the
  * market healing; flappers are the Night Watch's natural prospects.
  *
- * PRIVATE ON PURPOSE. Per-host verdicts about other operators stay
- * behind the keeper's login (the consent ruling: telling an operator
- * privately is help, naming them publicly is a verdict nobody asked
- * for). Anything that publishes from here does so by his hand.
+ * Operational controls stay behind the keeper's login. Signed corpus
+ * snapshots publish the retained per-host observations separately;
+ * this desk's current reading is not itself a signed corpus record.
  */
 /**
  * THE TWO BLOCKS THIS PAGE WAS MISSING (2026-09-04). The round's own
@@ -86,7 +85,7 @@ function instrumentBlock(
 }
 
 const CANNOT_SEE = [
-  "One unpaid GET per host per week. Nothing here rests on a payment, so credentials, delivery and receipts were not observed on any door.",
+  "Unpaid probes of listed doors. The reader uses the declared method when available; otherwise it starts with GET and allows one fallback after a method refusal. Credentials, delivery and receipts were not observed.",
   "A host is on this list because a directory named it. A door nobody lists is a door this round cannot see, and the round says nothing about how many of those there are.",
   "Verdicts are this reader's reading of one response. A door that was down for the minute we knocked reads the same as a door that is broken.",
   "Volume claims are the counting service's, not ours, over their window. They are a claim for population, never for importance.",
@@ -101,7 +100,7 @@ export function renderWardPage(
 ): string {
   const runButton = `<form method="post" action="/admin/ward/run" style="margin:0.5em 0">
     <button type="submit">Walk the ward now</button>
-    <span style="opacity:0.7"> — one GET per listed host (~a minute); the page reloads with the fresh round, and a hand-run round mints its corpus entry too. Since 2026-09-18 that entry does not take the week's slot: the Sunday round appends its own entry after it and becomes the week's record. Before that, a weekday hand-run kept the Sunday round out of the chain.</span>
+    <span style="opacity:0.7"> — unpaid probes of the listed doors; the page reloads with the fresh round, and a hand-run round mints its corpus entry too. Since 2026-09-18 that entry does not take the week's slot: the Sunday round appends its own entry after it and becomes the week's record. Before that, a weekday hand-run kept the Sunday round out of the chain.</span>
   </form>
   <form method="post" action="/admin/corpus/freeze" style="margin:0.5em 0">
     <button type="submit">Freeze the latest round into the corpus</button>
@@ -259,9 +258,10 @@ export function renderWardPage(
         <thead><tr><th>Host</th><th>x402 verdict</th><th>Protocols observed</th><th>Failed checks</th><th>Advisories</th><th>Volume claim</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      <p>One GET per host per week, same as any indexer. Verdicts here
-      are private readings for outreach, never published as rows —
-      aggregate only, by hand, per the consent ruling.</p>
+      <p>Unpaid observations from the saved round. Verdicts here
+      are the current operational reading. Signed snapshots, including
+      per-host observations, are published in <a href="/corpus">the corpus</a>;
+      follow a dated snapshot for the retained evidence.</p>
     </section>
     ${cannotSeeHtml(CANNOT_SEE)}`,
     [],

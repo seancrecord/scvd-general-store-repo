@@ -33,10 +33,11 @@ Bazaar-discoverable resources, an MCP server with in-band payment
 whose free instruments render as evidence cards in hosts that
 support MCP Apps, a WebMCP surface with free instruments and purchase
 quotes plus explicit submission of buyer-signed payments, and a ClawHub
-skill. The store DELIVERS FIRST and settles after — the goods are
-produced, then the payment is presented at the last moment before
-the artifact is signed, so a delivery that fails takes no money —
-publishes an OpenAPI 3.1 contract, and nothing it hands an agent can
+skill. The store prepares instant goods or the order before requesting
+settlement. A failure before settlement takes no money. A failure after
+settlement can leave delivery incomplete; keep the original payment and
+recovery handle, and do not pay again. It publishes an OpenAPI 3.1 contract,
+and nothing it hands an agent can
 act without the agent's decision; it never asks for credentials,
 keys, or wallet secrets.
 
@@ -55,6 +56,11 @@ https://scvd.store/openapi.json
   stale in a submission draft for eighteen days, which is exactly
   the shape rule 45 exists to catch: copy that stops following the
   facts the day the facts move. Nothing was submitted carrying it.
+- Delivery scope — CORRECTED 2026-10-10. The earlier delivery-first wording
+  overstated what preparation before settlement guarantees. Signing, storage
+  and response delivery can still fail after payment; the draft now names
+  recovery and distinguishes that case. This is a draft correction, not a
+  resubmission or a verification of the external listing.
 - Evidence cards (MCP Apps) — live 2026-08-27 on the two free
   instruments. Do NOT submit this as "renders everywhere": whether a
   host renders the card is the host's business and the current

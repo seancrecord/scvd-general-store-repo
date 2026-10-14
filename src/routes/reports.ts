@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { reportAnchorForArtifact } from "@/services/report-anchors";
-import { getReport, reportIds, signedReport } from "@/services/reports";
+import { getReport, reportCatalog, reportIds, signedReport } from "@/services/reports";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -70,8 +71,9 @@ function reportBodyHtml(markdown: string): string {
       out.push("</table>");
       inTable = false;
     }
-    if (line.startsWith("# ")) out.push(`<h1>${escapeHtml(line.slice(2))}</h1>`);
-    else if (line.startsWith("## ")) out.push(`<h2>${escapeHtml(line.slice(3))}</h2>`);
+    // The page owns the h1; the signed source's headings nest beneath it.
+    if (line.startsWith("# ")) out.push(`<h2>${escapeHtml(line.slice(2))}</h2>`);
+    else if (line.startsWith("## ")) out.push(`<h3>${escapeHtml(line.slice(3))}</h3>`);
     else if (line.startsWith("- ")) out.push(`<p class="menu-desc">• ${escapeHtml(line.slice(2))}</p>`);
     else if (line.trim().length > 0) out.push(`<p class="menu-desc">${safe}</p>`);
   }
@@ -92,18 +94,30 @@ reportRoutes.get("/api/report/:report_id", async (c) => {
     );
   }
   const withdrawn = withdrawalOf(id);
-  if (wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
+  if (c.req.query("format") !== "json" && wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     const report = getReport(id)!;
+    const entry = reportCatalog().find(entry => entry.id === id)!;
+    const base = c.env.STORE_BASE_URL;
     return c.html(
       renderSimplePage({
-        title: report.meta.title,
-        description:
-          "A free, ed25519-signed ecosystem research report from the store's field program: every number re-derivable from committed raw evidence, the signature verifiable by anyone, forever.",
-        path: `/api/report/${id}`,
-        bodyHtml: `${withdrawn ? withdrawalHtml(withdrawn) : ""}${reportBodyHtml(report.body)}
+        title: entry.title,
+        description: entry.description,
+        path: entry.path,
+        dates: { published: entry.published, modified: entry.page_modified },
+        bodyHtml: `${withdrawn ? withdrawalHtml(withdrawn) : ""}
+          <p class="menu-desc">Published ${escapeHtml(entry.published)}. Free to read. <a href="${entry.path}?format=json">Original signed report as JSON</a> · <a href="/corpus">Public evidence collection</a> · <a href="/corrections">Dated corrections</a>.</p>
+          ${reportBodyHtml(report.body)}
           <section>
             <p class="menu-meta">This report is a signed artifact: the machine copy at this same URL carries the exact signed bytes, the sha256 of this body, and the store's public key. Check it at <a href="/api/verify/${escapeHtml(id)}">/api/verify/${escapeHtml(id)}</a> — free, no account, forever. Method: <a href="https://github.com/seancrecord/scvd-general-store-repo/blob/main/WALKABOUT.md">WALKABOUT.md</a>. Raw evidence: <a href="https://github.com/seancrecord/scvd-general-store-repo/tree/main/research/field-run-2026-08-18">research/field-run-2026-08-18</a>.</p>
-          </section>`,
+          </section>
+          ${jsonLdScript({
+            "@context": "https://schema.org", "@type": "Report", "@id": `${base}${entry.path}#report`,
+            url: `${base}${entry.path}`, name: entry.title, description: entry.description,
+            datePublished: entry.published, dateModified: entry.modified,
+            creativeWorkStatus: withdrawn ? "Withdrawn" : "Published",
+            author: organizationRef(base), isAccessibleForFree: true,
+            encoding: { "@type": "MediaObject", encodingFormat: "application/json", contentUrl: `${base}${entry.path}?format=json` },
+          })}`,
       }),
     );
   }

@@ -1,3 +1,6 @@
+import { readGatewaySummary } from "@/services/gateway-sales";
+import { ARC_USDC } from "@/lib/arc-gateway";
+import { ARC_NETWORK } from "@/lib/payment-networks";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { BASE_USDC } from "@/lib/base-rpc";
 import { USDC_DECIMALS } from "@/lib/payments";
@@ -125,6 +128,16 @@ export interface StoreStats {
   /** Settles from before the channel meter existed; counted, attributed to nobody. */
   pre_meter_settlements: number;
   /**
+   * ORGANIC x402 SETTLES THAT CAME THROUGH THE UCP CHECKOUT DOOR
+   * (2026-10-14). A subset of the x402 protocol count, never a third
+   * bucket beside it: UCP is a checkout, and its money settles over
+   * x402. Read off the till's per-channel settle counters, which the
+   * UCP booking only began stamping on 2026-10-14; earlier UCP settles
+   * filed under no channel and are not in this figure. Absent only on
+   * older saved fixtures.
+   */
+  organic_via_ucp_checkout?: number;
+  /**
    * The patron counter: every artifact ever minted, FREE SHELF
    * INCLUDED — stamps, free certs, the lot. Published as what it is.
    * This number used to masquerade as settled_purchases_total, which
@@ -182,6 +195,7 @@ export interface StoreStats {
   organic_by_rail?: {
     base: number;
     polygon: number;
+    arc?: number;
     arbitrum?: number;
     world?: number;
     solana: number;
@@ -275,14 +289,19 @@ export interface BooksDiagnostics {
 export async function countDistinctOrganicBuyers(
   env: Env,
 ): Promise<number | null> {
-  const [listed, mpp] = await Promise.all([
+  const [listed, mpp, gatewayPayers] = await Promise.all([
     listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_SCAN_CAP }).catch(() => null),
     listKeys(env.COUNTERS, { prefix: MPP_PAYER_PREFIX, cap: PAYER_SCAN_CAP }).catch(() => null),
+    listKeys(env.COUNTERS, { prefix: "gateway:payer:", cap: PAYER_SCAN_CAP }).catch(() => null),
   ]);
-  if (!listed || listed.truncated || !mpp || mpp.truncated) return null;
+  if (!listed || listed.truncated || !mpp || mpp.truncated || !gatewayPayers || gatewayPayers.truncated) return null;
   const wallets = new Set<string>();
   for (const name of mpp.names) {
     const address = name.slice(MPP_PAYER_PREFIX.length);
+    if (address && !isHouseWallet(env, address)) wallets.add(address.toLowerCase());
+  }
+  for (const name of gatewayPayers.names) {
+    const address = name.slice("gateway:payer:".length);
     if (address && !isHouseWallet(env, address)) wallets.add(address.toLowerCase());
   }
   for (const name of listed.names) {
@@ -322,10 +341,11 @@ export async function computeStatsDiagnosed(
    * tally and the key-list that is the customer list. Neither reads
    * the other's result, and /stats is a free door.
    */
-  const [artifactsRaw, distinctOrganicBuyers, mpp] = await Promise.all([
+  const [artifactsRaw, distinctOrganicBuyers, mpp, gateway] = await Promise.all([
     kvGet(env.COUNTERS, KV_KEYS.patronNumber),
     countDistinctOrganicBuyers(env),
     readMppSales(env),
+    readGatewaySummary(env),
   ]);
   const artifactsIssued = parseInt(artifactsRaw ?? "0", 10);
   let organic = 0;
@@ -351,16 +371,28 @@ export async function computeStatsDiagnosed(
    * enumerable, so the storefront-adjacent read stays cheap however
    * many months the store survives.
    */
-  const perMonth = await Promise.all(
-    monthsSinceOpening().map(async (month) => {
-      const listed = await listKeys(env.COUNTERS, {
-        prefix: `metric:${month}:paid`,
-        cap: PAID_METRIC_CAP,
-      });
-      const values = await bulkGetJson<number>(env.COUNTERS, listed.names);
-      return { month, names: listed.names, values, truncated: listed.truncated };
-    }),
-  );
+  const [perMonth, ucpByMonth] = await Promise.all([
+    Promise.all(
+      monthsSinceOpening().map(async (month) => {
+        const listed = await listKeys(env.COUNTERS, {
+          prefix: `metric:${month}:paid`,
+          cap: PAID_METRIC_CAP,
+        });
+        const values = await bulkGetJson<number>(env.COUNTERS, listed.names);
+        return { month, names: listed.names, values, truncated: listed.truncated };
+      }),
+    ),
+    // The UCP door's organic settles: one known key per month, read in
+    // the same wave. The channel is the counter's own key, so no scan.
+    bulkGetJson<number>(
+      env.COUNTERS,
+      monthsSinceOpening().map((month) => KV_KEYS.metric(month, "src", "ucp")),
+    ),
+  ]);
+  let organicViaUcp = 0;
+  for (const count of ucpByMonth.values()) {
+    if (typeof count === "number" && Number.isFinite(count)) organicViaUcp += count;
+  }
   /*
    * WHAT TRUNCATION MEANS HERE, answered rather than assumed (rule 52,
    * and the bounded-read guard that made this file say so out loud on
@@ -483,6 +515,7 @@ export async function computeStatsDiagnosed(
     house_settlements: house + reclassified,
     reclassified_house: reclassified + (mpp.reclassified_house ?? 0),
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
+    organic_via_ucp_checkout: organicViaUcp,
     artifacts_issued: artifactsIssued,
     distinct_organic_buyers: distinctOrganicBuyers,
     ...(haveRails && railTotal > 0 && !overshoot
@@ -514,7 +547,8 @@ export async function computeStatsDiagnosed(
     stats.house_settlements += mpp.house;
     stats.settled_purchases_total += mpp.organic + mpp.house;
     if (stats.organic_by_rail) stats.organic_by_rail.base += mpp.organic;
-    else stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0,
+    // Native evidence cannot repair contradictory legacy network counters.
+    else if (!overshoot) stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0,
       rail_not_recorded: organicSettlements, computed_at: new Date().toISOString() };
     // Per item, corrections applied; the pilot's unsplit rows arrive under LEGACY_NATIVE_ITEM.
     for (const [item, counts] of Object.entries(mpp.by_item)) {
@@ -523,9 +557,24 @@ export async function computeStatsDiagnosed(
       nativeTill.house += counts.house;
     }
   }
+  if (gateway.organic + gateway.house > 0) {
+    stats.payment_sources.push({ protocol: "x402-gateway", currency: "USDC", organic: gateway.organic, house: gateway.house,
+      amounts: { network: ARC_NETWORK, asset: ARC_USDC, decimals: USDC_DECIMALS, organic_atomic: gateway.organic_amount_atomic, house_atomic: gateway.house_amount_atomic } });
+    stats.organic_settlements += gateway.organic;
+    stats.house_settlements += gateway.house;
+    stats.settled_purchases_total += gateway.organic + gateway.house;
+    if (stats.organic_by_rail) stats.organic_by_rail.arc = gateway.organic;
+    else if (!overshoot) stats.organic_by_rail = { base: mpp.organic, polygon: 0, solana: 0, arc: gateway.organic,
+      rail_not_recorded: organicSettlements, computed_at: new Date().toISOString() };
+    for (const [item, counts] of Object.entries(gateway.by_item)) {
+      const tally = tillByItem[item] ??= { organic: 0, house: 0 };
+      tally.organic += counts.organic; tally.house += counts.house;
+    }
+  }
   const rail = stats.organic_by_rail;
   stats.payments = paymentRollup(stats.payment_sources, rail ? [
     ...settlementNetworkLabels().map(row => ({ name: row.label, purchases: rail[row.key] ?? 0 })),
+    ...(gateway.organic ? [{ name: "Arc (Circle Gateway)", purchases: gateway.organic }] : []),
     { name: "Network not recorded", purchases: rail.rail_not_recorded },
   ] : null);
   return {
@@ -575,15 +624,26 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
       ? ` and ${rail.rail_not_recorded} settled before this store recorded the rail at the till, on a page that mints no certificate to carry one — a closed set that nothing can join`
       : "";
   const polygon = rail.polygon > 0 ? `, ${rail.polygon} in USDC on Polygon` : "";
-  const additional = `${rail.arbitrum ? `, ${rail.arbitrum} in USDC on Arbitrum` : ""}${rail.world ? `, ${rail.world} in USDC on World` : ""}`;
+  const additional = `${rail.arc ? `, ${rail.arc} in USDC on Arc through Circle Gateway` : ""}${rail.arbitrum ? `, ${rail.arbitrum} in USDC on Arbitrum` : ""}${rail.world ? `, ${rail.world} in USDC on World` : ""}`;
   return `Of the organic figure, ${rail.base} settled in USDC on Base${polygon}, ${rail.solana} in USDC on Solana${additional}${tail}.`;
 }
 
 /** One total on the storefront; the three detailed dimensions live on /rails. */
 export function storefrontLedgerLine(stats: StoreStats): string {
-  return purchaseHeadline(stats.payments ?? paymentRollup([{
+  const headline = purchaseHeadline(stats.payments ?? paymentRollup([{
     ...SETTLEMENT_ACCOUNTING,
     organic: stats.organic_settlements,
     house: stats.house_settlements,
   }], null));
+  /*
+   * THE UCP DOOR ON THE SAME LINE (2026-10-14, the keeper's ask). The
+   * headline groups by payment protocol, and UCP is not one — its
+   * money settles over x402 — so a UCP sale was already inside the
+   * x402 figure and invisible as UCP. Said as a subset, in words a
+   * reader cannot add to the protocol counts; the denominator is named
+   * from the accounting constant rather than typed. Zero is printed:
+   * a live door with no sale yet is a fact, not an absence.
+   */
+  if (stats.organic_via_ucp_checkout === undefined) return headline;
+  return `${headline.replace(/\.$/, "")}; ${stats.organic_via_ucp_checkout} of the ${SETTLEMENT_ACCOUNTING.protocol} purchases came through UCP checkout.`;
 }

@@ -14,7 +14,7 @@ afterEach(() => { testEnv.PAID_RECOVERIES = namespace; vi.setSystemTime(NOW); })
 for (const id of ["aura_walk", "the_collab"]) for (const door of ["http", "mcp", "mcp-standard"] as const) {
   it(`${id} ${door}: a retained purchase before its artifact journal is not a missing legacy brief`, async () => {
     const item = items.find(item => item.id === id)!;
-    const args = { ...baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
+    const args = { ...await baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
     const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(offer => offer.network === BASE_NETWORK)!;
     const wire = await signLabor(offer), key = crypto.randomUUID();
     const identity = await purchaseIdentity(BASE_NETWORK, evmBuyer.address, wire);

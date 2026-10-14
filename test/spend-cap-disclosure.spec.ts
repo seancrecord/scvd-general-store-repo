@@ -91,7 +91,7 @@ describe("a door that a stock client will refuse says so in its own 402", () => 
     const item = overCapItems()[0];
     expect(item, "no over-cap item to probe").toBeDefined();
     if (!item) return;
-    const response = await quoteRequest(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
+    const response = await quoteRequest(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(response.status).toBe(402);
     const body = (await response.json()) as Record<string, unknown>;
     const notice = String(body["client_spend_cap"] ?? "");
@@ -118,7 +118,7 @@ describe("a door that a stock client will refuse says so in its own 402", () => 
     });
     expect(cheap, "no wholly-under-cap item on the shelf").toBeDefined();
     if (!cheap) return;
-    const response = await quoteRequest(`${BASE}/api/buy/${cheap.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === cheap.id)!)).map(([key, value]) => [key, String(value)]))}`);
+    const response = await quoteRequest(`${BASE}/api/buy/${cheap.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === cheap.id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(
       response.status,
       "the control door did not even answer 402 — an absence read off an error page proves nothing (rule 46)",

@@ -21,7 +21,7 @@ describe("X-Robots-Tag on every 402", { timeout: 120_000 }, () => {
   it("marks every paid door's challenge noindex", async () => {
     let challenges = 0;
     for (const item of MENU_ITEMS) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`, {
+      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`, {
         headers: { "User-Agent": "Googlebot/2.1", Accept: "text/html" },
       });
       if (response.status !== 402) continue;

@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { acceptedNetworks, paymentNetworkNames, paymentNetworkGuide, type PaymentNetworkConfig } from "@/lib/payment-networks";
 import { Hono } from "hono";
 import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
@@ -232,7 +233,7 @@ practiceCounterRoutes.get("/try", (c) => {
     when_its_your_till: {
       head: COPY.yourTillHead,
       notes: COPY.yourTill,
-      preflight: `${base}/api/preflight/v1`,
+      preflight: `${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}`,
       conformance_desk: `${base}/api/conformance/v1`,
       launch_check: `${base}/menu/launch_check`,
       landing: `${base}/conformance`,
@@ -445,7 +446,7 @@ practiceCounterRoutes.get("/try", (c) => {
         <section>
           <h2>${escapeHtml(COPY.yourTillHead)}</h2>
           ${list(COPY.yourTill)}
-          <p class="menu-meta"><code>POST /api/preflight/v1</code> · <code>POST /api/conformance/v1</code> · <a href="/menu/launch_check"><code>/menu/launch_check</code></a> · the full desk at <a href="/conformance">/conformance</a></p>
+          <p class="menu-meta"><code>POST /api/preflight/${PREFLIGHT_VERSION_NEXT}</code> · <code>POST /api/conformance/v1</code> · <a href="/menu/launch_check"><code>/menu/launch_check</code></a> · the full desk at <a href="/conformance">/conformance</a></p>
         </section>
         <section>
           <h2>${escapeHtml(COPY.mcpHead)}</h2>

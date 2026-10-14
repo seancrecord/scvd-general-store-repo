@@ -63,6 +63,7 @@ function credential(nonce: string, atomic: string) {
 }
 
 const INPUT_VALUES: Record<string, string> = {
+  hosts: JSON.stringify(["alpha.example", "beta.example"]),
   url: "https://example.test/door",
   wallet: "0x3333333333333333333333333333333333333333",
   address: "0x3333333333333333333333333333333333333333",

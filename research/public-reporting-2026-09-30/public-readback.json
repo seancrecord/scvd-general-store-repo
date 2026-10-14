@@ -1,0 +1,167 @@
+{
+  "purpose": "Pre-release public read; this is not validation of the local fixes.",
+  "reads": [
+    {
+      "url": "https://scvd.store/stats",
+      "accept": "application/json",
+      "read_at": "2026-09-30T13:24:31.952953+00:00",
+      "status": 200,
+      "sha256": "298e2d84d9f97378ffffa519b0edcd856416b069e86effb9c62f14f2214da5e2",
+      "bytes": 23335,
+      "date": "Wed, 30 Sep 2026 13:24:33 GMT",
+      "age": null,
+      "cache_status": null,
+      "top_level_fields": [
+        "artifacts_issued",
+        "computed_at",
+        "distinct_organic_buyers",
+        "house_flag_policy",
+        "house_settlements",
+        "how_to_check_it_without_us",
+        "identity_policy",
+        "listing_spec_schema",
+        "net_by_chain",
+        "note",
+        "operating_since",
+        "organic_by_rail",
+        "organic_settlements",
+        "patrons_method",
+        "payment_sources",
+        "payments",
+        "pre_meter_settlements",
+        "published_counts",
+        "rail_split_method",
+        "reclassified_house",
+        "sample_artifact_id",
+        "settled_purchases_total",
+        "signing_key",
+        "till_by_item",
+        "till_by_item_note",
+        "track_record",
+        "verify_url",
+        "what_these_numbers_are"
+      ],
+      "scope_notes": {
+        "till_by_item_note": "Settles at the till per item, organic and house, every month added, raw: the reclassification ledger (reclassified_house above) is applied to the totals only and cannot be applied per item, so a family settle booked organic before its wallet was listed still sits in that item's organic column here. Never a ranking; the rows are in the till's own order. Published under rule 43 as amended 2026-09-21 with the rest of the counts.",
+        "rail_split_method": "organic_by_rail divides the organic figure by the chain the money arrived on, from three records covering disjoint sets of sales so that nothing is counted twice. (1) The TILL: the rail is written in the same call that produces the organic count, so every settle has one, including the penny pages that mint no certificate. (2) The CERTIFICATES, for sales settled before the till started recording rails; that walk stops at exactly the instant the till took over. (3) THE STORE'S OWN CONFIGURATION, for anything the first two missed that predates 2026-08-04 \u2014 the day the Solana rail was built. Before it this store could accept exactly one network, so a sale from those weeks did not probably settle on Base, it could not have settled anywhere else. base + polygon + solana + rail_not_recorded always equals organic_settlements. What is left in rail_not_recorded can only be a sale from between the second rail opening and the till learning to record rails, that also minted no certificate \u2014 a closed set that nothing can join, recoverable by hand from the public receiving wallets against its transaction hash."
+      }
+    },
+    {
+      "url": "https://scvd.store/rails",
+      "accept": "application/json",
+      "read_at": "2026-09-30T13:24:31.953269+00:00",
+      "status": 200,
+      "sha256": "d0ebc56a2ac6309564024fc6178f60b22fd44cdd3162b4516291334d5444e3a5",
+      "bytes": 9066,
+      "date": "Wed, 30 Sep 2026 13:24:33 GMT",
+      "age": null,
+      "cache_status": null,
+      "top_level_fields": [
+        "all_time",
+        "by_month_from_the_till",
+        "method",
+        "payments",
+        "published_counts",
+        "rails_accepted",
+        "the_books",
+        "trade_counter",
+        "what_this_is"
+      ],
+      "method": "The monthly series is the till's own rail counters (recorded in the same call that produces the organic count). The all-time split additionally counts certificate-era sales from before the till kept rails, and names what neither record placed as rail_not_recorded rather than guessing."
+    },
+    {
+      "url": "https://scvd.store/pulse.json",
+      "accept": "application/json",
+      "read_at": "2026-09-30T13:24:31.953334+00:00",
+      "status": 200,
+      "sha256": "543b1fde82e19211679d5c5c80941347407e7e1a840b73509b4a90e1ffd19009",
+      "bytes": 18732,
+      "date": "Wed, 30 Sep 2026 13:24:41 GMT",
+      "age": null,
+      "cache_status": null,
+      "top_level_fields": [
+        "all_time",
+        "computed_at",
+        "crawler_correction_computed_at",
+        "house_flag_policy",
+        "latency",
+        "months",
+        "note",
+        "published_counts",
+        "signing_key",
+        "verify_url"
+      ],
+      "all_time_fields": [
+        "conversion_rate",
+        "misbooked_house",
+        "organic_challenges",
+        "organic_declines",
+        "organic_payments_presented",
+        "organic_rechecks",
+        "organic_settled"
+      ]
+    },
+    {
+      "url": "https://scvd.store/store-month.json",
+      "accept": "application/json",
+      "read_at": "2026-09-30T13:24:31.953529+00:00",
+      "status": 200,
+      "sha256": "1f3978dd1047d6c0e3d1b36ce50a5dbc98caf69db7245dd6da916536dcdba400",
+      "bytes": 22133,
+      "date": "Wed, 30 Sep 2026 13:24:32 GMT",
+      "age": null,
+      "cache_status": null,
+      "top_level_fields": [
+        "chain",
+        "entries",
+        "errors",
+        "free_first",
+        "how_to_call",
+        "price",
+        "published_counts",
+        "scan_truncated",
+        "security",
+        "verify",
+        "what_this_is"
+      ],
+      "months": [
+        {
+          "month": "2026-07",
+          "fields": [
+            "by_item",
+            "by_rail",
+            "conversion_rate",
+            "exclusions",
+            "host_pages",
+            "instrument",
+            "note",
+            "organic_challenges",
+            "organic_declines",
+            "organic_payments_presented",
+            "organic_settled",
+            "window",
+            "windows"
+          ]
+        },
+        {
+          "month": "2026-08",
+          "fields": [
+            "by_item",
+            "by_rail",
+            "conversion_rate",
+            "exclusions",
+            "host_pages",
+            "instrument",
+            "note",
+            "organic_challenges",
+            "organic_declines",
+            "organic_payments_presented",
+            "organic_settled",
+            "window",
+            "windows"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "url": "https://hackernoon.com/ai-agents-are-customers-now-aura-is-how-i-take-notes-on-how-they-shop",
+    "retrieved_at": "2026-09-29T00:04:23.902201+00:00",
+    "status": 200,
+    "sha256": "258a9b2fd63ce6ce41c7cfd9f2312729a5c1d81c0988a9ee247b428ac266ee5b",
+    "relevant_anchor_links": [
+      "/about/keeper-scvd",
+      "/u/keeper-scvd",
+      "https://github.com/seancrecord/scvd-general-store-repo?ref=hackernoon.com",
+      "https://scvd.store/?ref=hackernoon.com",
+      "https://www.npmjs.com/package/@x402/fetch?ref=hackernoon.com",
+      "https://www.npmjs.com/package/x402-sign?ref=hackernoon.com",
+      "https://www.npmjs.com/package/x402-verify?ref=hackernoon.com"
+    ]
+  },
+  {
+    "url": "https://hackernoon.com/an-autonomous-agent-cold-emailed-me-a-free-audit-at-1245-am",
+    "retrieved_at": "2026-09-29T00:04:24.371957+00:00",
+    "status": 200,
+    "sha256": "30a89791413adc68efae830fdbd0a1ad03b7fb9691ece1d813b42a60ee4f1505",
+    "relevant_anchor_links": [
+      "/about/keeper-scvd",
+      "/u/keeper-scvd",
+      "https://scvd.store/?ref=hackernoon.com"
+    ]
+  },
+  {
+    "url": "https://hackernoon.com/i-told-an-ai-agent-to-rob-my-store-it-found-39-ways-to-do-it",
+    "retrieved_at": "2026-09-29T00:04:24.533298+00:00",
+    "status": 200,
+    "sha256": "641a5ed206d33af7a4045b092e386919b3767026c23bea1323ae379047f7d813",
+    "relevant_anchor_links": [
+      "/about/keeper-scvd",
+      "/u/keeper-scvd",
+      "https://github.com/seancrecord/scvd-general-store-repo/blob/main/research/BUYER_AUDIT_LOG.md?ref=hackernoon.com",
+      "https://github.com/seancrecord/scvd-general-store-repo/blob/main/research/BUYER_AUDIT_LOG.md?ref=hackernoon.com#buy-001--sev-1-empty-essential-text-can-settle",
+      "https://github.com/seancrecord/scvd-general-store-repo/blob/main/research/BUYER_AUDIT_LOG.md?ref=hackernoon.com#buy-005--sev-1-a-new-case-file-purchase-returns-the-old-claim",
+      "https://github.com/seancrecord/scvd-general-store-repo/blob/main/research/BUYER_AUDIT_LOG.md?ref=hackernoon.com#buy-017--sev-1-fault-case-lost-settlement-acknowledgement-can-leave-no-artifact-and-report-no-charge",
+      "https://github.com/seancrecord/scvd-general-store-repo/blob/main/research/BUYER_AUDIT_LOG.md?ref=hackernoon.com#buy-028--sev-1-an-invalid-renewal-target-buys-a-different-pass",
+      "https://github.com/seancrecord/scvd-general-store-repo/blob/main/research/BUYER_AUDIT_LOG.md?ref=hackernoon.com#buy-034--sev-1-a-settled-human-purchase-can-have-no-order-and-false-delivery-recovery"
+    ]
+  },
+  {
+    "url": "https://huggingface.co/datasets/keeper-scvd/x402-endpoint-readiness/raw/main/README.md",
+    "retrieved_at": "2026-09-29T00:04:24.622829+00:00",
+    "status": 200,
+    "sha256": "eee3dc3c297c2a98fb1c019df5dd3c19b2c864a273d27c5ee2fee1dfddc6203c",
+    "relevant_anchor_links": [],
+    "markdown_links": []
+  }
+]

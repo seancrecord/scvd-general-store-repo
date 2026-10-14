@@ -9,7 +9,7 @@ for (const menu of MENU_ITEMS.filter(item => item.weekly_inventory !== undefined
   for (const door of ["mcp", "mcp-standard"] as const) for (const network of laborNetworks()) for (const paying of [false, true]) {
     it(`${menu.id} ${door} ${network} ${paying ? "signed" : "unpaid"}: refuses a new purchase after every weekly slot was sold`, async () => {
       const item = items.find(i => i.id === menu.id)!;
-      const args = { ...baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
+      const args = { ...await baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
       const quote = await call(item, "mcp", args, shelves(item)[0]!);
       expect(quote.quote).toBe(true);
       expect(quote.offers.map(o => o.network)).toEqual(expect.arrayContaining(laborNetworks()));

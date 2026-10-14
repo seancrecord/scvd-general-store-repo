@@ -119,7 +119,7 @@ function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
     `resource: ${yamlString(row.url)}`,
     `tags: ${yamlList(tags)}`,
     `status: ${yamlString("stable")}`,
-    `stale_after: ${yamlString(staleAfter(observedAt))}`,
+    `stale_after: ${observedAt ? yamlString(staleAfter(observedAt)) : "null"}`,
     /*
      * The ROW's cited battery where the row states one — a host
      * concept must name the criteria that produced ITS verdict, not
@@ -128,10 +128,10 @@ function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
      */
     "generated:",
     `  by: ${yamlString(row.battery !== "unstated" ? `scvd-census/${row.battery}` : "scvd-census/battery-unstated")}`,
-    `  at: ${yamlString(observedAt)}`,
+    `  at: ${observedAt ? yamlString(observedAt) : "null"}`,
     "verified:",
     `  - by: ${yamlString(row.battery !== "unstated" ? `scvd-census/${row.battery}` : "scvd-census/battery-unstated")}`,
-    `    at: ${yamlString(observedAt)}`,
+    `    at: ${observedAt ? yamlString(observedAt) : "null"}`,
     "sources:",
     `  - id: ${yamlString("history")}`,
     `    resource: ${yamlString(row.history_url)}`,
@@ -142,7 +142,7 @@ function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
   const body = [
     `# ${row.host}`,
     "",
-    `On ${observedAt} this store walked \`${row.url}\` and it answered a`,
+    `In this census (${observedAt ?? "request time unknown; freshness cannot be established"}) this store walked \`${row.url}\` and it answered a`,
     `payment challenge that parsed against the published preflight battery.`,
     rails.length
       ? `The door's own 402 offered ${rails.join(", ")}, asking ${ask}.`
@@ -316,7 +316,7 @@ function indexMd(set: FreshSet | null, hosts: readonly FreshSetRow[]): string {
   ];
   for (const row of hosts) {
     lines.push(
-      `* [${row.host}](host/${row.host}.md) - answered a conformant challenge on ${row.observed_at.slice(0, 10)}.`,
+      `* [${row.host}](host/${row.host}.md) - answered a conformant challenge on ${row.observed_at?.slice(0, 10) ?? "an unknown request date; freshness cannot be established"}.`,
     );
   }
   if (hosts.length === 0) {

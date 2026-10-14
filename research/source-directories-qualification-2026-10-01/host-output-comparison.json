@@ -1,0 +1,6 @@
+{
+  "same_session_display_matches_retained_source_inspection": true,
+  "bytes": 79972,
+  "sha256": "89e6519ec49e4d8b3ec605fe58c4ea5d25151f602c2647552aecc8ef500432f2",
+  "limits": "Byte equality does not establish permission compliance or full source comprehension; native read a host-owned output path outside the neutral workspace."
+}

@@ -1,0 +1,172 @@
+{
+  "method": "npm pack --dry-run --json --ignore-scripts from defects/; no publication",
+  "result": {
+    "id": "scvd-defects@0.22.0",
+    "name": "scvd-defects",
+    "version": "0.22.0",
+    "size": 40058,
+    "unpackedSize": 128586,
+    "shasum": "7c239b48cae3b7a7b3dccf0a6782e3886971fb47",
+    "integrity": "sha512-+AS0xveRKo3hdH2NuMxXaS1NdboC0PlZijhW+T6Ayymg4zIyWXHvlyvDHFs9IT1SWrqwPElfDrv0s4JgrMYOww==",
+    "filename": "scvd-defects-0.22.0.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 11012,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1068,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 4402,
+        "mode": 420
+      },
+      {
+        "path": "defects.d.ts",
+        "size": 1583,
+        "mode": 420
+      },
+      {
+        "path": "defects.js",
+        "size": 3363,
+        "mode": 420
+      },
+      {
+        "path": "defects.json",
+        "size": 77821,
+        "mode": 420
+      },
+      {
+        "path": "example.mjs",
+        "size": 418,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/accepts-empty.json",
+        "size": 348,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/accepts-missing-asset.json",
+        "size": 606,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/answers-200.json",
+        "size": 383,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/body-offers.json",
+        "size": 1330,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/clean-402.json",
+        "size": 657,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/header-absent.json",
+        "size": 433,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/header-unparseable.json",
+        "size": 385,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/two-surfaces.json",
+        "size": 1153,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/doors/wrong-version.json",
+        "size": 691,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/draft-status-fields.json",
+        "size": 1448,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/failed-invalid-signature.json",
+        "size": 845,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/failed-no-reason.json",
+        "size": 847,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/legacy-null-transaction.json",
+        "size": 920,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/not-json.json",
+        "size": 679,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/pending-with-hash.json",
+        "size": 1295,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/pending-without-hash.json",
+        "size": 993,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-amount-not-atomic.json",
+        "size": 1087,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-clean.json",
+        "size": 947,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-v1-network-name.json",
+        "size": 1034,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/success-not-boolean.json",
+        "size": 970,
+        "mode": 420
+      },
+      {
+        "path": "fixtures/settlement-responses/success-with-error-reason.json",
+        "size": 1026,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1567,
+        "mode": 420
+      },
+      {
+        "path": "settlement-response.d.ts",
+        "size": 1124,
+        "mode": 420
+      },
+      {
+        "path": "settlement-response.js",
+        "size": 8151,
+        "mode": 420
+      }
+    ],
+    "entryCount": 31,
+    "bundled": []
+  }
+}

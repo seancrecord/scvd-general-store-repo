@@ -1,8 +1,10 @@
 # PS6 — endpoint inspection
 
 Built and tested locally on September 28, after [PR #920](https://github.com/seancrecord/scvd-general-store-repo/pull/920)
-merged at `aed49b8841018b97f08cc893a84c70fce3a69fbf`. This increment is
-unmerged and unpublished. Prepared package versions: `scvd-preflight` 0.3.0
+merged at `aed49b8841018b97f08cc893a84c70fce3a69fbf`. PS6 then merged in
+[PR #928](https://github.com/seancrecord/scvd-general-store-repo/pull/928) at
+`4365135593193f8f01d4769f724e32aac8c2430b`, with every required CI check passing.
+Registry publication remains separate. Prepared package versions: `scvd-preflight` 0.3.0
 and `scvd-cli` 0.4.0. No buyer or model qualification was run, per the keeper.
 
 ## The change
@@ -78,10 +80,16 @@ OASF record (two assertions), and an example guard that needed to accept the
 new optional block on historical reports. The fixes preserve old recorded
 bytes; the completion record names the follow-up checks.
 
-Full CI is still required before merge. Deployment readback, registry
-publication and fresh registry installs remain unmeasured. WebMCP catalogue
+The first PR CI run exposed an existing wall-clock race in a budget test;
+freezing both sides fixed it without changing the rate limiter. All four
+shards and the aggregate check passed before merge. An unsigned post-merge
+HTTP/MCP metadata read returned matching `inspection-v1` schemas;
+[release evidence](../research/mpp-portfolio-2026-09-28/README.md). This does not
+claim a fresh live endpoint probe. Registry publication and fresh registry
+installs remain separate. WebMCP catalogue
 derivation is covered here; no new live-browser registration claim is made.
 The agent-explanation acceptance exercise remains deferred, not passed.
 
-PS7 remains next: reconcile only remaining MPP distribution/history/skill
-deltas. It need not rebuild these parsers or wait for every verifier algorithm.
+PS7's remaining MPP guide and summary deltas are now built locally;
+[entry inventory and release state](MPP_PORTFOLIO_INTEGRATION_2026-09-28.md).
+It reuses these parsers and preserves historical signed observations.

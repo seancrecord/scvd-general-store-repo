@@ -26,6 +26,8 @@ not the Worker environment or the artifact signing key. EVM transfer terms
 come from the existing catalog projection. The adapter accepts only exact
 Base USDC EIP-3009 payments, with the store's existing domain and decimals.
 A future dependency update must repeat these qualification tests.
+AMENDED 2026-10-07: repeated for **0.13.1**; the dated section at the end
+records the new integrity, the lock delta and the one wire-level change.
 
 The real bundle exposed an additional requirement that the Worker test pool
 alone did not: the server core dynamically imports the optional
@@ -125,3 +127,69 @@ No package files are patched and no checks or timeouts are weakened.
 Only after those acceptance checks does this become a flag-dark checkout
 implementation. Any live purchase or activation still follows the separate,
 bounded rail-intake release step.
+
+## Dependency update — October 7, 2026: mppx 0.13.1
+
+The pin moved from 0.10.1 to **0.13.1** (Dependabot #981), npm integrity
+retained in `package-lock.json`:
+
+```
+sha512-PKz2U3l74aqPbvhzLcPzntHWGCncC6czeH0k0aN/f8f9V60E5/nQq9msyoG425njU+UU/jhOh4Ug8gVv62rJQA==
+```
+
+Lock delta against main at the time: `viem` 2.56.9 → 2.57.2 (the SDK now
+requires `viem >= 2.57.1` as a peer), `@stripe/stripe-js` 9.13.0 → 9.17.0,
+`structured-headers` 2.0.3 → 2.1.0; the nested `ox` and `abitype` under
+`mppx` are gone (resolved from the top level now) and a nested
+`eventsource-parser` 4.1.1 arrived. The optional
+`@modelcontextprotocol/sdk` peer is `>= 1.25.0`, satisfied by the 1.32.0
+already on main (#983). The store's dry-run bundle grew from 1,651.52 KiB
+raw / 317.31 KiB gzip to 1,680.73 KiB raw / 323.19 KiB gzip. Still not
+enabled: Stripe, Tempo, sessions, subscriptions, SDK payment middleware.
+
+### The one wire-level change
+
+0.13.0 ("fixed EVM nonce hashing so input fields were framed
+unambiguously") changed `challengeHash`, the value a client signs as the
+EIP-3009 `nonce` and the value the server compares it against:
+
+```
+0.10.1   keccak256(utf8(`${id}${realm}`))
+0.13.1   keccak256(utf8(JSON.stringify([id, realm])))
+```
+
+Both sides check it. A door on 0.10.1 refuses every credential a 0.13.x
+client signs, and a door on 0.13.1 refuses every credential a 0.10.x client
+signs. 0.13.1 has been npm's `latest` since 2026-10-02, so before this update
+every fresh stock install was already refused by the live lane. After it, a
+client still on 0.10.x is the one refused. The store's purchase identity
+uses the nonce the client sent, so identity derivation is unaffected.
+Nothing in `src/` or `test/` derives the challenge hash itself; the MPP
+conformance desk (`mpp-core`) does not re-hash challenges.
+
+`test/mpp-evm-adapter.spec.ts` now pins the framing: the stock client's
+nonce must equal the JSON-pair hash, a credential re-signed under the
+current framing validates, and the same authorization re-signed by the same
+key under the concatenation framing is refused before any facilitator call.
+Shown red against 0.10.1 (the stock client there signs the concatenation)
+and green against 0.13.1.
+
+### Server-side changes read in the shipped dist
+
+`evm/server/Charge.js` gains `credentialHeaders` and `matchCredential`
+plumbing for composed methods; `evm/server/Methods.js` gains the ordered
+`currencies` form beside the singular `currency` the adapter uses.
+`evm/Types.js` is the hash change above. Nothing the adapter calls changed
+shape. 0.11.0 also removed the client's requirement that an x402 envelope's
+`resource.url` equal the response URL, which makes
+`registry/upstream-mppx-x402-resource-url.md` moot.
+
+### Repeated qualification
+
+The adapter spec, `mpp-checkout`, `mpp-mcp-checkout` and `mpp-core` ran on
+the combined tree (main + #981 + the x402 2.28 bump): 4 files, 83 tests
+passed. #981's own CI passed all four shards. Typecheck and all three dry-run
+bundles passed. Not done here, and the keeper's hand, not a build: one live
+purchase on the native lane with a stock 0.13.1 client, recorded beside
+`MPP_LIVE_RESULT_2026-09-18.md`. The source-map warnings noted above persist.
+

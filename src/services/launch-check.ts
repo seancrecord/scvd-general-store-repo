@@ -4,6 +4,7 @@ import {
 } from "./advertised-version";
 import {
   PROBE_POST_BODY,
+  isMethodRefusal,
   probeWithMethod,
   type ProbeMethod,
 } from "@/lib/probe-method";
@@ -164,6 +165,48 @@ export interface ResponseReading {
   content_type: string | null;
 }
 
+/** Pilot-engine input, not a public checkout parameter. Callers supply only
+ * agreed synthetic inputs, never credentials; response captures can echo them. */
+export interface LaunchCheckRequest {
+  method: "POST";
+  /** Serialized JSON object. Validate without reserializing: these exact UTF-8 bytes travel. */
+  body: string;
+}
+
+export const MAX_LAUNCH_REQUEST_BYTES = 16_384;
+
+export interface LaunchCheckRequestEvidence {
+  method: "POST";
+  content_type: "application/json";
+  body_bytes: number;
+  body_sha256: string;
+}
+
+export function snapshotLaunchCheckRequest(request: LaunchCheckRequest | undefined): LaunchCheckRequest | undefined {
+  if (request === undefined) return undefined;
+  if (!isRecord(request) || Array.isArray(request) || request.method !== "POST" || typeof request.body !== "string"
+    || Object.keys(request).some(key => key !== "method" && key !== "body")) {
+    throw new Error("Launch Check request must contain only method POST and a JSON object body string");
+  }
+  const body = request.body;
+  if (new TextEncoder().encode(body).byteLength > MAX_LAUNCH_REQUEST_BYTES) {
+    throw new Error(`Launch Check request exceeds ${MAX_LAUNCH_REQUEST_BYTES} UTF-8 bytes`);
+  }
+  let parsed: unknown;
+  try { parsed = JSON.parse(body); } catch { /* Fixed error below never echoes caller input. */ }
+  if (!isRecord(parsed) || Array.isArray(parsed)) throw new Error("Launch Check request body must be a serialized JSON object");
+  return { method: "POST", body };
+}
+
+/** Shared by the walk and its durable identity; neither stores the raw input here. */
+export async function launchCheckRequestEvidence(request: LaunchCheckRequest): Promise<LaunchCheckRequestEvidence> {
+  return Object.freeze({
+    method: request.method, content_type: "application/json",
+    body_bytes: new TextEncoder().encode(request.body).byteLength,
+    body_sha256: await sha256Hex(request.body),
+  });
+}
+
 export interface ReplayReading {
   outcome: ReplayOutcome;
   status: number | null;
@@ -309,6 +352,9 @@ export interface LaunchCheckObservation {
    * own change.
    */
   challenge_evidence?: WatchEvidenceCapture;
+  /** Exact explicit pilot input fingerprint; absent on default/legacy walks.
+   * This is this store's observation, not an EIP-3009 commitment to the body. */
+  request_evidence?: LaunchCheckRequestEvidence;
   /** Which revision of the walk produced this record (1.3 / D6). */
   battery: string;
   /** Public reconciliation facts only; no spendable signature is retained. */
@@ -547,6 +593,8 @@ export function chainalysisScreen(
 
 export type LaunchCheckCore = Omit<LaunchCheckObservation, "evidence_hash" | "scope">;
 export interface LaunchCheckOptions {
+  /** Explicit pilot POST; no method fallback. Snapshotted before the first await. */
+  request?: LaunchCheckRequest;
   /** Durable caller retains the risk before sending, and the result before signing. */
   retain?: (stage: "attempt" | "observation", core: LaunchCheckCore) => Promise<void>;
   fetch?: typeof fetch;
@@ -713,6 +761,11 @@ export async function performLaunchCheck(
   targetUrl: string,
   options: LaunchCheckOptions = {},
 ): Promise<SignedLaunchCheck> {
+  // Freeze the bytes before any await, including signer construction. A caller
+  // editing its options cannot change the purchase after the quote was read.
+  const request = snapshotLaunchCheckRequest(options.request);
+  const requestEvidence = request ? await launchCheckRequestEvidence(request) : undefined;
+  const postBody = request?.body ?? PROBE_POST_BODY;
   const fetchImpl = options.fetch ?? fetch;
   const now = options.now ?? new Date();
   const checkId = `lcheck_${newEntryId()}`;
@@ -764,7 +817,7 @@ export async function performLaunchCheck(
      * different request than the unpaid one, and the whole artifact
      * is the claim that they are the same door.
      */
-    let walkMethod: ProbeMethod = "GET";
+    let walkMethod: ProbeMethod = request?.method ?? "GET";
     try {
       const approach = await probeWithMethod(
         async (probeMethod) =>
@@ -777,12 +830,13 @@ export async function performLaunchCheck(
               Accept: "application/json",
               ...(probeMethod === "POST" ? { "Content-Type": "application/json" } : {}),
             },
-            ...(probeMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+            ...(probeMethod === "POST" ? { body: postBody } : {}),
           }),
+        request ? { method: request.method, fallback: false } : {},
       );
       first = approach.response;
       walkMethod = approach.reading.used;
-      if (approach.reading.unresolved) {
+      if (approach.reading.unresolved || (request && isMethodRefusal(first.status))) {
         await first.body?.cancel().catch(() => undefined);
         stages.push({
           stage: "approach",
@@ -817,7 +871,7 @@ export async function performLaunchCheck(
     stages.push({
       stage: "approach",
       ok: true,
-      detail: `GET answered HTTP ${first.status}.`,
+      detail: `${walkMethod} answered HTTP ${first.status}.`,
     });
 
     if (first.status !== 402) {
@@ -1180,6 +1234,7 @@ export async function performLaunchCheck(
       paid_usd: 0, pay_to: payTo, tx_hash: null, tx_hash_status: null, field_wallet: signer.address,
       replay_served: null, authorization_outstanding_until: authorizationOutstandingUntil,
       ...(challengeEvidence ? { challenge_evidence: challengeEvidence } : {}),
+      ...(requestEvidence ? { request_evidence: requestEvidence } : {}),
       battery: LAUNCH_CHECK_BATTERY, payment_attempt: paymentAttempt,
     });
 
@@ -1199,7 +1254,7 @@ export async function performLaunchCheck(
           "PAYMENT-SIGNATURE": paymentHeader,
           ...(walkMethod === "POST" ? { "Content-Type": "application/json" } : {}),
         },
-        ...(walkMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+        ...(walkMethod === "POST" ? { body: postBody } : {}),
       });
     } catch (error) {
       stages.push({
@@ -1282,7 +1337,7 @@ export async function performLaunchCheck(
             "PAYMENT-SIGNATURE": paymentHeader,
             ...(walkMethod === "POST" ? { "Content-Type": "application/json" } : {}),
           },
-          ...(walkMethod === "POST" ? { body: PROBE_POST_BODY } : {}),
+          ...(walkMethod === "POST" ? { body: postBody } : {}),
         });
       } catch (error) {
         replayError = String(error);
@@ -1479,6 +1534,7 @@ export async function performLaunchCheck(
     ...(txVerification ? { tx_verification: txVerification } : {}),
     field_wallet: signer?.address ?? null,
     ...(challengeEvidence ? { challenge_evidence: challengeEvidence } : {}),
+    ...(requestEvidence ? { request_evidence: requestEvidence } : {}),
     battery: LAUNCH_CHECK_BATTERY,
     ...(paymentAttempt ? { payment_attempt: paymentAttempt } : {}),
   };
@@ -1490,8 +1546,9 @@ export async function signLaunchCheck(env: Env, core: LaunchCheckCore): Promise<
   const observation: LaunchCheckObservation = {
     ...core,
     evidence_hash: await sha256Hex(JSON.stringify(core)),
-    scope: core.battery === LAUNCH_CHECK_BATTERY ? CHECK_SCOPE
-      : `A retained observation from ${core.battery}, completed without repeating the purchase or upgrading its evidence to the current battery. Its stage outcomes keep their original meaning. Historical replay labels and transaction references do not establish fresh fulfillment or exact authorization settlement. Read /corrections and the current report guide for the limits; the signature authenticates these bytes, not the truth of the underlying claim.`,
+    scope: (core.battery === LAUNCH_CHECK_BATTERY ? CHECK_SCOPE
+      : `A retained observation from ${core.battery}, completed without repeating the purchase or upgrading its evidence to the current battery. Its stage outcomes keep their original meaning. Historical replay labels and transaction references do not establish fresh fulfillment or exact authorization settlement. Read /corrections and the current report guide for the limits; the signature authenticates these bytes, not the truth of the underlying claim.`)
+      + (core.request_evidence ? " request_evidence fingerprints the explicit pilot request: method, content type, UTF-8 body length and SHA-256 of the exact supplied bytes. The body is not retained in that field; response evidence may echo inputs. These are this store's recorded inputs, not a cryptographic binding of the EIP-3009 payment authorization to the body, nor proof the seller processed it. Any payment and replay reuse the same request bytes without switching methods." : ""),
   };
   const signed = await signMessage(
     JSON.stringify(observation),

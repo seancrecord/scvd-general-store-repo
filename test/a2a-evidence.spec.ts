@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import receiptValid from "../verifier/fixtures/receipt-valid.json";
@@ -104,7 +105,7 @@ describe("message/send", () => {
     expect(json.result.status.state).toBe("failed");
     const data = json.result.artifacts[0].parts[0].data;
     expect(data.result).toMatch(/^refused: /);
-    expect(data.verification_url).toBe(`${BASE}/api/preflight/v2`);
+    expect(data.verification_url).toBe(`${BASE}/api/preflight/${PREFLIGHT_VERSION_NEXT}`);
   });
 
   it("answers an unknown task, a missing data part, an unknown method and task state with JSON-RPC errors", async () => {

@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-28",
+  "case": "S-001",
+  "partner": "BiX / Salman (salmanabjam)",
+  "stage": "unpaid_check_results_sent_awaiting_partner_response",
+  "partner_action": "accepted_unpaid_check_and_supplied_new_origin_and_input",
+  "partner_usefulness": "unknown_for_completed_observations",
+  "partner_response": "https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5870491071",
+  "scope": "Two public GETs and one unpaid synthetic POST; no cold-agent run.",
+  "requests_initiated": 3,
+  "responses_received": 3,
+  "paid_attempts": 0,
+  "findings": [
+    {
+      "id": "S-001-discovery",
+      "status": "observed",
+      "result": "Current schema 200; exact unpaid synthetic POST 402; decoded challenge matches response body."
+    },
+    {
+      "id": "S-001-body",
+      "status": "instrument_limitation",
+      "result": "Standard Launch Check uses an empty POST body while the partner schema requires pair and tax."
+    },
+    {
+      "id": "S-001-enum",
+      "status": "clarification_needed",
+      "result": "Reported HOLD_PAPER is outside advertised recommendation enum; no paid response was observed."
+    }
+  ],
+  "reply_sent": true,
+  "repeated_use": "not_requested",
+  "next_action": "Await output-vocabulary clarification and usefulness response; separately qualify any body-capable paid instrument.",
+  "reply_url": "https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5874641977",
+  "outreach_record": "results-outreach.json"
+}

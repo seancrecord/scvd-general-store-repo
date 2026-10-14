@@ -26,6 +26,85 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **CLOSED FOR NOW October 13 — agent-entry qualifications.** Keeper skipped
+  native-host tests, paid purchase/receipt verification, wallet onboarding and
+  the authenticated dashboard visual check. No further press is waiting on
+  these. skills.sh check and the next traffic-accounting investigation are
+  recorded in [the follow-up](research/skills-traffic-followup-2026-10-13/README.md).
+
+- **Defects 0.22.0 published October 7 — no repeat press.** The dry run and
+  publication succeeded; public latest and all 31 packed files match source.
+  A fresh installed consumer and npm signature/provenance verification pass.
+  [Release receipt and initial processing delay](research/defects-release-2026-10-07/README.md).
+  PRESS remaining: refresh the existing MPPScan entry after the canonical
+  signature-scope copy repair releases, then read it back. Its rendered list
+  omits Research Comparison, Change Check and Batch Spot Check. The old
+  official MPP PR closed because intake moved here; no second registration
+  is needed. [Exact target and limits](research/distribution-2026-10-07/README.md).
+
+- **Python public-route access — fixed October 7, broader scope approved.**
+  Browser Integrity Check is disabled on `scvd.store` except `/admin` paths.
+  Real Python reads the homepage, discovery documents and MCP catalogue;
+  unpaid checkout still returns a valid 402. Admin and credential-probe
+  controls retain their prior responses. No regression in those checks;
+  longer-term traffic/cost effects are unmeasured. No further approval is
+  pending. [Rule, evidence and scope](docs/PYTHON_CLIENT_ACCESS_2026-10.md).
+
+- **SCVD Attestation pilot, October 7 — first customer hands.** The bounded offer
+  is built and merged in [#996](https://github.com/seancrecord/scvd-general-store-repo/pull/996) on October 7. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
+  Once a buyer agrees the public endpoint, price and start time,
+  activate from `/admin/evidence-pilot`; hand over and verify the final report
+  before invoicing. No prospect was contacted, customer activated or invoice sent.
+  Implementation and release status live on ROADMAP, not this desk.
+
+- **LOOK deferred October 5 — L13 and the books.** The keeper asked to skip
+  authenticated checks for now. The L13 code and public reader are released;
+  `/admin/market/inflows` still needs its first current authorization-pairing
+  reading. The one-settlement difference below still needs transaction evidence.
+  No publish or accounting repair was pressed. [Public release readback](research/release-verification-2026-10-05/README.md).
+
+- **LOOK — the books check's one settlement, 2026-10-02.** The
+  page read the counters one settlement over the derived payer
+  purchases. The code can produce exactly that shape on its own:
+  a settle the till booked as house by user-agent or house
+  header (not by wallet), which the hourly raise then read as
+  organic and lifted onto `paid` as well. Fixed from this
+  deploy forward (records carry `house`, the raise honours it;
+  ROADMAP October 2), but a lift already made stays made — the
+  raise never lowers. To name it: read `/admin/raise-log` for
+  `house_records` (nonzero means the raise now sees such
+  records), then the sale events under `sellevt:` for a row
+  with `house: true` whose `payer` is not on
+  `house-wallets.json`. If one exists, that is the settle, and
+  the correction is one `paid:<item>` for its month down by one
+  — your press, with a corrections entry, not the raise's. If
+  none exists within the retained window, the cause remains unestablished;
+  missing event evidence neither rules this cause out nor dates the difference.
+- **PRESS — redeploy `scvd-doors`, 2026-10-02: the two labor doors have
+  answered 500 since the evening of 10-01.** `GET /api/buy/aura_walk`
+  and `/api/buy/the_collab` fall over before the 402; every other door
+  and the MCP door quote fine. Cause, found and reproduced in
+  `test/doors-labor-bench.spec.ts`: both are labor, so their unpaid
+  knock counts the bench, and the bench reads open labor orders
+  through the order coordinator. Cab's aura_walk order (`ord_nfx2bbzdz4`,
+  20:22 UTC) is the first coordinated labor order to sit open, and the
+  doors Worker has no Durable Object binding to read it with, so the
+  count threw and `onError` served the 500. The fix
+  (`services/managed-orders.ts`) lets a Worker with no coordinator read
+  the coordinator's own KV publication; the store Worker is unchanged
+  in behaviour. `scvd-doors` has a Workers Build of its own on this
+  repo now (the "Workers Builds: scvd-doors" check ran on the PR), so
+  the merge should carry the fix to the live doors without a press.
+  LOOK, once #970 is on `main` and that build is green: both URLs
+  above answer 402, and x402-list's next check reads every door found.
+  If either still reads 500 after the build, the press is
+  `npm run deploy:doors`. If you want the two doors back before the
+  merge, the standing rollback also works: delete the
+  `scvd.store/api/buy/*` route (Workers → scvd-doors → Domains &
+  Routes) and the store answers them itself, slower and correct.
+  Cab's order and certificate are unaffected; nothing was charged on
+  any of the 500s.
+
 - **auth-capture, 2026-09-28 — your "okay do it" and "for r7 we add the
   scheme".** Both rulings are recorded: R7 is done in
   `research/protocol-screen/rulings.json` (the trajectory and the
@@ -73,14 +152,19 @@ build, it is on the roadmap.
   both pieces, and whether either URL turns up in the Sunday citation
   sweep (it should not; a byline is our words, listing fact 4).
 
-- **Partner evidence — Merit note sent 2026-09-24, reply pending.** The keeper
+- **Partner evidence — decision-use reply pending, updated October 2.** The keeper
   approved the exact [issue follow-up](https://github.com/Merit-Systems/x402scan/issues/1014#issuecomment-5817308384);
   posting and text were verified. The [local reproduction](research/partner-evidence-2026-09-24/MERIT.md)
   narrows the reported bug: structured protocols accept nested pricing;
   the documented hybrid does not. Issue/comments and package were rechecked
-  before sending; no partner response or adoption established. BiX needs current schema/readiness confirmation;
-  Browserbase needs a method-correct scope, not a claim that its service is
-  broken. [Plan and phase gates](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md).
+  before sending; Merit has not replied. BiX accepted the free unpaid check:
+  its exact synthetic POST answered 402, and the [results were sent and verified](research/partner-evidence-2026-09-28/results-outreach.json).
+  BiX clarified the public output enum September 28. The October 1 follow-up
+  already asks which decision the fresh unpaid record supports. LOOK when that
+  answer arrives; hold custom work and a paid canary until then. No paid attempt
+  or repeat use established. [Current evidence](docs/ROI_FOLLOWTHROUGH_2026-10-02.md).
+  Browserbase remains a prepared, uncontacted prospect.
+  [Plan and phase gates](docs/PARTNER_EVIDENCE_PILOTS_2026-09.md).
   Research and any future build stay off this desk; implementation reference
   is ROADMAP L4. No paid attempt is designated by this entry.
 
@@ -89,9 +173,11 @@ build, it is on the roadmap.
   succeeded; npm and the official MCP Registry expose Tab 0.11.2. Do not rerun
   publication. The portable plugin updates from
   the repository; existing immutable submission pins do not update themselves.
-  The ClawHub press now carries skill 3.19.2 (2026-09-28): the purchases
-  reference buys an input-taking door at its `buy_url_template`, slots
-  filled, never at the bare door — one sentence, same bundle otherwise.
+  The ClawHub press now carries skill 3.19.3 (2026-10-02). All eleven source
+  file hashes match the registry; publication receipt is #971. The registry
+  overall/LLM/VirusTotal statuses are clean but Skillspector flags warnings;
+  this is not unanimous scan clearance. CLI 0.5.0 is also published and its
+  fresh-install project setup checks pass. No repeat publication needed.
   Claude's missing submission remains on the existing Anthropic report, with no
   reply as of September 24. Gemini remains paused. The skill publication receipt
   merged in #909; public scan clearance remains separate from that upload receipt.
@@ -755,7 +841,7 @@ build, it is on the roadmap.
 - **Queue reference corrected September 23.** The September 2 empty-queue
   reading is historical. ROADMAP owns the current build order: VQ4 first,
   VQ5-R second on the keeper's September 23 direction, then its remaining
-  ordered work. S8-v3 still waits on yes / no / later, not a date.
+  ordered work. S8-v3 was approved October 2: both observed contradictions affect the new readiness battery. No further keeper decision is pending.
   One branch at a time (#65).
 
 ---
@@ -913,27 +999,34 @@ Do not relitigate without you.
   losing increments under concurrent knocks, the expected direction,
   and means the true day figure is above 14,569, not below.
 
-### The decline desk's research sweeper (2026-09-28)
+### The decline desk's research sweeper (2026-09-28) — RULED 2026-09-30, no press needed
 
-- **RULE — is `Mozilla/5.0 (research)` machinery?** Your 09-28 reading
-  of the desk found most of the missing-input volume is one client
-  under that string, sweeping the whole catalog every fifteen to
-  forty-five minutes and missing each door's one required input in
-  turn; no wallet, no payment shape. It sits in the intent-bearing
-  column, so with x402lint or vet402 beside it on the same code it is
-  the one buyer the escalation needs to print OURS. The machinery table
-  takes only a word a machine chose for itself, and `research` is also
-  a shelf here (research_comparison) and the word the Coinbase buyer
-  used, so promoting it is your call, not an agent's: a bare word
-  promoted is misclassified forever. Say yes and it is a dated row in
-  `src/store/exclusions.ts` and a test both ways; say no and the rows
-  stay OURS and the desk keeps counting them. Either way the split you
-  asked about is not a bug: `address`, `urls`, `wallet` and `win` read
-  theirs because one client hit each; `host`, `tx_hash`, `mandate` read
-  OURS because two did, one of them counted as a buyer. The template
-  the desk's reading promised on every document was short six of them
-  (rungs, /how-it-works, /doors, room footers, the markdown twin,
-  /what); that is fixed and in the ledger, no press needed.
+- **You ruled: change the rule, not the table.** Asked on 09-30 whether
+  `Mozilla/5.0 (research)` was machinery, you asked back whether the
+  rule should change and what happens when walkers are handed wallets,
+  and the answer shipped as the rule rather than as a promoted word:
+  a client REFUSED at four or more distinct doors inside a minute is a
+  walker on the decline desk, by behaviour, whatever it calls itself
+  (`src/lib/walkers.ts`, the 09-30 amendment; ledger entry the same
+  day). Its rows stay on the desk and still count toward whether an
+  input is discoverable; they leave the column that means money turned
+  away, so OURS now needs a client refused at fewer doors. On wallets:
+  a walker that pays and settles is a customer, unchanged; one whose
+  wallet is refused at four doors in a minute is a walker with a
+  wallet; one refused at ONE door reads as a buyer, deliberately. The
+  sweeper did have a wallet — 0x430F…fc54, four signed payments of one
+  unit against offers of 10000 to 990000 on 09-28, each after a
+  malformed value — and the amount gate held all four times. Nothing
+  was promoted: `research` stays off the table for the reason the old
+  entry gave. Two small builds went with it: a missing-input row now
+  books the NAMES of the inputs that arrived (never values), so the
+  `node` client refused three times at spot_check on 09-30 can be read
+  next time; and spot_check takes the hostname out of a `url` sent in
+  place of `host`, the one input-taking door that had no sibling.
+  LOOK, next time you open the desk: the walker column should name the
+  sweeper with its width, the OURS rows should be the ones a client
+  refused at one door is actually behind, and `node` on spot_check
+  should show what it brought if it comes back.
 
 ### The contract's read budget (2026-09-19, `docs/OPENAPI_READ_BUDGET_2026-09-19.md`)
 
@@ -1231,6 +1324,25 @@ what you ruled and what is still yours to look at.
 
 ### Decisions that unblock the roadmap
 
+- **RULED October 12 — full Arc Gateway checkout and historical receipt audit.**
+  “I want to do both. no pilots just add it as long as it doesnt mess anything up.”
+  This settles the earlier Circle deeper/listing-only and pilot sequencing for
+  this scope. Implementation and release checks are on ROADMAP, not this desk.
+  **Recipient supplied October 12.** Public address is recorded identically
+  in both Worker configs. No key or credential was requested.
+  Gateway transfer history supplies per-sale confirmation; no automatic
+  withdrawal or independently walked Arc receive wallet is claimed. The
+  historical audit changed no counts and found no refund basis.
+
+
+- **RULED October 9 — CV1 seller declarations next.** Keeper agreed to the
+  recommendation and requested contextual funnel/paid follow-through. Free to
+  submit and read; an accepted declaration is an ask within the existing sweep
+  caps, not a guaranteed probe. Build and release stay on ROADMAP. Existing
+  watches/reports can be offered with their actual scope; declaration-change
+  alerts must not be claimed before built.
+
+
 - **RULED 2026-09-16 — takeoff readiness and A2A compatibility.** Buyer
   before spending is first; canonical A2A v1 retains an explicitly separated,
   bounded existing 0.3 contract, with no new legacy features. The keeper's
@@ -1311,6 +1423,23 @@ what you ruled and what is still yours to look at.
 
 ### Directory and listings (press is yours, rule 30)
 
+- **October 1 publication follow-through — no repeat publication press.**
+  CLI 0.4.0, preflight 0.3.1, MCP starter 0.2.0 and defects 0.21.0
+  are verified public/latest, with tarball integrity and every packed file
+  checked against source on October 1 at 20:32–20:33 UTC. The store MCP
+  registry 0.2.4 is independently verified active/latest;
+  [dated status and evidence](research/reporting-publication-2026-10-01/README.md).
+  GitHub About/topics were corrected and read back. No buyer qualification.
+
+- **Agent Finder #34 — owning account needed.** The existing fork is owned by
+  `cv-scvd`; the connected `seancrecord` account has no push access. The validated
+  [refresh patch and PR body](research/reporting-publication-2026-10-01/README.md#listing-corrections-and-remaining-hands)
+  are ready for that existing branch. MCP 0.2.4's URL is now verified. Do not
+  open a duplicate PR. MCPpedia #172 and mcp.so #4325 already contain the
+  required connection corrections and remain open. Other exact drafts and
+  unreadable venues remain in the [correction packet](research/listing-review-2026-09-30/CORRECTIONS.md);
+  no new outreach round was sent.
+
 - **UCP LIVE — distribution started September 19.** Keeper confirmed launch; live profile read back with catalog, checkout and order. [UCP Checker report](https://ucpchecker.com/check/scvd.store) now published with a Verified discovery label and a root signing-key warning to inspect against the actual spec. Paid evidence currently read covers hello/Base; broader advertised scope is not whole-shelf paid qualification. Submitted [community UCP directory #3](https://github.com/homototus/ucp-directory/issues/3), the free UCPList merchant form, [Awesome UCP #30](https://github.com/Upsonic/awesome-ucp/pull/30) and [UCP Merchant Directory #1](https://github.com/awesomeucp/merchants/pull/1); all await review. Directory display repair also submitted as [#3](https://github.com/awesomeucp/merchants/pull/3). [UCP.tools listing](https://ucptools.dev/directory/scvd.store) is live September 20; the free UCPRegistry merchant form confirmed receipt, review pending. No new press needed for either. [Receipts and next routes](research/ucp-distribution-2026-09-19/README.md). [Muse submission](research/muse-connector-2026-09-19.md#submitted--keeper-completed-the-final-press) completed by the keeper September 19; browser confirmed receipt for SCVD x402 Verifier. Review pending; the agent could not read the linked Connector Terms. Existing Google merchant-intake status remains separate. Recurring/monthly fees declined.
 
 - **WAIT — OpenCode ecosystem submissions (September 18).** Native skill load and free preflight passed via keeper-authorized ChatGPT OAuth. [Official PR #49834](https://github.com/anomalyco/opencode/pull/49834), linked to the required [issue #49833](https://github.com/anomalyco/opencode/issues/49833), and [community PR #736](https://github.com/awesome-opencode/awesome-opencode/pull/736) are submitted. Community schema validation passed; neither listing is accepted yet. [Native receipt](research/distribution-2026-09-18/opencode-native-execution.json).
@@ -1367,14 +1496,14 @@ what you ruled and what is still yours to look at.
   read advertised EVM charge / Base / 1 USDC alongside x402, with matching menu
   and OpenAPI capabilities. The whole-shelf HTTP extension merged in #790;
   deployment readback is tracked in [the metadata repair](docs/MPP_OPENAPI_DISCOVERY_2026-09-17.md). Official MPP
-  [PR #991](https://github.com/tempoxyz/mpp/pull/991) submitted; review pending.
+  [PR #991](https://github.com/tempoxyz/mpp/pull/991) closed unmerged October 2: the directory now directs submissions to MPPScan, where SCVD already registered September 19. [October 7 readback and remaining refresh](research/distribution-2026-10-07/README.md).
   Keeper-requested follow-ups posted September 18:
   [directory expansion update](https://github.com/tempoxyz/mpp/pull/991#issuecomment-5734203544)
   and [fresh parser reproduction / exact-query URL](https://github.com/Merit-Systems/x402scan/issues/1209#issuecomment-5734203762).
   The update labels the outside-wallet purchase as house-funded. The same
   directory comment was refreshed at 19:58 UTC after #813 merged and the live
   WebMCP bridge matched its source. No duplicate submission or expanded
-  listing was made; external review remains pending.
+  listing was made; the official-directory review later closed as recorded above.
   MPPScan discovery qualification DONE September 18 against the live shelf
   ([receipt](research/distribution-2026-09-18/mppscan-live-check.json));
   re-read September 19 after the publication doors deployed (#826): 38 of 38
@@ -1470,28 +1599,24 @@ what you ruled and what is still yours to look at.
   indexer has to adjudicate; a host that errors is a door that reads
   as broken.
 
-- **Hugging Face: the Space waits for the account to turn 30
-  (2026-09-11, evening).** Read off the Hub's own docs after the
-  static Space came down: Gradio and Docker Spaces need a paid plan
-  (PRO, $9/mo) — only static Spaces are free — with one exception,
-  a free personal account older than 30 days may host two Gradio
-  Spaces on ZeroGPU. `keeper-scvd` was created 2026-09-03, so the
-  free route opens 2026-10-03. CV's static Space was the only free
-  shape available to him; taking it down was still right (its
-  `SKILL.md` was a version stale, missing the postcard rule, and the
-  `agent-skill` tag is not an index hf-discover reads). Your ruling:
-  wait, which is the recommendation — a reminder fires into the
-  session on 2026-10-04 with the steps (create the Space with SDK
-  Gradio, hardware ZeroGPU, paste the four files from
-  `spaces/scvd-x402-verifier/`, read the MCP schema, file the
-  hf-discover search). PRO now is the alternative if a month matters.
+- **LOOK: hf-discover, one week on (2026-10-12).** The Hub's own
+  search — the live query hf-discover makes downstream, per its
+  README — now returns `keeper-scvd/scvd-x402-verifier` for "scvd"
+  under the `mcp-server` filter (`docs/ard-discovery/2026-10-12/`).
+  One curl from your machine confirms the index itself:
+  `curl -sS -X POST https://huggingface-hf-discover.hf.space/search -H 'content-type: application/json' -d '{"query":{"text":"scvd","filter":{"type":["application/mcp-server-card+json"]}},"pageSize":10,"federation":"none"}'`
+  Paste the result; it gets filed beside the two zeros. Known limit,
+  the Hub's not ours: a purpose query ("verify x402 receipt") returns
+  nothing; the Hub search answers to names.
 
 - **The ChatGPT verifier plugin is published (2026-09-17).** The
   [publication record](registry/openai-plugin-verifier-submission.md) supersedes
   the old full-store review row: SCVD x402 Verifier 1.0.0 is Published with
   `/mcp/verifier`. The keeper completed the skill update September 17;
-  cross off the upload/update press. Do not infer review approval or publication
-  of the updated version from that report alone.
+  cross off the upload/update press. **October 7 public read:** version 2.0.0
+  and both App and Skill sections are visible. Updated listing presence is now
+  confirmed; installed skill/source equality and runtime qualification remain
+  separate. [Evidence](research/discovery-presence-2026-10-07/README.md).
 
 - **RULE, small: re-paste the WAF rule (2026-09-11, evening).** The
   user-agent rule you pressed worked and, within the hour, an
@@ -1881,6 +2006,20 @@ what you ruled and what is still yours to look at.
   (attic). Write who appears. Google still blank for
   `scvd.store` / "SCVD general store." No new `/x402/`
   tree.
+  **October 6 read:** Google returns the homepage and other pages for
+  `site:scvd.store`, but neither `scvd store` nor `scvd general store`
+  returned the domain as an ordinary first-page result. Outside listings
+  supply the latter query's AI Overview sources. The live root www/HTTP
+  redirects now work. LOOK: use the owning Search Console account for
+  indexed canonical, crawl and branded-query performance; the account
+  available to this read had no accessible property. [Evidence and
+  limits](research/seo-brand-2026-10-06/README.md). The historical “blank”
+  wording above must not be read as current total deindexing.
+  **October 7 follow-through:** the authorized local presentation/metadata
+  repair and audit are recorded in the same evidence note. Merge/deploy
+  authorized later October 7; Search Console measurement remains a LOOK.
+  LOOK still needs the account owning Search Console so Google's selected
+  canonical, recrawl and brand-query performance can actually be measured.
 - **Indexability LOOK (dump 22).** `robots.txt` already
   allows and points at the sitemap. Titles, meta, OG,
   canonicals are derived from rooms. Confirm we are
@@ -1950,11 +2089,11 @@ what you ruled and what is still yours to look at.
 - **World ID** (#52 remainder). Your enrollment.
 - **`launch_check` on Polygon.** Fund the field wallet
   with Polygon USDC. Not a code task.
-- **Browser origin trials.** September 16 UTC live reading confirms both
-  tokens are present: Edge expires 2026-10-15; Chrome expires 2026-11-17.
-  Renew the earlier Edge grant before it ends. The door reader already
-  derives the soonest expiry from both tokens; this is an advance warning,
-  not a current outage. Evidence: `docs/PAYMENT_REACH_QUALIFICATION_2026-09-16.md`.
+- **Browser origin trials.** Edge renewal supplied by the keeper October 13,
+  covering scvd.store and subdomains through November 27. Chrome now expires
+  first, November 17; renew that grant next. The door reader derives the
+  soonest expiry from both tokens. The replacement is in the release branch;
+  full CI and live token readback gate completion.
 
 ### Housekeeping, your machine
 

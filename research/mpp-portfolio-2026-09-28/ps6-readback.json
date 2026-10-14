@@ -1,0 +1,237 @@
+{
+  "capturedAt": "2026-09-28T19:48:52.947Z",
+  "scope": "Unsigned metadata readback after PS6 merge. No endpoint probe, payment or buyer/model qualification. Inspection schemas are retained excerpts, not full response captures.",
+  "observations": [
+    {
+      "name": "http",
+      "url": "https://scvd.store/api/preflight/v2",
+      "httpStatus": 200,
+      "responseSha256": "35661ce6b2eefe9a9462264a24fc1ac29959d6d504bee20bf0d58b0e3d7e5f83",
+      "inspection": {
+        "type": "object",
+        "description": "One unpaid response, with observed protocols, unverified advertised term summaries, existing structural findings and coverage gaps. The x402 verdict retains its meaning. No artifact signature verification, payment signing, payment submission, settlement or delivery check.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "inspection-v1"
+            ]
+          },
+          "subject_url": {
+            "type": "string"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reachability": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "responded",
+                  "unreachable",
+                  "method_unresolved"
+                ]
+              },
+              "http_status": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "protocols": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "read",
+                  "partial",
+                  "unobserved"
+                ]
+              },
+              "observed": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "x402",
+                    "mpp"
+                  ]
+                }
+              },
+              "scope": {
+                "type": "string"
+              }
+            }
+          },
+          "terms": {
+            "type": "object",
+            "description": "Unverified summaries, at most 32 entries per protocol, each with state, entries, total and omitted. Not complete payment instructions."
+          },
+          "structure": {
+            "type": "object",
+            "description": "Existing x402, frozen MPP and MPP core batteries, checked counts and failed check names. MPP core also names unmeasured checks; no global readiness verdict."
+          },
+          "coverage": {
+            "type": "object",
+            "description": "Body read / over_limit / unobserved and MPP core read / absent / unmeasured."
+          },
+          "signatures": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "not_checked"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "unperformed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "mcp",
+      "url": "https://scvd.store/mcp",
+      "httpStatus": 200,
+      "responseSha256": "43935fa1698c16673a66ab2987e44e880ad70c0bfdb021086ebc84b0eb758c98",
+      "inspection": {
+        "type": "object",
+        "description": "One unpaid response, with observed protocols, unverified advertised term summaries, existing structural findings and coverage gaps. The x402 verdict retains its meaning. No artifact signature verification, payment signing, payment submission, settlement or delivery check.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "inspection-v1"
+            ]
+          },
+          "subject_url": {
+            "type": "string"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reachability": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "responded",
+                  "unreachable",
+                  "method_unresolved"
+                ]
+              },
+              "http_status": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "protocols": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "read",
+                  "partial",
+                  "unobserved"
+                ]
+              },
+              "observed": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "x402",
+                    "mpp"
+                  ]
+                }
+              },
+              "scope": {
+                "type": "string"
+              }
+            }
+          },
+          "terms": {
+            "type": "object",
+            "description": "Unverified summaries, at most 32 entries per protocol, each with state, entries, total and omitted. Not complete payment instructions."
+          },
+          "structure": {
+            "type": "object",
+            "description": "Existing x402, frozen MPP and MPP core batteries, checked counts and failed check names. MPP core also names unmeasured checks; no global readiness verdict."
+          },
+          "coverage": {
+            "type": "object",
+            "description": "Body read / over_limit / unobserved and MPP core read / absent / unmeasured."
+          },
+          "signatures": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "not_checked"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "unperformed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schemasAgree": true
+}

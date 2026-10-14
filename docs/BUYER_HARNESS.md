@@ -163,3 +163,31 @@ npm run buyer:cold -- --score /tmp/scvd-next-buyers
 This command writes `score.json`; it is not a read-only report viewer. Never use
 it to overwrite a historical acquisition or reviewed score. Review files remain
 necessary: the harness does not let a model award itself a pass.
+
+
+## October 12 integration: provisioned reports and serial recipients
+
+A directed plan may declare `buyer_tool: { "mode": "provisioned-pinned-runtime" }`
+with the exact recipient-verifier module hashes. The controller supplies that
+runtime to the buyer under `work/report-tool`. Its qualification includes
+retained generated reports for signed and tampered fixtures. This condition
+measures supplied-tool use, not npm installation or independent discovery.
+The existing package-installation and source/draft-check conditions remain
+available and keep their distinct qualification requirements.
+
+Use `verify-source` for a saved response, and `verify` for an exported
+`bundle.json`; a detached `payload.json` has no signature envelope. Both report
+paths preserve signature scope. Run verification as a standalone command in
+restricted shells. Do not append bookkeeping commands or bypass a refusal.
+
+`--recipient-series COHORT` previews eligible frozen cells and skipped buyers;
+adding `--run` launches them serially. All eligible handoffs are preflighted
+before the first launch. Any reserved attempt refuses the series. A failed,
+interrupted or incompletely described run stops it before later cells launch.
+The single-recipient CLI also returns nonzero for these returned failures.
+Neither command retries old cells. Process completion still requires evidence
+review. Missing timing evidence cannot establish an uninterrupted completion.
+
+The changed instrument and verifier need fresh qualification. Keep the host
+awake throughout the new study; sleep prevention alone does not prove this.
+Historical plans, scores, model evidence and attempts remain unchanged.

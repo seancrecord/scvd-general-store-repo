@@ -1,5 +1,8 @@
 import { CONTRIBUTION_PATHS } from "@/lib/contribution-task-schema";
 import { CONTRIBUTION_PROPOSITION, CONTRIBUTION_MONEY, CONTRIBUTION_FREE } from "@/store/contribution-tasks";
+import { ucpRecoveryPaths } from "@/lib/ucp/checkout/discovery";
+import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY, SELLER_DECLARATIONS_PATH } from "@/store/seller-declarations";
+import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import {
   FIELD_STUDY_PROPOSITION,
@@ -107,6 +110,13 @@ export interface Feature {
 
 export const FEATURES: readonly Feature[] = [
   {id: "contribution_work", name: "Contribution work", room: "/bounties", proposition: CONTRIBUTION_PROPOSITION, for_money: CONTRIBUTION_MONEY, free_first: CONTRIBUTION_FREE, doors: CONTRIBUTION_PATHS, named_on: ["/field-study"], opened: "2026-10-13"},
+  { id: "seller_declarations", name: "Seller declarations", room: SELLER_DECLARATIONS_PATH,
+    proposition: DECLARATION_PROPOSITION, for_money: DECLARATION_MONEY, free_first: DECLARATION_FREE,
+    doors: ["/api/seller-declaration"], named_on: ["/operators", "/corpus", "/evidence-pilot"], opened: "2026-10-09" },
+  { id: "evidence_pilot", name: EVIDENCE_PILOT.name, room: EVIDENCE_PILOT.path,
+    proposition: PILOT_PROPOSITION, for_money: PILOT_MONEY, free_first: PILOT_FREE,
+    doors: ["/api/evidence-pilot/sample", "/api/evidence-pilot/{watch_id}"],
+    named_on: ["/operators"], opened: "2026-10-07" },
   {
     /**
      * THE FIELD STUDY (2026-09-19). The bounty board turned around:
@@ -226,6 +236,8 @@ export const FEATURES: readonly Feature[] = [
        * grip it extends, so the register matches what a reader finds.
        */
       "/api/replay/{cert_id}",
+      // Retained signed observations, linked from each purchase and its verification page.
+      "/api/spot-checks/{cert_id}",
     ],
     named_on: ["/criteria"],
     opened: SCORERS_OPENED,
@@ -311,7 +323,8 @@ export const FEATURES: readonly Feature[] = [
     proposition: OPERATORS_PROPOSITION,
     for_money: OPERATORS_FOR_MONEY,
     free_first: OPERATORS_FREE_FIRST,
-    doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}"],
+    // UCP read/cancel extend the existing purchase-recovery feature.
+    doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}", ...Object.keys(ucpRecoveryPaths("", {}))],
     named_on: ["/scorers"],
     opened: OPERATORS_OPENED,
   },

@@ -1,0 +1,306 @@
+{
+  "observed_at": "2026-10-05T19:46:39.779793+00:00",
+  "url": "https://scvd.store/api/catalog/v1?item_id=research_comparison",
+  "request_body": null,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "response_sha256": "a5122cfd5ed13fc139bd20518cd3d5959f9d5c85b3beb7c843a4688cf413eafe",
+  "body": {
+    "scope": "active_menu",
+    "publications": [
+      {
+        "index_url": "https://scvd.store/almanac?view=compact",
+        "status": "active"
+      },
+      {
+        "index_url": "https://scvd.store/open-for-business?view=compact",
+        "status": "active"
+      },
+      {
+        "index_url": "https://scvd.store/gazette?view=compact",
+        "status": "archived"
+      },
+      {
+        "index_url": "https://scvd.store/zodiac/archive?view=compact",
+        "status": "archived"
+      }
+    ],
+    "query": {
+      "item_id": "research_comparison"
+    },
+    "matched": 1,
+    "of": 38,
+    "items": [
+      {
+        "id": "research_comparison",
+        "name": "Research Comparison",
+        "subtitle": "signed payment terms, dated history and shared receivers for research endpoints",
+        "price_usdc": 0.01,
+        "price_tiers_usdc": [
+          0.01
+        ],
+        "cadence": "one_off",
+        "fulfillment": "instant",
+        "reads": "subject_comparison",
+        "buy_url": "https://scvd.store/api/buy/research_comparison",
+        "buy_url_template": "https://scvd.store/api/buy/research_comparison?urls=<urls>",
+        "listing_url": "https://scvd.store/menu/research_comparison",
+        "payment_capabilities": [
+          {
+            "protocol": "x402",
+            "transport": "http",
+            "method": "GET",
+            "path": "/api/buy/research_comparison",
+            "request_header": "PAYMENT-SIGNATURE",
+            "challenge_header": "PAYMENT-REQUIRED",
+            "currency": "USDC"
+          },
+          {
+            "protocol": "ucp",
+            "transport": "rest",
+            "path": "/ucp/v1/checkout-sessions",
+            "profile": "/.well-known/ucp"
+          },
+          {
+            "protocol": "mpp",
+            "payment_method": "evm",
+            "intent": "charge",
+            "network": "eip155:8453",
+            "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "currency": "USDC",
+            "decimals": 6,
+            "amount_atomic": "10000",
+            "transport": "http",
+            "method": "GET",
+            "path": "/api/buy/research_comparison",
+            "request_header": "Authorization",
+            "authorization_scheme": "Payment",
+            "challenge_header": "WWW-Authenticate",
+            "response_header": "Payment-Receipt",
+            "idempotency_header": "Idempotency-Key"
+          },
+          {
+            "protocol": "mpp",
+            "payment_method": "evm",
+            "intent": "charge",
+            "network": "eip155:8453",
+            "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "currency": "USDC",
+            "decimals": 6,
+            "amount_atomic": "10000",
+            "transport": "mcp",
+            "method": "tools/call",
+            "path": "/mcp",
+            "challenge_key": "org.paymentauth/payment-required",
+            "challenge_location": "error.data, or result._meta with ?payment=tool-result",
+            "credential_meta_key": "org.paymentauth/credential",
+            "receipt_meta_key": "org.paymentauth/receipt",
+            "idempotency_meta_key": "x402/idempotency-key"
+          },
+          {
+            "protocol": "mpp",
+            "payment_method": "evm",
+            "intent": "charge",
+            "network": "eip155:8453",
+            "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "currency": "USDC",
+            "decimals": 6,
+            "amount_atomic": "10000",
+            "transport": "webmcp",
+            "script": "/webmcp.js",
+            "quote_tool": "quote_store_purchase",
+            "challenge_field": "payment_challenge",
+            "complete_tool": "complete_store_purchase",
+            "credential_argument": "signed_credential",
+            "receipt_field": "payment_receipt"
+          }
+        ],
+        "task": "Compare payment terms, dated host history and shared receiving addresses before an agent buys research from a set of x402 endpoints",
+        "pricing": "fixed",
+        "method": "GET",
+        "required_params": [
+          "urls"
+        ],
+        "input_contract_url": "https://scvd.store/menu/research_comparison?view=compact",
+        "mcp_url": "https://scvd.store/mcp?view=compact&item_id=research_comparison&payment=tool-result",
+        "price_discovery_url": "https://scvd.store/menu/research_comparison?view=compact",
+        "buyer_guidance": {
+          "price_effect": {
+            "minimum_usdc": 0.01,
+            "higher_payment": "not_offered",
+            "higher_payment_changes_scope": false,
+            "scope": "The named item and its declared inputs; a tip does not add scope, priority or human time."
+          },
+          "free_alternative": {
+            "url": "https://scvd.store/api/look/v1",
+            "method": "POST",
+            "payment_required": false,
+            "paid_adds": "One signed, certificate-bound comparison of the supplied endpoints, with matching-asset quote groups and shared receiving addresses. The free Look reads one endpoint per call.",
+            "body_template": {
+              "url": "{endpoint_url}"
+            }
+          },
+          "production": {
+            "kind": "instant_fulfillment",
+            "authorship": "See the artifact; no additional authorship or authoring date is asserted here."
+          },
+          "evidence": {
+            "signs": "The supplied endpoint set, observation window, per-endpoint preflight reports, advertised atomic terms, host history with dates and coverage, same-endpoint network comparisons, shared receiving-address matches, gaps and limits. SHA-256 of observation.signed_payload is bound into the purchase certificate as attests; observation.signature_jcs also covers the RFC 8785 canonical record.",
+            "does_not_prove": "Research accuracy, freshness, licensing or suitability for a trade; common ownership or common underlying sources; complete market coverage; final variable costs; settlement or delivery success. An advertised address match is not an identity verdict. No ranking, recommendation or Coinbase endorsement.",
+            "spec_url": "https://scvd.store/attestation",
+            "criteria_url": "https://scvd.store/criteria",
+            "version_source": "Use the criteria/spec version and evidence fields inside the delivered artifact when present; the live criteria page can change.",
+            "verify_url_template": "https://scvd.store/api/verify/{id}",
+            "verification_payment_required": false,
+            "corrections_url": "https://scvd.store/corrections",
+            "report_error": {
+              "method": "POST",
+              "url": "https://scvd.store/api/letter",
+              "payment_required": false,
+              "body_field": "letter",
+              "include": "Artifact ID or verification URL, disputed field, reproducible evidence and expected result. Keep purchase-status tokens private."
+            },
+            "limit": "A valid signature establishes signed bytes and signer identity, not the truth of an observation. Correction requests are reviewed by the keeper."
+          },
+          "recovery": {
+            "status_tool": "check_purchase",
+            "requires_status_token": true,
+            "how": "If a response supplies recovery.status_url and status_token, read that URL with Authorization: Bearer <status_token> for free. Save these privately. Otherwise retry the original payment and inputs with the original idempotency key.",
+            "no_new_payment": "Do not sign a new payment merely to find out whether the first one delivered.",
+            "scope": "Purchase-status handles exist on recorded catalog purchases; an order URL is the pickup for commissioned work."
+          },
+          "credit": {
+            "rate": 0.05,
+            "cash_out_floor_atomic": "1000000",
+            "balance_cap_atomic": "25000000",
+            "idle_expiry_days": 90,
+            "currency": "USDC",
+            "changes_checkout_price": false,
+            "proof_of_accrual": "store_credit in the successful fulfillment response",
+            "eligibility": "Organic certificate purchases; house wallets excluded. Accrual can be unavailable or capped. Publication-only payments do not accrue.",
+            "cash_out_wallet_kind": "EVM EOA",
+            "cash_out_network": "eip155:8453",
+            "balance_url_template": "https://scvd.store/api/credit/{evm_wallet}",
+            "terms_url": "https://scvd.store/credit",
+            "redemption": {
+              "challenge_url": "https://scvd.store/api/credit/challenge",
+              "redeem_url": "https://scvd.store/api/credit/redeem",
+              "method": "POST",
+              "requires_wallet_signature": true,
+              "automatic": false
+            },
+            "rail_limit": "The current balance and cash-out API accepts EVM addresses only; do not infer Solana cash-out support."
+          }
+        },
+        "purchase_checklist": {
+          "protocol": "x402",
+          "currency": "USDC",
+          "price_tiers_usdc": [
+            0.01
+          ],
+          "networks": [
+            "eip155:8453",
+            "eip155:137",
+            "eip155:42161",
+            "eip155:480",
+            "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+          ],
+          "network_source": "PAYMENT-REQUIRED is authoritative; configured rails do not prove settlement or availability.",
+          "required_params": [
+            "urls"
+          ],
+          "fulfillment": "instant",
+          "default_client": {
+            "package": "@x402/core",
+            "scope": "Spending ceiling only; wallet/network support, stock and input eligibility are separate.",
+            "ceiling_usdc": 1,
+            "compatible": true,
+            "tiers_above_ceiling": 0,
+            "maxAmountPerPayment": "$0.01"
+          }
+        },
+        "description": "Compare 2 to 4 paid research endpoints before buying research: one live x402 preflight each, advertised atomic payment terms grouped by network and asset, dated host history with coverage and gaps, and shared receiving addresses within your set. Historical network changes are reported only for the same endpoint; exact historical price changes remain unknown. Delivered in one signed, certificate-bound response. No research is purchased or evaluated; no rankings or ownership claims. The separate preflight, Look and host history are free.",
+        "constraints": [
+          "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased.",
+          "Partial observations are delivered at the fixed price with gaps counted; if every live probe is refused or the instrument fails, no settlement is attempted",
+          "An unreachable probe is a reading of our network path, not proof that a provider is down",
+          "Atomic amounts compare only within the same network and asset; no token decimals, dollar conversion, variable final cost or research quality inferred",
+          "Shared receiving addresses do not establish common ownership or common research sources",
+          "Submitted URLs and the signed comparison are retained for purchase recovery, not added to the public corpus or shared with partners",
+          "Never a ranking, and never a verdict without its derivation and denominator beside it."
+        ],
+        "sample_url": "/samples/research-comparison.json",
+        "sample_kind": "delivery_outline",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "agent_name": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+            },
+            "purpose": {
+              "type": "string",
+              "maxLength": 280,
+              "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions."
+            },
+            "urls": {
+              "type": "string",
+              "maxLength": 4114,
+              "description": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased."
+            }
+          },
+          "required": [
+            "urls"
+          ]
+        },
+        "availability": "Checkout checks stock, keeper availability and subject prerequisites before charging.",
+        "signs": "The supplied endpoint set, observation window, per-endpoint preflight reports, advertised atomic terms, host history with dates and coverage, same-endpoint network comparisons, shared receiving-address matches, gaps and limits. SHA-256 of observation.signed_payload is bound into the purchase certificate as attests; observation.signature_jcs also covers the RFC 8785 canonical record.",
+        "does_not_prove": "Research accuracy, freshness, licensing or suitability for a trade; common ownership or common underlying sources; complete market coverage; final variable costs; settlement or delivery success. An advertised address match is not an identity verdict. No ranking, recommendation or Coinbase endorsement.",
+        "checkout": {
+          "protocol": "x402",
+          "version": 2,
+          "currency": "USDC",
+          "amount_unit": "atomic",
+          "asset_decimals": 6,
+          "automatic_renewal": false,
+          "valid_inputs_required_before_quote": false,
+          "bare_probe_answers_402": true,
+          "price_discovery_url": "https://scvd.store/api/catalog/v1",
+          "request_header": "PAYMENT-SIGNATURE",
+          "legacy_header_alias": "X-PAYMENT",
+          "legacy_payload_supported": false,
+          "challenge_header": "PAYMENT-REQUIRED",
+          "response_header": "PAYMENT-RESPONSE",
+          "payment_network_source": "PAYMENT-REQUIRED.accepts[].network",
+          "input_network_note": "A network input selects the chain to inspect; it does not select the payment network. Pay only on a network offered in the current quote.",
+          "mcp_payment_key": "x402/payment",
+          "mcp_idempotency_key": "x402/idempotency-key",
+          "steps": [
+            "Use the item's input contract and mcp_url for required inputs and its single buy tool.",
+            "GET buy_url_template, replacing every <slot> with your value; it is buy_url with this door's required inputs already in place. The free 402 quote names required_params; PAYMENT-REQUIRED is base64 JSON. A bare GET of buy_url also quotes, but a door with required inputs refuses the PAID request without them, so buy the template URL, not the bare one.",
+            "Select an offered network and amount within budget; copy atomic amounts unchanged. Without a supported wallet/client, stop before signing.",
+            "Retry identical inputs with the signed v2 payload in PAYMENT-SIGNATURE and Idempotency-Key from quote.idempotency.suggested_key. X-PAYMENT also accepts v2, never v1.",
+            "MCP: tools/list at mcp_url. Unpaid: isError:true and structuredContent quote. Retry with params._meta['x402/payment']; copy result._meta['x402/idempotency-key'] to the same key in params._meta.",
+            "Invalid inputs never pay. Instant goods precede settlement; human work returns an order to poll. After a lost response, reuse payment, inputs and retry key."
+          ],
+          "wallet_safety": "Never send keys, seed phrases or wallet secrets. Sign in your wallet or payment client.",
+          "documentation_url": "https://scvd.store/agents.md",
+          "full_catalog_url": "https://scvd.store/menu.json"
+        },
+        "at_a_glance": {
+          "attests": "The supplied endpoint set, observation window, per-endpoint preflight reports, advertised atomic terms, host history with dates and coverage, same-endpoint network comparisons, shared receiving-address matches, gaps and limits. SHA-256 of observation.signed_payload is bound into the purchase certificate as attests; observation.signature_jcs also covers the RFC 8785 canonical record.",
+          "input": "urls (query parameters; input schema and checkout: https://scvd.store/menu/research_comparison?view=compact)",
+          "output": "One signed comparison: live atomic payment terms, dated host history and gaps, same-endpoint network changes, shared receivers and limits. No research quality or ownership verdict. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+          "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+          "verify": "GET https://scvd.store/api/verify/{cert_id} \u2014 free, no account, no rate limit, checkable offline with the published key",
+          "price_and_fulfilment": "$0.01 USDC fixed, one-off; nothing here charges again by itself, ever \u2014 there is no mechanism that could; delivered instantly",
+          "does_not_attest": "Research accuracy, freshness, licensing or suitability for a trade; common ownership or common underlying sources; complete market coverage; final variable costs; settlement or delivery success. An advertised address match is not an identity verdict. No ranking, recommendation or Coinbase endorsement."
+        }
+      }
+    ],
+    "whole_listing": "https://scvd.store/menu/research_comparison"
+  }
+}

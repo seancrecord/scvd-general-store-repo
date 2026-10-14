@@ -179,6 +179,12 @@ it("a signing outage lasting longer than the platform retry limit retains a wake
   fault.mint = true;
   for (let attempt = 0; attempt < 8; attempt++) expect(await runDurableObjectAlarm(fixture.stub)).toBe(true);
   expect(await fixture.read()).toMatchObject({ charged: true, delivery_state: "not_established_by_this_record" });
+  // This is the paid gap the public ordering promise must disclose.
+  for (const path of ["/agents.md", "/skill.md", "/how-it-works.json"]) {
+    const guide = await (await request(path)).text();
+    expect(guide, path).toContain("failure after settlement");
+    expect(guide, path).not.toContain("a delivery that fails takes no money");
+  }
   fault.mint = false;
   expect(await runDurableObjectAlarm(fixture.stub)).toBe(true);
   expect(await fixture.read()).toMatchObject({ charged: true, delivery_state: "delivered" });

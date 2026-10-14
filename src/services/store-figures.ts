@@ -43,6 +43,9 @@ export interface StoreMonthFigures {
   organic_challenges: number;
   organic_payments_presented: number;
   organic_settled: number;
+  /** Additive since September 30; absent in older signed records. */
+  total_organic_settled?: number;
+  mpp_organic_settled?: number;
   organic_declines: number;
   conversion_rate: number | null;
   /** All-time organic settles by network, or null when the split is withheld. */
@@ -65,7 +68,7 @@ const INSTRUMENT =
   "the pulse's monthly window (services/pulse.ts), the books' rail split and per-item till (services/stats.ts) and the signal store's per-subject rows (services/buyer-signals.ts); every figure's population is on /pulse, /stats and /observatory under published_counts";
 
 const NOTE =
-  "Counts, not visitors; floors, not censuses; the rail split and the per-item till are all time and the rest is this month. No host is named and no wallet is here.";
+  "Counts, not visitors; floors, not censuses; the rail split and the per-item till are all time and the rest is this month. The funnel and conversion rate cover x402 only; total_organic_settled adds native MPP sales, with mpp_organic_settled naming that contribution. No host is named and no wallet is here.";
 
 /**
  * One month's figures.
@@ -104,6 +107,10 @@ export async function storeMonthFigures(
     organic_challenges: window?.organic_challenges ?? 0,
     organic_payments_presented: window?.organic_payments_presented ?? 0,
     organic_settled: window?.organic_settled ?? 0,
+    ...(window?.total_organic_settled !== undefined ? {
+      total_organic_settled: window.total_organic_settled,
+      mpp_organic_settled: window.mpp_organic_settled,
+    } : {}),
     organic_declines: window?.organic_declines ?? 0,
     conversion_rate: window?.conversion_rate ?? null,
     by_rail: stats.organic_by_rail ? (rail as Record<string, number>) : null,

@@ -2,6 +2,7 @@ import type { CorpusRecord } from "@/services/corpus";
 import { carriesVerdict } from "@/services/ward-round";
 import type { WardHostResult } from "@/services/ward-round";
 import { payToDigest } from "@/lib/pay-to-digest";
+import { readOnceInScope } from "@/lib/read-scope";
 
 /**
  * WALLET FACTS, UNDER THE G2 RULING (roadmap 3.6; the ruling is
@@ -91,9 +92,9 @@ function hostsOf(record: CorpusRecord): WardHostResult[] {
 }
 
 /** digest -> hosts advertising it, within one signed week. */
-async function clustersOf(
+const clustersOf = readOnceInScope(async (
   record: CorpusRecord,
-): Promise<Map<string, Set<string>>> {
+): Promise<Map<string, Set<string>>> => {
   const clusters = new Map<string, Set<string>>();
   for (const host of hostsOf(record)) {
     for (const digest of await digestsOf(host)) {
@@ -103,7 +104,7 @@ async function clustersOf(
     }
   }
   return clusters;
-}
+});
 
 /**
  * T1 — the public counts. Latest signed week only: this is a

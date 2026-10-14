@@ -43,6 +43,9 @@ import {
 } from "@/services/launch-check";
 import type { Env } from "@/types";
 import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { EVM_USDC_DOMAIN } from "@/lib/payments";
+import { declaredTransferMethod, DEFAULT_TRANSFER_METHOD } from "@/lib/value-checks";
+import { BOUNTY_WITHDRAWALS } from "@/store/bounty-withdrawals";
 
 /**
  * THE BOUNTY BOARD (BOUNTY_BOARD.md) — mystery shoppers for the x402
@@ -72,6 +75,13 @@ export const BOUNTY_MAX_REWARD_USD = 0.25;
 export const BOUNTY_WEEKLY_BUDGET_USD = 10;
 /** Payout authorizations expire on their own: seven days. */
 export const BOUNTY_AUTH_VALID_SECONDS = 7 * 24 * 3600;
+/**
+ * THE RECOVERY LINE (2026-09-29), printed on every payout and on the
+ * board's walkthrough, so a walker whose client dropped the signature
+ * reads the way back in the response it kept. One string, both places.
+ */
+export const BOUNTY_REISSUE_LINE =
+  "Lost this body? Send the same claim again — same bounty_id, tx_hash, payer and payout_to — and the same signature comes back, under the same nonce, until it expires or is redeemed.";
 /** Verbatim observation cap — a claim, not a filesystem. */
 export const BOUNTY_OBSERVATION_CAP = 4000;
 /**
@@ -361,7 +371,7 @@ export interface BountyRecord {
   distinct_payer_required?: boolean;
   opened_block: number;
   expires_at: string;
-  status: "open" | "paid" | "expired";
+  status: "open" | "paid" | "expired" | "withdrawn";
   claim?: {
     tx_hash: string;
     payer: string;
@@ -429,6 +439,32 @@ interface AcceptEntry {
   maxAmountRequired?: string;
   payTo?: string;
   asset?: string;
+  extra?: unknown;
+}
+
+/**
+ * `exact` describes the amount, not the settlement mechanism. Gateway
+ * also advertises `exact` USDC but settles balances in batches; our
+ * claim reader requires a payer-to-payTo token Transfer. Filter before
+ * sorting prices, or the cheap batch quote wins a bounty it cannot prove.
+ * Missing optional metadata retains the ordinary legacy interpretation.
+ */
+function ordinaryEvmTransfer(entry: AcceptEntry): boolean {
+  if (entry.extra === undefined) return true;
+  if (!entry.extra || typeof entry.extra !== "object" || Array.isArray(entry.extra)) {
+    return false;
+  }
+  const extra = entry.extra as Record<string, unknown>;
+  if (extra["name"] !== undefined &&
+      extra["name"] !== EVM_USDC_DOMAIN.name && extra["name"] !== "USDC") return false;
+  if (extra["version"] !== undefined && extra["version"] !== EVM_USDC_DOMAIN.version) return false;
+  if (extra["verifyingContract"] !== undefined &&
+      (typeof extra["verifyingContract"] !== "string" ||
+       !isSameAddress(extra["verifyingContract"], entry.asset ?? ""))) return false;
+  if (extra["assetTransferMethod"] !== undefined &&
+      (typeof extra["assetTransferMethod"] !== "string" ||
+       declaredTransferMethod({ extra }) !== DEFAULT_TRANSFER_METHOD)) return false;
+  return true;
 }
 
 function decodeBase64Json(value: string): unknown {
@@ -590,7 +626,7 @@ export async function openBounty(
     existing.some(
       (record) =>
         record.domain === domain &&
-        record.status === "open" &&
+        bountyStatusAt(record, now) === "open" &&
         currentWeekKey(new Date(record.opened_at)) === weekKey,
     )
   ) {
@@ -697,6 +733,8 @@ export async function openBounty(
       } =>
         pair.chain !== null &&
         (pair.entry.scheme ?? "exact") === "exact" &&
+        isSameAddress(pair.entry.asset ?? "", pair.chain.usdc) &&
+        ordinaryEvmTransfer(pair.entry) &&
         Number.isFinite(amountUsd(pair.entry)),
     )
     .sort((a, b) =>
@@ -746,7 +784,7 @@ export async function openBounty(
    */
   if (wanted && !chosenPair && !chosenSolana && !chosenAlgorand) {
     throw new BountyRefused(
-      `this door quotes ${input.rail} but no payable USDC entry on it that this store can verify — nothing is posted`,
+      `this door quotes ${input.rail} but no payable USDC entry in a payment mode this store can verify — EVM claims need an individual payer-to-payTo USDC transfer, not Gateway or batched settlement; nothing is posted`,
       "rail-not-offered",
     );
   }
@@ -762,7 +800,7 @@ export async function openBounty(
   const railCaip2 = bountyChain?.caip2 ?? (chosenSolana ? SOLANA_CHAIN : ALGORAND_CHAIN);
   if (!chosen?.payTo || !assetMatches) {
     throw new BountyRefused(
-      `no payable USDC rail this store reads (${bountyRailNames()}) could be read from the door's 402 — the claim verifier would have nothing to verify against`,
+      `no payable USDC rail this store reads (${bountyRailNames()}) could be read from the door's 402 in a payment mode it can verify — EVM claims need an individual payer-to-payTo USDC transfer, not Gateway or batched settlement`,
       "no-usdc-rail",
     );
   }
@@ -864,9 +902,14 @@ export async function openBounty(
  * test that would refuse their claim.
  */
 export function bountyStatusAt(
-  record: Pick<BountyRecord, "status" | "expires_at">,
+  record: Pick<BountyRecord, "bounty_id" | "status" | "expires_at">,
   now: Date,
 ): BountyRecord["status"] {
+  // A withdrawal changes eligibility, never the original price or a
+  // paid claim. Apply it on reads so old KV records cannot keep offering it.
+  if (record.status !== "paid" && BOUNTY_WITHDRAWALS[record.bounty_id]) {
+    return "withdrawn";
+  }
   if (record.status === "open" && now.toISOString() > record.expires_at) {
     return "expired";
   }
@@ -879,7 +922,14 @@ export async function bountyBoard(env: Env, now: Date = new Date()) {
   const weekKey = currentWeekKey(now);
   const spent = await weekSpent(env, weekKey);
   const bounties = records
-    .map((record) => ({ ...record, status: bountyStatusAt(record, now) }))
+    .map((record) => {
+      const status = bountyStatusAt(record, now);
+      return {
+        ...record,
+        status,
+        ...(status === "withdrawn" ? { withdrawal: BOUNTY_WITHDRAWALS[record.bounty_id] } : {}),
+      };
+    })
     .sort((a, b) => b.opened_at.localeCompare(a.opened_at));
   return {
     bounties,
@@ -1035,6 +1085,16 @@ export interface ClaimResult {
     signature: string;
     how_to_redeem: string;
   };
+  /**
+   * PRESENT ONLY WHEN THIS ANSWER IS THE SAME ANSWER AGAIN (2026-09-29).
+   * The claim was paid earlier and resent identically; the payout above
+   * is the original authorization re-signed under its original nonce,
+   * not a second one. Absent on a first payout.
+   */
+  reissued?: {
+    first_claimed_at: string;
+    note: string;
+  };
 }
 
 /**
@@ -1120,7 +1180,7 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     refused_when:
       "it was already paid to someone else's settlement, or its status is anything but open",
     then_what:
-      "There is no second try on a spent listing, and nothing this store can do after the fact. One bounty pays once: read the board on the same minute you open your wallet.",
+      "One bounty pays once: read the board on the same minute you open your wallet. A withdrawn listing pays no automated claim; its withdrawal gives the reason and how to send evidence to the keeper if you already spent money.",
     matches: /not open/,
   },
   {
@@ -1134,7 +1194,7 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     check: "That settlement has never been claimed",
     refused_when: "some claim already paid out against that transaction",
     then_what:
-      "One payout per settlement, ever — this is the one refusal that does not come back. A fresh walk needs a fresh payment to the door.",
+      "One payout per settlement, ever — this is the one refusal that does not come back. A fresh walk needs a fresh payment to the door. The exception is your own claim sent again: the same bounty, transaction, payer and payout address is not a second claim, and the door answers it with the same signature again (see the two rows at the end).",
     matches: /already been claimed/,
   },
   {
@@ -1173,7 +1233,7 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     refused_when:
       "the settlement carries no USDC transfer of exactly the captured amount from your payer to the payTo this store captured when it opened the bounty",
     then_what:
-      "This is the honest loss mode, and the only one that costs a careful walker money: the door's price moved between the posting and your walk, so what you paid is real and unclaimable. Compare the live 402 against the bounty's amount_usd BEFORE you pay. The claim is released; the door keeps its price.",
+      "The receipt does not match the captured terms. This can mean price or recipient drift, a different asset, or a payment mode this verifier cannot read; it does not by itself prove which happened. Compare the live 402 and its payment mode BEFORE you pay. Stop on a mismatch; a separate manual transfer is not a commissioned purchase. The claim is released.",
     matches: /no USDC transfer of|carry no transfer of/,
   },
   {
@@ -1190,6 +1250,22 @@ export const BOUNTY_REFUSAL_CATALOGUE: readonly BountyRefusalNote[] = [
     then_what:
       "The claim is released and the board reopens with the ISO week. Every read publishes spent_this_week_usd against weekly_budget_usd, so a week with no room left says so before you walk.",
     matches: /budget .* is spent/,
+  },
+  {
+    check: "A resent claim's original authorization has not expired",
+    refused_when:
+      "the same claim comes back after the authorization it was paid with lapsed",
+    then_what:
+      "Nothing is signed. A fresh authorization would be a second payout on one settlement, and the board signs one; the reward returned to the week's budget when it lapsed. Redeem inside the window next time — the response says when it closes.",
+    matches: /authorization expired at unix/,
+  },
+  {
+    check: "A resent claim's original authorization has not already been redeemed",
+    refused_when:
+      "the same claim comes back after the USDC contract already honoured its nonce",
+    then_what:
+      "Nothing is signed: the reward already reached the payout address on chain, so there is nothing left to hand back. The chain is read for this, and a read that does not answer refuses too — try again when it does; nothing is lost.",
+    matches: /already been redeemed|redemption could not be read/,
   },
 ];
 
@@ -1235,6 +1311,11 @@ export async function claimBounty(
       "no bounty under that id — the board is /api/bounties",
     );
   }
+  if (bountyStatusAt(bounty, now) === "withdrawn") {
+    throw new BountyRefused(
+      `that bounty is withdrawn, not open — ${BOUNTY_WITHDRAWALS[bounty.bounty_id]?.reason ?? "contact the keeper before spending"}`,
+    );
+  }
   /*
    * THE BOUNTY'S RAIL DECIDES THE SHAPES (2026-09-05, the fourth rail).
    * Until today the hash and payer were checked against the 0x shape
@@ -1275,6 +1356,29 @@ export async function claimBounty(
     if (!/^0x[0-9a-fA-F]{40}$/.test(input.payer)) {
       throw new BountyRefused("payer must be a 0x address on the bounty's EVM rail");
     }
+  }
+  /*
+   * THE SAME CLAIM AGAIN IS THE SAME ANSWER AGAIN (2026-09-29). A
+   * walker's client kept the summary fields of a paid claim and
+   * dropped payout.authorization and the signature — the only copy,
+   * since the record keeps the nonce and expiry and never the
+   * signature. Their only move was a letter to the keeper, who
+   * re-signed it by hand. That hand is now the door's: a repeat that
+   * names the same bounty, the same settlement, the same payer and
+   * the same payout address is not a second claim, and it gets the
+   * original authorization back under its original nonce.
+   *
+   * Why this cannot pay twice: the nonce is the one already on the
+   * record, and the USDC contract honours a nonce once. Why it cannot
+   * be redirected: a different payout_to falls through to the
+   * refusals below and is never re-signed. Why it stores nothing new:
+   * the field wallet signs deterministically, so the same message
+   * under the same key IS the same signature. The two refusals a
+   * reissue can meet — expired, or already redeemed — are in the
+   * catalogue, and the chain is read for the second one, fail closed.
+   */
+  if (bounty.status === "paid" && isRepeatOfPaidClaim(bounty, input, solanaRail || algorandRail)) {
+    return reissuePayout(env, bounty, input, options, now);
   }
   if (bounty.status !== "open") {
     throw new BountyRefused(`that bounty is ${bounty.status}, not open`);
@@ -1691,26 +1795,7 @@ export async function claimBounty(
       ),
       nonce: (options.randomNonce ?? defaultNonce)(),
     };
-    const signature = await signer.signTypedData({
-      domain: {
-        name: "USD Coin",
-        version: "2",
-        chainId: 8453,
-        verifyingContract: BASE_USDC as `0x${string}`,
-      },
-      types: {
-        TransferWithAuthorization: [
-          { name: "from", type: "address" },
-          { name: "to", type: "address" },
-          { name: "value", type: "uint256" },
-          { name: "validAfter", type: "uint256" },
-          { name: "validBefore", type: "uint256" },
-          { name: "nonce", type: "bytes32" },
-        ],
-      },
-      primaryType: "TransferWithAuthorization",
-      message: authorization,
-    });
+    const signature = await signPayoutAuthorization(signer, authorization);
 
     const reading = readReport(input.report);
     const paid: BountyRecord = {
@@ -1774,13 +1859,150 @@ export async function claimBounty(
         chain: "eip155:8453",
         authorization,
         signature,
-        how_to_redeem: `Submit transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, signature) on the USDC contract (${BASE_USDC}) on Base — from your own wallet or any relayer; the function is submittable by anyone. Valid until unix ${authorization.validBefore}; unredeemed, it expires on its own and the budget takes it back. The signature is the payment — treat it like cash.`,
+        how_to_redeem: howToRedeem(authorization.validBefore),
       },
     };
   } catch (error) {
     await releaseClaim();
     throw error;
   }
+}
+
+/** The redemption line every payout carries, first answer and reissue alike. */
+function howToRedeem(validBefore: string): string {
+  return `Submit transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, signature) on the USDC contract (${BASE_USDC}) on Base — from your own wallet or any relayer; the function is submittable by anyone. Valid until unix ${validBefore}; unredeemed, it expires on its own and the budget takes it back. The signature is the payment — treat it like cash. ${BOUNTY_REISSUE_LINE}`;
+}
+
+/**
+ * ONE MESSAGE, ONE DOMAIN, ONE PLACE. USDC's exact EIP-712 domain on
+ * Base — the same check the token contract performs at redemption —
+ * lives here and nowhere else, so the first signature and a reissue
+ * cannot drift apart by a field.
+ */
+async function signPayoutAuthorization(
+  signer: FieldSigner,
+  authorization: ClaimResult["payout"]["authorization"],
+): Promise<string> {
+  return signer.signTypedData({
+    domain: {
+      name: "USD Coin",
+      version: "2",
+      chainId: 8453,
+      verifyingContract: BASE_USDC as `0x${string}`,
+    },
+    types: {
+      TransferWithAuthorization: [
+        { name: "from", type: "address" },
+        { name: "to", type: "address" },
+        { name: "value", type: "uint256" },
+        { name: "validAfter", type: "uint256" },
+        { name: "validBefore", type: "uint256" },
+        { name: "nonce", type: "bytes32" },
+      ],
+    },
+    primaryType: "TransferWithAuthorization",
+    message: authorization,
+  });
+}
+
+/**
+ * The repeat test: same bounty (already looked up), same settlement,
+ * same payer, same payout address. Address case is ignored on EVM;
+ * base58 and base32 ids are case-sensitive and compared as written,
+ * the way the record keeps them.
+ */
+function isRepeatOfPaidClaim(
+  bounty: BountyRecord,
+  input: ClaimInput,
+  caseSensitiveIds: boolean,
+): boolean {
+  const claim = bounty.claim;
+  if (!claim) return false;
+  const sameId = (a: string, b: string) =>
+    caseSensitiveIds ? a === b : a.toLowerCase() === b.toLowerCase();
+  return (
+    sameId(claim.tx_hash, input.txHash) &&
+    sameId(claim.payer, input.payer) &&
+    isSameAddress(claim.payout_to, input.payoutTo)
+  );
+}
+
+/**
+ * The same payout again. Nothing here moves the budget, writes the
+ * record, or touches the tx key: all three were settled when the
+ * claim first paid. The only writes are a chain read and a signature
+ * over a message the record already fixes.
+ */
+async function reissuePayout(
+  env: Env,
+  bounty: BountyRecord,
+  input: ClaimInput,
+  options: BountyBoardOptions,
+  now: Date,
+): Promise<ClaimResult> {
+  const claim = bounty.claim!;
+  const nowSeconds = Math.floor(now.getTime() / 1000);
+  const validBefore = Number(claim.authorization_valid_before);
+  if (!(validBefore > nowSeconds)) {
+    throw new BountyRefused(
+      `that claim was paid and its authorization expired at unix ${claim.authorization_valid_before} — a fresh one would be a second payout on one settlement, and the board signs one. The reward went back to the week's budget when it lapsed`,
+    );
+  }
+  const signer =
+    options.signer ?? (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+  // Money fails closed: a chain that does not answer refuses, and the
+  // same claim can come back when it does.
+  let used: boolean;
+  try {
+    used = await authorizationUsed(env, signer.address, claim.authorization_nonce, BASE_EVM);
+  } catch {
+    throw new BountyRefused(
+      "that claim was paid, and whether its authorization was redeemed could not be read from Base just now — nothing is signed; send the same claim again in a moment",
+    );
+  }
+  if (used) {
+    throw new BountyRefused(
+      `that claim was paid and its authorization has already been redeemed on Base — the reward reached ${claim.payout_to}, and there is nothing left to hand back`,
+    );
+  }
+  const authorization = {
+    from: signer.address,
+    to: input.payoutTo,
+    value: String(Math.round(bounty.reward_usd * 1e6)),
+    validAfter: "0",
+    validBefore: claim.authorization_valid_before,
+    nonce: claim.authorization_nonce,
+  };
+  const signature = await signPayoutAuthorization(signer, authorization);
+  const missing = BOUNTY_REPORT_FIELDS.filter(
+    (entry) => claim.report?.[entry.field] === undefined,
+  ).map((entry) => ({ field: entry.field, why: entry.why, how: entry.how }));
+  return {
+    bounty_id: bounty.bounty_id,
+    reward_usd: bounty.reward_usd,
+    your_report: {
+      received: claim.report ?? null,
+      missing,
+      dropped: [],
+      template: BOUNTY_REPORT_TEMPLATE,
+      note: "This is the report kept from your first claim. A reissue changes nothing on the record — what you sent then is what stands.",
+    },
+    what_was_verified: `The chain's part was verified when this claim first paid, at ${claim.claimed_at}: transaction ${claim.tx_hash}, from your wallet to the door's captured payTo, after the bounty existed, never claimed before. Just now the chain was read once more, to confirm the authorization below is still unredeemed. It is.`,
+    what_was_not:
+      "Nothing new was verified and nothing new was signed: this is the original authorization under its original nonce, which the USDC contract honours once. Your observations stay on the record as YOUR claim, as before.",
+    payout: {
+      method: "eip3009_transfer_with_authorization",
+      asset: BASE_USDC,
+      chain: "eip155:8453",
+      authorization,
+      signature,
+      how_to_redeem: howToRedeem(authorization.validBefore),
+    },
+    reissued: {
+      first_claimed_at: claim.claimed_at,
+      note: "The same claim, sent again, gets the same signature again: same nonce, same expiry, same address. It is a reprint, not a second payout.",
+    },
+  };
 }
 
 /**

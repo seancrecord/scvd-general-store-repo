@@ -1,0 +1,26 @@
+{
+  "kind": "frozen specification only; fresh native qualification and host-context freeze required",
+  "condition": "sources-and-draft-v1",
+  "plan_sha256": "281a3067b45c6446387ab2da1da74a18d99f37bbead5a39af5e6f21cdf17a1bc",
+  "prompt_templates_sha256": "da63cce64e2be10134fc3d38dff67f5eab1731684e925e9a011291d46e2f45e4",
+  "recipient_prompt_sha256": "6b3262afc0a17fe3efd195e41c7ae86074038f8718a7ca6584cfe111499e73b0",
+  "instrument": {
+    "buyer-cold-isolated.mjs": "aa99048b1e6f851c280d4f42044a95a2f5060ecc76f179ba04a3408cb24edc1e",
+    "buyer-recipient-handoff.mjs": "b711c70dab7c9bbd1415aa193201d11713605cec50ba64f839b8da74f8acf8c5",
+    "lib/buyer-cold.mjs": "a87f53fbb3c10b5547610903d6f584bdc69d7de905f63fb616117c744e7aabc9",
+    "lib/buyer-package-access.mjs": "c5af3597ecf1c6b5c664bbfedc45c90afcc02bc652cfb20f17a5082b43baa629",
+    "lib/buyer-run-evidence.mjs": "3b3ade4b62d107807afe8cecc461cd5244bd93fc7d9b59a322e0198a3d8d566f",
+    "lib/buyer-retention.mjs": "e84febec89094cd7b60005c65b621ea6de2399bb995c39b7d5cb4b8726055bd1",
+    "lib/buyer-host-context.mjs": "29ef1f922cec66ccf5acc674433491bc2ba120a122a078c433f52f61274addd3",
+    "lib/recipient-verifier.mjs": "6d6859be3d0a36b67f4fe2286c330fee713c13164c9fb6f3620197c94bafa868",
+    "lib/buyer-evidence-workflow.mjs": "bc3e117c7017331587c7f33b517772c9950827142f0165b23e4dc853f99fc197",
+    "../verifier/evidence-cli.mjs": "2702e800abc2235091bde67f6a217b1918866dd7a692c1cb9a08e7a1b01aa48a",
+    "../verifier/evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+    "../verifier/x402-verify.js": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017",
+    "../verifier/package.json": "6dc5859739bfd888fa9b46721099d19b6668a7a66ff1f083ae5ed3c8a0407496",
+    "../verifier/evidence-report.js": "8cf58b9b35350a9b217638aeb6ef00e58d08a4db3812189c00b35064ae6c602a",
+    "../verifier/payment-identity.js": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74"
+  },
+  "publication_run": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36894633230",
+  "native_attempts": 0
+}

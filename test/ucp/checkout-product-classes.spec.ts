@@ -46,6 +46,7 @@ const accepts = () => vi.fn(async () => ({ isValid: true, payer: PAYER }));
  * can be walked without a bespoke fixture per item.
  */
 const INPUT_VALUES: Record<string, string> = {
+  hosts: JSON.stringify(["alpha.example", "beta.example"]),
   urls: JSON.stringify(["https://alpha.example/research", "https://beta.example/research"]),
   url: "https://example.test/door",
   wallet: "0x3333333333333333333333333333333333333333",

@@ -1,0 +1,14 @@
+HTTP/2 308 
+date: Thu, 01 Oct 2026 15:51:38 GMT
+content-length: 0
+location: https://scvd.store/mcp/verifier
+strict-transport-security: max-age=31536000; includeSubDomains
+server-timing: isolate;desc=cold, age;dur=0, req;dur=0
+x-house-rule: Argue properly. --7
+x-store: SCVD General Store (https://scvd.store)
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=k7OwwIMoeFrKdFh9KRebBQBztzRGl9oxg9TU6WatbRSUtHUSj0V%2BdNhwqZ%2Bp9IAmSHWbd6GTU91PXLCpAoxDE2vG9JacUH4htNDTPb7xq6JQNVQp5y%2FIZG3hEaCSjHa15qwARVdminlX"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a43ca13bb8126a7b-ATL
+alt-svc: h3=":443"; ma=86400
+

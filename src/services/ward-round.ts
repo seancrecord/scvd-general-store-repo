@@ -2,12 +2,13 @@ import { EVM_CHAINS } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { readObserverStatus } from "@/lib/observer-control";
 import { createAuthHeader } from "@coinbase/x402";
-import { runChecks } from "@/services/preflight";
+import { runChecks, checksForBattery, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { runMppChecks } from "@/services/mpp-battery";
 import { mppCensusOf, type MppCensus, type MppCensusReading } from "@/services/mpp-census";
 import { signerKidsFromChallenge } from "@/services/watch-evidence";
 import type { EvidenceDigest } from "@/services/corpus-evidence";
 import { sendAlert } from "@/lib/alerts";
+import { r2ReadText } from "@/lib/r2-read";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import {
@@ -1248,14 +1249,14 @@ export async function probeHost(
       // A second reader's failure cannot turn an answered x402 door into unreachable.
       mppReading = { mpp_read_error: "reader_failed" };
     }
-    const { checks, advisories, accepts, l3b } = runChecks(
+    const ran = runChecks(
       response,
       evidence.body_truncated,
       bodyText,
       url,
       reading,
     );
-    const failed = checks.filter((check) => !check.ok).map((check) => check.name);
+    const { accepts, advisories } = ran;
     const advisoryNames = advisories.map((advisory) => advisory.name);
 
     /*
@@ -1275,21 +1276,9 @@ export async function probeHost(
         }))
       : { check: null, advisory: null };
 
-    if (rail.check && !rail.check.ok) failed.push(rail.check.name);
+    const failed = checksForBattery(ran, PREFLIGHT_VERSION_NEXT, rail.check)
+      .filter((check) => !check.ok).map((check) => check.name);
     if (rail.advisory) advisoryNames.push(rail.advisory.name);
-
-    /*
-     * 2.5: the L3b consistency trio, folded because the citation says
-     * v2 and v2 folds it. A door whose payTo is an unresolvable name,
-     * whose amount carries a decimal point, or whose network is a
-     * testnet is not ready by any reading a buyer would accept — and
-     * until today this round called such doors ready and the free
-     * preflight called them not_ready, about the same door, on the
-     * same day, in public.
-     */
-    for (const check of l3b ?? []) {
-      if (!check.ok) failed.push(check.name);
-    }
 
     // The market desk keeps what this fetch already paid for — both
     // placements of it, since 2026-08-28.
@@ -2042,9 +2031,9 @@ async function storeRoundRows(env: Env, round: WardRound): Promise<WardRound> {
 export async function hydrateRound(env: Env, stored: WardRound | null): Promise<WardRound | null> {
   if (!stored) return null;
   if (!stored.hosts_r2_key) return stored;
-  const object = env.CORPUS_R2 ? await env.CORPUS_R2.get(stored.hosts_r2_key) : null;
-  if (!object) return null;
-  const hosts = (await object.json()) as WardHostResult[];
+  const text = env.CORPUS_R2 ? await r2ReadText(env.CORPUS_R2, stored.hosts_r2_key) : null;
+  if (text === null) return null;
+  const hosts = JSON.parse(text) as WardHostResult[];
   if (!Array.isArray(hosts)) return null;
   return { ...stored, hosts };
 }

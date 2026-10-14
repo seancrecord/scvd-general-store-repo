@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-07",
+  "public_package": "scvd-defects@0.22.0",
+  "tarball_readback": "passed: SHA-512 integrity and all 31 packed source files",
+  "fresh_consumer": "passed: both v3 signal mappings and operator/buyer guidance",
+  "strict_typescript_consumer": "passed: optional verdict_signal plus older definitions",
+  "npm_audit_signatures": "passed: registry signature and provenance attestation",
+  "typecheck": "passed",
+  "docs_check": "passed with existing age reminders",
+  "publication_state": "complete",
+  "site_copy_release": "not yet deployed",
+  "buyer_qualification": "not run"
+}

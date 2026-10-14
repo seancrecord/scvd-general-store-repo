@@ -1,6 +1,7 @@
 import { getRetiredItem } from "@/store/retired";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { commissionAttention } from "@/pages/admin/commission-attention";
 import type { CloserEntry } from "@/services/closers";
 import type { GrudgeEntry } from "@/services/grudges";
 import type { ListedEntry } from "@/services/guestbook";
@@ -62,57 +63,121 @@ export interface CounterPageData {
   stockShelves: Record<string, StockUnit[]>;
   grudges: GrudgeEntry[];
   letters: LetterRecord[];
+  /** The words the mailbox's bulk press sends, shown before they go. */
+  standingReply: string;
   confessions: ConfessionRecord[];
   trainTags: TrainTagRecord[];
   tips: TipRecord[];
   refunds: RefundRecord[];
   commissions: CommissionRequest[];
+  commissionsIncomplete?: boolean;
   waitlist: WaitlistEntry[];
   failedItems: Record<string, number>;
   guestbook: ListedEntry[];
   loadNotes: string[];
 }
 
-/** The stocked shelves: the drawer (real oddities) and the name pool. */
-function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
-  const sections = Object.values(STOCK_DEFINITIONS).map((definition) => {
-    const units = shelves[definition.itemId] ?? [];
-    const unitList =
-      units.length === 0
-        ? "<p><em>Shelf's bare; the listing shows sold out until you stock it.</em></p>"
-        : `<ul>${units
-            .map(
-              (
-                unit,
-              ) => `<li>${escapeHtml(Object.values(unit.fields).join(" \u00B7 "))}
-              <form method="POST" action="/admin/stock/${definition.itemId}/remove" style="display:inline">
+/**
+ * The stocked shelves. A shelf whose item is on the retired register
+ * (2026-10-02, the keeper: "hide the drawer or anything that's not
+ * active") keeps its units readable and unstockable but loses the
+ * stocking form, and renders under the closed shelves below rather
+ * than in the working order of the day. Which shelves are closed is
+ * read off RETIRED_ITEMS, never listed here.
+ */
+function unitsHtml(itemId: string, units: StockUnit[], bare: string): string {
+  return units.length === 0
+    ? `<p><em>${bare}</em></p>`
+    : `<ul>${units
+        .map(
+          (
+            unit,
+          ) => `<li>${escapeHtml(Object.values(unit.fields).join(" \u00B7 "))}
+              <form method="POST" action="/admin/stock/${escapeHtml(itemId)}/remove" style="display:inline">
                 <input type="hidden" name="unit_id" value="${escapeHtml(unit.unit_id)}">
                 <button type="submit">Unstock</button>
               </form></li>`,
-            )
-            .join("\n")}</ul>`;
-    const inputs = definition.fields
-      .map(
-        (field) =>
-          `<input type="text" name="${escapeHtml(field.key)}" placeholder="${escapeHtml(field.label)}" maxlength="${field.cap}"${field.label.includes("(optional)") ? "" : " required"}>`,
-      )
-      .join("\n      ");
-    const shelfNote =
-      definition.itemId === "the_drawer"
-        ? "<p><em>The real-oddities shelf: a real thing of yours plus what it does, as listed. Describe-only; the object never ships and the shirt never gets named in public code.</em></p>"
-        : "";
-    return `<section>
+        )
+        .join("\n")}</ul>`;
+}
+
+function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
+  const sections = Object.values(STOCK_DEFINITIONS)
+    .filter((definition) => !getRetiredItem(definition.itemId))
+    .map((definition) => {
+      const units = shelves[definition.itemId] ?? [];
+      const inputs = definition.fields
+        .map(
+          (field) =>
+            `<input type="text" name="${escapeHtml(field.key)}" placeholder="${escapeHtml(field.label)}" maxlength="${field.cap}"${field.label.includes("(optional)") ? "" : " required"}>`,
+        )
+        .join("\n      ");
+      return `<section>
     <h2>Stocked shelf: ${escapeHtml(definition.itemId)} (${units.length})</h2>
-    ${shelfNote}
-    ${unitList}
+    ${unitsHtml(definition.itemId, units, "Shelf's bare; the listing shows sold out until you stock it.")}
     <form method="POST" action="/admin/stock/${definition.itemId}">
       ${inputs}
       <button type="submit">Stock it</button>
     </form>
-    
   </section>`;
-  });
+    });
   return sections.join("\n\n");
+}
+
+/**
+ * CLOSED SHELVES, folded (2026-10-02). The drawer closed 2026-08-20
+ * and the grudge shelf 2026-08-05, and both still stood in the day's
+ * working order with their forms open. What is left on them stays
+ * readable — a held grudge is a promise, and gets its two presses —
+ * but the fold opens on its own only while something on a closed
+ * shelf still needs hands. The lucky shelf's note rides here too:
+ * preset since 2026-07-25, it has never had a thing to do.
+ */
+function closedShelvesHtml(data: CounterPageData): string {
+  const retiredShelves = Object.values(STOCK_DEFINITIONS)
+    .map((definition) => ({ definition, retired: getRetiredItem(definition.itemId) }))
+    .filter((entry) => entry.retired !== undefined);
+  const heldGrudges = data.grudges.filter((grudge) => grudge.status === "held").length;
+  const unitsLeft = retiredShelves.reduce(
+    (sum, entry) => sum + (data.stockShelves[entry.definition.itemId] ?? []).length,
+    0,
+  );
+  const grudgeShelf = getRetiredItem("grudge");
+  const shelvesHtml = retiredShelves
+    .map(({ definition, retired }) => {
+      const units = data.stockShelves[definition.itemId] ?? [];
+      return `<h3>${escapeHtml(retired!.name)} (${escapeHtml(definition.itemId)}) \u2014 retired ${escapeHtml(retired!.retired_on)}${units.length ? `, ${units.length} unit${units.length === 1 ? "" : "s"} still on it` : ""}</h3>
+      <p><em>${escapeHtml(retired!.note)}</em></p>
+      ${unitsHtml(definition.itemId, units, "Nothing left on the shelf.")}`;
+    })
+    .join("\n");
+  const grudgesHtml =
+    data.grudges.length === 0
+      ? "<p>Nothing held.</p>"
+      : `<ul>${data.grudges
+          .map(
+            (
+              grudge,
+            ) => `<li>[${escapeHtml(grudge.status)}] "${escapeHtml(grudge.grievance)}" \u2014 patron #${grudge.patron_number}, ${escapeHtml(grudge.at.slice(0, 10))}
+              ${
+                grudge.status === "held"
+                  ? `<form method="POST" action="/admin/grudges/release" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Release (they wrote in)</button></form>
+                  <form method="POST" action="/admin/grudges/refuse" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Refuse + refund (abuse)</button></form>`
+                  : ""
+              }</li>`,
+          )
+          .join("\n")}</ul>`;
+  return `<section>
+    <details${heldGrudges || unitsLeft ? " open" : ""}>
+      <summary>Closed shelves and the ones that need no hands${heldGrudges ? ` (${heldGrudges} grudge${heldGrudges === 1 ? "" : "s"} still held)` : ""}</summary>
+      ${shelvesHtml}
+      <h3>The grudge register${grudgeShelf ? ` \u2014 retired ${escapeHtml(grudgeShelf.retired_on)}` : ""} (Sunday reading)</h3>
+      ${grudgeShelf ? `<p><em>${escapeHtml(grudgeShelf.note)}</em></p>` : ""}
+      ${grudgesHtml}
+      <h3>The lucky shelf (preset; nothing to do here)</h3>
+      <p>Luckies draw themselves from the herd since 2026-07-25: animal, lucky note, and strength all come off the preset pools in src/store/luckies.ts, never sell out, and need no hands. Write-ins still move a lucky from /admin/tools; the bench is real.</p>
+    </details>
+  </section>`;
 }
 
 /** Clip long stored text for list views; the full text always exists
@@ -154,9 +219,9 @@ function orderRowHtml(order: OrderRecord): string {
     </form>`
     }`
       : `<p><em>Delivered:</em> ${escapeHtml(clipped(order.deliverable ?? "", 140))}</p>`;
-  return `<li>
+  return `<li id="order-${escapeHtml(encodeURIComponent(order.order_id))}">
   <strong>${escapeHtml(order.order_id)}</strong>, ${escapeHtml(order.item_name)}
-  [${order.status}] paid $${order.paid_usdc} (tip $${order.tip_usdc})
+  [${order.status}] ${order.gateway_payment_at_issue ? "Gateway accepted" : "paid"} $${order.paid_usdc} (tip $${order.tip_usdc})
   patron #${order.patron_number}, ${escapeHtml(order.created_at.slice(0, 10))}
   ${order.agent_name ? `\u00B7 agent: ${escapeHtml(order.agent_name)}` : ""}
   ${order.callback_url ? `\u00B7 webhook on completion` : ""}
@@ -255,11 +320,8 @@ function lettersHtml(letters: LetterRecord[]): string {
               }:</em> <span style="white-space:pre-wrap">${escapeHtml(event.text)}</span></p>`,
         )
         .join("\n");
-      const actions = `${said}${
-        letter.status === "received"
-          ? `<form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/read" style="display:inline"><button type="submit">Mark read</button></form>`
-          : ""
-      }
+      // No "Mark read": opening this page is reading (2026-10-02).
+      const actions = `${said}
             <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/reply">
               <textarea name="reply" rows="2" cols="50" placeholder="${
                 thread.length > 0
@@ -271,6 +333,7 @@ function lettersHtml(letters: LetterRecord[]): string {
               }</button>
             </form>`;
       return `<li>
+      <label><input type="checkbox" name="letter_ids" value="${escapeHtml(letter.letter_id)}" form="letters-bulk"> tick</label>
       <strong>${escapeHtml(letter.letter_id)}</strong> [${letter.status}]
       ${letter.from_name ? `\u00B7 from ${escapeHtml(letter.from_name)}` : "\u00B7 unsigned"}
       ${letter.verified_identity ? `\u00B7 claimed identity (unverified): ${escapeHtml(letter.verified_identity)}` : ""}
@@ -294,7 +357,7 @@ function confessionsHtml(confessions: ConfessionRecord[]): string {
     .map((confession) => {
       const reviewForms =
         confession.status === "pending_review"
-          ? `<form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/approve" style="display:inline"><button type="submit">Approve (cleared for public use)</button></form>
+          ? `<form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/approve" style="display:inline"><button type="submit">Approve (reviewed and kept; no Gazette press is running, so nothing prints)</button></form>
              <form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/reject" style="display:inline"><button type="submit">Keep it in the drawer</button></form>`
           : "";
       return `<li>
@@ -356,11 +419,22 @@ function trainHtml(tags: TrainTagRecord[]): string {
     <ul>${rows}</ul>`;
 }
 
+/**
+ * The jar, with the rejected poured out of sight (2026-10-02). A
+ * rejected tip stays on the record and in the count; it stops taking
+ * up the keeper's screen. Each tip still in view carries a tick for
+ * the one bulk press below.
+ */
 function tipsHtml(tips: TipRecord[]): string {
-  if (tips.length === 0) {
-    return "<p>The tip jar is empty.</p>";
+  const shown = tips.filter((tip) => tip.status !== "rejected");
+  const rejected = tips.length - shown.length;
+  const rejectedLine = rejected
+    ? `<p><small>${rejected} rejected tip${rejected === 1 ? "" : "s"} kept on the record, out of sight.</small></p>`
+    : "";
+  if (shown.length === 0) {
+    return `<p>The tip jar is empty.</p>${rejectedLine}`;
   }
-  return tips
+  const rows = shown
     .map((tip) => {
       const reviewForms =
         tip.status === "pending_review"
@@ -368,6 +442,7 @@ function tipsHtml(tips: TipRecord[]): string {
              <form method="POST" action="/admin/tips/${escapeHtml(tip.id)}/reject" style="display:inline"><button type="submit">Reject</button></form>`
           : "";
       return `<li>
+      <label><input type="checkbox" name="tip_ids" value="${escapeHtml(tip.id)}" form="tips-bulk"> tick</label>
       <strong>${escapeHtml(tip.id)}</strong> [${tip.status}], ${escapeHtml(tip.tip)}
       ${tip.contributor_name ? `\u00B7 by ${escapeHtml(tip.contributor_name)}` : "\u00B7 unsigned"}
       ${tip.verified_identity ? `\u00B7 claimed identity (unverified): ${escapeHtml(tip.verified_identity)}` : ""}
@@ -376,6 +451,11 @@ function tipsHtml(tips: TipRecord[]): string {
     </li>`;
     })
     .join("\n");
+  return `<form method="POST" action="/admin/tips/bulk" id="tips-bulk">
+      <p>Tick the tests and the noise, then <button type="submit" name="action" value="reject">Reject the ticked</button>. Rejected tips leave the screen and stay on the record. There is no Gazette press running; approving files a tip for an edition that is not scheduled.</p>
+    </form>
+    <ul>${rows}</ul>
+    ${rejectedLine}`;
 }
 
 function refundsHtml(refunds: RefundRecord[]): string {
@@ -407,10 +487,10 @@ function refundsHtml(refunds: RefundRecord[]): string {
  * DERIVED (deskStatusOf), never re-implemented here, so the counter
  * cannot disagree with the pay route about whether a quote is live.
  */
-function deskHtml(request: CommissionRequest): string {
-  const status = deskStatusOf(request);
+function deskHtml(request: CommissionRequest, now: Date): string {
+  const status = deskStatusOf(request, now);
   if (status === "accepted") {
-    return ` \u00B7 <strong>[accepted]</strong> $${request.quote_usdc}${request.order_id ? ` \u00B7 order ${escapeHtml(request.order_id)}` : ""}`;
+    return ` \u00B7 <strong>[accepted]</strong> ${request.quote_usdc === undefined ? "quote amount unavailable" : `${request.quote_usdc} USDC`}${request.order_id ? ` \u00B7 <a href="/api/order/${escapeHtml(encodeURIComponent(request.order_id))}">Order ${escapeHtml(request.order_id)}</a>` : ""}`;
   }
   if (status === "declined") {
     return ` \u00B7 <strong>[declined]</strong> reply (public): ${escapeHtml(request.decline_reply ?? "")}`;
@@ -429,7 +509,7 @@ function deskHtml(request: CommissionRequest): string {
   return `${standing}
     <form method="POST" action="/admin/commission/${escapeHtml(request.id)}/quote" style="display:inline">
       <select name="usdc">${rungOptions}</select>
-      <input type="number" name="window_hours" placeholder="window (hours)" min="1" required style="width:8rem">
+      <input type="number" name="window_hours" aria-label="Delivery window in hours after payment" placeholder="delivery hours" min="1" required style="width:8rem">
       <input type="text" name="note" placeholder="note to requester (optional)">
       <button type="submit">${status === "quoted" || status === "expired" ? "Re-quote" : "Quote"}</button>
     </form>
@@ -439,14 +519,14 @@ function deskHtml(request: CommissionRequest): string {
     </form>`;
 }
 
-function requestsHtml(requests: CommissionRequest[]): string {
+function requestsHtml(requests: CommissionRequest[], now: Date): string {
   if (requests.length === 0) {
     return "<p>The ledger is quiet.</p>";
   }
   return requests
     .map(
       (request) =>
-        `<li><strong>$${request.offer_usdc}</strong>, ${escapeHtml(request.description)}, contact: ${escapeHtml(request.contact)}, ${escapeHtml(request.date)}${request.suggest_listing ? ` \u00B7 <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? `, claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""}${deskHtml(request)}</li>`,
+        `<li id="request-${escapeHtml(encodeURIComponent(request.id))}"><strong>Proposed budget: ${request.offer_usdc} USDC</strong>, ${escapeHtml(request.description)}, contact: ${escapeHtml(request.contact)}, ${escapeHtml(request.date)}${request.suggest_listing ? ` \u00B7 <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? `, claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""} · <a href="/api/commission/${escapeHtml(encodeURIComponent(request.id))}">Buyer status</a>${deskHtml(request, now)}</li>`,
     )
     .join("\n");
 }
@@ -509,7 +589,16 @@ function guestbookHtml(entries: ListedEntry[]): string {
 }
 
 
-export function renderCounterPage(data: CounterPageData): string {
+export function renderCounterPage(data: CounterPageData, now: Date = new Date()): string {
+  const incomplete = Boolean(data.commissionsIncomplete || data.loadNotes.length);
+  const attention = commissionAttention(data.commissions, data.orders, now, incomplete);
+  const directorySuggestions = data.commissions.filter(request => request.suggest_listing);
+  const briefs = data.commissions.filter(request => !request.suggest_listing);
+  const completedOrderIds = new Set(data.orders.filter(order => order.status === "completed").map(order => order.order_id));
+  const closed = (request: CommissionRequest) => deskStatusOf(request, now) === "declined" ||
+    (deskStatusOf(request, now) === "accepted" && !!request.order_id && completedOrderIds.has(request.order_id));
+  const activeBriefs = briefs.filter(request => !closed(request));
+  const closedBriefs = briefs.filter(closed);
   const pendingConfessions = data.confessions.filter(
     (confession) => confession.status === "pending_review",
   ).length;
@@ -585,7 +674,9 @@ export function renderCounterPage(data: CounterPageData): string {
   const heldTrainTags = data.trainTags.filter(
     (tag) => tag.status === "declined",
   ).length;
+  const pendingTips = data.tips.filter(tip => tip.status === "pending_review").length;
   const needsHands =
+    attention.reviewCount + attention.missingCount +
     openOrders +
     pendingTrainTags +
     pendingConfessions +
@@ -597,14 +688,17 @@ export function renderCounterPage(data: CounterPageData): string {
     <h2>At a glance</h2>
     <p style="font-size:1.1em">${
       needsHands === 0
-        ? "<strong>Nothing needs your hands.</strong> The rest of this page is reference."
+        ? incomplete ? "<strong>Partial reading.</strong> Loaded records show no work needing your hands; check the load notes before treating the desk as clear." : "<strong>No required work in this reading.</strong> Waiting quotes and optional review remain below."
         : `<strong>${needsHands} thing${needsHands === 1 ? "" : "s"} need${needsHands === 1 ? "s" : ""} your hands:</strong>
           ${openOrders ? ` <a href="#orders">${openOrders} open order${openOrders === 1 ? "" : "s"}</a> ·` : ""}
+          ${attention.reviewCount ? ` <a href="#needs-attention">${attention.reviewCount} brief${attention.reviewCount === 1 ? "" : "s"} or quote${attention.reviewCount === 1 ? "" : "s"} to review</a> ·` : ""}
+          ${attention.missingCount ? ` <a href="#needs-attention">${attention.missingCount} accepted request${attention.missingCount === 1 ? "" : "s"} to check</a> ·` : ""}
           ${pendingTrainTags ? ` <a href="#queues">${pendingTrainTags} tag${pendingTrainTags === 1 ? "" : "s"} waiting</a> ·` : ""}
           ${pendingConfessions ? ` <a href="#queues">${pendingConfessions} confession${pendingConfessions === 1 ? "" : "s"}</a> ·` : ""}
           ${pendingRefunds ? ` <a href="#queues">${pendingRefunds} refund${pendingRefunds === 1 ? "" : "s"} to pay</a> ·` : ""}
           ${lettersWaiting ? ` <a href="#mailbox">${lettersWaiting} letter${lettersWaiting === 1 ? "" : "s"} to answer</a>` : ""}`
     }</p>
+    ${pendingTips ? `<p><strong>Optional review:</strong> <a href="#tips">${incomplete ? "At least " : ""}${pendingTips} tip${pendingTips === 1 ? "" : "s"} awaiting review</a>. No Gazette edition is scheduled.</p>` : ""}
     ${
       /*
        * NO LINE FOR TAGS HELD OFF THE WALL (2026-09-04, the keeper:
@@ -625,6 +719,8 @@ export function renderCounterPage(data: CounterPageData): string {
     }
   </section>
 
+  ${attention.html}
+
   <section>
     <h2>This week's note</h2>
     <form method="POST" action="/admin/note">
@@ -643,33 +739,7 @@ export function renderCounterPage(data: CounterPageData): string {
     ${ordersHtml(data.orders)}
   </section>
 
-  <section>
-    <h2>The lucky shelf (preset; nothing to do here)</h2>
-    <p>Luckies draw themselves from the herd since 2026-07-25: animal, lucky note, and strength all come off the preset pools in src/store/luckies.ts, never sell out, and need no hands. Write-ins still move a lucky from /admin/tools; the bench is real.</p>
-  </section>
-
   ${stockShelvesHtml(data.stockShelves)}
-
-  <section>
-    <h2>The grudge register (Sunday reading)</h2>
-    ${
-      data.grudges.length === 0
-        ? "<p>Nothing held. Somebody will be wronged eventually.</p>"
-        : `<ul>${data.grudges
-            .map(
-              (
-                grudge,
-              ) => `<li>[${escapeHtml(grudge.status)}] "${escapeHtml(grudge.grievance)}" \u2014 patron #${grudge.patron_number}, ${escapeHtml(grudge.at.slice(0, 10))}
-              ${
-                grudge.status === "held"
-                  ? `<form method="POST" action="/admin/grudges/release" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Release (they wrote in)</button></form>
-                  <form method="POST" action="/admin/grudges/refuse" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Refuse + refund (abuse)</button></form>`
-                  : ""
-              }</li>`,
-            )
-            .join("\n")}</ul>`
-    }
-  </section>
 
   <section>
     <h2>The closers list (Sunday coffee reading)</h2>
@@ -690,6 +760,17 @@ export function renderCounterPage(data: CounterPageData): string {
     <p>Private correspondence. Read here, replied here, published nowhere.
     An answered letter stays in the box until you archive it, and asks
     nothing of you while it waits.</p>
+    <form method="POST" action="/admin/letters/bulk" id="letters-bulk">
+      <p>For the letters that asked nothing: tick them below, then
+        <button type="submit" name="action" value="standing_reply">Send the standing reply, signed</button>
+        <button type="submit" name="action" value="standing_reply_archive">Send it and file them</button>
+        <button type="submit" name="action" value="archive">File them without a word</button>
+      </p>
+      <details>
+        <summary>The standing reply, as it goes out (signed on each letter; mailed where an address was left)</summary>
+        <p style="white-space:pre-wrap">${escapeHtml(data.standingReply)}</p>
+      </details>
+    </form>
     <ul>${lettersHtml(data.letters)}</ul>
   </section>
 
@@ -705,9 +786,13 @@ export function renderCounterPage(data: CounterPageData): string {
       })</summary>
       ${trainHtml(data.trainTags)}
     </details>
-    <details ${data.tips.some((tip) => tip.status === "pending_review") ? "open" : ""}>
-      <summary>Trading Post tips (${data.tips.length})</summary>
-      <ul>${tipsHtml(data.tips)}</ul>
+    <details id="tips" ${data.tips.some((tip) => tip.status === "pending_review") ? "open" : ""}>
+      <summary>Trading Post tips (${data.tips.filter((tip) => tip.status !== "rejected").length} in the jar${
+        data.tips.some((tip) => tip.status === "rejected")
+          ? `, ${data.tips.filter((tip) => tip.status === "rejected").length} rejected`
+          : ""
+      })</summary>
+      ${tipsHtml(data.tips)}
     </details>
     <details ${pendingRefunds > 0 ? "open" : ""}>
       <summary>The refund ledger (${pendingRefunds} pending)</summary>
@@ -716,9 +801,13 @@ export function renderCounterPage(data: CounterPageData): string {
     </details>
   </section>
 
-  <section>
-    <h2>Commission requests (${data.commissions.length})</h2>
-    <ul>${requestsHtml(data.commissions)}</ul>
+  <section id="requests">
+    ${briefs.length === 0 ? "<details><summary>Commission requests (0)</summary>" : `<h2>Commission requests (${briefs.length})</h2>`}
+    <p>Proposed budgets and unpaid quotes are separate from paid orders. The delivery window starts after payment; quote expiry is the deadline to accept.</p>
+    ${activeBriefs.length ? `<ul>${requestsHtml(activeBriefs, now)}</ul>` : "<p>No active briefs in this reading.</p>"}
+    ${closedBriefs.length ? `<details><summary>Closed commission requests (${closedBriefs.length})</summary><ul>${requestsHtml(closedBriefs, now)}</ul></details>` : ""}
+    ${briefs.length === 0 ? "</details>" : ""}
+    <details><summary>Directory suggestions (${directorySuggestions.length})</summary><p>Listing suggestions are not commission leads or sales.</p>${directorySuggestions.length ? `<ul>${requestsHtml(directorySuggestions, now)}</ul>` : "<p>None in this reading.</p>"}</details>
     ${sideCountersHtml(data)}
   </section>
 
@@ -727,6 +816,8 @@ export function renderCounterPage(data: CounterPageData): string {
       <summary>Guestbook moderation (${data.guestbook.length} shown)</summary>
       <ul>${guestbookHtml(data.guestbook)}</ul>
     </details>
-  </section>`;
+  </section>
+
+  ${closedShelvesHtml(data)}`;
   return renderAdminShell("counter", body, data.loadNotes);
 }

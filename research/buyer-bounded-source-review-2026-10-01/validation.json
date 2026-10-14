@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-01",
+  "red_before_fix": {
+    "new_controls_failed": 6,
+    "existing_binding_and_permissions_passed": 1
+  },
+  "buyer_controls_passed": 303,
+  "typecheck": "pass",
+  "worker_bundles_and_mpp_sdk_build": "pass",
+  "closed_prompts_byte_identical": 10,
+  "native_result": "not yet launched"
+}

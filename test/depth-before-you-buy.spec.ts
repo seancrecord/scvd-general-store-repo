@@ -27,7 +27,7 @@ const okCalendar = {
 };
 
 function host(name: string, verdict: WardHostResult["verdict"]): WardHostResult {
-  return { host: name, url: `https://${name}/x402`, verdict, failed: [], advisories: [], source: "discovery" };
+  return { host: name, url: `https://${name}/x402`, observed_at: "2026-08-01T00:00:00.000Z", verdict, failed: [], advisories: [], source: "discovery" };
 }
 
 function round(week: string, hosts: WardHostResult[]): WardRound {

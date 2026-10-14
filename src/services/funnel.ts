@@ -85,14 +85,13 @@ export interface FunnelReport {
   observed_through: string | null;
   items: ItemFunnel[];
   /**
-   * THE ONE COMPARISON THAT SETTLES THE INPUT QUESTION (2026-09-21).
+   * THE INPUT COMPARISON (2026-09-21).
    *
    * Every locked row on this page invites the same conclusion — that
    * required inputs are where the shelf loses people — and it is the
    * conclusion the page used to push, by printing LOCKED DOOR over
    * what was really an agent asking a price. The items that require NO
-   * input are the control group, and they were sitting on the same
-   * page the whole time converting at the same rate. Derived here so a
+   * input offer context, not a controlled experiment. Derived here so a
    * reader is handed the comparison rather than having to scroll for
    * it and do the arithmetic.
    */
@@ -339,8 +338,8 @@ export async function auditFunnel(
       ? "No organic asks on either side in this window; the comparison has nothing to stand on."
       : `Doors that REQUIRE an input: ${rate(gatedSettles, gatedAsks)} organic asks settled, across ${gatedItems} items. Doors that require NONE: ${rate(openSettles, openAsks)}, across ${openItems} items.${unknownItems > 0 ? ` ${unknownItems} item${unknownItems === 1 ? "" : "s"} no longer on the menu, left out of both.` : ""} ` +
         (openAsks > 0 && openSettles === 0 && gatedSettles === 0
-          ? "Both sides are at zero, so whatever is stopping these clients is not the input: a door with nothing to supply lost them at the same rate. Reading the locked rows as an input problem would be reading past the control group on this very page."
-          : "Read the two rates against each other before treating a missing input as the cause; the open doors are the control group for that claim.");
+          ? "Both sides are at zero in this window. This comparison cannot tell whether required inputs contributed: the clients and items differ, and these rows do not join each ask to a later outcome. Read the recorded input refusals for direct evidence of an input problem."
+          : "Read the two rates as context, not as a controlled experiment. Different clients and items can account for the difference; a missing input on a price ask does not establish a refusal.");
 
   return {
     input_gate_reading,

@@ -46,10 +46,10 @@ const STANDFIRST =
  * a number nobody can check, which is the opposite of this page's job.
  */
 const MACHINERY_NOTE =
-  "THE SECOND COLUMN IS A CORRECTION, NOT A RESTATEMENT. Channel is decided when a 402 goes out and never revisited, so a crawler this store had not yet learned to recognise was counted as an agent — a monitoring bot that announces itself in its user-agent was doing exactly that here until 2026-07-26. The raw rows keep what each request arrived with, so they can be re-read with today's crawler table, and a walk on the clock does that over every row of the month rather than a sample of it. The recorded figure is left exactly as the counters have it and the correction sits beside it, because a number that quietly changed is a number you cannot check. An em dash means no complete walk has run for that window yet; a partial one is not published, since a window mistaken for a month is the error this mechanism exists to prevent. It finds machinery we can NAME — an unidentified crawler is invisible here exactly as it is everywhere else, so read the corrected column as an upper bound on organic rather than a certified count. The clients behind it are named in the office, not here: this page promises no user-agents and that promise outranks the feature.";
+  "THE SECOND COLUMN SUBTRACTS KNOWN MACHINERY FROM RECORDED QUOTES. The scheduled correction scans retained event rows using current crawler names and catalogue-walking patterns. It publishes only a completed scan; an em dash means no complete correction is available for that window. Event rows and quote totals are independent instruments, and earlier quote increments were lost. The corrected figure is therefore not a certified buyer count or a guaranteed upper or lower bound. Unidentified automation can remain. The clients behind it are named in the office, not here: this page publishes no user-agents.";
 
 const HONEST_LIMIT =
-  "READ THE DENOMINATOR BEFORE THE RATE. A small number of 402s means this store has not been found by many agents yet, which is a fact about our reach and not a fact about the market. A conversion rate shown as an em dash means nobody has been offered a price in that window at all: that is undefined, not zero, and we will not print 0% for it, because 0% would say agents were offered something and declined.";
+  "READ THE DENOMINATOR BEFORE THE RATE. Recorded requests do not measure unique agents or establish buyer demand. Repeat requests and missing records limit what can be inferred about reach. A conversion rate shown as an em dash means no challenges were counted in that window: that is undefined, not zero. Zero means challenges were counted but no settlements were counted; neither state proves what every visitor did.";
 
 /**
  * A PERCENTAGE THIS SMALL IS UNREADABLE, so the ratio rides beside it.
@@ -65,7 +65,7 @@ function rateText(window: PulseWindow): string {
   if (window.organic_settled === 0) {
     return "0%";
   }
-  const denom = window.corrected_challenges ?? window.organic_challenges;
+  const denom = window.organic_challenges;
   const oneIn = Math.round(denom / window.organic_settled);
   const pct = window.conversion_rate * 100;
   const shown = pct >= 1 ? pct.toFixed(1) : pct.toPrecision(2);
@@ -138,21 +138,22 @@ pulseRoutes.get("/pulse", async (c) => {
         "The whole funnel for this x402 store, organic only: how many times a price was quoted (402s answered, not distinct agents), how many purchases settled, and how many artifacts were re-verified afterwards.",
       path: "/pulse",
       bodyHtml: `<section>
+        <p class="menu-desc"><strong>${pulse.all_time.total_organic_settled ?? pulse.all_time.organic_settled} organic sales across x402 and MPP</strong>, including ${pulse.all_time.mpp_organic_settled ?? 0} native MPP sales. The funnel below covers x402 only; its conversion rate uses x402 asks and settles.</p>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>
         <p class="menu-desc"><strong>${escapeHtml(sentence(pulse.all_time))}</strong> All time, since the meter went in.</p>
       </section>
       <section>
         <table border="1" cellpadding="6">
-          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>payments presented</th><th>settled</th><th>re-verifies</th><th>rate</th></tr>
+          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>payments presented</th><th>settled</th><th>re-verifies</th><th>rate against recorded offers</th></tr>
           ${row(pulse.all_time, "all time")}
           ${pulse.months.map((window) => row(window, window.month ?? "")).join("\n")}
         </table>
       </section>
       <section>
-        <p class="menu-meta">${escapeHtml(MACHINERY_NOTE)} The correction walk last completed at ${escapeHtml(pulse.crawler_correction_computed_at ?? "never")}; it runs hourly and fails loud on a storage fault rather than publish a partial month, so this timestamp is how you see it recovered.</p>
+        <p class="menu-meta">${escapeHtml(MACHINERY_NOTE)} The correction walk last ran at ${escapeHtml(pulse.crawler_correction_computed_at ?? "never")}. ${pulse.crawler_correction_complete ? "All retained inputs were read." : "The scan is incomplete; partial months are withheld."} It runs hourly; a storage fault leaves the previous reading and its date in place.</p>
         <p class="menu-meta">${escapeHtml(HONEST_LIMIT)}</p>
         <p class="menu-meta">${escapeHtml(pulse.house_flag_policy)} Every wallet this store controls is declared, signed, at <a href="/house-ledger.json">/house-ledger.json</a> — subtract them yourself rather than taking our word for the split.</p>
-        <p class="menu-meta">Machine-readable at <a href="/pulse.json"><code>${escapeHtml(base)}/pulse.json</code></a>, computed live on every request from the same counters the keeper reads. Nothing here is collected for this page: the counters predate it, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is expected to have minted a signed artifact, and that expectation is checked rather than asserted: the counter is bumped before the handler that mints, so a sale that settled and never delivered would appear here with nothing behind it. A delivery audit and an hourly walk of the chain look for that case; a find goes on /corrections. Check any artifact at <code>${escapeHtml(base)}/api/verify/{id}</code> against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, without asking us.</p>
+        <p class="menu-meta">Machine-readable at <a href="/pulse.json"><code>${escapeHtml(base)}/pulse.json</code></a>, computed live on every request from the same counters the keeper reads. Nothing here is collected for this page: the counters predate it, so the collection cannot have been tuned to flatter the publication. Recorded settlements alone do not establish delivery. The checkout delivers before settlement; whether a buyer received the goods is checked rather than asserted from the counter. A delivery audit and an hourly walk of the chain look for that case; a find goes on /corrections. Check any artifact at <code>${escapeHtml(base)}/api/verify/{id}</code> against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, without asking us.</p>
         <p class="menu-meta">Aggregate counts only. No user-agents, no referrers, no wallet addresses, no per-visitor rows — this store keeps no cookies and no IPs, and a public funnel is exactly where that discipline would be easiest to break quietly.</p>
         <p class="menu-meta">This page is computed live, which means every figure on it can change under you. The closed months are frozen, signed and linked at <a href="/store-month">the store's own month</a>, so a number you cite stays the number you cited.</p>
       </section>

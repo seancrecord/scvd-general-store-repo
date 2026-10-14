@@ -1,6 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+  addCorrection,
   assembleDraft,
   getDraft,
   publishEdition,
@@ -20,11 +21,6 @@ import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
-const adminAuth = {
-  Authorization: `Basic ${btoa("keeper:test-admin-password")}`,
-  "Content-Type": "application/x-www-form-urlencoded",
-};
-
 beforeAll(() => {
   installFacilitatorMock();
 });
@@ -131,16 +127,10 @@ describe("the edition itself", () => {
   });
 
   it("carries a filed correction into the next draft, in register", async () => {
-    const filed = await SELF.fetch(`${BASE}/admin/gazette/correction`, {
-      method: "POST",
-      headers: adminAuth,
-      body: new URLSearchParams({
-        correction:
-          "Edition No. 1 reported the bell rang twelve times. The correct total was eleven. We regret the extra ring.",
-      }).toString(),
-      redirect: "manual",
-    });
-    expect([200, 302]).toContain(filed.status);
+    await addCorrection(
+      testEnv,
+      "Edition No. 1 reported the bell rang twelve times. The correct total was eleven. We regret the extra ring.",
+    );
     const draft = await assembleDraft(testEnv, true);
     expect(draft!.markdown).toContain("The correct total was eleven.");
     expect(draft!.markdown).not.toContain("The record stands uncorrected.");

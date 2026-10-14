@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-01T14:53:42.333Z",
+  "result": "passed",
+  "routes": 9,
+  "baseline_file": "before-deployment/after.json",
+  "sections_preserved": 52,
+  "index_alarm": 27000,
+  "area_budget": 30000,
+  "checks": [
+    "index and non-menu area budgets",
+    "developer alias byte parity",
+    "alias canonical links",
+    "limits in linked trust guide",
+    "each complete section in exactly one guide",
+    "full guide byte-identical to baseline"
+  ]
+}

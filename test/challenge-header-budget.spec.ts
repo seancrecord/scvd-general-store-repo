@@ -177,7 +177,7 @@ describe("every priced door fits through a stock Node client", () => {
     for (const resource of resourceUrls) {
       const path = new URL(resource).pathname;
       const item = items.find(row => path === `/api/buy/${row.id}`);
-      const query = item ? new URLSearchParams(Object.entries(baseline(item)).map(([key, value]) => [key, String(value)])) : "";
+      const query = item ? new URLSearchParams(Object.entries(await baseline(item)).map(([key, value]) => [key, String(value)])) : "";
       const response = await SELF.fetch(`${BASE}${path}?${query}`);
       measured.push({ path, status: response.status, bytes: headerBytes(response) });
     }

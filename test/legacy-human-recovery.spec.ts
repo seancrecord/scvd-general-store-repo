@@ -28,7 +28,7 @@ for (const id of ["aura_walk", "the_collab"]) for (const door of ["http", "mcp",
     it(`${id} ${door} ${network} ${owner} record: an old preview cannot authorize ${changed ? "changed" : "original"} work`, async () => {
       const item = items.find(item => item.id === id)!, tool = shelves(item)[0]!;
       const prefix = `SCVD-E2E-${crypto.randomUUID()}-${"x".repeat(610)}`;
-      const args = { ...baseline(item), detail: `${prefix}-ORIGINAL` };
+      const args = { ...await baseline(item), detail: `${prefix}-ORIGINAL` };
       // Obtain current terms with a valid fixture brief, then read the older
       // retained attempt below, whose full brief predates today's length limit.
       const quote = await call(item, door === "http" ? "http" : "mcp", { ...args, detail: "SCVD-E2E current quote" }, tool);

@@ -1,0 +1,120 @@
+{
+  "observed_at": "2026-10-07T16:21:54.790449+00:00",
+  "scope": "Bounded public-page sample; not a Google crawl, index inventory or ranking measurement",
+  "site_name": "SCVD General Store",
+  "sitemap_urls": 7298,
+  "gaps": [],
+  "pages": [
+    {
+      "url": "https://scvd.store/",
+      "status": 200,
+      "title": [
+        "SCVD General Store \u2014 x402 verification for AI agents"
+      ],
+      "canonical": [
+        "https://scvd.store/"
+      ],
+      "issues": [
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    },
+    {
+      "url": "https://scvd.store/what",
+      "status": 200,
+      "title": [
+        "What is scvd.store? Independent x402 verification, signed evidence, and endpoint-readiness data, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/what"
+      ],
+      "issues": [
+        "Open Graph URL differs from canonical",
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    },
+    {
+      "url": "https://scvd.store/developers",
+      "status": 200,
+      "title": [
+        "SCVD General Store developer documentation, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/developers"
+      ],
+      "issues": [
+        "Open Graph URL differs from canonical",
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    },
+    {
+      "url": "https://scvd.store/menu",
+      "status": 200,
+      "title": [
+        "The Shelf, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/menu"
+      ],
+      "issues": [
+        "Open Graph URL differs from canonical",
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    },
+    {
+      "url": "https://scvd.store/menu/hello",
+      "status": 200,
+      "title": [
+        "The cheapest real x402 payment, to test a client end to end \u2014 A Signed Hello, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/menu/hello"
+      ],
+      "issues": [
+        "Open Graph URL differs from canonical",
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    },
+    {
+      "url": "https://scvd.store/conformance",
+      "status": 200,
+      "title": [
+        "The conformance desk, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/conformance"
+      ],
+      "issues": [
+        "Open Graph URL differs from canonical",
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    },
+    {
+      "url": "https://scvd.store/corpus",
+      "status": 200,
+      "title": [
+        "The corpus, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/corpus"
+      ],
+      "issues": [
+        "Open Graph URL differs from canonical",
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    },
+    {
+      "url": "https://scvd.store/try",
+      "status": 200,
+      "title": [
+        "The Practice Counter, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/try"
+      ],
+      "issues": [
+        "Open Graph URL differs from canonical",
+        "Site name missing or differs from homepage WebSite identity"
+      ]
+    }
+  ]
+}

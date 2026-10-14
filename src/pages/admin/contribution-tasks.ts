@@ -1,3 +1,4 @@
+import { firstContributionBatch } from "@/store/contribution-first-batch";
 import { contributionWork } from "@/services/contribution-follow-through";
 import { CONTRIBUTION_UPDATE_CAP, CONTRIBUTION_UPDATE_NOTE_CAP, CONTRIBUTION_UPDATE_BYTES, CONTRIBUTION_REVIEW_BYTES, CONTRIBUTION_ARRIVAL_GOALS } from "@/store/contribution-tasks";
 import { escapeHtml as esc } from "@/lib/sanitize";
@@ -8,6 +9,15 @@ import { CONTRIBUTION_MAX_SLOTS, CONTRIBUTION_MAX_REVIEW_DAYS, CONTRIBUTION_MAX_
 type Index = {tasks: (ReturnType<typeof publicContribution> & {work: ReturnType<typeof contributionWork>})[]; truncated: boolean; cursor: string | null; indexing_note: string};
 function field(name: string, label: string, value = "", type = "text", extra = "") {return `<label>${esc(label)} <input name="${name}" type="${type}" value="${esc(value)}" required ${extra}></label>`;}
 function area(name: string, label: string, value = "", max = CONTRIBUTION_FIELD_CAP) {return `<p><label>${esc(label)}<br><textarea name="${name}" rows="4" cols="75" maxlength="${max}" required>${esc(value)}</textarea></label></p>`;}
+
+function briefForm(t: {kind: string; title: string; brief: string; acceptance: string; target?: string}) {
+  return `<details><summary>${esc(t.title)}</summary><form method="post" action="${CONTRIBUTION_ADMIN}"><input type="hidden" name="kind" value="${t.kind}">
+      <p><input type="hidden" name="id" value="${t.kind}-${crypto.randomUUID()}">${field("title", "Title", t.title, "text", 'maxlength="160"')}</p>
+      <p>${field("target", "Exact public URL", t.target ?? "", "url")}</p>${area("brief", "Task and boundaries", t.brief)}${area("acceptance", "What earns the reward", t.acceptance)}
+      <p>${field("reward_usd", "Reward in Base USDC", "", "number", 'min="0.01" step="0.01"')} ${field("slots", "Slots", "1", "number", `min="1" max="${CONTRIBUTION_MAX_SLOTS}"`)}</p>
+      <p>${field("expires_at", "Closes at (UTC)", "", "datetime-local")} ${field("review_days", "Review within days", "", "number", `min="1" max="${CONTRIBUTION_MAX_REVIEW_DAYS}"`)} ${field("payment_days", "Pay accepted work within days", "", "number", `min="1" max="${CONTRIBUTION_MAX_PAYMENT_DAYS}"`)}</p>
+      <p>Each reservation lasts up to ${CONTRIBUTION_RESERVATION_HOURS} hours or the closing time, whichever comes first. A result that finds no defect can meet these terms. The work and its payment must be reviewed by you.</p><button type="submit">Post these terms and reward commitment</button></form></details>`;
+}
 function workQueue(index: Index) {
   const actions = index.tasks.flatMap(task => task.work.actions.map(action => ({...action, task})))
     .sort((a, b) => (a.due_at ?? "~").localeCompare(b.due_at ?? "~") || a.task.id.localeCompare(b.task.id));
@@ -20,7 +30,7 @@ function workQueue(index: Index) {
     <h2>Self-reported arrival</h2><p>${provided} of ${submissions} retained submissions on this page include an optional arrival answer; ${submissions - provided} did not. Counts include accepted, rejected and unreviewed submissions, across all retained dates. They count submissions, not people, and do not measure traffic, acquisition or verified demand.</p>
     <table><tr><th>Reported job</th><th>Submissions on this page</th></tr>${goals.map(([label, count]) => `<tr><td>${esc(label)}</td><td>${count}</td></tr>`).join("")}<tr><td>Not provided</td><td>${submissions - provided}</td></tr></table>`;
 }
-export function renderContributionDesk(index: Index | null, state: ContributionTaskState | null, now = Date.now()) {
+export function renderContributionDesk(index: Index | null, state: ContributionTaskState | null, now: number, base: string) {
   let body = `<h2>Contribution work</h2><p><a href="/admin/bounties">Money-out desk</a> · <a href="${CONTRIBUTION_ADMIN}">Contribution briefs</a> · <a href="${CONTRIBUTION_API}">Public task list</a></p>
   <p>Posted rewards are a separate commitment for the maximum shown on each brief. Posting does not draw from the automatic shopping or study budgets. This desk never signs or sends money.</p>`;
   if (index) {
@@ -28,12 +38,8 @@ export function renderContributionDesk(index: Index | null, state: ContributionT
     body += workQueue(index);
     if (index.truncated) body += `<p>This is a partial list.${index.cursor ? ` <a href="${CONTRIBUTION_ADMIN}?cursor=${encodeURIComponent(index.cursor)}">Next page</a>` : ""}</p>`;
     body += `<h2>Post a brief</h2><p>Templates are drafts. Set the target, exact scope, acceptance criteria, reward and slots before posting. The maximum obligation is reward multiplied by slots. Posted terms are immutable; closing stops new reservations and preserves existing ones. No purchase is required. Do not post work that requires credentials, paid calls, endorsements or testing without permission.</p>`;
-    for (const t of CONTRIBUTION_TEMPLATES) body += `<details><summary>${esc(t.title)}</summary><form method="post" action="${CONTRIBUTION_ADMIN}"><input type="hidden" name="kind" value="${t.kind}">
-      <p><input type="hidden" name="id" value="${t.kind}-${crypto.randomUUID()}">${field("title", "Title", t.title, "text", 'maxlength="160"')}</p>
-      <p>${field("target", "Exact public URL", "", "url")}</p>${area("brief", "Task and boundaries", t.brief)}${area("acceptance", "What earns the reward", t.acceptance)}
-      <p>${field("reward_usd", "Reward in Base USDC", "", "number", 'min="0.01" step="0.01"')} ${field("slots", "Slots", "1", "number", `min="1" max="${CONTRIBUTION_MAX_SLOTS}"`)}</p>
-      <p>${field("expires_at", "Closes at (UTC)", "", "datetime-local")} ${field("review_days", "Review within days", "", "number", `min="1" max="${CONTRIBUTION_MAX_REVIEW_DAYS}"`)} ${field("payment_days", "Pay accepted work within days", "", "number", `min="1" max="${CONTRIBUTION_MAX_PAYMENT_DAYS}"`)}</p>
-      <p>Each reservation lasts up to ${CONTRIBUTION_RESERVATION_HOURS} hours or the closing time, whichever comes first. A result that finds no defect can meet these terms. The work and its payment must be reviewed by you.</p><button type="submit">Post these terms and reward commitment</button></form></details>`;
+    body += `<section id="first-contribution-batch"><h2>First contribution batch</h2><p>Drafts only; none of these is posted or funded. Review each scope, set its reward and dates, and post it individually when ready. Start with one slot per brief; check the combined commitment before posting another.</p>${firstContributionBatch(base).map(briefForm).join("\n")}</section>`;
+    body += `<h2>Other contribution templates</h2>${CONTRIBUTION_TEMPLATES.map(briefForm).join("\n")}`;
   }
   if (state) {
     const view = publicContribution(state, now), id = esc(state.terms.id);

@@ -124,6 +124,12 @@ const pull = (base: string): ScorerSurface[] => [
 
 const verify = (base: string): ScorerSurface[] => [
   {
+    surface: "Retained Spot Check evidence",
+    url: `${base}/api/spot-checks/{cert_id}`,
+    what: "The signed original from a Spot Check, Change Check or Batch Spot Check purchase, with an optional note for the buyer's human. Anyone with the certificate ID can read it.",
+    check: "The original must match its signature, evidence hash and certificate binding. A missing original stays missing; today's books cannot replace it.",
+  },
+  {
     surface: "Anything the store signed",
     url: `${base}/api/verify/{id}`,
     what: "The exact bytes a signature covers, so a stranger can check it offline with their own library.",

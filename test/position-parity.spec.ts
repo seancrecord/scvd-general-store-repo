@@ -91,9 +91,8 @@ describe("nothing still claims the store settles first", () => {
     /*
      * The gate flipped on 2026-08-10 (rule 9, amended). A surface
      * still describing the old ordering is not a stale sentence — it
-     * tells a buyer that a failed delivery leaves them owed a refund,
-     * when in fact they were never charged. That sends them chasing
-     * money nobody took.
+     * must distinguish preparation before settlement from signing and
+     * storage afterward. The latter can fail after a charge.
      */
     /*
      * The hyphenated variants are here because they escaped: the first
@@ -129,7 +128,7 @@ describe("nothing still claims the store settles first", () => {
     for (const path of ["/skill.md", "/agents.md"]) {
       const body = (await text(path)).toLowerCase();
       expect(body, `${path} does not state the delivery ordering`).toMatch(
-        /delivers first|deliver first/,
+        /prepares instant goods or the order before requesting settlement/,
       );
     }
   });
@@ -140,7 +139,7 @@ describe("nothing still claims the store settles first", () => {
     // the surface where a stale claim lives longest.
     const bundle = installedSkill;
     expect(bundle.toLowerCase()).not.toContain("settles first, then hands over");
-    expect(bundle.toLowerCase()).toContain("delivers first and settles after");
+    expect(bundle.toLowerCase()).toContain("failure after settlement");
   });
 });
 

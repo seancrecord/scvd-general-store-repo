@@ -109,10 +109,15 @@ function operations(document: Record<string, unknown>): Operation[] {
  * insisted on a 2xx would have pushed it toward declaring a success it
  * never produces.
  */
-function describesItsShape(operation: Record<string, unknown>): boolean {
+function describesItsShape(operation: Record<string, unknown>, document: Record<string, unknown>): boolean {
   const responses = (operation["responses"] ?? {}) as Record<string, unknown>;
   for (const status of ["200", "201", "202", "402"]) {
-    const response = responses[status] as Record<string, unknown> | undefined;
+    let response = responses[status] as Record<string, unknown> | undefined;
+    if (typeof response?.$ref === "string") {
+      expect(response.$ref.startsWith("#/components/responses/")).toBe(true);
+      response = (document.components as { responses: Record<string, Record<string, unknown>> }).responses[response.$ref.split("/").at(-1)!];
+      expect(response, "response reference resolves").toBeDefined();
+    }
     const content = (response?.["content"] ?? {}) as Record<
       string,
       { schema?: Record<string, unknown> }
@@ -172,8 +177,9 @@ function preflightVerdictSchema(document: Record<string, unknown>): Record<strin
 
 describe("every operation says what comes back", () => {
   it("lets no new door ship without a shape", async () => {
-    const bare = operations(await spec())
-      .filter((entry) => !describesItsShape(entry.operation))
+    const document = await spec();
+    const bare = operations(document)
+      .filter((entry) => !describesItsShape(entry.operation, document))
       .map((entry) => entry.key)
       .filter((key) => !UNTYPED_YET.has(key))
       .sort();
@@ -201,7 +207,7 @@ describe("every operation says what comes back", () => {
       const operation = live.get(key);
       if (!operation) {
         stale.push(`${key} — no such operation; remove the entry`);
-      } else if (describesItsShape(operation)) {
+      } else if (describesItsShape(operation, document)) {
         stale.push(`${key} — now declares its shape; remove the entry`);
       }
     }

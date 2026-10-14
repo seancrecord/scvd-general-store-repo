@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-09-30T20:41:59.816Z",
+  "reports": [
+    {
+      "cell": "codex-directed-r1",
+      "original": "evidence/corpus-5.json",
+      "report": "evidence/verification-corpus-5.md",
+      "sha256": "9d3fc0f3164b3489bae8054a5eba3853ac27f0884f1d732637e5efaaf816efc8",
+      "independent_report_match": true
+    },
+    {
+      "cell": "codex-directed-r1",
+      "original": "evidence/corpus-7.json",
+      "report": "evidence/verification-corpus-7.md",
+      "sha256": "ec9454d6f6d5a5bc06782f23a97342e9b77d2305606b54941747b9cc264b8971",
+      "independent_report_match": true
+    },
+    {
+      "cell": "codex-directed-r1",
+      "original": "evidence/corpus-8.json",
+      "report": "evidence/verification-corpus-8.md",
+      "sha256": "f6b16fd6674e0d6409aff18201808ba6e4de50e44e695fe8d2ff9f6a8e5f5c8b",
+      "independent_report_match": true
+    },
+    {
+      "cell": "codex-directed-r1",
+      "original": "evidence/corpus-10.json",
+      "report": "evidence/verification-corpus-10.md",
+      "sha256": "5606dd7be1d8aa47052094f289ad412e2738c792beb2482cb112865de90f123a",
+      "independent_report_match": true
+    },
+    {
+      "cell": "codex-directed-r2",
+      "original": "evidence/corpus-10.json",
+      "report": "evidence/verification-report.md",
+      "headers": "evidence/endpoint/headers-2.txt",
+      "sha256": "375c8c94b71d7e540b0557aa7db54b711a791cf1ec09f3332627ca7af59d9e1c",
+      "independent_report_match": true
+    }
+  ],
+  "limits": "Controller replay of retained bytes; not a native recipient or proof of independent issuer identity, current delivery or package safety."
+}

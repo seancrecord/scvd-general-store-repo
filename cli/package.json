@@ -1,7 +1,7 @@
 {
   "name": "scvd-cli",
-  "version": "0.4.0",
-  "description": "The official command line for scvd.store: check any x402 door, verify any signed offer or receipt, read the weekly corpus and the fresh set, and verify anything the store ever signed. Zero dependencies, no account, no key.",
+  "version": "0.5.0",
+  "description": "The official command line for scvd.store: inspect x402/MPP endpoints, check signed offers and receipts, read the observation corpus, and verify store artifacts. Zero dependencies; no account or key.",
   "type": "module",
   "bin": {
     "scvd": "scvd.mjs"
@@ -25,7 +25,8 @@
     "agent-payments",
     "usdc",
     "verification",
-    "scvd"
+    "scvd",
+    "mpp"
   ],
   "repository": {
     "type": "git",

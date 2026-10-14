@@ -1,6 +1,9 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { printFoundingEdition } from "@/services/founding";
+import { publishIssue } from "@/services/gazette";
+import { findTip } from "@/services/tips";
 import type { Env } from "@/types";
 
 /**
@@ -33,12 +36,10 @@ describe("the founding edition", () => {
   });
 
   it("prints once, signed, with the numbers of its day", async () => {
-    const press = await SELF.fetch(`${BASE}/admin/gazette/founding/print`, {
-      method: "POST",
-      headers: adminAuth,
-      redirect: "manual",
-    });
-    expect([200, 302]).toContain(press.status);
+    // The press is the service: its admin button left the back shelf
+    // after the one shot, and the route followed it 2026-10-02.
+    const press = await printFoundingEdition(testEnv);
+    expect("printed" in press).toBe(true);
 
     const page = await SELF.fetch(`${BASE}/gazette/founding`);
     expect(page.status).toBe(200);
@@ -64,13 +65,8 @@ describe("the founding edition", () => {
     expect(String(verified["note"])).toContain("went to press");
 
     // It prints once.
-    const again = await SELF.fetch(`${BASE}/admin/gazette/founding/print`, {
-      method: "POST",
-      headers: adminAuth,
-      redirect: "manual",
-    });
-    expect(again.status).toBe(409);
-    expect(await again.text()).toContain("already went to press");
+    const again = await printFoundingEdition(testEnv);
+    expect("refused" in again && again.refused).toContain("already went to press");
 
     // Humans get a reading copy; the signed original stays markdown.
     const html = await SELF.fetch(`${BASE}/gazette/founding`, {
@@ -129,19 +125,9 @@ describe("the founding edition", () => {
       headers: adminAuth,
       redirect: "manual",
     });
-    const published = await SELF.fetch(`${BASE}/admin/gazette/publish`, {
-      method: "POST",
-      headers: {
-        ...adminAuth,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        title: "Signed at press",
-        tip_ids: tipId,
-      }).toString(),
-      redirect: "manual",
-    });
-    expect([200, 302]).toContain(published.status);
+    const approved = await findTip(testEnv, tipId);
+    expect(approved?.record.status).toBe("approved");
+    await publishIssue(testEnv, "Signed at press", [approved!.record]);
 
     const rack = await json(await SELF.fetch(`${BASE}/gazette`));
     const issues = rack["issues"] as Array<Record<string, unknown>>;

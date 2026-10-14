@@ -26,10 +26,10 @@ describe("shelf commerce metadata", () => {
     }
   });
 
-  it("holds the shelf including Research Comparison", () => {
+  it("holds the shelf including the Spot Check additions", () => {
     // Not a magic number: a change to this count is a change to the
     // shelf, and it should be visible in the diff that makes it.
-    expect(MENU_ITEMS.length).toBe(36);
+    expect(MENU_ITEMS.length).toBe(38);
     expect(commerceItemIds().length).toBe(MENU_ITEMS.length);
     expect(commerceFor("research_comparison")).toMatchObject({
       sku: "SCVD-RESEARCH-COMPARISON", license_policy: "artifact", visibility: "core",
@@ -46,17 +46,18 @@ describe("shelf commerce metadata", () => {
     }
   });
 
-  it("excludes exactly the four sub-cent items from the core catalog", () => {
+  it("excludes exactly the sub-cent items from the core catalog", () => {
     const excluded = MENU_ITEMS.filter(
       (item) => requireCommerce(item).visibility !== "core",
     ).map((item) => item.id);
     expect(excluded.sort()).toEqual([
+      "change_check",
       "settlement_attestation",
       "settlement_reconciliation",
       "small_blessing",
       "spot_check",
     ]);
-    expect(coreCommerceItems().length).toBe(MENU_ITEMS.length - 4);
+    expect(coreCommerceItems().length).toBe(MENU_ITEMS.length - excluded.length);
   });
 
   it("gives every item at least one category and one tag", () => {

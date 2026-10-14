@@ -34,6 +34,17 @@ test("lookups: by id, by signal in either spelling, remediation with the definit
   assert.ok(split.paid.some((entry) => entry.id === "replay-accepted"));
 });
 
+test("v3 verdict signals resolve to the same classes as their legacy advisories", () => {
+  for (const [check, advisory] of [
+    ["discovery-info-validates", "discovery-info-fails-schema"],
+    ["offer-amount-matches-accepts", "offer-contradicts-challenge"],
+  ]) {
+    const legacy = defectsBySignal(advisory);
+    assert.ok(legacy.length > 0);
+    assert.deepEqual(defectsBySignal(check), legacy);
+  }
+});
+
 test("every recorded door names what it is and which checks it fails", () => {
   const dir = new URL("./fixtures/doors/", import.meta.url);
   const files = readdirSync(dir).filter((f) => f.endsWith(".json"));

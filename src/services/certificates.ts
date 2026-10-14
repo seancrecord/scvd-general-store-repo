@@ -89,6 +89,7 @@ async function claimPatronNumber(
 }
 
 export interface MintOptions {
+  gateway?: import("@/lib/arc-gateway").GatewayPayment;
   itemId: string;
   agentName?: string;
   tipUsdc?: number;
@@ -112,6 +113,13 @@ export interface MintOptions {
    * would be forgeable onto anyone's receipt.
    */
   mandateId?: string;
+  /**
+   * Any item: an outside artifact cited by the buyer as
+   * <format>:<reference>, shape-checked by the buy door and otherwise
+   * untouched (2026-10-01). Signed, never resolved: the store holds no
+   * copy and makes no claim about it beyond "this was cited".
+   */
+  citedArtifact?: string;
   /**
    * settlement_attestation: the observation's evidence hash, bound
    * into the certificate so /api/verify covers the attestation too.
@@ -214,7 +222,7 @@ async function prepareCertificate(
   if (options.agentName) {
     certificate.name = options.agentName;
   }
-  if (options.tipUsdc && options.tipUsdc > 0) {
+  if (!options.gateway && options.tipUsdc && options.tipUsdc > 0) {
     certificate.tip_usdc = options.tipUsdc;
   }
   /**
@@ -225,7 +233,8 @@ async function prepareCertificate(
    * shelf is the second one.
    */
   if (options.paidUsdc !== undefined && options.paidUsdc > 0) {
-    certificate.paid_usdc = options.paidUsdc;
+    if (options.gateway) { certificate.accepted_usdc = options.paidUsdc; certificate.gateway_payment = options.gateway; }
+    else certificate.paid_usdc = options.paidUsdc;
     certificate.asset = "USDC";
     // The rail that settled, never reconstructed (PAYMENT_RAILS.md):
     // the gate passes the settle response's network through, and only
@@ -259,6 +268,9 @@ async function prepareCertificate(
   }
   if (options.mandateId) {
     certificate.mandate_id = options.mandateId;
+  }
+  if (options.citedArtifact) {
+    certificate.cited_artifact = options.citedArtifact;
   }
   /**
    * The store's word, on every receipt: the week's line from the

@@ -203,7 +203,8 @@ describe("the cron pass", () => {
     expect(alert!.detail).toContain("/api/buy/phone_call");
     expect(alert!.detail).toContain("0xpaged");
     // The keeper is told what to DO, not merely that something is off.
-    expect(alert!.detail.toLowerCase()).toContain("refund or fulfil");
+    expect(alert!.detail).toContain("Inspect the retained purchase");
+    expect(alert!.detail).not.toContain("no goods went out");
   });
 
   it("stays quiet when there is nothing to report", async () => {

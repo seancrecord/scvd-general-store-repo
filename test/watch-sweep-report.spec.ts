@@ -51,6 +51,12 @@ function sweep(options: { budget?: number } = {}) {
 }
 
 describe("the sweep reports what it could not see", () => {
+  it("stops at the exact end of a bounded term", async () => {
+    await seed({ ended: { ends_at: iso(0), entries: [] } });
+    const report = await sweep();
+    expect(report.worked).toBe(0);
+    expect(report.ended).toBe(1);
+  });
   it("counts the due, the ended, the recently observed and the unreadable on their own lines", async () => {
     await seed({
       due: { ends_at: iso(86_400_000), entries: [] },

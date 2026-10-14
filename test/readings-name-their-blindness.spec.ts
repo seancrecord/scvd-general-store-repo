@@ -46,8 +46,9 @@ describe("readings that count a population say what they cannot see", () => {
       expect(html, `${href} renders no limits block`).toContain("What this cannot see");
       // A heading with nothing under it is the shape of disclosure
       // without the substance.
-      const block = html.slice(html.indexOf("What this cannot see"));
-      expect(block.slice(0, 600), `${href} has an empty limits block`).toContain("<li>");
+      // The local navigation repeats this title; require the actual heading and its list.
+      const block = html.match(/<h2[^>]*>What this cannot see<\/h2>\s*<ul>([\s\S]*?)<\/ul>/)?.[1];
+      expect(block, `${href} has an empty limits block`).toContain("<li>");
     });
   }
 

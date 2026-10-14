@@ -53,6 +53,15 @@ reading that quote is not a purchase or proof of settlement.
 | Interpret an MPP-only or mixed-protocol response | [MPP](references/mpp.md) |
 | Buy an item, preserve retry identity, recover a purchase, or check fulfillment/refunds | [Purchases](references/purchases.md) |
 
+## When the question needs larger work
+
+For an agent shopping audit, endpoint watch, customer-review report or
+scoped platform/agency review, read https://scvd.store/operators.
+Each path states its outcome, limits, current terms and free first step.
+For example: https://scvd.store/operators#shopping-audit explains where
+unfamiliar agents get stuck and what the Aura Walk report contains.
+Only fetch the path relevant to the task; reading it authorizes no purchase.
+
 ## Also a general store
 
 For timestamps, memory, statements, bounties, human work, gifts, the free

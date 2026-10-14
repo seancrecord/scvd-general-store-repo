@@ -1,0 +1,50 @@
+import { env, runInDurableObject } from "cloudflare:test";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import type { Env } from "@/types";
+import { houseWallets } from "@/lib/channel";
+import { readMppSaleEvidence, readMppSales } from "@/services/mpp-sales";
+import { renderMppSalesPage } from "@/pages/admin/mpp-sales-page";
+import { renderProtocolsPage } from "@/pages/admin/protocols-page";
+import { PURCHASE_DOORS } from "@/services/purchase-intent";
+import { computeGrowth } from "@/services/growth";
+import { computePulse } from "@/services/pulse";
+const bindings = env as unknown as Env;
+const now = new Date("2026-09-29T12:00:00Z");
+const month = "2026-09";
+const ledger = () => bindings.COUNTER_LEDGER!.get(bindings.COUNTER_LEDGER!.idFromName(`${month}/mpp-sales`));
+beforeEach(async () => {
+  vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(now);
+  await runInDurableObject(ledger(), async (_instance, state) => { await state.storage.deleteAll(); });
+  let cursor: string | undefined;
+  do {
+    const page = await bindings.COUNTERS.list({ cursor });
+    await Promise.all(page.keys.map(({ name }) => bindings.COUNTERS.delete(name)));
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+});
+afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
+it("a corrected MPP sale should agree with the aggregate house classification", async () => {
+  const payer = houseWallets(bindings).find(address => /^0x[0-9a-f]{40}$/.test(address))!;
+  const sale = { id: "d".repeat(64), month, payer, transaction: `0x${"a1".repeat(32)}`, amount: "1000", house: false, item: "spot_check" };
+  await ledger().recordMppSale(sale);
+  await ledger().correctMppHouseSale(sale, "review fixture house correction");
+  expect((await readMppSales(bindings)).organic).toBe(0);
+  const html = renderMppSalesPage(await readMppSaleEvidence(bindings, now));
+  expect(html).toContain("0 organic, 1 house");
+});
+it("failed till data should not render a zero-sale total", () => {
+  const html = renderProtocolsPage({ month, read_at: now.toISOString(), arrivals: [], arrivals_total: 0,
+    arrivals_truncated: false, till: PURCHASE_DOORS.map(door => ({ door, settles: 0, networks: {} })), till_total: 0,
+    operations: null, market: null, surfaces: [], unreadable: ["buyer signals (who paid, by door)"], notes: [] });
+  expect(html).toContain("is therefore not a zero");
+  expect(html).not.toContain("Total across doors: 0");
+});
+it("a native MPP sale should appear in a report labelled organic settles", async () => {
+  await ledger().recordMppSale({ id: "e".repeat(64), month, payer: `0x${"7e".repeat(20)}`,
+    transaction: `0x${"a2".repeat(32)}`, amount: "1000", house: false, item: "spot_check" });
+  expect((await readMppSales(bindings)).organic).toBe(1);
+  const growth = await computeGrowth(bindings, { now, months: [month] });
+  expect.soft(growth.months[0]!.store.organic_settles).toBe(1);
+  const pulse = await computePulse(bindings);
+  expect.soft(pulse.months.find(row => row.month === month)?.organic_settled).toBe(1);
+});

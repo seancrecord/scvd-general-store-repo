@@ -4,6 +4,14 @@ Versions are immutable once published. Minor versions add functions and
 never change an existing function's result shape or an exit code; a
 change to either is a major.
 
+## 0.3.1 — 2026-09-30 (unpublished)
+
+Correct package discovery text to include the existing x402/MPP inspection
+capability and explain that installation must reach the version carrying
+`inspectOne`. No runtime change. The September 30 listing cleanup changed
+these packaged files without a version bump; this patch gives those bytes
+their own version and restores the package-content guard.
+
 ## 0.3.0 — 2026-09-28
 
 Add `inspectOne`, the versioned inspection reader, a dedicated inspection

@@ -1,0 +1,128 @@
+{
+  "observed_at": "2026-10-02T15:00:42.841Z",
+  "status": "passed",
+  "originals": [
+    {
+      "name": "1.json",
+      "source_sha256": "0fe52d0bb18c66f003efb7cba219d7adb2694d7d97d663c9b5eaf9aee01955e1",
+      "mirror_sha256": "0c75d8f24c220086e0af3a584899306f8da867c503d2650c71feae0d5b45d7c4",
+      "signed_fields_equal": true,
+      "outer_fields_differ": [
+        "ots",
+        "cite",
+        "cite_format",
+        "cite_json"
+      ]
+    },
+    {
+      "name": "2.json",
+      "source_sha256": "b4106372b04cbed1a3223ac6b0c0706bada29ede5ac550c451733c164ab38ff4",
+      "mirror_sha256": "ac368594e7644c486f382eb0ceca4876c0d82ef7ea0d2d87016efd47a7ab2df2",
+      "signed_fields_equal": true,
+      "outer_fields_differ": [
+        "ots",
+        "cite",
+        "cite_format",
+        "cite_json"
+      ]
+    },
+    {
+      "name": "3.json",
+      "source_sha256": "9e9c32b014b6f025707e08f50a723b5adcfcc7828704f5851398f0c8212ba370",
+      "mirror_sha256": "77392aa33cf12539bf0bddcef9cc1b92bbf2aea2a5dc94ba0d8881fc4ecc303a",
+      "signed_fields_equal": true,
+      "outer_fields_differ": [
+        "ots",
+        "cite",
+        "cite_format",
+        "cite_json"
+      ]
+    },
+    {
+      "name": "4.json",
+      "source_sha256": "1c038e05cb7ba4ac0b81da383654a63876b13d6677a433093f508590311eb80a",
+      "mirror_sha256": "fe7c7f495c956291237eb2ac678bc3cd3bc5e6ae788f5cfab05dc0476b37bd65",
+      "signed_fields_equal": true,
+      "outer_fields_differ": [
+        "ots",
+        "cite",
+        "cite_format",
+        "cite_json"
+      ]
+    },
+    {
+      "name": "5.json",
+      "source_sha256": "207960ae426487e43981b66d4e12f1c883974e2f17dbe18bdc516fd6b3a16f72",
+      "mirror_sha256": "db04a16ab517ab0847093dbb1f72b3937a96db4c0e19ef6ea0a7629b9231c701",
+      "signed_fields_equal": true,
+      "outer_fields_differ": [
+        "ots",
+        "cite",
+        "cite_format",
+        "cite_json"
+      ]
+    },
+    {
+      "name": "6.json",
+      "source_sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0",
+      "mirror_sha256": "060a1dc9367ee5d6ad55a6bebe3ad772496de2a5b601c8dffdc2ccb7e10d42d0",
+      "signed_fields_equal": true,
+      "outer_fields_differ": []
+    },
+    {
+      "name": "7.json",
+      "source_sha256": "7e4500d7fc6fdaa6a4c5737702bccf39911d7277ee964a3a03207538dad5a85f",
+      "mirror_sha256": "a57b369e7cdb7f60ca2ab6a12078f3c86b6c13160bf56ef47aead7c3b1417a00",
+      "signed_fields_equal": true,
+      "outer_fields_differ": [
+        "ots"
+      ]
+    },
+    {
+      "name": "8.json",
+      "source_sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+      "mirror_sha256": "bb8106efc616e91ba7ee3406e11391892a9c1f3187304cebb9a0d7c74745d658",
+      "signed_fields_equal": true,
+      "outer_fields_differ": []
+    },
+    {
+      "name": "9.json",
+      "source_sha256": "1285495a8c5e90da0108cabaac5d03b0f0232491091f32607b51cbf7473b34d5",
+      "mirror_sha256": "351bea325a828b6f81823e9cc015d13bb0937b9f24131855da9ee584fdb483b9",
+      "signed_fields_equal": true,
+      "outer_fields_differ": [
+        "ots"
+      ]
+    },
+    {
+      "name": "10.json",
+      "source_sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+      "mirror_sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+      "signed_fields_equal": true,
+      "outer_fields_differ": []
+    }
+  ],
+  "views": [
+    {
+      "name": "rounds",
+      "sha256": "1246ad4144fd5adaf87b28b60ada88c21792ad262e4d9eead8be4ab8f9e1eb4a",
+      "rows": 10
+    },
+    {
+      "name": "observations",
+      "sha256": "b6447b85c4717f6bb1fb3baca731e5ba3cfd32e404f328598db967713fdf95b5",
+      "rows": 24913
+    }
+  ],
+  "preview": [
+    {
+      "config": "observations",
+      "rows_returned": 100
+    },
+    {
+      "config": "rounds",
+      "rows_returned": 10
+    }
+  ],
+  "limits": "Current public signing key used; Bitcoin timestamp proofs and public-key identity not independently verified. No refresh needed: existing projections exactly match regeneration."
+}

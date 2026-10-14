@@ -16,7 +16,7 @@ installLaborAdmissionHarness();
 for (const product of MENU_ITEMS) for (const door of ["http", "mcp", "mcp-standard"] as const) {
   it(`${product.id} ${door}: every rail keeps an unrecoverable historical good owed`, async () => {
     const item = items.find(item => item.id === product.id)!;
-    const args = { ...baseline(item), purpose: `SCVD-E2E-${crypto.randomUUID()}` };
+    const args = { ...await baseline(item), purpose: `SCVD-E2E-${crypto.randomUUID()}` };
     const quote = await call(item, "http", args);
     expect(quote.quote).toBe(true);
     for (const network of laborNetworks()) {

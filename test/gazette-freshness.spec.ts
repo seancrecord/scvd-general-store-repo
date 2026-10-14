@@ -146,28 +146,10 @@ describe("the freshness gate", () => {
   });
 });
 
-describe("the admin desk", () => {
-  it("the publish POST answers a stale draft with 409 and the movements named", async () => {
-    const draft = await assembleDraft(testEnv, true);
-    await landSettlement();
-    const response = await SELF.fetch(
-      "https://scvd.store/admin/gazette/edition/publish",
-      {
-        method: "POST",
-        headers: adminAuth,
-        body: new URLSearchParams({ markdown: draft!.markdown }).toString(),
-      },
-    );
-    expect(response.status).toBe(409);
-    const text = await response.text();
-    expect(text).toContain("Not printed");
-    expect(text).toContain("purchase");
-    expect(text).toContain("Re-assemble");
-  });
-
-  it("the press left the counter with the 2026-08-05 retirement", async () => {
-    // The freshness machinery stays correct behind the dormant
-    // publish door; the counter no longer carries a press desk.
+describe("the levers left the desk (2026-10-02)", () => {
+  it("the press left the counter with the 2026-08-05 retirement, and its routes with the 2026-10-02 sweep", async () => {
+    // The freshness machinery stays correct behind no door at all: a
+    // route with no button was a door only the password could see.
     await assembleDraft(testEnv, true);
     await landSettlement();
     const page = await SELF.fetch("https://scvd.store/admin/counter", {
@@ -177,17 +159,22 @@ describe("the admin desk", () => {
     const html = await page.text();
     expect(html).not.toContain("The Gazette press");
     expect(html).not.toContain("/admin/gazette/edition/publish");
+    for (const path of ["edition/publish", "edition/assemble", "correction", "publish", "founding/print"]) {
+      const gone = await SELF.fetch(`https://scvd.store/admin/gazette/${path}`, {
+        method: "POST",
+        headers: adminAuth,
+        body: new URLSearchParams({ markdown: "x", correction: "x", title: "x", tip_ids: "x" }).toString(),
+        redirect: "manual",
+      });
+      expect(gone.status).toBe(404);
+    }
   });
 
   it("re-assembling folds the movement in, and the fresh draft publishes", async () => {
     await assembleDraft(testEnv, true);
     await landSettlement();
-    // The keeper's re-assemble button.
-    const reassemble = await SELF.fetch(
-      "https://scvd.store/admin/gazette/edition/assemble",
-      { method: "POST", headers: adminAuth, redirect: "manual" },
-    );
-    expect([302, 303]).toContain(reassemble.status);
+    // The keeper's re-assemble, by hand.
+    await assembleDraft(testEnv, true);
     const refreshed = await getDraft(testEnv);
     expect(refreshed).not.toBeNull();
     // The settlement that made the old draft stale is now IN the paper.

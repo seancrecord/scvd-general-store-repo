@@ -1,0 +1,16 @@
+{
+  "algorithm": "sha256",
+  "scope": "Retained JSON and text evidence, excluding this manifest and the narrative README. Unsigned change detector.",
+  "files": {
+    "admissions.json": "9ad52c0746ba46c628c5a9ee4f8761f53b9225987812ce6a4d1c43b976a6482f",
+    "defects-pack.json": "f32ec86a6319b7503b034f6b04a8d95bb38028d02e5b8f46ac4d8b58b41c62f0",
+    "findability.txt": "842eead18f1c760f5530cdd34569634acf68cf1aae7a7cc4578f85597d65ed5c",
+    "listings.json": "49904008dc98dfacbab6ba4e5236d0fccf04fa0268fa752244e5b6aea0fd3a5f",
+    "mpp-directory-closure.json": "ea9791d277c2dc6e001cfa211e7f53b15b96127f777a17fd1f58b1a49afd92b5",
+    "mppscan-coverage.json": "ba198bb57eb62145cfb6200377b3765824f4d388a5c2b594ca98e2049810b630",
+    "mppscan.json": "5464841456b55fbe27cea26208bd6d9f7fb296de3e313c98c6cd9b5ed9e00957",
+    "openapi-description.json": "1832ef173ae8b590dd3c9d0e2acc829bc12b361e48fe670379fac4e0f9adb9bd",
+    "packages.json": "16d52e870403a08eb03982bf8260a832baa0bc5410d1a9e737fc056a82fc43be",
+    "validation.json": "a08b094d7e4d4453fe44a3c9a140e7d97902f6c5a29eca4fbc861c101276ee5c"
+  }
+}

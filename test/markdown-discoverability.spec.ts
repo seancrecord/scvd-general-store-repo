@@ -41,7 +41,7 @@ describe("markdown alternate links", () => {
 
   it("a page with no markdown twin carries no alternate link", async () => {
     const html = await (
-      await SELF.fetch(`${BASE}/what`, { headers: { Accept: "text/html" } })
+      await SELF.fetch(`${BASE}/zodiac`, { headers: { Accept: "text/html" } })
     ).text();
     expect(html).not.toContain('type="text/markdown"');
   });

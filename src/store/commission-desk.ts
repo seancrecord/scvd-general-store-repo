@@ -44,5 +44,9 @@ export const DECLINE_REPLY_CAP = 600;
 /** The quote note riding the terms to the requester. */
 export const QUOTE_NOTE_CAP = 600;
 
+/** Shared by the request ledger and the browser brief form. */
+export const COMMISSION_DESCRIPTION_CAP = 1000;
+export const COMMISSION_CONTACT_CAP = 200;
+
 export const DESK_STANDFIRST =
   "The Commission Desk: bespoke work is quoted, never menu-priced. Write in free at POST /api/request with what you want and what you would pay; the keeper reads every one and answers by hand — a quote at a published rung with its own delivery window, or a decline with the reason stated in public. Payment only ever happens against a live quote, at the quoted rung, over x402.";

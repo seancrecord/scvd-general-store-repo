@@ -10,6 +10,7 @@ import type { SignedTrustProfile } from "@/services/trust-profile";
 import type { HostedPurchase } from "@/services/hosted-observation";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
 import type { SignedReconciliation } from "@/services/settlement-reconciliation";
+import type { SignedSpotAddition } from "@/services/spot-evidence";
 import type { SignedSpotCheck } from "@/services/spot-check";
 import type { SignedProvenanceCheck } from "@/services/provenance-check";
 import type { PreparedA2AKit } from "@/services/a2a-kit";
@@ -41,6 +42,7 @@ export interface PreparedObservation {
   onpageAudit?: SignedOnpageAudit;
   a2aKit?: PreparedA2AKit;
   spotCheck?: SignedSpotCheck;
+  spotAddition?: SignedSpotAddition;
   researchComparison?: SignedResearchComparison;
   provenanceCheck?: SignedProvenanceCheck;
   walletStatement?: SignedWalletStatement;

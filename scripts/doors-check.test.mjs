@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createServer } from "node:http";
+import { CLIENT_USER_AGENTS, collectClientAccess, readClientAccess } from "./lib/client-access.mjs";
 import {
   AS_A_BROWSER,
   DOORS,
@@ -43,6 +44,47 @@ import {
 
 const DAY = 86_400_000;
 const NOW = Date.UTC(2026, 7, 29);
+
+test("the raw API door catches a Python-only edge block", () => {
+  const snapshot = goodSnapshot();
+  snapshot.clientAccess = [
+    { userAgent: "node", status: 200, contentType: "text/plain", text: "Store guide" },
+    { userAgent: "Python-urllib/3.11", status: 403, text: "error code: 1010" },
+  ];
+  const raw = readDoors(snapshot, NOW).doors.find((door) => door.id === "raw_api");
+  assert.ok(raw.criteria.some((row) => row.verdict === "unmet" && /Python-urllib/.test(row.note)),
+    "a working house client must not hide the blocked Python client");
+});
+
+test("the client collector really omits the absent user-agent and sees a Python block", async (t) => {
+  const seen = [];
+  const server = createServer((req, res) => {
+    seen.push(req.headers["user-agent"] ?? null);
+    const blocked = req.headers["user-agent"] === "Python-urllib/3.11";
+    res.writeHead(blocked ? 403 : 200, { "content-type": "text/plain", "cf-ray": "test-ray" });
+    res.end(blocked ? "error code: 1010" : "Store guide");
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const rows = await collectClientAccess(`http://127.0.0.1:${server.address().port}/llms.txt`);
+  assert.deepEqual(new Set(seen), new Set(CLIENT_USER_AGENTS));
+  assert.equal(readClientAccess(rows).verdict, "unmet");
+  assert.match(readClientAccess(rows).note, /Python-urllib\/3.11: 403.*test-ray/);
+  const repaired = rows.map((row) => ({ ...row, status: 200, text: "Store guide" }));
+  assert.equal(readClientAccess(repaired).verdict, "met");
+  assert.equal(readClientAccess(repaired.slice(1)).verdict, "unknown");
+  assert.equal(readClientAccess(repaired.map((row) => ({ ...row, status: 503 }))).verdict, "unknown");
+  assert.equal(readClientAccess(repaired.map((row) => ({ ...row, contentType: "text/html" }))).verdict, "unmet");
+});
+
+test("a client probe that cannot finish stays unknown", async (t) => {
+  const server = createServer((_req, _res) => {});
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const rows = await collectClientAccess(`http://127.0.0.1:${server.address().port}/llms.txt`, { timeoutMs: 100 });
+  assert.equal(readClientAccess(rows).verdict, "unknown");
+  assert.ok(rows.every((row) => row.status === 0 && /timed out/.test(row.error)));
+});
 
 /**
  * A token in Chrome's shape: opaque signature bytes, then the payload.
@@ -109,6 +151,7 @@ function goodSnapshot() {
     },
   ];
   return {
+    clientAccess: CLIENT_USER_AGENTS.map((userAgent) => ({ userAgent, status: 200, contentType: "text/plain", text: "Store guide" })),
     home: { ok: true, status: 200, text: home, bytes: 40_000 },
     openapi: {
       ok: true,

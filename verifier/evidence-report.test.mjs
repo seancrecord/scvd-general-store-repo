@@ -91,3 +91,154 @@ test('generated Markdown respects a caller limit below the report ceiling',async
 test('a blank payment address is an explicit gap, not a usable comparison',async()=>{
  const f=await fixture();try{f.challenge.accepts[0].payTo='  ';await f.saveHeaders();const out=f.run(['--challenge-headers',f.headers]);assert.equal(out.status,0,out.stderr);const p=JSON.parse(out.stdout).payment_challenge;assert.equal(p.status,'read_with_gaps');assert.equal(p.offers[0].address_digest,null);assert.equal(p.offers[0].comparison,'unavailable');}finally{await f.clean();}
 });
+
+test('draft identifier check catches a shortened digest without changing the draft or original',async()=>{
+ const f=await fixture();try{
+  const draft=join(f.dir,'draft.md'),original=await readFile(f.original),digest=sha(f.payload);
+  const text=`Signed-message SHA-256: ${digest.slice(0,31)+digest.slice(33)}\nOriginal SHA-256: ${sha(original)}\n`;
+  await writeFile(draft,text);
+  const out=f.run(['--check-identifiers',draft]);assert.equal(out.status,4,out.stderr);
+  const check=JSON.parse(out.stdout).identifier_check;
+  assert.equal(check.status,'needs_review');assert.equal(check.matched,1);assert.equal(check.unrecognized,1);
+  assert.equal(check.draft_sha256,sha(text));assert.equal(check.candidates,2);
+  assert.equal(check.readings[0].length,62);assert.equal(check.readings[0].status,'unrecognized');
+  assert.equal(await readFile(draft,'utf8'),text);assert.deepEqual(await readFile(f.original),original);
+ }finally{await f.clean();}
+});
+
+test('draft matching is a scoped lexical check, with empty and unverified drafts never passing',async()=>{
+ const f=await fixture();try{
+  const draft=join(f.dir,'draft.md');await writeFile(draft,`Not a correctness claim: ${sha(f.payload).toUpperCase()} ${f.key}`);
+  let out=f.run(['--check-identifiers',draft]);assert.equal(out.status,0,out.stderr);
+  let check=JSON.parse(out.stdout).identifier_check;assert.equal(check.status,'all_candidates_recognized');assert.equal(check.matched,2);
+  assert.equal(check.prose_verified,false);assert.match(check.scope,/labels|roles/);assert.match(check.scope,/short|split/);
+  await writeFile(draft,'No hexadecimal identifier here.');out=f.run(['--check-identifiers',draft]);assert.equal(out.status,4);
+  assert.equal(JSON.parse(out.stdout).identifier_check.status,'no_candidates');
+  f.doc.signature='0'.repeat(128);await writeFile(f.original,JSON.stringify(f.doc));await writeFile(draft,f.key);
+  out=f.run(['--check-identifiers',draft]);assert.equal(out.status,1);check=JSON.parse(out.stdout).identifier_check;
+  assert.equal(check.status,'verification_failed');assert.equal(check.matched,0);assert.equal(check.readings[0].status,'unchecked');
+ }finally{await f.clean();}
+});
+
+test('draft scan bounds output, checks omitted candidates and refuses malformed or oversized text',async()=>{
+ const f=await fixture();try{
+  const draft=join(f.dir,'draft.md');await writeFile(draft,Array(60).fill(sha(f.payload)).join('\n')+'\n'+'b'.repeat(200));
+  let out=f.run(['--check-identifiers',draft]);assert.equal(out.status,4,out.stderr);
+  let check=JSON.parse(out.stdout).identifier_check;assert.equal(check.candidates,61);assert.equal(check.matched,60);assert.equal(check.unrecognized,1);assert.ok(check.omitted>0);assert.equal(check.readings.length+check.omitted,61);assert.ok(Buffer.byteLength(JSON.stringify(check))<16384);
+  await writeFile(draft,Buffer.from([0xff]));out=f.run(['--check-identifiers',draft]);assert.equal(out.status,2);assert.equal(out.stdout,'');
+  await writeFile(draft,'x'.repeat(131073));assert.equal(f.run(['--check-identifiers',draft]).status,2);
+  await writeFile(draft,sha(f.payload));assert.equal(f.run(['--check-identifiers',draft,'--format','markdown','--report-out',join(f.dir,'report.md')]).status,2);
+  const wrong=spawnSync(process.execPath,[cli,'sources',f.original,'--check-identifiers',draft],{encoding:'utf8'});assert.equal(wrong.status,2);
+ }finally{await f.clean();}
+});
+
+test('draft lexical coverage keeps token boundaries and bounds repeated reference names',async()=>{
+ const {checkDraftIdentifiers}=await import('./evidence-report.js');
+ const value='a'.repeat(64),references=Object.fromEntries(Array.from({length:20},(_,i)=>[`field_${i}`,value]));
+ const text=`0x${value.toUpperCase()} ${'b'.repeat(129)} g${value} _${value} ${value}_ ${'c'.repeat(47)}`;
+ const check=await checkDraftIdentifiers(Buffer.from(text),references,true);
+ assert.equal(check.candidates,2);assert.equal(check.matched,1);assert.equal(check.unrecognized,1);
+ assert.equal(check.readings[0].reference_fields.length,4);assert.equal(check.readings[0].omitted_reference_fields,16);
+ assert.equal(check.readings[1].value,null);assert.equal(check.readings[1].length,129);
+});
+
+test('signed advisory codes acquire scoped readings without changing signed rows or originals',async()=>{
+ const f=await fixture();try{
+  f.row.advisories=['retry-key-not-in-challenge','signed-offers-not-in-challenge'];await f.saveOriginal();
+  const before=await readFile(f.original);const out=f.run(['--format','markdown']);assert.equal(out.status,0,out.stderr);
+  const r=markdownData(out.stdout),a=r.advisory_readings;
+  assert.equal(a.basis,'reader_interpretation_of_signed_codes');
+  assert.equal(a.omitted_observations,0);assert.equal(a.observations.length,1);
+  assert.equal(a.observations[0].signed_claims_pointer,'/round/hosts/0');
+  const retry=a.observations[0].advisories[0];
+  assert.equal(retry.code,'retry-key-not-in-challenge');
+  assert.match(retry.observed,/declared input.*recognized retry/i);
+  assert.match(retry.unknown,/header.*session.*settlement/i);
+  assert.match(retry.unknown,/double.charg/i);
+  assert.match(a.observations[0].advisories[1].unknown,/elsewhere/i);
+  assert.deepEqual(r.subject_evidence.observations[0].value,f.row);
+  assert.deepEqual(await readFile(f.original),before);
+  const json=JSON.parse(f.run().stdout);assert.deepEqual(json.advisory_readings,a);
+ }finally{await f.clean();}
+});
+
+test('declared retry fields remain untested and unknown advisory codes remain uninterpreted',async()=>{
+ const f=await fixture();try{
+  const hostile='new-code\n```\n<img src=x>\u2028';
+  f.row.advisories=['retry-key-declared',hostile,'toString','no-signed-offers'];await f.saveOriginal();
+  const out=f.run(['--format','markdown']);assert.equal(out.status,0,out.stderr);
+  const a=markdownData(out.stdout).advisory_readings.observations[0].advisories;
+  assert.match(a[0].unknown,/honor|honour/);assert.match(a[0].unknown,/retry/i);
+  assert.equal(a[1].code,hostile);assert.equal(a[1].observed,null);assert.equal(a[2].observed,null);
+  assert.match(a[1].unknown,/not interpreted/i);assert.match(a[3].unknown,/elsewhere/i);
+  assert.equal(out.stdout.split('\n').filter(x=>x.startsWith('```')).length,2);
+ }finally{await f.clean();}
+});
+
+test('advisory interpretation excludes unsigned history, rejected signatures and omitted rows',async()=>{
+ const f=await fixture();try{
+  f.row.advisories=['retry-key-not-in-challenge'];await f.saveOriginal();
+  f.doc.history=[{...f.row,advisories:['unsigned-only']}];await writeFile(f.original,JSON.stringify(f.doc));
+  let r=JSON.parse(f.run().stdout);assert.equal(r.advisory_readings.observations.length,1);
+  f.row.padding='x'.repeat(40000);await f.saveOriginal();r=JSON.parse(f.run().stdout);
+  assert.deepEqual(r.advisory_readings.observations,[]);assert.equal(r.advisory_readings.omitted_observations,1);
+  f.row.padding='tampered';f.doc.digest=sha(JSON.stringify(f.snapshot));await writeFile(f.original,JSON.stringify(f.doc));
+  const out=f.run();assert.equal(out.status,1);r=JSON.parse(out.stdout);
+  assert.equal(r.advisory_readings.status,'not_verified');assert.deepEqual(r.advisory_readings.observations,[]);
+ }finally{await f.clean();}
+});
+
+test('expanded advisory commentary has a byte bound and counts every omitted entry',async()=>{
+ const f=await fixture();try{
+  f.row.advisories=Array(400).fill('retry-key-not-in-challenge');await f.saveOriginal();
+  const out=f.run();assert.equal(out.status,0,out.stderr);const a=JSON.parse(out.stdout).advisory_readings;
+  const retained=a.observations.reduce((n,row)=>n+row.advisories.length,0);
+  assert.ok(retained>0);assert.ok(a.omitted_advisories>0);
+  assert.equal(retained+a.omitted_advisories,f.row.advisories.length);
+  assert.ok(Buffer.byteLength(JSON.stringify(a.observations))<=a.max_bytes);
+ }finally{await f.clean();}
+});
+
+test('exported bundle produces a compact report without authenticating its response context',async()=>{
+ const f=await fixture();try{
+  const {createEvidenceBundle}=await import('./evidence-bundle.js');
+  f.row.advisories=['retry-key-not-in-challenge'];await f.saveOriginal();
+  const bundle=await createEvidenceBundle(f.doc);bundle.context.response={snapshot:{round:{hosts:[{url:f.subject,advisories:['forged-context'],observed_at:'2099-01-01'}]}}};
+  const file=join(f.dir,'bundle.json');await writeFile(file,JSON.stringify(bundle));const before=await readFile(file);
+  const legacy=spawnSync(process.execPath,[cli,'verify',file,'--public-key',f.key],{encoding:'utf8'});assert.equal(legacy.status,0,legacy.stderr);assert.deepEqual(JSON.parse(legacy.stdout).signed_claims,f.snapshot);
+  const compact=spawnSync(process.execPath,[cli,'verify',file,'--public-key',f.key,'--format','json'],{encoding:'utf8'});assert.equal(compact.status,0,compact.stderr);assert.equal(Object.hasOwn(JSON.parse(compact.stdout),'signed_claims'),false);
+  const args=[cli,'verify',file,'--public-key',f.key,'--subject',f.subject];
+  let out=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(out.status,0,out.stderr);
+  const r=JSON.parse(out.stdout);assert.equal(r.input_kind,'evidence_bundle');assert.equal(r.source_sha256,sha(before));assert.equal(r.signed_message_sha256,sha(bundle.artifact.signed_payload));
+  assert.equal(r.context_authenticated,false);assert.equal(Object.hasOwn(r,'signed_claims'),false);
+  assert.deepEqual(r.subject_evidence.observations[0].value,f.row);assert.equal(r.advisory_readings.observations[0].advisories[0].code,'retry-key-not-in-challenge');
+  assert.ok(out.stdout.length<15000);assert.deepEqual(await readFile(file),before);
+  out=spawnSync(process.execPath,[...args,'--format','markdown','--challenge-headers',f.headers,'--report-out',join(f.dir,'bundle-report.md')],{encoding:'utf8'});assert.equal(out.status,0,out.stderr);
+  const md=await readFile(join(f.dir,'bundle-report.md'),'utf8');assert.match(md,/input-file/i);assert.match(md,/bundle bytes/i);assert.equal(markdownData(md).payment_challenge.offers[0].comparison,'matched');
+  const again=spawnSync(process.execPath,[...args,'--format','markdown','--report-out',join(f.dir,'bundle-report.md')],{encoding:'utf8'});assert.equal(again.status,2);assert.equal(await readFile(join(f.dir,'bundle-report.md'),'utf8'),md);
+  bundle.artifact.signed_payload+=' ';await writeFile(file,JSON.stringify(bundle));
+  out=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(out.status,1,out.stderr);const bad=JSON.parse(out.stdout);assert.equal(bad.signed_message_sha256,null);assert.deepEqual(bad.subject_evidence.observations,[]);assert.deepEqual(bad.advisory_readings.observations,[]);
+ }finally{await f.clean();}
+});
+
+test('bundle reporting preserves missing attachments, trusted-key and bounded-file failures',async()=>{
+ const f=await fixture();try{
+  const {createEvidenceBundle}=await import('./evidence-bundle.js');const bundle=await createEvidenceBundle(f.doc);const file=join(f.dir,'bundle.json');await writeFile(file,JSON.stringify(bundle));
+  const args=[cli,'verify',file,'--format','markdown'];
+  let out=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(out.status,1,out.stderr);assert.equal(markdownData(out.stdout).valid,false);
+  out=spawnSync(process.execPath,[...args,'--public-key',f.key,'--max-bytes','10'],{encoding:'utf8'});assert.equal(out.status,2);assert.equal(out.stdout,'');
+  const pair=generateKeyPairSync('ed25519'),key=pair.publicKey.export({type:'spki',format:'der'}).subarray(-32).toString('hex');
+  const payload=JSON.stringify({attests:sha('missing attachment')});
+  const cert=await createEvidenceBundle({algorithm:'ed25519',signed_payload:payload,signature:sign(null,Buffer.from(payload),pair.privateKey).toString('hex'),public_key:key});await writeFile(file,JSON.stringify(cert));
+  out=spawnSync(process.execPath,[...args,'--public-key',key],{encoding:'utf8'});assert.equal(out.status,3,out.stderr);assert.deepEqual(markdownData(out.stdout).missing_evidence,['attests']);
+ }finally{await f.clean();}
+});
+
+test('wrong report input forms return fixed recovery guidance without writing or echoing input',async()=>{
+ const f=await fixture();try{
+  const {createEvidenceBundle}=await import('./evidence-bundle.js');const bundle=await createEvidenceBundle(f.doc);bundle.context.secret='do-not-echo-this';await writeFile(f.original,JSON.stringify(bundle));
+  let out=f.run(['--format','markdown','--report-out',join(f.dir,'missing.md')]);assert.equal(out.status,2);assert.match(out.stderr,/verify <bundle.json>/);assert.doesNotMatch(out.stderr,/do-not-echo-this/);await assert.rejects(readFile(join(f.dir,'missing.md')),{code:'ENOENT'});
+  await writeFile(f.original,JSON.stringify(f.snapshot));out=f.run();assert.equal(out.status,2);assert.match(out.stderr,/detached payload/i);assert.match(out.stderr,/verify <bundle.json>/);
+  await f.saveOriginal();out=spawnSync(process.execPath,[cli,'verify',f.original,'--public-key',f.key,'--format','markdown'],{encoding:'utf8'});assert.equal(out.status,2);assert.match(out.stderr,/verify-source <saved-response.json>/);
+ }finally{await f.clean();}
+});

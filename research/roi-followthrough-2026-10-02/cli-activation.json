@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-10-02T14:59:00.867Z",
+  "version": "0.5.0",
+  "passed": [
+    "dry-run does not write",
+    "Claude and Cursor project configs name free verifier",
+    "second invocation preserves file",
+    "conflicting entry refuses and remains unchanged"
+  ],
+  "scope": "Registry-installed CLI in a temporary project; no native host or buyer qualification."
+}

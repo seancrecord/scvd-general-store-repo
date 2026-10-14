@@ -1,3 +1,4 @@
+import { COMPACT_CATALOG_PAGE_SIZE } from "@/lib/buyer-contract";
 import { COMPACT_CATALOG_BUDGET_BYTES, COMPACT_ITEM_CONTRACT_BUDGET_BYTES, SINGLE_ITEM_TOOL_BUDGET_BYTES } from "@/store/reader-limits";
 import { SELF, env } from "cloudflare:test";
 import { app } from "@/index";
@@ -231,12 +232,12 @@ describe("a bounded catalog leads to a single-item tool with ordinary required f
       const page = obj(JSON.parse(text));
       expect(page.total).toBe(MENU_ITEMS.length);
       const items = page.items as Record<string, unknown>[];
-      expect(page.limit).toBe(8);
+      expect(page.limit).toBe(COMPACT_CATALOG_PAGE_SIZE);
       expect(page.offset).toBe(seen.length);
       expect(page.returned).toBe(items.length);
       expect(page.has_more).toBe(page.next !== null);
       expect(items.length).toBeGreaterThan(0);
-      expect(items.length).toBeLessThanOrEqual(8);
+      expect(items.length).toBeLessThanOrEqual(COMPACT_CATALOG_PAGE_SIZE);
       for (const row of items) {
         const item = MENU_ITEMS.find(item => item.id === row.id)!;
         expect(row.required_params).toEqual(buyInputSchema(item).required ?? []);

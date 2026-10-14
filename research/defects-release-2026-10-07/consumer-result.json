@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "vocabulary_version": "22",
+  "results": [
+    {
+      "signal": "discovery-info-validates",
+      "classes": [
+        "discovery-info-invalid"
+      ],
+      "remediation": "present"
+    },
+    {
+      "signal": "offer-amount-matches-accepts",
+      "classes": [
+        "offer-contradicts-challenge"
+      ],
+      "remediation": "present"
+    }
+  ]
+}

@@ -142,6 +142,10 @@ describe("a passport can rest on either observed payment protocol", () => {
     expect(await chip.text()).toContain("MPP PASSPORT");
     const history = await (await SELF.fetch(`${BASE}/corpus/host/${HOST}.json`)).json() as { tier: { line: string } };
     expect(history.tier.line).toBe(result.payload.tier?.line);
+    const hostHtml = await (await SELF.fetch(`${BASE}/corpus/host/${HOST}`, { headers: { Accept: "text/html" } })).text();
+    const hostSchemas = [...hostHtml.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .map(match => JSON.parse(match[1]!) as { "@type"?: string; name?: string });
+    expect(hostSchemas.find(node => node["@type"] === "Dataset")?.name).toContain("mpp endpoint readiness");
     await testEnv.COUNTERS.put(KV_KEYS.trustProfile(HOST), JSON.stringify(await signTrustProfile(testEnv, new URL(`https://${HOST}/paid`), null, NOW)));
     const profiles = await (await SELF.fetch(`${BASE}/profiles`, { headers: { Accept: "application/json" } })).json() as { profiles: { host: string; decision: string; protocol: string }[] };
     expect(profiles.profiles).toContainEqual(expect.objectContaining({ host: HOST, decision: "READY", protocol: "mpp" }));

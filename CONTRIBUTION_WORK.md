@@ -1,9 +1,8 @@
 # Contribution work
 
-Implementation status: built locally on `codex/earning-path`, October 13,
-2026; worker guidance extended October 14. Not deployed. No live brief or reward commitment was posted by this
-build. Release and validation are recorded in
-[the build record](docs/EARNING_PATH_BUILD_2026-10.md).
+Implementation and release status are recorded in
+[the build record](docs/EARNING_PATH_BUILD_2026-10.md). The earning-path release
+adds no live brief or reward commitment automatically.
 
 The bounty board now has a path for useful work that requires no store
 purchase. The keeper posts a specific brief, reward, number of slots,
@@ -20,7 +19,10 @@ multiplied by slots. No money is placed in escrow or verified as funded.
 ## The keeper's workflow
 
 Open `/admin/bounties/contributions`, also linked from the existing money-out
-desk. The templates cover:
+desk. The desk starts with four editable first-batch drafts and also offers general
+templates. First-batch rewards and dates are blank until the keeper sets them;
+reading a draft creates no task. Package metadata supplies the version being
+tested. The general templates cover:
 
 - AURA: attempt a named free task from a fresh context and retain the
   GUESS / RETRY / DIG transcript and limits.

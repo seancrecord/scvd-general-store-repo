@@ -1,3 +1,5 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
+import { nativeCheckoutGuide, nativeCheckoutLane, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { Hono } from "hono";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
 import {
@@ -62,14 +64,15 @@ ${doors}`;
  * where the question is asked is a better answer than omitting the
  * heading and leaving a reader to wonder whether we forgot.
  */
-function authMarkdown(base: string): string {
+function authMarkdown(base: string, config?: PurchaseCapabilityConfig): string {
+  const native = nativeCheckoutLane(config);
   return `---
 title: "Authentication"
-description: "How an agent authenticates to ${STORE_SERVICE_NAME}: it does not. Free instruments answer anonymous requests; paid instruments take a signed x402 payment at the moment of the call. No account, no API key, no OAuth, no signup."
+description: "How an agent authenticates to ${STORE_SERVICE_NAME}: it does not. Free instruments answer anonymous requests; paid instruments accept x402${native ? " or native MPP where offered" : ""} at the moment of the call. No account, no API key, no OAuth, no signup."
 canonical: "${base}${AUTH_DOC_PATH}"
 url: "${base}${AUTH_DOC_PATH}"
 operator: "${OPERATED_BY}"
-auth_type: "anonymous + x402"
+auth_type: "anonymous + x402${native ? " + MPP" : ""}"
 identity_types_supported: ["anonymous"]
 registration_required: false
 register_uri: null
@@ -94,8 +97,8 @@ four sections whose honest answer is "nothing to do".
 | You want | You send | You get |
 | --- | --- | --- |
 | Anything free | nothing | the answer |
-| Anything paid | a signed x402 payment in \`${PAYMENT_HEADER}\` | the artifact |
-| The keeper's desk | HTTP Basic, one human's password | a 401, unless you are him |
+| Paid through x402 | a signed x402 payment in \`${PAYMENT_HEADER}\` | the artifact |
+${native ? "| Paid through native MPP | the signed Payment credential for the offered challenge | the purchase response and receipt |\n" : ""}| The keeper's desk | HTTP Basic, one human's password | a 401, unless you are him |
 
 ## Discover
 
@@ -118,7 +121,7 @@ and a reader should know which:
 - **\`register_uri\`, \`claim_uri\` and \`revocation_uri\`** are \`null\`.
   See Register, Claim and Revocation below.
 
-Every 402 this store issues carries a \`WWW-Authenticate\` header
+The x402 challenge carries a \`WWW-Authenticate\` hint
 pointing at that same document, so a client that read nothing at all
 still gets handed the path from the first refusal.
 
@@ -129,10 +132,12 @@ One identity type is supported and it is \`anonymous\`. No
 assertion, no signed identity of any kind is validated here, because
 nothing about who you are changes what you are served or what it costs.
 
-That leaves two ways through a door, and which one applies is a
-property of the door, not of you:
+The available method is a property of the door, not of you. Read its
+current challenge before choosing a payment format:
 
 ${AUTH_TIERS.map((tier) => tierSection(base, tier)).join("\n\n")}
+
+${native ? `## Native MPP checkout\n\n${nativeCheckoutGuide(config)}` : ""}
 
 ## Register
 
@@ -174,10 +179,7 @@ minute returns your original purchase from cache rather than taking a
 second payment. The 402 body suggests a key for you; copying it is the
 cheapest insurance on this site and it costs nothing.
 
-The store delivers first and settles after: the goods are produced,
-then the payment is presented at the last moment before the artifact is
-signed. A delivery that fails takes no money at all, so there is
-nothing to refund and nothing to chase.
+${DELIVERY_ORDER}
 
 **What this store will never ask you for:** credentials, API keys, seed
 phrases, private keys, or wallet secrets. Not on any page, not in any
@@ -217,10 +219,10 @@ If you want a purchase looked into, write to the keeper.
 The free instruments are not rate limited by credential, because there
 is no credential to count against. The free preflight carries a
 per-isolate and a global ceiling because it spends outbound requests to
-a host you choose, and every answer from it carries the IETF
-\`RateLimit\` fields so you can pace against the live number. Nothing
-else here has an application-level ceiling. Paid instruments are
-bounded by payment.
+a host you choose. Its metered answers carry the IETF \`RateLimit\`
+fields; validation refusals before the limiter do not. Other routes
+have their own limits, including the mailbox’s daily allowance. Read
+the affected response and its retry guidance before sending again.
 
 ## Who to write to
 
@@ -231,7 +233,7 @@ The mailbox is at ${base}/api/letter.
 }
 
 agentAuthRoutes.get(AUTH_DOC_PATH, (c) =>
-  c.text(authMarkdown(c.env.STORE_BASE_URL), 200, {
+  c.text(authMarkdown(c.env.STORE_BASE_URL, c.env), 200, {
     "content-type": MARKDOWN_MEDIA_TYPE,
     Vary: VARY_ACCEPT,
     "Cache-Control": "public, max-age=3600",
@@ -249,7 +251,7 @@ agentAuthRoutes.get(AUTH_DOC_PATH, (c) =>
  * remember to. Noted rather than re-implemented.
  */
 agentAuthRoutes.get(PROTECTED_RESOURCE_PATH, (c) =>
-  c.json(protectedResourceMetadata(c.env.STORE_BASE_URL), 200, {
+  c.json(protectedResourceMetadata(c.env.STORE_BASE_URL, c.env), 200, {
     "Cache-Control": "public, max-age=3600",
   }),
 );

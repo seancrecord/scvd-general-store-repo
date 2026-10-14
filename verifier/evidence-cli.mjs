@@ -2,21 +2,24 @@
 import { open, mkdir, access, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { webcrypto } from "node:crypto";
-import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit } from "./evidence-bundle.js";
-import { EVIDENCE_REPORT_FORMAT, CHALLENGE_HEADERS_MAX_BYTES, readPaymentChallenge, renderEvidenceReport } from "./evidence-report.js";
+import { createEvidenceBundle, verifyEvidenceBundle, detachedTimestamp, evidenceDigest, EVIDENCE_BUNDLE_MAX_BYTES, EVIDENCE_BUNDLE_HARD_MAX_BYTES, evidenceByteLimit, EVIDENCE_BUNDLE_FORMAT } from "./evidence-bundle.js";
+import { EVIDENCE_REPORT_FORMAT, CHALLENGE_HEADERS_MAX_BYTES, readPaymentChallenge, readAdvisoryScope, renderEvidenceReport, checkDraftIdentifiers, EVIDENCE_REPORT_MAX_BYTES } from "./evidence-report.js";
 import { CAPABILITIES, runtimeCapabilities } from "./x402-verify.js";
 
 // Node 18 exposes WebCrypto through node:crypto even when the global is disabled.
 globalThis.crypto ??= webcrypto;
 const SUBJECT_OBSERVATIONS_MAX_BYTES = 32768;
+const SOURCE_LINKS_MAX_BYTES = 32768;
 
 const HELP = `scvd-evidence — free export and offline verification
+  sources <saved-corpus-index-or-host-history.json> [--subject <exact-endpoint-url>]
   export <verify-response-or-corpus-snapshot-url> --out <new-directory> [--evidence <local-file> ...]
   verify <bundle.json> --public-key <independently-trusted-public-key-hex>
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
-    [--evidence <local-file> ...] [--subject <exact-endpoint-url>]
+    [--evidence <local-file> ...]
+  Both verification commands support: [--subject <exact-endpoint-url>]
     [--format json|markdown] [--report-out <new-report.md>]
-    [--challenge-headers <saved-HTTP-headers.txt>]
+    [--challenge-headers <saved-HTTP-headers.txt>] [--check-identifiers <saved-draft.md>]
   capabilities
   All commands but capabilities: [--max-bytes <integer>]
 
@@ -26,20 +29,40 @@ be several times larger than the source. Large corpus example: --max-bytes 33554
 Start with /corpus/index.json, follow next, then export each snapshot URL.
 This command checks one snapshot's signature, not continuity of the corpus.
 
+sources reads a saved discovery response offline and writes no files. Index
+entries name snapshots, not merchants; a missing merchant name is not evidence
+of absence. Host history requires --subject and selects only exact URL hints.
+Candidate links are untrusted and unverified: decide which original to retain,
+then verify-source with a separately established key and the exact --subject.
+No linked URL is fetched automatically. Invalid, duplicate and omitted links
+and pagination gaps are counted; an empty list does not establish absence.
+
 Export reads only the URL you name and its origin's public key document.
 No credentials, payments or private keys. Evidence files must match a hash
 inside the signed payload. Existing directories are never overwritten.
 Verify and verify-source make no network requests. verify-source checks a saved
 original response using the same bundle verifier in memory,
-and prints findings plus the original file SHA-256 without repeating claims.
+and prints findings plus the input file SHA-256 without repeating claims.
+verify checks an exported bundle.json, not its detached payload.json. With any
+report option shown above, verify also prints compact findings; without report options
+it keeps the full signed_claims output. A bundle report hashes the bundle bytes,
+not an original HTTP response. Unsigned bundle context is never authenticated.
 With --format markdown --report-out, save a new report without overwriting any
-file and print a compact JSON receipt; otherwise verify-source writes no files.
+file and print a compact JSON receipt; otherwise neither verification command writes files.
+With --check-identifiers, scan a saved UTF-8 draft offline against identifiers
+from this verification. Long hex tokens (48+ digits) are compared, not prose or
+identifier roles. No text is changed; a later final answer is outside this check.
+Drafts are bounded to 128 KiB or the smaller --max-bytes. Exit 4 means the
+optional check needs review or found no candidates; existing verification
+failures keep their exit codes. --report-out cannot accompany this check.
 With --subject, it also selects exact-URL observations from verified corpus-v1
 claims only. Unsigned history and preflight are never included. Whole rows fit
 within a ${SUBJECT_OBSERVATIONS_MAX_BYTES}-byte compact JSON allowance; omitted rows are counted explicitly.
 Pointers address signed_claims, not the unsigned response wrapper. Snapshot
 packaging time is separate from each row's observed_at; no freshness verdict.
 Markdown prints a generated report with exact identifiers and one-source scope.
+Advisory readings add bounded observed/unknown commentary beside signed codes;
+they are reader interpretations, not new signed claims or paid behavior tests.
 --challenge-headers requires --subject and reads the final saved HTTP 402 headers:
 its x402 v2 PAYMENT-REQUIRED offers remain unsigned; digest matches are historical
 address links only. No rail selection, address validation or payment authority.
@@ -52,6 +75,8 @@ export creates payload.json.ots: use an independent ots verifier with trusted
 Bitcoin headers to verify it. Context and filenames are unsigned metadata.
 `;
 
+// Only these fixed input-shape messages may escape; never echo input or errors.
+class InputFormError extends Error {}
 async function localBytes(path, maxBytes) {
   const handle = await open(path, "r");
   try {
@@ -95,6 +120,53 @@ async function localAttachments(evidence, maxBytes) {
   }
   return attachments;
 }
+function sourceLinks(doc, subject, maxBytes, sourceHash) {
+  const index = doc?.format === "scvd-corpus-index/v1" && Array.isArray(doc.entries);
+  const history = typeof doc?.host === "string" && doc.host.length > 0 && doc.host.length <= 253 && doc.evidence_scope?.signed === false && Array.isArray(doc.timeline);
+  if ((!index && !history) || (!index && !subject)) throw new Error("unsupported_discovery_input");
+  const publicLink = value => {
+    if (typeof value !== "string" || value.length > 8192 || !/^https:\/\//i.test(value) || value.includes("#") || /[\s\x00-\x1f\x7f\\]/u.test(value)) return null;
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" && !url.username && !url.password && !url.hash ? value : null;
+    } catch { return null; }
+  };
+  const next = index ? publicLink(doc.next) : null;
+  const more = index && typeof doc.has_more === "boolean" ? doc.has_more : null;
+  const reading = {
+    format: "scvd-evidence-sources/v1", input_kind: index ? "corpus_index" : "host_history",
+    authenticated: false, source_sha256: sourceHash, subject: subject ?? null, subject_presence: "not_checked",
+    candidates: [], candidate_links: 0, invalid_links: 0, duplicate_links: 0,
+    unselected_rows: 0, omitted_candidates: 0,
+    pagination: index ? { has_more: more, next_url: next,
+      state: more === true && next ? "next_page_available" : more === false && doc.next === null ? "page_end_claimed" : "incomplete" } : null,
+    scope: "Unsigned discovery hints from this saved response only, not verified observations or evidence of subject absence. Index entries name snapshots, not merchants. Exact host-history URL hints can be missing, stale or false. Pagination claims do not establish archive completeness. Inspect candidate URLs before fetching; retain each chosen original and separately establish its issuer key, then verify its exact subject and observation date. No links were fetched and no signature, truth, freshness, continuity, identity, settlement or delivery was checked.",
+  };
+  const links = [], seen = new Set();
+  for (const row of index ? doc.entries : doc.timeline) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) { reading.invalid_links++; continue; }
+    if (!index && row.url !== subject) { reading.unselected_rows++; continue; }
+    const url = publicLink(index ? row.url : row.entry_url);
+    if (!url) { reading.invalid_links++; continue; }
+    if (seen.has(url)) { reading.duplicate_links++; continue; }
+    seen.add(url);
+    links.push({ url, sequence: Number.isSafeInteger(row.sequence) && row.sequence > 0 ? row.sequence : null,
+      metadata_status: index && typeof row.status === "string" && row.status.length <= 128 ? row.status : null });
+  }
+  reading.candidate_links = links.length;
+  reading.omitted_candidates = links.length;
+  // Reserve the newline written by the caller. Count whole links;
+  // do not cut a URL or let a large index become an unbounded tool display.
+  let size = Buffer.byteLength(JSON.stringify(reading)) + 1;
+  const limit = Math.min(maxBytes, SOURCE_LINKS_MAX_BYTES);
+  if (size > limit) throw new Error("source_links_too_large");
+  for (const row of links) {
+    const bytes = Buffer.byteLength(JSON.stringify(row)) + (reading.candidates.length ? 1 : 0);
+    if (size + bytes > limit) continue;
+    reading.candidates.push(row); size += bytes; reading.omitted_candidates--;
+  }
+  return reading;
+}
 function subjectEvidence(result, url) {
   const reading = {
     url, status: "not_verified", matched_observations: null,
@@ -136,33 +208,50 @@ async function main(args) {
   const flags = {}; const evidence = [];
   for (let i = 0; i < rest.length; i += 2) {
     const [key, value] = [rest[i], rest[i + 1]];
-    if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject", "--format", "--challenge-headers", "--report-out"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
+    if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject", "--format", "--challenge-headers", "--report-out", "--check-identifiers"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
     if (key === "--evidence") evidence.push(value); else flags[key] = value;
   }
   if (flags["--max-bytes"] && !/^\d+$/.test(flags["--max-bytes"])) throw new Error("invalid_byte_limit");
   const maxBytes = evidenceByteLimit(flags["--max-bytes"] === undefined ? undefined : Number(flags["--max-bytes"]));
   if (!input) throw new Error("missing_input");
-  if (flags["--format"] && (command !== "verify-source" || !["json", "markdown"].includes(flags["--format"]))) throw new Error("invalid_format");
-  if (flags["--report-out"] && (command !== "verify-source" || flags["--format"] !== "markdown")) throw new Error("report_requires_markdown");
-  if (flags["--challenge-headers"] && (command !== "verify-source" || !flags["--subject"])) throw new Error("challenge_requires_subject");
+  const verifying = command === "verify-source" || command === "verify";
+  if (flags["--format"] && (!verifying || !["json", "markdown"].includes(flags["--format"]))) throw new Error("invalid_format");
+  if (flags["--report-out"] && (!verifying || flags["--format"] !== "markdown")) throw new Error("report_requires_markdown");
+  if (flags["--challenge-headers"] && (!verifying || !flags["--subject"])) throw new Error("challenge_requires_subject");
+  if (flags["--check-identifiers"] && (!verifying || flags["--report-out"])) throw new Error("invalid_identifier_check");
   if (flags["--subject"]) {
     const subject = new URL(flags["--subject"]);
-    if (command !== "verify-source" || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
+    if ((!verifying && command !== "sources") || flags["--subject"].length > 8192 || !["https:", "http:"].includes(subject.protocol) || subject.username || subject.password || subject.hash) throw new Error("invalid_subject");
     // Validate syntax without normalizing the exact requested evidence subject.
   }
-  if (command === "verify-source") {
-    if (flags["--out"]) throw new Error("invalid_arguments");
+  if (command === "sources") {
+    if (flags["--out"] || flags["--public-key"] || evidence.length) throw new Error("invalid_arguments");
     const bytes = await localBytes(input, maxBytes);
-    const attachments = await localAttachments(evidence, maxBytes);
-    const bundle = await createEvidenceBundle(JSON.parse(bytes.toString("utf8")), { attachments, maxBytes });
+    const reading = sourceLinks(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)), flags["--subject"], maxBytes, await evidenceDigest(bytes));
+    console.log(JSON.stringify(reading));
+    return;
+  }
+  if (verifying) {
+    if (flags["--out"] || (command === "verify" && evidence.length)) throw new Error("invalid_arguments");
+    const bytes = await localBytes(input, maxBytes);
+    const document = JSON.parse(bytes.toString("utf8"));
+    if (command === "verify-source" && document?.format === EVIDENCE_BUNDLE_FORMAT) throw new InputFormError("This is an exported bundle. Use verify <bundle.json> with the independently trusted key and the same report options.");
+    if (document?.version === 1 && document?.source === "ward_round" && document?.round && !document?.signature) throw new InputFormError("This is a detached payload without its signature envelope. Use verify <bundle.json>, or verify-source <saved-response.json>, with the independently trusted key.");
+    if (command === "verify" && document?.format !== EVIDENCE_BUNDLE_FORMAT && (document?.snapshot || typeof document?.signed_payload === "string")) throw new InputFormError("This is a saved response, not a bundle. Use verify-source <saved-response.json> with the independently trusted key and the same report options.");
+    const bundle = command === "verify" ? document : await createEvidenceBundle(document, { attachments: await localAttachments(evidence, maxBytes), maxBytes });
     const result = await verifyEvidenceBundle(bundle, { publicKey: flags["--public-key"], maxBytes });
-    // The saved original is the transport. Reprinting a whole corpus defeated
+    process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
+    if (command === "verify" && !["--subject", "--format", "--report-out", "--challenge-headers", "--check-identifiers"].some(flag => flags[flag])) {
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    }
+    // The input file is retained separately. Reprinting a whole corpus defeated
     // the buyer's output budget even after its local signature check succeeded.
     const { signed_claims, ...findings } = result;
     const subject = flags["--subject"] ? { subject_evidence: subjectEvidence(result, flags["--subject"]) } : {};
     // Compact subject output prevents indentation of a nested signed row from
     // expanding past the allowance that was measured in its compact encoding.
-    const reading = { report_format: EVIDENCE_REPORT_FORMAT, ...findings, source_sha256: await evidenceDigest(bytes),
+    const reading = { report_format: EVIDENCE_REPORT_FORMAT, input_kind: command === "verify" ? "evidence_bundle" : "saved_response", ...findings, source_sha256: await evidenceDigest(bytes),
       signed_message_sha256: result.valid ? await evidenceDigest(new TextEncoder().encode(bundle.artifact.signed_payload)) : null,
       corpus_snapshots_verified: result.valid && signed_claims?.version === 1 && signed_claims?.source === "ward_round" && Array.isArray(signed_claims.round?.hosts) ? 1 : 0,
       ...subject,
@@ -171,19 +260,22 @@ async function main(args) {
         const known = typeof date === "string" && Number.isFinite(Date.parse(date));
         return { signed_claims_pointer: observation.signed_claims_pointer, observed_at: known ? date : null, status: known ? "recorded" : "unknown" };
       }) };
+    if (subject.subject_evidence) reading.advisory_readings = readAdvisoryScope(subject.subject_evidence);
     if (flags["--challenge-headers"]) reading.payment_challenge = await readPaymentChallenge(await localBytes(flags["--challenge-headers"], Math.min(maxBytes, CHALLENGE_HEADERS_MAX_BYTES)), subject.subject_evidence);
+    if (flags["--check-identifiers"]) {
+      const references = { source_sha256: reading.source_sha256, signed_message_sha256: reading.signed_message_sha256,
+        supplied_public_key: flags["--public-key"], verified_signature: result.valid ? bundle.artifact.signature : null };
+      if (reading.payment_challenge) {
+        references.challenge_source_sha256 = reading.payment_challenge.source_sha256;
+        for (const row of reading.payment_challenge.offers) references[`unsigned_offer_${row.index}_address_digest`] = row.address_digest;
+      }
+      reading.identifier_check = await checkDraftIdentifiers(await localBytes(flags["--check-identifiers"], Math.min(maxBytes, EVIDENCE_REPORT_MAX_BYTES)), references, result.valid);
+    }
     if (flags["--report-out"]) {
       await writeFile(flags["--report-out"], renderEvidenceReport(reading, maxBytes), { flag: "wx", mode: 0o600 });
       console.log(JSON.stringify({ report_file: flags["--report-out"], source_sha256: reading.source_sha256, valid: reading.valid, evidence_complete: reading.evidence_complete }));
     } else console.log(flags["--format"] === "markdown" ? renderEvidenceReport(reading, maxBytes) : JSON.stringify(reading, null, flags["--subject"] ? undefined : 2));
-    process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
-    return;
-  }
-  if (command === "verify") {
-    if (flags["--out"] || evidence.length) throw new Error("invalid_arguments");
-    const result = await verifyEvidenceBundle(JSON.parse((await localBytes(input, maxBytes)).toString("utf8")), { publicKey: flags["--public-key"], maxBytes });
-    console.log(JSON.stringify(result, null, 2));
-    process.exitCode = !result.valid ? 1 : result.evidence_complete ? 0 : 3;
+    process.exitCode = !result.valid ? 1 : !result.evidence_complete ? 3 : reading.identifier_check && reading.identifier_check.status !== "all_candidates_recognized" ? 4 : 0;
     return;
   }
   if (command !== "export" || !flags["--out"] || flags["--public-key"]) throw new Error("invalid_arguments");
@@ -207,4 +299,4 @@ async function main(args) {
   await writeFile(join(out, "README.txt"), HELP, { flag: "wx", mode: 0o600 });
   console.log(JSON.stringify({ exported: true, directory: out, signature_verified: false, timestamp_verified: false, issuer_snapshot_present: issuerDocument !== null }));
 }
-main(process.argv.slice(2)).catch(() => { console.error("Evidence command failed: check arguments, readable bounded input and a new output directory. Nothing was paid. Use --help."); process.exitCode = 2; });
+main(process.argv.slice(2)).catch(error => { console.error(error instanceof InputFormError ? error.message : "Evidence command failed: check arguments, readable bounded input and a new output directory. Nothing was paid. Use --help."); process.exitCode = 2; });

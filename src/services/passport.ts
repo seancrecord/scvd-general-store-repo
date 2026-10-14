@@ -121,7 +121,7 @@ export const DECISION_MEANING: Record<AgentDecision, string> = {
   EXPIRED:
     "The evidence is older than the passport's own expiry and means nothing now. Refuse it and get a newer observation — do not fall back to reading the stale verdict.",
   INDETERMINATE:
-    "We do not know. Either nothing was observed, or the checks disagreed with each other. Treat this exactly like no evidence at all rather than like a soft yes.",
+    "We do not know. Evidence is missing, undated, or conflicting. Treat this exactly like no usable evidence rather than like a soft yes.",
 };
 
 export const DECISION_RULE = `fresh or aging -> READY; broken -> NOT_READY; expired -> EXPIRED; indeterminate -> INDETERMINATE. Derived from status alone, so it can never disagree with the freshness rule above it.`;
@@ -137,6 +137,20 @@ export const DECISION_RULE = `fresh or aging -> READY; broken -> NOT_READY; expi
  * block agents actually read must not be the one block a tamperer
  * could rewrite freely.
  */
+export const UNPAID_PROBE_LIMITS = [
+  "Paid settlement was not tested by this unpaid request.",
+  "Successful delivery was not tested by this unpaid request.",
+  "Availability between observations was not checked.",
+] as const;
+
+export interface PassportRequest {
+  url: string;
+  method: string | null;
+  source_url: string | null;
+  evidence_url: string | null;
+  scope: string;
+}
+
 export interface PassportSummary {
   protocol?: PassportProtocol;
   /** The four-word read, a total function of `status` below. */
@@ -171,6 +185,8 @@ export interface PassportSummary {
    * gap reads as a clean bill; this one is stated beside the verdict
    * where a hurried reader cannot miss it. */
   not_observed: string[];
+  /** Exact request behind the latest unpaid reading; absent on self-observation. */
+  observation?: PassportRequest;
   verify: string;
   history_url: string;
   corrections_url: string;
@@ -260,7 +276,7 @@ export type PassportOutcome =
        * finding against the host, and we do not upgrade it to ready
        * either — there is no verdict here until the next walk.
        */
-      reason: "never-observed" | "not-ready" | "retracted-reading" | "protocol-unmeasured";
+      reason: "never-observed" | "not-ready" | "retracted-reading" | "protocol-unmeasured" | "observation-undated";
       detail: string;
       /** Present on `retracted-reading`: the correction that withdrew it. */
       correction_date?: string;
@@ -294,6 +310,7 @@ function summarize(parts: {
    * before the summary in both issuers rather than after. */
   modules: readonly PassportModule[];
   protocolGaps?: readonly string[];
+  observation?: PassportRequest;
 }): PassportSummary {
   const ageDays =
     parts.observedAt === null
@@ -325,7 +342,8 @@ function summarize(parts: {
         }
       : {}),
     failed: parts.failed,
-    not_observed: [...new Set([...notObservedFrom(parts.modules), ...(parts.protocolGaps ?? [])])].sort(),
+    not_observed: [...new Set([...notObservedFrom(parts.modules), ...(parts.protocolGaps ?? []), ...(parts.observation ? UNPAID_PROBE_LIMITS : [])])].sort(),
+    ...(parts.observation ? { observation: parts.observation } : {}),
     verify:
       "ed25519_verify(utf8(signed_payload), hex(signature), hex(public_key)); the key and its Bitcoin-anchored history are at /.well-known/scvd-signing-key.",
     history_url: `${parts.base}/corpus/host/${parts.host}.json`,
@@ -432,7 +450,7 @@ export async function effectiveObservation(
   const censusObserved = latestProbed ? history.last_observed : null;
   const refreshIsNewest =
     refresh !== null &&
-    (censusObserved === null || refresh.observed_at > censusObserved);
+    (!latestProbed || refresh.observed_at > (censusObserved ?? latestProbed.taken_at));
   return {
     history,
     latestProbed,
@@ -503,8 +521,19 @@ export async function issuePassport(
     };
   }
   const lastObserved = observation.observed_at;
+  if (!lastObserved || !Number.isFinite(Date.parse(lastObserved))) {
+    return { issued: false, reason: "observation-undated",
+      detail: `${host}'s archived reading has request time unknown. The snapshot date is not a request timestamp, so freshness and expiry cannot be established. Read the original rows at ${base}/corpus/host/${host}.json or run a new unpaid preflight.` };
+  }
+  const request: PassportRequest = {
+    url: refreshIsNewest ? refresh!.url : latestProbed!.url!,
+    method: (refreshIsNewest ? refresh!.probe_method : latestProbed!.probe_method) ?? null,
+    source_url: refreshIsNewest ? null : latestProbed!.entry_url,
+    evidence_url: refreshIsNewest ? null : latestProbed!.evidence_url ?? null,
+    scope: "Unpaid payment-challenge checks for this exact endpoint. Paid settlement and successful delivery were not tested. This does not assess the operator's other products or protocols.",
+  };
   const issuedAt = now.toISOString();
-  const expires = expiryFrom(lastObserved ?? issuedAt);
+  const expires = expiryFrom(lastObserved);
   const freshness = freshnessOf(lastObserved, effectiveVerdict, now);
   const offer = observation.offer;
   const latest = refreshIsNewest
@@ -573,6 +602,7 @@ export async function issuePassport(
       failed: observation.failed,
       tier,
       modules,
+      observation: request,
       ...(mpp?.spoken ? { protocolGaps: [...mpp.what_this_cannot_tell_you, "MPP challenge binding was not verified."] } : {}),
     }),
     issued_at: issuedAt,
@@ -591,7 +621,7 @@ export async function issuePassport(
       full_history_url: `${base}/corpus/host/${host}.json`,
     },
     chip_url: `${base}/badges/passport/${host}.svg`,
-    observer: `${new URL(base).host} weekly census (signed corpus; one GET per host per week, Web Bot Auth)`,
+    observer: `${new URL(base).host} unpaid census instrument (Web Bot Auth; request method and time where retained)`,
     not_a_guarantee: NOT_A_GUARANTEE,
     modules,
   };

@@ -3,8 +3,11 @@ import {
   evmChainOf,
   getBlockNumber,
   usdcTransfersToAny,
+  usdcAuthorizationLogs,
+  type UsdcInflowTransfer,
   type EvmChain,
 } from "@/lib/base-rpc";
+import { classifyInflowAuthorizations, emptyAuthorizationCounts, type InflowAuthorizationCounts } from "@/lib/inflow-authorization";
 import { latestWardRound, type WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -68,7 +71,9 @@ import type { Env } from "@/types";
 export const INFLOW_WINDOW_BLOCKS = 43_200;
 
 /**
- * The most getLogs calls one run will spend per chain.
+ * The most transfer getLogs calls one run will spend per chain.
+ * Authorization companion queries have a separate equal ceiling. These are
+ * logical calls, not a bound on the transport layer's retries.
  *
  * WAS 40, AND 40 WAS WRONG. Polygon's providers answer a 500-block
  * span, so a day needs ~87 calls; Base's answer 2,000, so a day
@@ -129,6 +134,8 @@ const SUSPECT_ROUND_COUNTS = new Set([1_000, 2_000, 5_000, 10_000]);
 
 export interface InflowChainWindow {
   chain: string;
+  /** Absent on historical readings; a missing measurement is not zero. */
+  authorization?: InflowAuthorizationCounts;
   /** Blocks actually covered by the spans this run spent. */
   from_block: number;
   to_block: number;
@@ -539,7 +546,10 @@ async function readSpan(
   to: number,
   budget: ReturnType<typeof callBudget>,
   state: WalkState,
-): Promise<{ rows: Array<InflowRow>; unread: string[] }> {
+  authorizationBudget: ReturnType<typeof callBudget>,
+  deadline: number,
+): Promise<{ rows: Array<InflowRow>; unread: string[]; authorization: InflowAuthorizationCounts }> {
+  const authorization = emptyAuthorizationCounts();
   const kept: InflowRow[] = [];
   const unread: string[] = [];
   let index = 0;
@@ -554,7 +564,7 @@ async function readSpan(
     }
     const size = state.chunkSize;
     const slice = addresses.slice(index, index + size);
-    let rows: Array<{ to: string; from: string; amount: bigint }> | null = null;
+    let rows: UsdcInflowTransfer[] | null = null;
     try {
       rows = await usdcTransfersToAny(env, slice, from, to, chain);
     } catch {
@@ -577,6 +587,18 @@ async function readSpan(
       }
       continue;
     }
+    const classified = await classifyInflowAuthorizations(rows, chain, from, to, async (senders) => {
+      if (Date.now() >= deadline || !authorizationBudget.take()) return null;
+      authorization.calls += 1;
+      try {
+        const logs = await usdcAuthorizationLogs(env, senders, from, to, chain);
+        return SUSPECT_ROUND_COUNTS.has(logs.length) ? null : logs;
+      } catch { return null; }
+    });
+    authorization.paired_transfers += classified.paired_transfers;
+    authorization.paired_amount_atomic = (BigInt(authorization.paired_amount_atomic) + BigInt(classified.paired_amount_atomic)).toString();
+    authorization.unpaired_transfers += classified.unpaired_transfers;
+    authorization.unread_transfers += classified.unread_transfers;
     for (const row of rows) {
       kept.push({
         to: row.to.toLowerCase(),
@@ -591,7 +613,7 @@ async function readSpan(
     }
     index += size;
   }
-  return { rows: kept, unread };
+  return { rows: kept, unread, authorization };
 }
 
 /**
@@ -616,6 +638,9 @@ async function walkChain(
   const perAddress = new Map<string, number>();
   const kept: InflowRow[] = [];
   const budget = callBudget(spanBudget);
+  // Companion reads have their own ceiling; transfer coverage keeps its existing budget.
+  const authorizationBudget = callBudget(spanBudget);
+  const authorization = emptyAuthorizationCounts();
   const unreadAddresses = new Set<string>();
   let head: number;
   try {
@@ -658,11 +683,16 @@ async function walkChain(
     const batch = spans.slice(cursor, cursor + SPAN_CONCURRENCY);
     const results = await Promise.all(
       batch.map((span) =>
-        readSpan(env, chain, addresses, span.from, span.to, budget, state),
+        readSpan(env, chain, addresses, span.from, span.to, budget, state, authorizationBudget, deadline),
       ),
     );
     for (const result of results) {
       transfers += result.rows.length;
+      authorization.paired_transfers += result.authorization.paired_transfers;
+      authorization.paired_amount_atomic = (BigInt(authorization.paired_amount_atomic) + BigInt(result.authorization.paired_amount_atomic)).toString();
+      authorization.unpaired_transfers += result.authorization.unpaired_transfers;
+      authorization.unread_transfers += result.authorization.unread_transfers;
+      authorization.calls += result.authorization.calls;
       for (const row of result.rows) {
         perAddress.set(row.to, (perAddress.get(row.to) ?? 0) + 1);
         kept.push(row);
@@ -695,6 +725,7 @@ async function walkChain(
       truncated: short,
       received: perAddress.size,
       transfers,
+      authorization,
       addresses_unread: unreadAddresses.size,
       /*
        * THE PER-CHAIN DENOMINATOR (2026-08-28, defect 6, visible in
@@ -1051,6 +1082,7 @@ export async function readInflowCensus(
     }),
     what_this_is_not:
       WHAT_THIS_IS_NOT_BASE +
+      " Authorization pairs identify EIP-3009 use, not an x402 purchase, agent activity or finality. No pair established does not prove a plain transfer; unread transfers remain separate. Historical readings without authorization fields were not measured." +
       skew +
       senderNote +
       " The quoted-band count is a BAND and not a receipt: a door quoting a wide range makes a wide band, a facilitator's fee moves an amount off the quote, and nothing here has seen a receipt. It rules out the transfers that plainly are not purchases; it does not prove that the rest are.",

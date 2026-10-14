@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-09-30T14:27:27.550089+00:00",
+  "initial_red_controls": {
+    "tests": 3,
+    "failed_before": 3,
+    "passed_before": 0
+  },
+  "native_wrapper_regression": {
+    "failed_before": 1,
+    "passed_after": 1,
+    "fixture": "scripts/fixtures/buyer-source-review-command.json",
+    "scope": "Observed command text in a fresh synthetic fixture; closed native scores unchanged."
+  },
+  "buyer_controls": {
+    "passed": 283,
+    "failed": 0,
+    "command": "npm run buyer:test"
+  },
+  "typecheck": "pass",
+  "worker_bundles": "pass",
+  "docs": "pass; existing quiet-document advisories",
+  "native_qualification": {
+    "source_commit": "4cbf7ea9",
+    "codex": "incomplete: frozen command recognizer missed equivalent quoting",
+    "claude": "incomplete: voluntary budget-based decline",
+    "offline_recipient": "pass",
+    "buyers_launched": false,
+    "retries_or_rescoring": false
+  },
+  "hosted_full_suite": "required for final PR head before merge; pending"
+}

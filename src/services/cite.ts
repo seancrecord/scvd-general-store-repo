@@ -30,7 +30,7 @@ export interface Citation {
     host?: string;
     week: string;
     sequence: number;
-    observed_at: string;
+    observed_at: string | null;
     digest: string;
     rows?: string;
     index: string;
@@ -40,9 +40,9 @@ export interface Citation {
 }
 
 export function citeRow(base: string, source: CitationSource): Citation {
-  // Host observations can predate sealing. Snapshot citations and legacy
-  // rows without their own timestamp retain the publication-date fallback.
-  const observedAt = source.host ? source.observed_at ?? source.taken_at : source.taken_at;
+  // A snapshot citation dates the archive. A host citation needs the
+  // request's own timestamp; publishing a row cannot supply a missing one.
+  const observedAt = source.host ? source.observed_at ?? null : source.taken_at;
   const subject = source.host ? `${source.host}, ` : "";
   /*
    * ONE LINE FORMAT (2026-09-04, merged): the sentence is lib/cite's

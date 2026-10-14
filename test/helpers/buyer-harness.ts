@@ -1,3 +1,6 @@
+import { performSpotCheck } from "@/services/spot-check";
+import { readSpotOriginal, retainSpotEvidence } from "@/services/spot-evidence";
+import { mintCertificate } from "@/services/certificates";
 import { EVM_CHAINS, rpcEndpoints } from "@/lib/base-rpc";
 import { LABOR_CAPACITY_ID } from "@/services/labor-reservations";
 import { createExecutionContext, env, runInDurableObject, waitOnExecutionContext } from "cloudflare:test";
@@ -70,6 +73,8 @@ export function requirements(schema: Schema, id: string): string[] {
 }
 // Independent buyer inputs. These are examples, not a second paid-item roster.
 export const values: Obj = {
+  hosts: JSON.stringify(["buyer-fixture.example", "second-fixture.example"]),
+  baseline_cert_id: "cert_fixture_requires_retained_original",
   urls: JSON.stringify(["https://buyer-fixture.example/api/paid", "https://buyer-fixture.example/api/other"]),
   url: "https://buyer-fixture.example/api/paid", host: "buyer-fixture.example",
   address: "0x1111111111111111111111111111111111111111",
@@ -79,7 +84,16 @@ export const values: Obj = {
   mandate: "Observe the launch endpoint. Spend at most one dollar.", confession: "I claimed the build was done before checking it.",
   win: "The build shipped.", tag: "Ada was here", detail: "Read this door and return the transcript.",
 };
-export function baseline(item: Item): Obj {
+// A Change Check has a real prior-artifact dependency. Prepare that signed
+// fixture explicitly, before measuring the request under test; never relax
+// the production validator or reconstruct an original from today's books.
+export async function baseline(item: Item): Promise<Obj> {
+  if (item.id === "change_check" && !(await readSpotOriginal(sourceEnv, String(values.baseline_cert_id), String(values.host)))) {
+    const report = await performSpotCheck(sourceEnv, String(values.host));
+    const minted = await mintCertificate(sourceEnv, {itemId:"spot_check", attests:report.evidence_hash});
+    values.baseline_cert_id = minted.certificate.cert_id;
+    await retainSpotEvidence(sourceEnv, minted.certificate.cert_id, {kind:"spot_check", report});
+  }
   return Object.fromEntries((item.spec.inputs.required ?? []).map(field => {
     if (!(field in values)) throw new Error(`No independent valid input for new required field ${item.id}.${field}`);
     return [field, item.id === "a2a_repair_kit" && field === "url" ? CARD_URL : values[field]];
@@ -111,7 +125,7 @@ export async function call(item: Item, door: Door, args: Obj, tool?: Tool, payme
   const body = door === "http" ? raw : Object.keys(error).length ? data : object(object(raw.result).structuredContent);
   const encoded = response.headers.get("PAYMENT-REQUIRED");
   const challenge = encoded ? object(JSON.parse(atob(encoded))) : object(data["x402/payment-required"]);
-  return { protocolError: door === "http" ? response.status >= 400 : Object.keys(error).length > 0 || object(raw.result).isError === true, status: door === "http" ? response.status : Number(error.code ?? response.status), code: body.code,
+  return { protocolError: response.status >= 400 || (door === "mcp" && (Object.keys(error).length > 0 || object(raw.result).isError === true)), status: door === "http" ? response.status : Number(error.code ?? response.status), code: body.code,
     charged: body.charged, message: String(door === "http" ? raw.error ?? "" : error.message ?? ""),
     quote: encoded !== null || error.code === 402, verifies: facilitator.verifyCalls - v,
     settles: facilitator.settleCalls - s, writes: [...writes], body,
@@ -137,7 +151,7 @@ export async function clean(): Promise<void> {
   await sourceEnv.COUNTERS.put(`${KV_KEYS.corpusPrefix}000000001`, JSON.stringify({
     snapshot: { version: 1, sequence: 1, taken_at: NOW.toISOString(), previous_digest: null, source: "ward_round", week: "2026-W36",
       round: { week: "2026-W36", at: NOW.toISOString(), listed_resources: 1, coverage_suspect: false, capped: false, our_search_presence: true,
-        hosts: [{ host: "buyer-fixture.example", url: values.url, verdict: "ready", failed: [], advisories: [] }] } },
+        hosts: [{ host: "buyer-fixture.example", url: values.url, observed_at: NOW.toISOString(), verdict: "ready", failed: [], advisories: [] }] } },
     digest: "0".repeat(64), signature: "0".repeat(128), public_key: "0".repeat(64),
   }));
   await setOutTheWindow(sourceEnv, 3, NOW);

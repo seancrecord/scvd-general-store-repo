@@ -1,0 +1,47 @@
+{
+  "kind": "Before/after rendering of closed 1.9.0 plans using their retained runtime bytes; no native attempts",
+  "plans": [
+    {
+      "plan": "research/setup-guidance-buyer-2026-09-30/plan.json",
+      "recipient_prompt_sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "buyer_and_capability_prompts_identical": true,
+      "recipient_adapter_identical": true
+    },
+    {
+      "plan": "research/package-access-qualification-2026-09-30/plan.json",
+      "recipient_prompt_sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "buyer_and_capability_prompts_identical": true,
+      "recipient_adapter_identical": true
+    },
+    {
+      "plan": "research/buyer-setup-qualification-2026-10-01/plan.json",
+      "recipient_prompt_sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "buyer_and_capability_prompts_identical": true,
+      "recipient_adapter_identical": true
+    },
+    {
+      "plan": "research/generated-report-buyer-2026-09-28/plan.json",
+      "recipient_prompt_sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "buyer_and_capability_prompts_identical": true,
+      "recipient_adapter_identical": true
+    },
+    {
+      "plan": "research/source-directories-qualification-2026-10-01/plan.json",
+      "recipient_prompt_sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "buyer_and_capability_prompts_identical": true,
+      "recipient_adapter_identical": true
+    },
+    {
+      "plan": "research/bounded-source-review-buyer-2026-10-01/plan.json",
+      "recipient_prompt_sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "buyer_and_capability_prompts_identical": true,
+      "recipient_adapter_identical": true
+    },
+    {
+      "plan": "research/source-review-qualification-2026-09-30/plan.json",
+      "recipient_prompt_sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "buyer_and_capability_prompts_identical": true,
+      "recipient_adapter_identical": true
+    }
+  ]
+}

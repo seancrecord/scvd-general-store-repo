@@ -11,7 +11,7 @@ function buyerRow(b: Buyer): string {
   const items = b.purchases.map((p) => `${escapeHtml(p.item)} <small>${escapeHtml(p.date.slice(0, 10))}</small>`).join(" → ");
   const row = b.payer_row_purchases === undefined
     ? ""
-    : ` <strong title="the payer row disagrees with the certificates">row says ${b.payer_row_purchases}</strong>`;
+    : ` <strong title="legacy x402 tally; coverage differs from certificates">legacy row says ${b.payer_row_purchases}</strong>`;
   return `<tr>
     <td><code title="${escapeHtml(b.address)}">${escapeHtml(short(b.address))}</code></td>
     <td>${b.purchases.length}${row}</td>
@@ -45,7 +45,7 @@ export function renderBuyersPage(report: BuyersReport): string {
       <tr><td>…who bought more than once</td><td>${s.repeat_buyers}</td></tr>
       <tr><td>…who followed the handoff (bought, then attested that purchase)</td><td>${s.followed_handoff}</td></tr>
       <tr><td>purchases on certificates</td><td>${s.purchases}</td></tr>
-      <tr><td>wallets whose payer row disagrees with their certificates</td><td>${s.rows_disagreeing}</td></tr>
+      <tr><td>wallets with different certificate and legacy tally counts</td><td>${s.rows_disagreeing}</td></tr>
     </table>
   </section>
   <section>
@@ -58,13 +58,16 @@ export function renderBuyersPage(report: BuyersReport): string {
       <tr><th>wallet</th><th>purchases</th><th>paid</th><th>handoff</th><th>in order</th></tr>
       ${report.buyers.map(buyerRow).join("")}
     </table>`}
-    <p><small>"row says N" beside a count is the payer row on the counters disagreeing with the certificates on the shelf —
-    the row-level detail the books check cannot give, by address. A row of 0 means the wallet has certificates and no row at all.</small></p>
+    <p><small>"legacy row says N" is the wallet's x402 payment tally. Certificates here include both x402 and native MPP purchases;
+    the legacy tally excludes native MPP and can include payments for goods that issue no certificate.
+    A difference alone does not prove a missing sale. A row of 0 means this scan found no purchases on the legacy tally.</small></p>
     <div style="border:1px solid currentColor;padding:0.6em 0.9em;margin:0.5em 0 1em;background:var(--card)">
-      <p style="margin:0 0 0.4em"><strong>Which number is right: the certificate count. Always.</strong> A certificate is minted per sale and cannot go missing.
-      The payer row is a tally on the counters that misses counts when one wallet buys seconds apart (it happened 2026-09-11: 66 certificates, row said 51).
-      Since 2026-09-11 the row is written by one serialized writer so this cannot recur, and the hourly raise lifts any row still short of its records. The button below runs that raise now; it never lowers anything and is safe to press twice.</p>
-      <form method="post" action="/admin/repair/raise-counters" style="margin:0"><button type="submit">Raise every short counter and payer row to its records now</button></form>
+      <p style="margin:0 0 0.4em"><strong>These counts cover different records.</strong> Use this page for certificate-backed purchases by outside wallets.
+      For accounting differences, start with <a href="/admin/reconciliation">the books check</a> and its scan limits.
+      The hourly raise lifts eligible organic x402 counters and payer rows to their recorded settlements; it never lowers a count,
+      imports native MPP sales into the legacy tally, or creates a missing settlement record.
+      The button runs that same raise now. <a href="/admin/raise-log">The last raise</a> shows its coverage and changes.</p>
+      <form method="post" action="/admin/repair/raise-counters" style="margin:0"><button type="submit">Raise eligible legacy tallies to recorded settlements</button></form>
     </div>
   </section>
   <section>

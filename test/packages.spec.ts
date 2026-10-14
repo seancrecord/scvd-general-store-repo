@@ -9,6 +9,8 @@ import NPM_CONTENT from "../registry/npm-content.json";
 import preflightPackage from "../x402-preflight/package.json";
 import corpusPackage from "../corpus-client/package.json";
 import starterPackage from "../mcp-starter/package.json";
+import starterSource from "../mcp-starter/server.mjs?raw";
+import { PROTOCOL_VERSIONS } from "@/routes/mcp";
 import { DEFECT_CLASSES, DEFECT_VOCABULARY_VERSION, EVIDENCE_LABELS, VOCABULARY_CHANGELOG } from "@/store/defect-vocabulary";
 
 /**
@@ -29,6 +31,14 @@ const files: Record<string, string> = {
   ...(import.meta.glob("../defects/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
   ...(import.meta.glob("../mcp-starter/*", { query: "?raw", import: "default", eager: true }) as Record<string, string>),
 };
+
+it("the copyable starter advertises the hosted protocol revisions or refuses drift", () => {
+  // The package stays a single zero-dependency file. Parse only its literal list;
+  // changing that representation requires revisiting this contract guard.
+  const literal = starterSource.match(/export const PROTOCOL_VERSIONS = (\[[^;]+\]);/)?.[1];
+  expect(literal).toBeDefined();
+  expect(JSON.parse(literal!)).toEqual(PROTOCOL_VERSIONS);
+});
 
 describe("scvd-defects carries the tree's vocabulary, not a copy that can drift", () => {
   it("is the classes, the labels and the changelog exactly, at the served version", () => {

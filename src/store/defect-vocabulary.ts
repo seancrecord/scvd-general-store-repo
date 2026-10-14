@@ -56,7 +56,7 @@ export const MPP_CORE_DEFECT = "mpp-core-observable-invalid";
 export const RECEIPT_ABSENT_CLASS = "receipt-absent-on-paid-response";
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "21";
+export const DEFECT_VOCABULARY_VERSION = "22";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -244,6 +244,13 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     what_changed:
       "Added receipt-absent-on-paid-response: a door that settles the payment and serves the goods with no PAYMENT-RESPONSE header, so the buyer holds bytes and no proof of what bought them. Seven walker reports on four doors had said exactly this on the bounty board since 2026-09-08 — the one observation on the board that a free probe structurally cannot make — and the register had no word for it, so the reports were counted on one page and named nowhere. THE PROVENANCE IS STATED ON THE CLASS AND IT IS THE WEAKEST THIS REGISTER CARRIES: the signal is the walker's own report at the crowd-walked tier, recorded verbatim as their claim and never verified by this store, which saw neither the request nor the response. It is registered anyway because a class with a stated weak signal can be compared and strengthened, and a report with no class cannot; the launch check's settle stage is the paid instrument of ours that could carry it next, and the entry says so rather than claiming it. Detectable: paid. No operator, host or wallet is named. The host history now prints each crowd walk with this class beside a report that says the receipt was absent, and the board's findings name the class beside the count.",
   },
+  {
+    version: "22",
+    date: "2026-10-05",
+    at_the_instigation_of: "the keeper's S8 v3 release verification",
+    what_changed:
+      "Discovery/schema and offer/challenge classes now also map their v3 verdict checks through verdict_signal, retaining the advisory mappings and the same assertions. Repair guidance therefore labels a failed v3 check as a check. The discovery buyer hint previously said the door would not be found in an ingestion-built catalog; it now states possible rejection and explicitly unobserved ingestion. No historical signed report is changed.",
+  },
 ];
 
 /** The date this file's cross-instrument mappings were last verified. */
@@ -276,6 +283,8 @@ export interface DefectClass {
   detectable: "unpaid" | "paid";
   /** The check or stage in this store that reports it, when one does. */
   our_signal: string | null;
+  /** Additional verdict check for a class that also has an advisory signal. */
+  verdict_signal?: string;
   /** What observation would disprove a finding of this class. */
   falsified_by: string;
   /**
@@ -700,15 +709,16 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     asserts:
       "Where a challenge carries extensions.bazaar, its info block satisfies its schema block on every keyword a catalog's validator applies before listing.",
     costs:
-      "The catalog's documented rule is to validate info against schema and reject the entry otherwise, so the door is absent from the place buyers search while every structural check still passes. The operator opted into discovery and got silence; the buyer never finds the door at all.",
+      "A catalog that validates this contract may reject the entry. This probe observes the schema contradiction, not whether any directory ingested or rejected it. Earlier batteries leave this advisory; v3 counts it against readiness.",
     detectable: "unpaid",
     our_signal: "discovery-info-fails-schema (advisory)",
+    verdict_signal: "discovery-info-validates",
     falsified_by:
       "The info block validating against the schema block under a standard JSON Schema validator; or the endpoint appearing in an ingestion-built catalog with a complete listing despite the block failing.",
     repair_hint:
       "Generate info and schema from one declaration rather than typing them twice (the reference helpers do this), and run a JSON Schema validator over the pair in your own tests, which is how this store found the same shape in its own listings.",
     buyer_hint:
-      "Nothing to do at the till: the door may still be payable. It means you will not find this door in a catalog built by ingestion, so hold the URL yourself rather than expecting a directory to carry it.",
+      "The door may still be payable, but its discovery info contradicts its schema and blocks v3 readiness. A catalog may reject the entry; this probe does not observe ingestion. Retain the URL and ask the operator to reconcile the discovery contract.",
     registered: "2026-09-02",
   },
   {
@@ -720,6 +730,7 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "A buyer holding the offer as a pre-payment commitment and the challenge as the terms to sign has two prices from one door in one breath, and whichever it pays, the other document says it paid wrong. In a dispute the door's own signature argues against its own challenge.",
     detectable: "unpaid",
     our_signal: "offer-contradicts-challenge (advisory)",
+    verdict_signal: "offer-amount-matches-accepts",
     falsified_by:
       "The offer's decoded payload matching an accepts entry of the same response on network, asset, payTo and amount; the spec tells verifiers to match on those fields, never on array position.",
     repair_hint:
@@ -991,7 +1002,7 @@ export function evidenceLabel(id: string): EvidenceLabel | undefined {
  */
 export function defectsBySignal(signal: string): DefectClass[] {
   return DEFECT_CLASSES.filter(
-    (entry) => entry.our_signal === signal || entry.our_signal === `${signal} (advisory)`,
+    (entry) => entry.verdict_signal === signal || entry.our_signal === signal || entry.our_signal === `${signal} (advisory)`,
   );
 }
 

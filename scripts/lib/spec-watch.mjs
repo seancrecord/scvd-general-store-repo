@@ -171,6 +171,21 @@ export const FACTS = Object.freeze([
     caveat: "The source is the versionless site on purpose: the specification is versioned (v0.3.0 was current when this was written) and a pinned URL would rot on the next release. The reference repository is github.com/a2aproject/A2A. Secondhand — neither was opened from here.",
   },
   {
+    /*
+     * ADDED 2026-10-07, the day after the announcement. The source is a
+     * blog post because that is all that exists: a v0.1 specification is
+     * promised for later in October 2026, and its URL replaces this one
+     * the day it is published. The clock on this row is the publication,
+     * not the ninety days.
+     */
+    id: "personal-agent-protocol",
+    protocol: "Personal Agent Protocol",
+    fact: "Meta and Sierra's standard for a consumer's personal agent reaching a business is an OAuth session with a guest tier that needs no account, and its API route rides MCP and OpenAPI rather than a transport of its own. Payments are a future extension, not part of v0.1.",
+    source: "https://sierra.ai/blog/introducing-personal-agent-protocol",
+    depends: "the no-account position in src/store/agent-auth.ts (/auth.md and the RFC 9728 document), the protocol list at /developers, and the pending Muse connector submission in research/muse-connector-2026-09-19.md",
+    caveat: "ANNOUNCEMENT, NOT WIRE (2026-10-07). Every shape in the fact is prose from one blog post; no specification text, repository or reference implementation existed when this row was written. The reported non-participation of OpenAI and Anthropic is secondhand. Nothing in the tree speaks this protocol and nothing should until the text exists; the row is here so the read happens the week v0.1 lands. The adoption-day read is in docs/spec-watch/observation.json, not seeded here: seeds are for rows read the day the register opened.",
+  },
+  {
     id: "llms-txt",
     protocol: "Discovery / AEO",
     fact: "llms.txt and agents.md are still the conventions a model reaches for first, in the shapes we serve them.",

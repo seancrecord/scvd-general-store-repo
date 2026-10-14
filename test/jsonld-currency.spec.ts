@@ -1,5 +1,6 @@
 import { env, SELF } from "cloudflare:test";
 import type { Env } from "@/types";
+import { EVIDENCE_PILOT } from "@/store/evidence-pilot";
 import { paymentMethod } from "@/lib/payment-networks";
 import { describe, expect, it } from "vitest";
 import {
@@ -19,8 +20,9 @@ const BASE = "https://scvd.store";
  * Google's merchant-listing validator wants one, whatever schema.org
  * says about tickers. So every JSON-LD money field says "USD" — true,
  * the shelf is priced in dollars and USDC is a dollar stablecoin —
- * and every priced Offer says in words that USDC over x402 is what
- * settles. This walks the sitemap rather than a typed list of pages,
+ * and every priced Offer states its actual settlement method in words.
+ * The trade account and endpoint pilot have their own billing terms.
+ * This walks the sitemap rather than a typed list of pages,
  * so a room added next month is covered without anybody remembering.
  */
 
@@ -53,7 +55,7 @@ function* walk(value: unknown): Generator<Node> {
 }
 
 describe("JSON-LD money fields", { timeout: 120_000 }, () => {
-  it("never say USDC where a validator reads an ISO code, and always say it where a buyer reads words", async () => {
+  it("use ISO currency codes and state the actual billing method beside each price", async () => {
     const urls = await sitemapUrls();
     expect(urls.length).toBeGreaterThan(20);
     let pricedOffers = 0;
@@ -67,9 +69,13 @@ describe("JSON-LD money fields", { timeout: 120_000 }, () => {
           }
           if (node["@type"] === "Offer" && Number(node["price"] ?? 0) > 0) {
             pricedOffers += 1;
-            // Two sentences and no third: the front door's asset, or the
-            // trade counter's statement (2026-09-03) — the one priced
-            // Offer here that is not paid over x402 and must not say so.
+            if (url === `${BASE}${EVIDENCE_PILOT.path}` && node["url"] === url) {
+              expect(node["price"]).toBe(EVIDENCE_PILOT.price_usd);
+              expect(node["acceptedPaymentMethod"]).toBe(EVIDENCE_PILOT.billing);
+              continue;
+            }
+            // The endpoint pilot alone uses a delivery invoice. Other offers
+            // retain the existing checkout and trade-account contracts.
             expect(
               [JSONLD_ACCEPTED_PAYMENT, paymentMethod(env as unknown as Env), JSONLD_TRADE_ACCEPTED_PAYMENT],
               `${url}: priced Offer without the asset in words`,

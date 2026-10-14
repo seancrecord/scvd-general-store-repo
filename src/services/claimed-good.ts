@@ -19,16 +19,17 @@ export async function claimedGood(env: Env, payer: string, certId: string): Prom
     } };
     const base = { ...noPayment, address: canonicalAddress(payer), cert_id: certId,
       verify_url: `${env.STORE_BASE_URL}/api/verify/${certId}`, transaction: cert.settlement_tx ?? null,
-      network: cert.network ?? null, charged: cert.settlement_tx ? true : cert.paid_usdc ? null : false };
+      network: cert.network ?? null, charged: cert.gateway_payment ? null : cert.settlement_tx ? true : cert.paid_usdc ? null : false };
     known = base;
     const unavailable = () => ({ status: 200 as const, body: { ...base, recovery_state: "unavailable", next_action: "contact_keeper",
       fulfillment: undefined, contact_url: `${env.STORE_BASE_URL}/api/letter`,
       error: "The receipt is yours, but this read could not recover its original good. Keep this certificate id and transaction and contact the keeper. Do not pay again to recover it. No replacement was created; this is not proof that the original was delivered." } });
-    if (!cert.network || !cert.settlement_tx) return unavailable();
+    const reference = cert.gateway_payment?.reference ?? cert.settlement_tx;
+    if (!cert.network || !reference) return unavailable();
     const ns = env.PAID_RECOVERIES;
     if (!ns) throw new Error("Purchase storage unavailable");
-    const identity = { payer, network: cert.network, transaction: cert.settlement_tx };
-    const retained = await ns.get(ns.idFromName(`${cert.network}:${cert.settlement_tx}`)).readClaimedGood(identity);
+    const identity = { payer, network: cert.network, transaction: reference };
+    const retained = await ns.get(ns.idFromName(`${cert.network}:${reference}`)).readClaimedGood(identity);
     const recorded = await loadHumanResolution(env, identity.network, identity.transaction);
     const statement = recorded?.statement;
     const resolution = statement && statement.network === identity.network &&

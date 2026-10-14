@@ -1,3 +1,4 @@
+import { inflowAuthorizationText } from "@/lib/inflow-authorization";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import {
@@ -443,7 +444,7 @@ registryRoutes.get("/inflows", async (c) => {
           `<p class="menu-meta">${escapeHtml(window.chain)}:
            ${window.received_advertised} of ${window.advertised_here} addresses whose
            doors quoted this rail received here, over
-           ${window.blocks.toLocaleString()} blocks.</p>`,
+           ${window.blocks.toLocaleString()} blocks.<br>${escapeHtml(inflowAuthorizationText(window.authorization))}</p>`,
       )
       .join("")}
     <h3>What this counts</h3>

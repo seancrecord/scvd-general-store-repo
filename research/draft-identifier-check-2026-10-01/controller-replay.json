@@ -1,0 +1,65 @@
+{
+  "kind": "offline controller replay, not a native attempt or rescore",
+  "runtime_sha256": {
+    "evidence-cli.mjs": "2702e800abc2235091bde67f6a217b1918866dd7a692c1cb9a08e7a1b01aa48a",
+    "evidence-report.js": "8cf58b9b35350a9b217638aeb6ef00e58d08a4db3812189c00b35064ae6c602a",
+    "package.json": "6dc5859739bfd888fa9b46721099d19b6668a7a66ff1f083ae5ed3c8a0407496"
+  },
+  "archive": "bounded-source-review-buyer-2026-10-01",
+  "inputs": [
+    {
+      "file": "buyers/codex-directed-r2/evidence/snapshot-10.json",
+      "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+    },
+    {
+      "file": "buyers/codex-directed-r2/evidence/issuer-key.json",
+      "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+    },
+    {
+      "file": "buyers/codex-directed-r2/recipient/events.jsonl",
+      "sha256": "71ac8a1b7c9c660d939d305645b5aa621e395c4b64b0bfbc522bab46987d43d2"
+    }
+  ],
+  "draft_source": {
+    "trace_line": 23,
+    "sha256": "f8da4cc64b215285419fcc04a1ec0c96d3d0f926948835631bb32b801aa5d985",
+    "text": "verbatim final text extracted from the hash-checked native event; no wrapper, repair or rewrite"
+  },
+  "exit_code": 4,
+  "verification": {
+    "valid": true,
+    "source_sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+    "signed_message_sha256": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb"
+  },
+  "identifier_check": {
+    "format": "scvd-draft-identifiers/v1",
+    "draft_sha256": "f8da4cc64b215285419fcc04a1ec0c96d3d0f926948835631bb32b801aa5d985",
+    "status": "needs_review",
+    "prose_verified": false,
+    "candidates": 2,
+    "matched": 1,
+    "unrecognized": 1,
+    "unchecked": 0,
+    "omitted": 0,
+    "readings": [
+      {
+        "value": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9b08370df4e2eb",
+        "length": 62,
+        "status": "unrecognized",
+        "reference_fields": [],
+        "omitted_reference_fields": 0
+      },
+      {
+        "value": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+        "length": 64,
+        "status": "matched",
+        "reference_fields": [
+          "source_sha256"
+        ],
+        "omitted_reference_fields": 0
+      }
+    ],
+    "scope": "Lexical comparison only: whole ASCII hexadecimal tokens of at least 48 digits, optionally prefixed 0x, against identifiers computed or used by this verification. Matching does not check labels, roles, negation, dates, interpretation, issuer identity or prose correctness. Short, split and non-hexadecimal identifiers are outside coverage. Unrecognized means absent from this reference set, not necessarily false. Inspect the saved draft; no text was rewritten. This check applies only to the draft bytes named by draft_sha256, not a later final answer."
+  },
+  "limits": "The original signature still verifies and the saved final retains its transcription error. The new optional local check recognizes the shortened digest as absent from its reference set. It does not prove understanding, prevent later changes, cover all prose or establish native adoption. Historical scores are unchanged."
+}

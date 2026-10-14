@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/",
+    "method": "GET",
+    "ua": "Python-urllib/3.13",
+    "status": 403,
+    "ray": "a46e33f78ffe932c-EWR",
+    "body": "error code: 1010\n"
+  },
+  {
+    "path": "/mcp",
+    "method": "POST",
+    "ua": "Python-urllib/3.13",
+    "status": 403,
+    "ray": "a46e33f81d6d726b-EWR",
+    "body": "{\"type\":\"https://developers.cloudflare.c"
+  },
+  {
+    "path": "/admin",
+    "method": "GET",
+    "ua": "Python-urllib/3.13",
+    "status": 403,
+    "ray": "a46e33f8ab1ff8a7-EWR",
+    "body": "error code: 1010\n"
+  },
+  {
+    "path": "/admin",
+    "method": "GET",
+    "ua": "node",
+    "status": 401,
+    "ray": "a46e33f9394b4be6-ATL",
+    "body": "Unauthorized"
+  },
+  {
+    "path": "/.env",
+    "method": "GET",
+    "ua": "node",
+    "status": 403,
+    "ray": "a46e33fec9a5a67e-EWR",
+    "body": "<!DOCTYPE html>\n<!--[if lt IE 7]> <html "
+  }
+]

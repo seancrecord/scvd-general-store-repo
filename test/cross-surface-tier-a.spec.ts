@@ -101,14 +101,14 @@ describe("discovery-info-fails-schema: the block against its own schema", () => 
     await markKeeperSeen(env as unknown as Env);
     const silent = ["discovery-info-fails-schema", "resource-description-absent", "offer-contradicts-challenge"];
     for (const item of MENU_ITEMS) {
-      const response = await quoteRequest(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
+      const response = await quoteRequest(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
       expect(response.status, `${item.id} did not answer 402`).toBe(402);
       const body = await response.text();
       const report = runChecks(
         new Response(body, { status: 402, headers: { "PAYMENT-REQUIRED": response.headers.get("PAYMENT-REQUIRED")! } }),
         false,
         body,
-        `${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`,
+        `${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`,
       );
       for (const name of silent) {
         expect(advisory(report, name), `${item.id}: ${advisory(report, name)?.detail ?? ""}`).toBeUndefined();
@@ -298,7 +298,7 @@ describe("assetTransferMethod: declared, without displacing the domain", () => {
     const item = items.find((row) => row.id === "hello")!;
     const response = await quoteRequest(
       `${BASE}/api/buy/hello?${new URLSearchParams(
-        Object.entries(baseline(item)).map(([key, value]) => [key, String(value)]),
+        Object.entries(await baseline(item)).map(([key, value]) => [key, String(value)]),
       )}`,
     );
     expect(response.status).toBe(402);
@@ -332,7 +332,7 @@ describe("assetTransferMethod: declared, without displacing the domain", () => {
   it("draws none of our own battery's transfer-method advisories", async () => {
     const item = items.find((row) => row.id === "hello")!;
     const query = new URLSearchParams(
-      Object.entries(baseline(item)).map(([key, value]) => [key, String(value)]),
+      Object.entries(await baseline(item)).map(([key, value]) => [key, String(value)]),
     );
     const response = await quoteRequest(`${BASE}/api/buy/hello?${query}`);
     const body = await response.text();

@@ -1,3 +1,4 @@
+import { checkoutMethod, nativeMcpCheckoutShape, nativeMcpInstruction, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { publicationCheckout, publicationCollections, publicationLinks } from "@/lib/publication-checkout";
 import { openForBusinessTiersUsdc, pennyPageTiersUsdc } from "@/lib/payments";
 import { buyerLinks, MCP_TOOL_RESULT_PAYMENT } from "@/lib/buyer-contract";
@@ -152,7 +153,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * /.well-known/oauth-protected-resource than either can disagree
      * with /auth.md.
      */
-    agent_auth: agentAuthBlock(base),
+    agent_auth: agentAuthBlock(base, c.env),
     /*
      * THE SEATS (2026-09-04): record and reproducible dispute
      * artifact, and never interpretation. Stated where diligence
@@ -432,7 +433,7 @@ async function structuredPaidResources(env: Env) {
    * of one string is a cheap price for that not happening.
    *
    * C1: the fact block tops every catalog entry; S1: the uniform spec
-   * rides each resource (indexers that don't know the field ignore it).
+   * is one free hop away; payment terms and input schemas stay inline.
    */
   const menuResources = MENU_ITEMS.map((item) => ({
     accepts: manifestAccepts(env, priceTiersUsdc(item)),
@@ -450,13 +451,19 @@ async function structuredPaidResources(env: Env) {
     fulfillment: item.fulfillment,
     // The same schema Bazaar, the MCP tools, and the listing spec all
     // read, published under the name an indexer looks for. Our own
-    // `spec.inputs` says it too, but only to a reader who knows our
+    // linked `spec.inputs` says it too, but only to a reader who knows our
     // vocabulary; this one is the standard field. Investigated
     // 2026-07-27: a catalog scoring us on "input schema" was finding
     // nothing here to score.
     inputSchema: { type: "object", ...buyInputSchema(item) },
     ...buyerLinks(item, base),
-    spec: listingSpec(item, base),
+    // The full spec repeats inputs and verification prose across the
+    // catalog. Keep it at the existing free item contract so a populated
+    // shelf remains below discovery readers' byte budgets.
+    spec_url: `${base}/menu/${item.id}`,
+    ...(listingSpec(item, base).outputs.made_by
+      ? { made_by: listingSpec(item, base).outputs.made_by }
+      : {}),
   }));
   const almanacResources = (await listAlmanacEntries(env)).map((entry) => ({
     accepts: manifestAccepts(env, pennyPageTiersUsdc()),
@@ -841,7 +848,8 @@ wellKnownRoutes.get(AGENT_REGISTRATION_PATH, (c) =>
  * /.well-known/a2a.json, /agent-card.json and /agent.json already
  * shipped under, for the same reason.
  */
-function mcpManifest(base: string) {
+function mcpManifest(base: string, config?: PurchaseCapabilityConfig) {
+  const native = nativeMcpCheckoutShape(config);
   return {
     /**
      * SEP-2127's schema identifier. The draft names this exact URI as
@@ -897,11 +905,12 @@ function mcpManifest(base: string) {
       },
     ],
     description:
-      "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
+      `Evidence observatory for agentic commerce: x402/MPP endpoint inspection, signed receipt checks and settlement attestations, plus a general store for AI agents. Tools are free to list; purchases use ${checkoutMethod(config)}.`,
     // The one field a client actually needs.
     endpoint: `${base}/mcp`,
     publications: publicationCollections(base),
     compact_catalog_url: `${base}/menu.json?view=compact`,
+    ...(native ? { native_mpp: native } : {}),
     payment_profiles: [
       { id: "legacy-rpc-error", endpoint: `${base}/mcp`, challenge: "error.data['x402/payment-required']" },
       { id: MCP_TOOL_RESULT_PAYMENT, endpoint: `${base}/mcp?payment=${MCP_TOOL_RESULT_PAYMENT}`, challenge: "result.structuredContent", receipt: "result._meta['x402/payment-response']" },
@@ -936,7 +945,7 @@ function mcpManifest(base: string) {
     protocol_versions: [...PROTOCOL_VERSIONS],
     authentication: {
       required: false,
-      note: "No key, no account, no header. tools/list, resources/list and resources/read are free; buy_* tools answer with x402 v2 payment terms in error.data and settle per call.",
+      note: `No account or API key. tools/list, resources/list and resources/read are free. For paid calls, the payment_profiles below describe the x402 retry formats. ${nativeMcpInstruction(config)}`.trim(),
     },
     /**
      * THE MODERN WAY IN (2026-07-28): no handshake, the version and
@@ -1130,7 +1139,7 @@ for (const path of [
   "/.well-known/mcp.json",
   "/.well-known/mcp/server-card.json",
 ] as const) {
-  wellKnownRoutes.get(path, (c) => c.json(mcpManifest(c.env.STORE_BASE_URL)));
+  wellKnownRoutes.get(path, (c) => c.json(mcpManifest(c.env.STORE_BASE_URL, c.env)));
   wellKnownRoutes.post(path, handleMcpPost);
 }
 

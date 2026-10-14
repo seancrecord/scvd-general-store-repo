@@ -1,0 +1,286 @@
+{
+  "observed_at": "2026-10-05T19:46:39.780087+00:00",
+  "url": "https://scvd.store/openapi.json",
+  "request_body": null,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "response_sha256": "f03d86a1908803aee006cda088401f44b5aa068774d684da6eb1d72b9f9cade1",
+  "projection_note": "Selected purchase operation and document identity only; response_sha256 identifies the complete response before projection.",
+  "projection": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "SCVD General Store",
+      "version": "0.3.0"
+    },
+    "operation": {
+      "get": {
+        "summary": "Compare payment terms, dated host history and shared receiving addresses before an agent buys research from a set of x402 endpoints",
+        "description": "Compare 2 to 4 paid research endpoints before buying research: one live x402 preflight each, advertised atomic payment terms grouped by network and asset, dated host history with coverage and gaps, and shared receiving addresses within your set. Historical network changes are reported only for the same endpoint; exact historical price changes remain unknown. Delivered in one signed, certificate-bound response. No research is purchased or evaluated; no rankings or ownership claims. The separate preflight, Look and host history are free. Delivered in the response.",
+        "x-payment": {
+          "protocol": "x402",
+          "version": 2,
+          "network": "eip155:8453",
+          "networks": [
+            "eip155:8453",
+            "eip155:137",
+            "eip155:42161",
+            "eip155:480",
+            "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+          ],
+          "asset": "USDC",
+          "price_usdc_options": [
+            0.01
+          ]
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "protocols": [
+            {
+              "x402": {}
+            },
+            {
+              "mpp": {
+                "method": "evm",
+                "intent": "charge",
+                "currency": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+              }
+            }
+          ],
+          "price": {
+            "mode": "fixed",
+            "amount": "0.01",
+            "currency": "USD"
+          },
+          "x402Version": 2,
+          "scheme": "exact",
+          "asset": "USDC",
+          "accepts": [
+            {
+              "scheme": "exact",
+              "network": "eip155:8453",
+              "amount": "10000",
+              "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+              "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "maxTimeoutSeconds": 300,
+              "extra": {
+                "name": "USD Coin",
+                "version": "2",
+                "assetTransferMethod": "eip3009"
+              }
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:137",
+              "amount": "10000",
+              "asset": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+              "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "maxTimeoutSeconds": 300,
+              "extra": {
+                "name": "USD Coin",
+                "version": "2",
+                "assetTransferMethod": "eip3009"
+              }
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:42161",
+              "amount": "10000",
+              "asset": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+              "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "maxTimeoutSeconds": 300,
+              "extra": {
+                "name": "USD Coin",
+                "version": "2",
+                "assetTransferMethod": "eip3009"
+              }
+            },
+            {
+              "scheme": "exact",
+              "network": "eip155:480",
+              "amount": "10000",
+              "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+              "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+              "maxTimeoutSeconds": 300,
+              "extra": {
+                "name": "USDC",
+                "version": "2",
+                "assetTransferMethod": "eip3009"
+              }
+            },
+            {
+              "scheme": "exact",
+              "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+              "amount": "10000",
+              "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+              "payTo": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+              "maxTimeoutSeconds": 300
+            }
+          ],
+          "price_usdc": [
+            0.01
+          ],
+          "max_timeout_seconds": 300,
+          "challenge_header": "PAYMENT-REQUIRED",
+          "payment_header": "PAYMENT-SIGNATURE",
+          "legacy_payment_header": "X-PAYMENT",
+          "settlement": "Delivers first, settles after; failed delivery takes no money.",
+          "discovery": "https://scvd.store/.well-known/x402.json",
+          "documentation": "https://scvd.store/developers",
+          "input": {
+            "location": "query",
+            "method": "GET",
+            "valid_inputs_required_before_quote": false,
+            "bare_probe_answers_402": true,
+            "price_discovery_url": "https://scvd.store/menu/research_comparison?view=compact",
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "title": "Research Comparison request",
+              "description": "Query parameters for GET /api/buy/research_comparison. Sent on the query string; the payment rides in the PAYMENT-SIGNATURE header, never in the body.",
+              "properties": {
+                "agent_name": {
+                  "type": "string",
+                  "maxLength": 80,
+                  "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+                },
+                "purpose": {
+                  "type": "string",
+                  "maxLength": 280,
+                  "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions."
+                },
+                "cited_artifact": {
+                  "$ref": "#/components/schemas/CitedArtifact"
+                },
+                "urls": {
+                  "type": "string",
+                  "maxLength": 4114,
+                  "description": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased."
+                }
+              },
+              "required": [
+                "urls"
+              ],
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/DisclosureBlock"
+                }
+              ],
+              "unevaluatedProperties": false
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Delivered"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "402": {
+            "description": "Read x402 v2 terms in PAYMENT-REQUIRED or the body; retry this URL with a signed PAYMENT-SIGNATURE.",
+            "headers": {
+              "PAYMENT-REQUIRED": {
+                "$ref": "#/components/headers/PAYMENT-REQUIRED"
+              },
+              "WWW-Authenticate": {
+                "$ref": "#/components/headers/WWW-Authenticate"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRequiredChallenge"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        },
+        "parameters": [
+          {
+            "name": "agent_name",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "example": "friendly-agent",
+            "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 280
+            },
+            "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions."
+          },
+          {
+            "name": "urls",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4114
+            },
+            "example": "[\"https://research-a.example/quote\",\"https://research-b.example/quote\"]",
+            "description": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Optional. Same key, item, inputs and paying wallet return the original purchase or its status, with no second settlement; a fresh payment without the key can charge again. Echo idempotency.suggested_key from the 402, or send your own private 16\u2013128-character key; values outside that range are treated as absent. Full rule: /developers.",
+            "example": "scvd-your-own-high-entropy-value-0001"
+          }
+        ],
+        "x-scvd-payment-capabilities": [
+          {
+            "protocol": "x402",
+            "transport": "http",
+            "method": "GET",
+            "path": "/api/buy/research_comparison",
+            "request_header": "PAYMENT-SIGNATURE",
+            "challenge_header": "PAYMENT-REQUIRED",
+            "currency": "USDC"
+          },
+          {
+            "protocol": "mpp",
+            "payment_method": "evm",
+            "intent": "charge",
+            "network": "eip155:8453",
+            "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "currency": "USDC",
+            "decimals": 6,
+            "amount_atomic": "10000",
+            "transport": "http",
+            "method": "GET",
+            "path": "/api/buy/research_comparison",
+            "request_header": "Authorization",
+            "authorization_scheme": "Payment",
+            "challenge_header": "WWW-Authenticate",
+            "response_header": "Payment-Receipt",
+            "idempotency_header": "Idempotency-Key"
+          }
+        ],
+        "operationId": "get_api_buy_research_comparison"
+      }
+    }
+  }
+}

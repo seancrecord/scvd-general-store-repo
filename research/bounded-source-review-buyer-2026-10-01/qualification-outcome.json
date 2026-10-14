@@ -1,0 +1,9 @@
+{
+  "recorded_at": "2026-10-01T15:00:39.325919+00:00",
+  "all_gates": "pass",
+  "codex": "pass",
+  "claude": "pass",
+  "offline_recipient": "pass",
+  "limits": "Package capability only, not buyer acceptance. Advisory output tokens exceeded by all three sessions. Claude final says 10 calls but lists and trace show 12. Source review remains partial and self-reported; no source safety proof.",
+  "no_retries": true
+}

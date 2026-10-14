@@ -63,7 +63,7 @@ export function declinedPositions(base: string): DeclinedPosition[] {
     },
     {
       heading: "Maintained packages and language clients",
-      body: `SCVD maintains ${DEVELOPER_PACKAGES.map(p => p.label).join(", ")}, alongside the CLI and tab. Preflight language guides: ${PREFLIGHT_LANGUAGE_GUIDES.map(p => p.label).join(", ")}. Package documentation and installation links are at ${base}/developers. The broader HTTP contract remains at ${base}/openapi.json.`,
+      body: `SCVD maintains ${DEVELOPER_PACKAGES.map(p => p.label).join(", ")}, alongside the CLI and tab. Preflight language guides: ${PREFLIGHT_LANGUAGE_GUIDES.map(p => p.label).join(", ")}. Package docs and installation: ${base}/developers. HTTP contract: ${base}/openapi.json.`,
     },
     {
       heading: "The MCP card CSP is stricter than the checklist wants",

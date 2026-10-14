@@ -78,6 +78,15 @@ describe("the spot check reads the books at the counter", () => {
     expect(unsigned.headers.has("PAYMENT-REQUIRED")).toBe(false);
   });
 
+  it("sells the same signed reading for the hostname inside a url sent in place of host", async () => {
+    // The twelve url doors taught ?url=; the one host door takes the hostname out of it (2026-09-30).
+    const response = await buySpotCheck("?url=https://never-met.example.com/api/door");
+    expect(response.status).toBe(200);
+    const extras = (await response.json()) as { spot_check: { host: string; not_observed: boolean } };
+    expect(extras.spot_check.host).toBe("never-met.example.com");
+    expect(extras.spot_check.not_observed).toBe(true);
+  });
+
   it("sells a signed not_observed for a host the books have never met", async () => {
     const response = await buySpotCheck("?host=never-met.example.com");
     expect(response.status).toBe(200);

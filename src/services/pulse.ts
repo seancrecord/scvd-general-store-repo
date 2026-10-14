@@ -1,7 +1,9 @@
+import type { CorrectionScan } from "@/services/correction-cache";
+import { readCommerceMonthLedger } from "@/services/commerce-month";
 import {
   LATENCY_BUCKET_EDGES_MS,
   readLatencyHistograms,
-  readMonthLedger,
+  type MonthLedger,
 } from "@/lib/metrics";
 import { HOUSE_FLAG_POLICY, monthsSinceOpening } from "@/services/stats";
 import type { Env } from "@/types";
@@ -88,6 +90,9 @@ export interface PulseWindow {
    * why it had to be the one we went and fixed.
    */
   organic_settled: number;
+  /** Combined sales only. Legacy funnel fields and conversion rates remain x402. */
+  total_organic_settled?: number;
+  mpp_organic_settled?: number;
   /**
    * Settles this month that were later reclassified from organic to
    * house, already removed from organic_settled above. Published so
@@ -200,16 +205,12 @@ export interface Latency {
 
 export interface Pulse {
   computed_at: string;
-  /**
-   * When the hourly reclassification walk last COMPLETED — the walk
-   * whose figures ride each window as corrected_challenges. Null
-   * before the first walk. Published (2026-09-02) because the walk
-   * fails loud on a KV blip by design and the only way to see that
-   * the next pass recovered was the keeper's inbox staying quiet;
-   * now a reader can see the correction's own age beside the
-   * correction.
-   */
+  /** Latest saved pass, including a partial cache warm-up. Null before any pass. */
   crawler_correction_computed_at: string | null;
+  /** Whether that pass read all retained inputs; expired months may still be partial. */
+  crawler_correction_complete: boolean;
+  /** Aggregate work counts, never visitor data. Present for cached recounts. */
+  crawler_correction_scan?: CorrectionScan;
   house_flag_policy: string;
   all_time: PulseWindow;
   /** Newest first. */
@@ -238,7 +239,7 @@ const LATENCY_WHAT =
   "How long this store's own server took to produce a 402 challenge, in buckets. SERVER-SIDE ONLY: the clock starts when the payment gate is entered and stops when the challenge is ready, so it excludes DNS, TLS, network transit and everything the buyer's own client does. A reader measuring from outside will always see a larger number than this, and the difference is the network, not us.";
 
 const LATENCY_METHOD =
-  "One counter per route class per bucket per month, bumped after the response is sent so the instrument never slows the thing it measures. Percentiles are published as the INTERVAL they fall in rather than as a point value, because that is all a histogram can honestly support. THE SAMPLE COUNT IS A FLOOR, NOT A CENSUS: the counters are read-modify-write against Workers KV, which is last-write-wins with no compare-and-swap, so two requests landing in the same bucket in the same instant can record as one. That biases the count down and never up. House and infrastructure traffic are counted here, unlike everywhere else in this document, because latency is a fact about our own server doing work and our own probes run the same code a stranger does — excluding them would shrink the sample without making it truer. This is the store timing itself, which is exactly the reading nobody should take on trust: the external monitor linked from this store is the one that owes you no favours.";
+  "One counter per route class per bucket per month, bumped after the response is sent so the instrument never slows the thing it measures. Percentiles are published as the INTERVAL they fall in rather than as a point value, because that is all a histogram can honestly support. THE SAMPLE COUNT IS A FLOOR, NOT A CENSUS: increments use the shared counter ledger and are mirrored to Workers KV. Earlier unpaid-door writes bypassed that ledger and used last-write-wins KV, which could lose increments under contention. Connecting the writer preserves existing counter baselines; it does not recover missing samples. Background recording failures can still leave samples uncounted. House and infrastructure traffic are counted here, unlike everywhere else in this document, because latency is a fact about our own server doing work and our own probes run the same code a stranger does — excluding them would shrink the sample without making it truer. This is the store timing itself, which is exactly the reading nobody should take on trust: the external monitor linked from this store is the one that owes you no favours.";
 
 /**
  * The interval a percentile falls in, read off the cumulative counts.
@@ -303,7 +304,7 @@ async function computeLatency(env: Env): Promise<Latency> {
 }
 
 const NOTE =
-  "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us — and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges, declines and re-checks those same wallets generated are still counted organic here. organic_challenges, organic_declines and organic_rechecks are therefore ceilings, and the conversion rate computed from them is a floor. THE FUNNEL'S MIDDLE IS DERIVED, NOT SEPARATELY METERED: the till books every payment actually presented as exactly one of settled or declined, so organic_payments_presented is their sum and cannot drift from the two numbers published beside it. And a naming correction, dated 2026-08-27: the field once called organic_verifies is now organic_rechecks, because it counts free re-checks of already-issued artifacts at /api/verify — NOT the x402 verify step — and the old name kept being read as the protocol step it never was.";
+  "The x402 funnel. Legacy organic_settled and conversion fields cover x402; total_organic_settled adds corrected native MPP sales and has no shared conversion denominator. The whole funnel is reported as recorded requests and settlements. These ratios compare those counts; they do not measure unique buyers. Unclassified traffic can include unidentified crawlers. Historical lost increments remain unresolved, and subtracting machinery found in event rows from a separately counted request total does not establish an exact buyer denominator. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means no challenges were counted in that window; it does not establish that none were served. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Recorded settlements alone do not establish delivery. The checkout delivers before settlement, and separate evidence is needed to verify that the buyer received the goods. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges, declines and re-checks those same wallets generated are still counted organic here. These fields can include traffic later classified as house, while lost increments can bias the counts in the other direction. The ratio is therefore not a guaranteed upper or lower bound on buyer conversion. THE FUNNEL'S MIDDLE IS DERIVED, NOT SEPARATELY METERED: the till books every payment actually presented as exactly one of settled or declined, so organic_payments_presented is their sum and cannot drift from the two numbers published beside it. And a naming correction, dated 2026-08-27: the field once called organic_verifies is now organic_rechecks, because it counts free re-checks of already-issued artifacts at /api/verify — NOT the x402 verify step — and the old name kept being read as the protocol step it never was.";
 
 /**
  * NEVER ROUND A REAL RATE TO ZERO.
@@ -338,8 +339,16 @@ function rate(settled: number, challenges: number): number | null {
   return Number((settled / challenges).toPrecision(3));
 }
 
-export async function computePulse(env: Env): Promise<Pulse> {
-  const months = monthsSinceOpening().slice(-PULSE_MONTHS).reverse();
+export async function computePulse(env: Env, options: {
+  now?: Date;
+  /** A caller already reading these months can share those reads, not scan twice. */
+  readMonth?: (month: string) => Promise<MonthLedger>;
+  /** Share the certificate correction walk with an enclosing report. */
+  readReclassification?: () => ReturnType<typeof monthReclassAdjustments>;
+} = {}): Promise<Pulse> {
+  const now = options.now ?? new Date();
+  // All-time includes every retained month; only the displayed window is capped.
+  const months = monthsSinceOpening(now).reverse();
   const windows: PulseWindow[] = [];
   /*
    * ONE WAVE, NOT A QUEUE — rule 50's pattern, applied to the reading
@@ -365,10 +374,10 @@ export async function computePulse(env: Env): Promise<Pulse> {
   const [corrections, reclassSplit, reclassTotal, latency, ledgers] =
     await Promise.all([
       readCorrections(env).catch(() => null),
-      monthReclassAdjustments(env).catch(() => null),
+      (options.readReclassification ? options.readReclassification() : monthReclassAdjustments(env)).catch(() => null),
       totalReclassified(env).catch(() => null),
       computeLatency(env),
-      Promise.all(months.map((month) => readMonthLedger(env, month))),
+      Promise.all(months.map((month) => options.readMonth ? options.readMonth(month) : readCommerceMonthLedger(env, month))),
     ]);
 
   for (let index = 0; index < months.length; index += 1) {
@@ -415,6 +424,8 @@ export async function computePulse(env: Env): Promise<Pulse> {
       // Derived from the two published beside it, never metered apart.
       organic_payments_presented: settled + declines,
       organic_settled: settled,
+      total_organic_settled: settled + (ledger.native_mpp?.organic ?? 0),
+      mpp_organic_settled: ledger.native_mpp?.organic ?? 0,
       organic_declines: declines,
       organic_rechecks: verifies,
       conversion_rate: rate(settled, challenges),
@@ -475,8 +486,11 @@ export async function computePulse(env: Env): Promise<Pulse> {
 
   const base = env.STORE_BASE_URL;
   return {
-    computed_at: new Date().toISOString(),
+    computed_at: now.toISOString(),
     crawler_correction_computed_at: corrections?.computed_at ?? null,
+    crawler_correction_complete: corrections !== null && (corrections.scan?.complete ??
+      Object.values(corrections.months).every(month => month.complete)),
+    ...(corrections?.scan ? { crawler_correction_scan: corrections.scan } : {}),
     house_flag_policy: HOUSE_FLAG_POLICY,
     all_time: {
       organic_challenges: total.challenges,
@@ -485,6 +499,8 @@ export async function computePulse(env: Env): Promise<Pulse> {
       // a reader actually has in hand.
       organic_payments_presented: allTimeSettled + total.declines,
       organic_settled: allTimeSettled,
+      total_organic_settled: allTimeSettled + windows.reduce((sum, row) => sum + (row.mpp_organic_settled ?? 0), 0),
+      mpp_organic_settled: windows.reduce((sum, row) => sum + (row.mpp_organic_settled ?? 0), 0),
       organic_declines: total.declines,
       organic_rechecks: total.verifies,
       conversion_rate: rate(allTimeSettled, total.challenges),
@@ -514,7 +530,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
           }
         : {}),
     },
-    months: windows,
+    months: windows.slice(0, PULSE_MONTHS),
     latency,
     note: NOTE,
     verify_url: `${base}/api/verify/{id}`,

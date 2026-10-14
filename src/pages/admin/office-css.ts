@@ -40,7 +40,7 @@ export const OFFICE_CSS = `
   --brass-dim: #a68b52;
   --ivory: #ece3d2;
   --ivory-dim: #a2947d;
-  --oxblood: #a8443c;
+  --oxblood: #e6aaa3;
   --rule: #35291f;
 }
 * { box-sizing: border-box; }
@@ -169,12 +169,12 @@ section {
    the page. */
 @media (max-width: 600px) {
   section { padding: 1.1rem 1rem; }
-  input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+  input[type="text"], input[type="url"], textarea { width: 100%; box-sizing: border-box; }
   textarea { min-height: 4.5rem; }
   form[style*="inline"] button, button { margin: 0.15rem 0.25rem 0.15rem 0; }
   li { overflow-wrap: anywhere; }
 }
-input[type="text"], textarea { max-width: 100%; box-sizing: border-box; }
+input[type="text"], input[type="url"], textarea { max-width: 100%; box-sizing: border-box; }
 .table-rail { overflow-x: auto; }
 @media (max-width: 600px) {
   table { display: block; overflow-x: auto; white-space: nowrap; }
@@ -245,7 +245,7 @@ pre {
 pre code { background: none; border: 0; padding: 0; }
 
 /* The levers. A study's fittings, not a dashboard's. */
-input[type=text], input[type=number], input[type=password], textarea, select {
+input[type=text], input[type=url], input[type=number], input[type=password], textarea, select {
   width: 100%;
   max-width: 520px;
   background: var(--walnut-lift);
@@ -292,4 +292,19 @@ details[open] > summary { margin-bottom: 0.9rem; }
   padding: 0.75rem 1rem;
   margin-bottom: 1.25rem;
 }
+
+/* A common reading order across every report, with the full directory one click away. */
+.report-directory { margin: 0 0 1rem; border-bottom: 1px solid var(--rule); }
+.report-directory > summary { padding: .4rem 0; }
+.report-directory nav.readings { margin-bottom: 1rem; }
+.page-sections { display: flex; flex-wrap: wrap; gap: .3rem .9rem; margin-bottom: 1.2rem; font-size: .85rem; }
+.page-sections a, .page-sections strong { margin: 0; }
+.page-sections strong { border: 0; color: var(--ivory-dim); }
+.skip-link { position: absolute; left: -10000px; }
+.skip-link:focus { position: static; display: block; padding: .5rem; }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+h2[id] { scroll-margin-top: 1rem; }
+td { font-variant-numeric: tabular-nums; }
+tbody tr:nth-child(even) { background: rgba(255,255,255,.025); }
+tr:hover td { background: rgba(255,255,255,.04); }
 `;

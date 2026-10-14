@@ -1,0 +1,41 @@
+{
+  "taken_at": "2026-10-07T00:50:49.462641+00:00",
+  "client": [
+    [
+      "User-agent",
+      "Python-urllib/3.13"
+    ]
+  ],
+  "rows": [
+    {
+      "path": "/llms.txt",
+      "status": 403,
+      "ray": "a468e9f10bb3f276-IAD",
+      "body": "error code: 1010\n"
+    },
+    {
+      "path": "/robots.txt",
+      "status": 403,
+      "ray": "a468e9f16ab83e81-IAD",
+      "body": "error code: 1010\n"
+    },
+    {
+      "path": "/agents.md",
+      "status": 403,
+      "ray": "a468e9f249abd633-IAD",
+      "body": "error code: 1010\n"
+    },
+    {
+      "path": "/openapi.json",
+      "status": 403,
+      "ray": "a468e9f2afbe73eb-IAD",
+      "body": "error code: 1010\n"
+    },
+    {
+      "path": "/menu.json",
+      "status": 403,
+      "ray": "a468e9f31e67d6c8-IAD",
+      "body": "error code: 1010\n"
+    }
+  ]
+}

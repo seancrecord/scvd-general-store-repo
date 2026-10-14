@@ -2,8 +2,11 @@
 
 **Published September 17, 2026:** [SCVD x402 Verifier](https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212).
 The keeper reports the skill update completed September 17, 2026. The upload/update
-press is closed. Approval and publication of the updated version have not been
-independently verified. Earlier no-upload notes describe the preceding audit.
+press is closed. **Public read October 7:** the listing shows version 2.0.0,
+developer scvd.store, and both App and Skill sections. Updated listing and skill
+presence are confirmed; installed skill/source equality and ChatGPT tool execution
+were not tested. [Dated observation](../research/discovery-presence-2026-10-07/README.md).
+Earlier no-upload notes and update instructions below describe the preceding audit.
 
 
 Submission copy revised using the OpenAI Developers 1.3.0

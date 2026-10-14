@@ -1,8 +1,7 @@
 # Agent jobs, completion handoff and AEO — October 13, 2026
 
 Implementation update, October 14: the additive workflow, follow-through and
-worker guidance are built locally
-on `codex/earning-path`; it is not deployed. See [build scope and validation](EARNING_PATH_BUILD_2026-10.md). The brief below retains the broader proposed work.
+worker guidance are implemented on `codex/earning-path`. See [build scope and validation](EARNING_PATH_BUILD_2026-10.md). The brief below retains the broader proposed work. The [portfolio inventory](AGENT_JOB_PORTFOLIO_2026-10.md) now maps everyday assignments to concrete existing tools and bounded experiments.
 
 Status: draft copy and additive implementation brief. No production change,
 new bounty, outbound message, budget or automation. The keeper wants action

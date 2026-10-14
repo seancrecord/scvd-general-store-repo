@@ -1,3 +1,6 @@
+import { isHouseTraffic } from "@/lib/channel";
+import { ARC_NETWORK } from "@/lib/payment-networks";
+import { gatewayPayment } from "@/lib/arc-gateway";
 import { recoverSignedPurchase, type SignedPurchaseRecovery } from "@/services/signed-purchase-recovery";
 import { legacyPaidAttempt } from "@/services/legacy-paid-attempt";
 import { resolvedHumanPayment, resolvedHumanDelivery } from "@/services/resolved-human-purchase";
@@ -586,7 +589,7 @@ export async function runMcpPayment(
 
   const settle = async (): Promise<SettledPayment> => {
     if (alreadySettled) return alreadySettled;
-    const purchase = await beginPurchaseIntent(env, { path, door: "mcp", payer: verifiedPayer,
+    const purchase = await beginPurchaseIntent(env, { path, door: "mcp", payer: verifiedPayer, gateway_house: isHouseTraffic(env, { ...signals, payer: verifiedPayer }),
       terms: verifiedRequirementsForSettle, payload: verifiedPayloadForSettle,
       request: askedFor ?? "{}", item: getMenuItem(itemId), idempotency });
     recoveryHandle = purchaseRecovery(env, purchase);
@@ -704,11 +707,12 @@ export async function runMcpPayment(
       ...(settlement.payer ? { payer: settlement.payer } : {}),
     };
   }
+  const gateway = settledFacts.network === ARC_NETWORK ? await gatewayPayment(verifiedPayloadForSettle, settledFacts.transaction) : undefined;
   // Status-write failure after payment must not prevent delivery.
   await purchaseIntentStore(env, purchase.id).updatePurchase({ state: "settled", payment: {
       paidUsdc: paidUsdcQuoted, tipUsdc: tipFromPaid(paidUsdcQuoted, minimumUsdcQuoted),
       transaction: settledFacts.transaction, network: verifiedRequirementsForSettle.network,
-      payer: purchase.payer, settleHeaders: settledFacts.headers,
+      payer: purchase.payer, settleHeaders: settledFacts.headers, ...(gateway ? { gateway } : {}),
     } }).catch(() => undefined);
   if (nonce) {
     /*
@@ -748,6 +752,7 @@ export async function runMcpPayment(
   await recordSettlement(env, path, settlementSignals);
 
   const payment: SettledPayment = {
+    ...(gateway ? { gateway } : {}),
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
     transaction: settledFacts.transaction,

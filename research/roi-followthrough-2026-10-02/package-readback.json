@@ -1,0 +1,651 @@
+[
+  {
+    "name": "scvd-cli",
+    "version": "0.5.0",
+    "source_commit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90",
+    "read_at": "2026-10-02T14:57:13.682065+00:00",
+    "provenance_source_commit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90",
+    "status": "passed",
+    "latest": "0.5.0",
+    "integrity": "sha512-eimM6RgVQ3beYQmhKSWfIDGl9ez0hXgj+/9ahfL6ycFMcCyvDZT+aNZEuyKg9Of3h3HGdXAaK6Z7yIp9Gb/WIQ==",
+    "tarball_url": "https://registry.npmjs.org/scvd-cli/-/scvd-cli-0.5.0.tgz",
+    "attestations_url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-cli@0.5.0",
+    "attestation_payloads": [
+      {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-cli@0.5.0",
+            "digest": {
+              "sha512": "7a298ce918154376de6109a129259f2031a5f5ecf4857823fbff5a85f2fac9c14c702caf0d94fe68d644bb22a0f4e7f78771c675701a2ba67bc88a7d19bfd621"
+            }
+          }
+        ],
+        "predicateType": "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+        "predicate": {
+          "name": "scvd-cli",
+          "version": "0.5.0",
+          "registry": "https://registry.npmjs.org"
+        }
+      },
+      {
+        "_type": "https://in-toto.io/Statement/v1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-cli@0.5.0",
+            "digest": {
+              "sha512": "7a298ce918154376de6109a129259f2031a5f5ecf4857823fbff5a85f2fac9c14c702caf0d94fe68d644bb22a0f4e7f78771c675701a2ba67bc88a7d19bfd621"
+            }
+          }
+        ],
+        "predicateType": "https://slsa.dev/provenance/v1",
+        "predicate": {
+          "buildDefinition": {
+            "buildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+            "externalParameters": {
+              "workflow": {
+                "ref": "refs/heads/main",
+                "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+                "path": ".github/workflows/publish-npm.yml"
+              }
+            },
+            "internalParameters": {
+              "github": {
+                "event_name": "workflow_dispatch",
+                "repository_id": "1308179937",
+                "repository_owner_id": "196247948"
+              }
+            },
+            "resolvedDependencies": [
+              {
+                "uri": "git+https://github.com/seancrecord/scvd-general-store-repo@refs/heads/main",
+                "digest": {
+                  "gitCommit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90"
+                }
+              }
+            ]
+          },
+          "runDetails": {
+            "builder": {
+              "id": "https://github.com/actions/runner/github-hosted"
+            },
+            "metadata": {
+              "invocationId": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/37023037626/attempts/1"
+            }
+          }
+        }
+      }
+    ],
+    "attestation_signature_verification": "not performed; payload and registry integrity read independently",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "bytes": 3420,
+        "sha256": "6c7a165ea43f71f25423e84d9902b4d3801ed85dee46599f5fb84e8858cceb16"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 1068,
+        "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+      },
+      {
+        "path": "README.md",
+        "bytes": 12355,
+        "sha256": "07e6d4f3e3c79fcdc14463b84ce606fc0a4109c407003a922553dd28c0d493db"
+      },
+      {
+        "path": "inspection.js",
+        "bytes": 5317,
+        "sha256": "a60e84eb5fc5e9d4a591e15cab17301dcf69d9c0c8338af1c6d1a685aa8f327c"
+      },
+      {
+        "path": "package.json",
+        "bytes": 890,
+        "sha256": "d9bd8ac8e644223d253ebcf4bc97d75c3b749c001e8bf9f5030c5f08bd4c82c3"
+      },
+      {
+        "path": "scvd.mjs",
+        "bytes": 46590,
+        "sha256": "336b1521456ad7d896cdefd17bb922fc22bcb4e02bc4bd755053f27123c649fa"
+      }
+    ]
+  },
+  {
+    "name": "scvd-preflight",
+    "version": "0.3.1",
+    "source_commit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90",
+    "read_at": "2026-10-02T14:57:14.856404+00:00",
+    "provenance_source_commit": "bbb93e315127da5c912ac92e082c50d6e20fa3df",
+    "status": "passed",
+    "latest": "0.3.1",
+    "integrity": "sha512-przXUwxsdVMk8V3G8Sx2EDeLLzYKINKfTXnVsIpXAUX/1qXZlFKak5AQKeua5LSKxpDHTdeOWBoRjqMe5sSiLw==",
+    "tarball_url": "https://registry.npmjs.org/scvd-preflight/-/scvd-preflight-0.3.1.tgz",
+    "attestations_url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-preflight@0.3.1",
+    "attestation_payloads": [
+      {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-preflight@0.3.1",
+            "digest": {
+              "sha512": "a6bcd7530c6c755324f15dc6f12c7610378b2f360a20d29f4d79d5b08a570145ffd6a5d994529a93901029eb9ae4b48ac690c74dd78e581a118ea31ee6c4a22f"
+            }
+          }
+        ],
+        "predicateType": "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+        "predicate": {
+          "name": "scvd-preflight",
+          "version": "0.3.1",
+          "registry": "https://registry.npmjs.org"
+        }
+      },
+      {
+        "_type": "https://in-toto.io/Statement/v1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-preflight@0.3.1",
+            "digest": {
+              "sha512": "a6bcd7530c6c755324f15dc6f12c7610378b2f360a20d29f4d79d5b08a570145ffd6a5d994529a93901029eb9ae4b48ac690c74dd78e581a118ea31ee6c4a22f"
+            }
+          }
+        ],
+        "predicateType": "https://slsa.dev/provenance/v1",
+        "predicate": {
+          "buildDefinition": {
+            "buildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+            "externalParameters": {
+              "workflow": {
+                "ref": "refs/heads/main",
+                "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+                "path": ".github/workflows/publish-npm.yml"
+              }
+            },
+            "internalParameters": {
+              "github": {
+                "event_name": "workflow_dispatch",
+                "repository_id": "1308179937",
+                "repository_owner_id": "196247948"
+              }
+            },
+            "resolvedDependencies": [
+              {
+                "uri": "git+https://github.com/seancrecord/scvd-general-store-repo@refs/heads/main",
+                "digest": {
+                  "gitCommit": "bbb93e315127da5c912ac92e082c50d6e20fa3df"
+                }
+              }
+            ]
+          },
+          "runDetails": {
+            "builder": {
+              "id": "https://github.com/actions/runner/github-hosted"
+            },
+            "metadata": {
+              "invocationId": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36891166220/attempts/1"
+            }
+          }
+        }
+      }
+    ],
+    "attestation_signature_verification": "not performed; payload and registry integrity read independently",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "bytes": 1747,
+        "sha256": "70512d76251b4b954ec06d95d29c8feb1d1dfb0ac13bbfc69c3573edd3dd6252"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 1068,
+        "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+      },
+      {
+        "path": "README.md",
+        "bytes": 4191,
+        "sha256": "50205e2a283df5382a256684cfa0444d1cc6d749c0bd88c32a05dc4f72b6d3dc"
+      },
+      {
+        "path": "bin.mjs",
+        "bytes": 1325,
+        "sha256": "ff92d61a65f6abcd4d0f9e950da127324e4dbfdcebd1ac22fee27b45a1eab5cd"
+      },
+      {
+        "path": "example.mjs",
+        "bytes": 494,
+        "sha256": "997aae0b2f8104cb42257c054f6f027fb7a728d15f2b1b8f2cda4fe8291f5c47"
+      },
+      {
+        "path": "fixtures/accepts-empty.json",
+        "bytes": 9012,
+        "sha256": "aa518ae230051033c30464164ffe56f4ed53807a9911124ac0fb690254750625"
+      },
+      {
+        "path": "fixtures/exit-law.json",
+        "bytes": 2289,
+        "sha256": "890b8e86226eced2303fc90c78c29c937eee84c1a2c0345cb4bcae5ee8861622"
+      },
+      {
+        "path": "fixtures/inspection-inputs.json",
+        "bytes": 3806,
+        "sha256": "f98ed3e95134a258335ad3eb2d20c3fb1802096d7ed8122b310054377769b45a"
+      },
+      {
+        "path": "fixtures/inspection/method-unresolved.json",
+        "bytes": 3488,
+        "sha256": "9ff9cd660190bf626235a54722e6c796bcff6989e1945c84a3ccb429b0fbdcf1"
+      },
+      {
+        "path": "fixtures/inspection/mixed.json",
+        "bytes": 4093,
+        "sha256": "23cd28f0f435da39f05c1006f3be70bbdb09210714ab2ea7c768aeb0671a7e1b"
+      },
+      {
+        "path": "fixtures/inspection/mpp-only.json",
+        "bytes": 3889,
+        "sha256": "fd8b7d1411682ca52b8d05c737c0b4be5dce1b1d8f37642da83e41ac5c3aa9a7"
+      },
+      {
+        "path": "fixtures/inspection/over-limit.json",
+        "bytes": 3637,
+        "sha256": "fa25fb4c67cb7566a198e81bbfffdc03ed15513f271704440c2bc98593b35ca0"
+      },
+      {
+        "path": "fixtures/inspection/unknown.json",
+        "bytes": 3289,
+        "sha256": "6f4875b8fc8e837a2b6547cf825400879820b24aa9a03606357cd3b49a087ab9"
+      },
+      {
+        "path": "fixtures/inspection/unreachable.json",
+        "bytes": 3500,
+        "sha256": "42ec603ab83adce688f92043a06aee5bd2fddcf243f809b44781bb455754bdb8"
+      },
+      {
+        "path": "fixtures/inspection/x402-only.json",
+        "bytes": 3530,
+        "sha256": "379d9d9d2c44077d7445118625fe35cee9090f22a0cc5d041bbcb727d38b2f4a"
+      },
+      {
+        "path": "fixtures/ready-would-sign.json",
+        "bytes": 11170,
+        "sha256": "02a9ab094d76a67c38060d3942a451bfbff6847b67521a7c20204a0ea3454df9"
+      },
+      {
+        "path": "fixtures/unreachable.json",
+        "bytes": 7714,
+        "sha256": "88553f4d3767b897f07cc2e2ff3c08433f6c38758f8dfc588f82e6b25701c2c5"
+      },
+      {
+        "path": "inspection.d.ts",
+        "bytes": 1619,
+        "sha256": "64b3d98b1aed4ac13bd164429bbfb27bb67f2ad33f0b229138ec842c3392cb25"
+      },
+      {
+        "path": "inspection.js",
+        "bytes": 5317,
+        "sha256": "a60e84eb5fc5e9d4a591e15cab17301dcf69d9c0c8338af1c6d1a685aa8f327c"
+      },
+      {
+        "path": "package.json",
+        "bytes": 1165,
+        "sha256": "814692055dc3188325d9747184e792a38579c48431b76849a119c002845c2993"
+      },
+      {
+        "path": "x402-preflight.d.ts",
+        "bytes": 2543,
+        "sha256": "0ef997af1936a5b0217c712d05390d9732566c2bb3f8b0aeece3b35de77fa49b"
+      },
+      {
+        "path": "x402-preflight.js",
+        "bytes": 6446,
+        "sha256": "e384a13b761f35b8fe39447cd0d05722ec127e3c48a4792a88e3aa936bab215d"
+      }
+    ]
+  },
+  {
+    "name": "scvd-mcp-starter",
+    "version": "0.2.0",
+    "source_commit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90",
+    "read_at": "2026-10-02T14:57:15.953194+00:00",
+    "provenance_source_commit": "bbb93e315127da5c912ac92e082c50d6e20fa3df",
+    "status": "passed",
+    "latest": "0.2.0",
+    "integrity": "sha512-saAK0OXZvaw6NmzG/U7lgxkIvq3fyQLrtfd+apWXGnomkhPNMKuOq4CMwu8hKflJvcT3atu9S7b7M6WpE82wCA==",
+    "tarball_url": "https://registry.npmjs.org/scvd-mcp-starter/-/scvd-mcp-starter-0.2.0.tgz",
+    "attestations_url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-mcp-starter@0.2.0",
+    "attestation_payloads": [
+      {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-mcp-starter@0.2.0",
+            "digest": {
+              "sha512": "b1a00ad0e5d9bdac3a366cc6fd4ee5831908beaddfc902ebb5f77e6a95971a7a269213cd30ab8eab808cc2ef2129f949bdc4f76adbbd4bb6fb33a5a913cdb008"
+            }
+          }
+        ],
+        "predicateType": "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+        "predicate": {
+          "name": "scvd-mcp-starter",
+          "version": "0.2.0",
+          "registry": "https://registry.npmjs.org"
+        }
+      },
+      {
+        "_type": "https://in-toto.io/Statement/v1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-mcp-starter@0.2.0",
+            "digest": {
+              "sha512": "b1a00ad0e5d9bdac3a366cc6fd4ee5831908beaddfc902ebb5f77e6a95971a7a269213cd30ab8eab808cc2ef2129f949bdc4f76adbbd4bb6fb33a5a913cdb008"
+            }
+          }
+        ],
+        "predicateType": "https://slsa.dev/provenance/v1",
+        "predicate": {
+          "buildDefinition": {
+            "buildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+            "externalParameters": {
+              "workflow": {
+                "ref": "refs/heads/main",
+                "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+                "path": ".github/workflows/publish-npm.yml"
+              }
+            },
+            "internalParameters": {
+              "github": {
+                "event_name": "workflow_dispatch",
+                "repository_id": "1308179937",
+                "repository_owner_id": "196247948"
+              }
+            },
+            "resolvedDependencies": [
+              {
+                "uri": "git+https://github.com/seancrecord/scvd-general-store-repo@refs/heads/main",
+                "digest": {
+                  "gitCommit": "bbb93e315127da5c912ac92e082c50d6e20fa3df"
+                }
+              }
+            ]
+          },
+          "runDetails": {
+            "builder": {
+              "id": "https://github.com/actions/runner/github-hosted"
+            },
+            "metadata": {
+              "invocationId": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36891172284/attempts/1"
+            }
+          }
+        }
+      }
+    ],
+    "attestation_signature_verification": "not performed; payload and registry integrity read independently",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "bytes": 1622,
+        "sha256": "34266b0c3b9bb43c117e402d691232d9849d150cdecbd5d318d8fd21e6c28cb6"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 1068,
+        "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+      },
+      {
+        "path": "README.md",
+        "bytes": 2898,
+        "sha256": "63a5c104e4c14ea3de9e8f73b29f5398e5b475151d3761d5da50f4f990f19d64"
+      },
+      {
+        "path": "example.mjs",
+        "bytes": 639,
+        "sha256": "a5df1f770c3abff570eeb18b196410eed112b4b76473f4d94acdcabc1a99cf41"
+      },
+      {
+        "path": "package.json",
+        "bytes": 906,
+        "sha256": "48c79fe4d88f521204e28fb1fed283f98f652ebb6d0ae5cb5d96301566727845"
+      },
+      {
+        "path": "server.mjs",
+        "bytes": 8844,
+        "sha256": "9da0309924d46053bb3f8368b2723fc3bd2145c5801018a793d0f53c09f4f6fb"
+      }
+    ]
+  },
+  {
+    "name": "scvd-defects",
+    "version": "0.21.0",
+    "source_commit": "9c5eef0dff6a9ffa94dcca89af32e75340ca9b90",
+    "read_at": "2026-10-02T14:57:16.763857+00:00",
+    "provenance_source_commit": "bbb93e315127da5c912ac92e082c50d6e20fa3df",
+    "status": "passed",
+    "latest": "0.21.0",
+    "integrity": "sha512-jqMjR/8pEm9Gve+Gn6sX+kqOyJTsCz9Y5LiBKqx9cnKq73o3ej9fqbswUYiCitzWJ6mWYyOD6x0+N52ACLkgiQ==",
+    "tarball_url": "https://registry.npmjs.org/scvd-defects/-/scvd-defects-0.21.0.tgz",
+    "attestations_url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-defects@0.21.0",
+    "attestation_payloads": [
+      {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-defects@0.21.0",
+            "digest": {
+              "sha512": "8ea32347ff29126f46bdef869fab17fa4a8ec894ec0b3f58e4b8812aac7d7272aaef7a377a3f5fa9bb305188828adcd627a996632383eb1d3e379d8008b92089"
+            }
+          }
+        ],
+        "predicateType": "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+        "predicate": {
+          "name": "scvd-defects",
+          "version": "0.21.0",
+          "registry": "https://registry.npmjs.org"
+        }
+      },
+      {
+        "_type": "https://in-toto.io/Statement/v1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-defects@0.21.0",
+            "digest": {
+              "sha512": "8ea32347ff29126f46bdef869fab17fa4a8ec894ec0b3f58e4b8812aac7d7272aaef7a377a3f5fa9bb305188828adcd627a996632383eb1d3e379d8008b92089"
+            }
+          }
+        ],
+        "predicateType": "https://slsa.dev/provenance/v1",
+        "predicate": {
+          "buildDefinition": {
+            "buildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+            "externalParameters": {
+              "workflow": {
+                "ref": "refs/heads/main",
+                "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+                "path": ".github/workflows/publish-npm.yml"
+              }
+            },
+            "internalParameters": {
+              "github": {
+                "event_name": "workflow_dispatch",
+                "repository_id": "1308179937",
+                "repository_owner_id": "196247948"
+              }
+            },
+            "resolvedDependencies": [
+              {
+                "uri": "git+https://github.com/seancrecord/scvd-general-store-repo@refs/heads/main",
+                "digest": {
+                  "gitCommit": "bbb93e315127da5c912ac92e082c50d6e20fa3df"
+                }
+              }
+            ]
+          },
+          "runDetails": {
+            "builder": {
+              "id": "https://github.com/actions/runner/github-hosted"
+            },
+            "metadata": {
+              "invocationId": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/36891179621/attempts/1"
+            }
+          }
+        }
+      }
+    ],
+    "attestation_signature_verification": "not performed; payload and registry integrity read independently",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "bytes": 10621,
+        "sha256": "1797dc7c5a1f8b8fb3b158b21f57c009ee88b5e3ee6a01276a9131fd51a3bcf1"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 1068,
+        "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+      },
+      {
+        "path": "README.md",
+        "bytes": 4402,
+        "sha256": "a996389653109330299875cd729de8094422910aea01fde6c273ca11a79525b3"
+      },
+      {
+        "path": "defects.d.ts",
+        "bytes": 1556,
+        "sha256": "257437a540dcb8e6a0972bbf41f757d554c9e2c4c9fc2d75cd6f3fbc4862fc2d"
+      },
+      {
+        "path": "defects.js",
+        "bytes": 3328,
+        "sha256": "74ab30908291d9695caf67a1a53b208473dda697cc2fe9ef8ffd701b4f02d7f0"
+      },
+      {
+        "path": "defects.json",
+        "bytes": 77121,
+        "sha256": "ef48ff0746e1bc3fa5ff30718d0adc70228b9bd254669b41641a5551ce1b5020"
+      },
+      {
+        "path": "example.mjs",
+        "bytes": 418,
+        "sha256": "c4c75683eae390b6380e855468ac40a46d5e0380fe160ba7d3315588767ec613"
+      },
+      {
+        "path": "fixtures/doors/accepts-empty.json",
+        "bytes": 348,
+        "sha256": "aa34f4b20327d658971a9bd5e545d3b446acac1c0b5e236aa17dff7ace7179a5"
+      },
+      {
+        "path": "fixtures/doors/accepts-missing-asset.json",
+        "bytes": 606,
+        "sha256": "25626ded86e7a66a5a3ad42b9d6d695d971407fabe7c9a7defb9379d208dde93"
+      },
+      {
+        "path": "fixtures/doors/answers-200.json",
+        "bytes": 383,
+        "sha256": "4d7cd798c8804901bd9cd4d63624cc94a0e8b7e17770fba4af436b27cf855009"
+      },
+      {
+        "path": "fixtures/doors/body-offers.json",
+        "bytes": 1330,
+        "sha256": "2ed6a9094d64db60758f01869e2b575df31ce0160e88d307c0556e2193abb1cb"
+      },
+      {
+        "path": "fixtures/doors/clean-402.json",
+        "bytes": 657,
+        "sha256": "7bcc6ee4c20af9f97e449d3ce97b4755b40c4a390ad240a91854399610d72c3e"
+      },
+      {
+        "path": "fixtures/doors/header-absent.json",
+        "bytes": 433,
+        "sha256": "e8ab588edeb21a75cbee17b664d0be6a1cf3f1a3976d3d3906aad52b8ce70d35"
+      },
+      {
+        "path": "fixtures/doors/header-unparseable.json",
+        "bytes": 385,
+        "sha256": "a440f143bc126a58206cb99ee74ad013b7815f12a897798beb312f185b6310ab"
+      },
+      {
+        "path": "fixtures/doors/two-surfaces.json",
+        "bytes": 1153,
+        "sha256": "267228b01f2eb2ef767d2f193d565845266abb7cc2b095ec8f8802664f495d3c"
+      },
+      {
+        "path": "fixtures/doors/wrong-version.json",
+        "bytes": 691,
+        "sha256": "d9e33ac18a04539328faaa315b8ae0416f28863374d263405101a0666c5e1892"
+      },
+      {
+        "path": "fixtures/settlement-responses/draft-status-fields.json",
+        "bytes": 1448,
+        "sha256": "5ebdee70faf2e0b7a47843b563d6c5eb09eca711d0826810beefe1da7a6a739c"
+      },
+      {
+        "path": "fixtures/settlement-responses/failed-invalid-signature.json",
+        "bytes": 845,
+        "sha256": "78dede7afd2ead7fa01b5fc48fad0c7493e88ba0f53124c65860fbf02fdf44b8"
+      },
+      {
+        "path": "fixtures/settlement-responses/failed-no-reason.json",
+        "bytes": 847,
+        "sha256": "a7757cda8703fada646839ac150896ec432ab801dfbe2ece95c796a513ea8905"
+      },
+      {
+        "path": "fixtures/settlement-responses/legacy-null-transaction.json",
+        "bytes": 920,
+        "sha256": "db0083563637fe76ff871d4d1618fa1540e635dabe9b4f540aa9023c6d7a0d7a"
+      },
+      {
+        "path": "fixtures/settlement-responses/not-json.json",
+        "bytes": 679,
+        "sha256": "8364b5d6f606cbaf0da4c96818a46d266b1aca8e1a001f227352c47a0b2516d7"
+      },
+      {
+        "path": "fixtures/settlement-responses/pending-with-hash.json",
+        "bytes": 1295,
+        "sha256": "e37fe8396dafeaeb1be1e0fa0d2db8f7d38a982f8d98df24a11a9c0e579c0ef5"
+      },
+      {
+        "path": "fixtures/settlement-responses/pending-without-hash.json",
+        "bytes": 993,
+        "sha256": "14c6930761e07a353143ca50a8021f843c6acc1e7f64c9ff0bd39da0a05f2075"
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-amount-not-atomic.json",
+        "bytes": 1087,
+        "sha256": "5990ba9ff1c5585626f0be7de4ad8f5f6954bb6362a0bf908d8ee7f500580fe6"
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-clean.json",
+        "bytes": 947,
+        "sha256": "2d024d0a99e51e4183647211278423fc6bc13804e8a11cff5d3c08168fda964e"
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-v1-network-name.json",
+        "bytes": 1034,
+        "sha256": "8e7c89ba622e5ee3b390f32ab2a61285d92f6fd6c2bcb1e34d0be7d3ba2a1a7d"
+      },
+      {
+        "path": "fixtures/settlement-responses/success-not-boolean.json",
+        "bytes": 970,
+        "sha256": "09616d198e6d7750decf658854f2ace39d09466ca9c78c78fe467b02fe876172"
+      },
+      {
+        "path": "fixtures/settlement-responses/success-with-error-reason.json",
+        "bytes": 1026,
+        "sha256": "e4efad6e699fb553d528d036fb79965b905846bb8a9ad0b11b55bbf8dd6a53b6"
+      },
+      {
+        "path": "package.json",
+        "bytes": 1567,
+        "sha256": "d46767736feaf7441ef083b02dac9d5bd30ca4090638e2ebbbaaa72109843e19"
+      },
+      {
+        "path": "settlement-response.d.ts",
+        "bytes": 1124,
+        "sha256": "77e3d8441a1a0a80915f8dd5f54111c2a3fefbe20a8fe54ecee82a82c74b0fca"
+      },
+      {
+        "path": "settlement-response.js",
+        "bytes": 8151,
+        "sha256": "c1317d1f0dcea48108498883fa80170585613adf74e5a1126ae956823e5a4dbc"
+      }
+    ]
+  }
+]

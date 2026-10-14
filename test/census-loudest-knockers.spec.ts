@@ -80,7 +80,9 @@ describe("the loudest knockers", () => {
     });
     expect(page.status).toBe(200);
     const html = await page.text();
-    const section = html.slice(html.indexOf("The loudest knockers"), html.indexOf("<h2>The walk detector</h2>"));
+    // Section navigation repeats heading text; inspect the actual report block.
+    const section = html.match(/<section>\s*<h2[^>]*>The loudest knockers<\/h2>([\s\S]*?)<\/section>/)?.[1];
+    expect(section).toBeDefined();
     expect(section).toContain("python-requests/2.31.0");
     expect(section).toContain("<td>30</td>");
     expect(section).not.toContain("Googlebot");

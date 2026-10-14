@@ -53,19 +53,15 @@ describe("the track record names its own blind spot", () => {
 
 describe("the funnel does not assert what it cannot check", () => {
   it("stops claiming every counted settlement minted an artifact", async () => {
-    /**
-     * The counter is bumped in recordSettlement, which runs BEFORE
-     * the handler that mints. So a sale that settled and then failed
-     * to deliver IS counted here and has nothing behind it — the flat
-     * claim was falsifiable and unverified, which is the shape this
-     * store exists to avoid.
-     */
+    // Delivery precedes settlement, but a counter alone is still not proof
+    // that a particular buyer received the goods. Keep that limit explicit.
     const body = (await (
       await SELF.fetch(`${BASE}/pulse.json`)
     ).json()) as Record<string, unknown>;
     const text = JSON.stringify(body);
     expect(text).not.toContain("Every settlement counted here minted");
-    expect(text).toContain("EXPECTED to have minted");
+    expect(text).toContain("Recorded settlements alone do not establish delivery");
+    expect(text).toContain("delivers before settlement");
     // A claim with an instrument behind it, not an assurance.
     expect(text).toContain("delivery audit");
   });
@@ -80,6 +76,8 @@ describe("the funnel does not assert what it cannot check", () => {
     ).text();
     expect(html).not.toContain("Every settlement counted here minted a signed artifact —");
     expect(html).toContain("checked rather than asserted");
+    expect(html).toContain("delivers before settlement");
+    expect(html).not.toContain("counter is bumped before the handler");
   });
 });
 

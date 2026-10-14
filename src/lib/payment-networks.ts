@@ -2,12 +2,13 @@ import type { Env } from '@/types';
 import { getAddress } from 'viem';
 
 /** Shared by the checkout and its descriptions; no SDK or request state here. */
+export const ARC_NETWORK = 'eip155:5042';
 export const BASE_NETWORK = 'eip155:8453';
 export const POLYGON_NETWORK = 'eip155:137';
 export const ARBITRUM_NETWORK = 'eip155:42161';
 export const WORLD_NETWORK = 'eip155:480';
 export const SOLANA_NETWORK = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
-export type PaymentNetworkConfig = Pick<Env, 'PAY_TO_ADDRESS' | 'POLYGON_PAY_TO' | 'SOLANA_PAY_TO' | 'ARBITRUM_PAY_TO' | 'WORLD_PAY_TO'>;
+export type PaymentNetworkConfig = Pick<Env, 'PAY_TO_ADDRESS' | 'POLYGON_PAY_TO' | 'SOLANA_PAY_TO' | 'ARBITRUM_PAY_TO' | 'WORLD_PAY_TO' | 'ARC_PAY_TO'>;
 
 export function polygonPayTo(env: PaymentNetworkConfig): string | null {
   return evmAddress(env.POLYGON_PAY_TO);
@@ -23,6 +24,9 @@ export function arbitrumPayTo(env: PaymentNetworkConfig): string | null {
 }
 export function worldPayTo(env: PaymentNetworkConfig): string | null {
   return evmAddress(env.WORLD_PAY_TO);
+}
+export function arcPayTo(env: PaymentNetworkConfig): string | null {
+  return evmAddress(env.ARC_PAY_TO);
 }
 export function basePayTo(env: PaymentNetworkConfig): string | null {
   return evmAddress(env.PAY_TO_ADDRESS);
@@ -63,6 +67,7 @@ export function evmCheckoutPayTo(env: PaymentNetworkConfig, key: string): string
   if (key === 'polygon') return polygonPayTo(env);
   if (key === 'arbitrum') return arbitrumPayTo(env);
   if (key === 'world') return worldPayTo(env);
+  if (key === 'arc') return arcPayTo(env);
   return null;
 }
 
@@ -72,11 +77,12 @@ const NETWORKS = [
   { key: 'arbitrum', explorer: 'https://arbiscan.io', label: 'Arbitrum', network: ARBITRUM_NETWORK, enabled: (env: PaymentNetworkConfig) => Boolean(arbitrumPayTo(env)) },
   { key: 'world', explorer: 'https://worldscan.org', label: 'World', network: WORLD_NETWORK, enabled: (env: PaymentNetworkConfig) => Boolean(worldPayTo(env)) },
   { key: 'solana', explorer: 'https://solscan.io', label: 'Solana', network: SOLANA_NETWORK, enabled: (env: PaymentNetworkConfig) => Boolean(solanaPayTo(env)) },
+  { key: 'arc', explorer: 'https://explorer.arc.io', label: 'Arc (Circle Gateway)', network: ARC_NETWORK, enabled: (env: PaymentNetworkConfig) => Boolean(arcPayTo(env)) },
 ] as const;
 
 /** Historical books retain a network's name even when its checkout is disabled. */
 export function settlementNetworkLabels() {
-  return NETWORKS.map(({ key, label }) => ({ key, label }));
+  return NETWORKS.filter(row => row.key !== "arc").map(({ key, label }) => ({ key, label }));
 }
 
 export function checkoutNetworks(env: PaymentNetworkConfig) {
@@ -128,6 +134,7 @@ export function paymentNetworkGuide(env: PaymentNetworkConfig): string {
 
 /** Old certificates without a network predate the additional checkout rails. */
 export function settlementExplorer(network: string | undefined, transaction: string): string | null {
+  if (transaction.startsWith('gateway:')) return null;
   const row = NETWORKS.find(row => row.network === network || row.key === network || (!network && row.key === 'base'));
   return row ? `${row.explorer}/tx/${encodeURIComponent(transaction)}` : null;
 }

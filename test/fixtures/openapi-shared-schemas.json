@@ -49,7 +49,7 @@
               },
               "why": {
                 "type": "string",
-                "description": "What this answer buys the store \u2014 published so an agent can judge the ask rather than take it on trust."
+                "description": "What this answer buys the store — published so an agent can judge the ask rather than take it on trust."
               },
               "choices": {
                 "type": "array",
@@ -94,7 +94,7 @@
         },
         "every_problem_at_once": {
           "type": "string",
-          "description": "A refused body comes back with `problems`: EVERY field that needs fixing, each with what was expected and what the answer buys. One more call is always enough \u2014 you never discover the roster one refusal at a time."
+          "description": "A refused body comes back with `problems`: EVERY field that needs fixing, each with what was expected and what the answer buys. One more call is always enough — you never discover the roster one refusal at a time."
         },
         "then": {
           "type": "string",
@@ -128,7 +128,7 @@
         },
         "what_this_is_not": {
           "type": "string",
-          "description": "Never a ranking of the doors, and no verdict on whoever runs one \u2014 a dated observation of what each answered."
+          "description": "Never a ranking of the doors, and no verdict on whoever runs one — a dated observation of what each answered."
         },
         "what_you_can_use_it_for": {
           "type": "string"
@@ -425,7 +425,7 @@
           "items": {
             "type": "string"
           },
-          "description": "The methods that never cost anything \u2014 tools/list among them, so a client can look before it pays."
+          "description": "The methods that never cost anything — tools/list among them, so a client can look before it pays."
         },
         "capabilities": {
           "type": "object"
@@ -488,7 +488,7 @@
         },
         "rate_limit": {
           "type": "string",
-          "description": "What is metered and what is not, in words \u2014 the RateLimit headers say it again on every answer."
+          "description": "What is metered and what is not, in words — the RateLimit headers say it again on every answer."
         },
         "what_it_checks": {
           "type": "array",
@@ -771,6 +771,54 @@
         },
         "no_spend_controls": {
           "type": "boolean"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1api~1guestbook/post/responses/201/content/application~1json/schema/properties/cadence",
+      "/paths/~1api~1stamp/post/responses/201/content/application~1json/schema/properties/cadence",
+      "/paths/~1api~1letter/post/responses/201/content/application~1json/schema/properties/cadence"
+    ],
+    "schema": {
+      "type": "object",
+      "description": "When a human next reads this pile. Published on the intake rather than left to be wondered about.",
+      "properties": {
+        "every": {
+          "type": "string"
+        },
+        "next_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "note": {
+          "type": "string"
+        },
+        "nothing_is_lost": {
+          "type": "boolean",
+          "description": "That the queue is read in full rather than sampled — the thing a sender actually wants to know."
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1api~1preflight~1v1/post/requestBody/content/application~1json/schema",
+      "/paths/~1api~1preflight~1v2/post/requestBody/content/application~1json/schema",
+      "/paths/~1api~1preflight~1v3/post/requestBody/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "An https URL on a public host. Private, loopback, link-local and reserved-internal targets are refused, and so is this store's own hostname (a Worker cannot fetch itself)."
         }
       }
     }

@@ -1,0 +1,80 @@
+{
+  "schema_version": 6,
+  "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+  "spend_usdc": 0,
+  "budgets": {
+    "wall_ms": 240000,
+    "tool_calls": 20,
+    "output_bytes": 4000000,
+    "output_tokens": 2500,
+    "artifact_bytes": 33554432,
+    "artifact_files": 32
+  },
+  "freshness": {
+    "max_age_ms": 1209600000
+  },
+  "capability": {
+    "public_url": "https://raw.githubusercontent.com/github/gitignore/356fd7baab4c05e092194a41f64dbd5afc8817e4/Node.gitignore"
+  },
+  "cells": [
+    {
+      "id": "codex-directed-r1",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r1",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "codex-directed-r2",
+      "host": "codex",
+      "model": "gpt-5.6-luna",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    },
+    {
+      "id": "claude-directed-r2",
+      "host": "claude",
+      "model": "sonnet",
+      "lane": "directed",
+      "verification": "prompted",
+      "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+    }
+  ],
+  "purpose": "Separate directed zero-spend cohort with explicit pinned package access and installed-report qualification in both online hosts. Preserve the prior models, subject, budgets, single attempts, full-inventory recipient scope and fourteen-day observation policy. Prior results remain closed and unchanged. Explicit tooling access is a changed prompt condition, not unbranded discovery or a causal comparison. September 30: keeper explicitly permits battery operation; power state remains recorded and timing interruptions still stop the attempt.",
+  "recipient": {
+    "host": "codex",
+    "model": "gpt-5.6-luna",
+    "network": "disabled",
+    "attempts_per_eligible_cell": 1,
+    "input_scope": "all-retained-and-buyer-report",
+    "budgets": {
+      "wall_ms": 180000,
+      "tool_calls": 12,
+      "output_bytes": 4194304,
+      "output_tokens": 1800
+    },
+    "verifier": {
+      "name": "x402-verify",
+      "version": "1.9.0",
+      "files": {
+        "evidence-cli.mjs": "6d95f5663de2c04648293e84d56abd2d5377ef752f073124372c50ae4562c624",
+        "evidence-bundle.js": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+        "x402-verify.js": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017",
+        "package.json": "90f415847298b7d035ef9d73c52b4eea8de19e5ac604cbcbb62b292e374a7113",
+        "evidence-report.js": "ec90d8dda960d5d5f897e19ffb7ed33232d2b2ff2504ff7b47ea2153ee997d34",
+        "payment-identity.js": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74"
+      }
+    }
+  },
+  "package_access": true
+}

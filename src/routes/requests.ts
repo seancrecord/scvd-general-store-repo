@@ -1,3 +1,8 @@
+import { waitlistHowToJoin } from "@/lib/waitlist-guidance";
+import { boundedResponseText } from "@/lib/bounded-response";
+import { briefErrorHtml } from "@/pages/commission-request";
+import type { BriefDraft } from "@/pages/commission-brief";
+import { COMMISSION_DESCRIPTION_CAP, COMMISSION_CONTACT_CAP } from "@/store/commission-desk";
 import { Hono } from "hono";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { getMenuItem, VOICE } from "@/store";
@@ -12,28 +17,6 @@ import { isRecord, type HonoEnv } from "@/types";
  * unverified) and suggest_listing (a Town Directory suggestion).
  */
 export const requestRoutes = new Hono<HonoEnv>();
-
-/**
- * HOW TO JOIN, said on the door itself (2026-09-04, CV's fourth
- * round). The sold-out 409 hands a buyer this URL and says "leave your
- * callback"; the obvious next move is a GET, and a GET answered "That
- * aisle doesn't exist." The route took POST and nothing said so. The
- * same block rides the 409 and the GET, so the instructions cannot
- * drift between the pointer and the door.
- */
-export function waitlistHowToJoin(base: string, itemId: string): Record<string, unknown> {
-  return {
-    waitlist_url: `${base}/api/waitlist/${itemId}`,
-    waitlist_method: "POST",
-    waitlist_body: {
-      agent_name: "optional, up to 80 characters, recorded as written",
-      callback_url:
-        "optional https URL; the keeper reads the list by hand and rings it when a slot opens",
-    },
-    waitlist_note:
-      "Free. Nothing is charged for joining, and a GET on that URL answers with these same instructions.",
-  };
-}
 
 requestRoutes.get("/api/waitlist/:item_id", async (c) => {
   const itemId = c.req.param("item_id");
@@ -105,6 +88,32 @@ requestRoutes.post("/api/waitlist/:item_id", async (c) => {
 });
 
 requestRoutes.post("/api/request", async (c) => {
+  c.header("Cache-Control", "no-store");
+  c.header("X-Robots-Tag", "noindex, nofollow");
+  if (c.req.header("Content-Type")?.split(";")[0]?.trim().toLowerCase() === "application/x-www-form-urlencoded") {
+    // Browser forms are same-origin. JSON clients keep their existing contract.
+    if (c.req.header("Origin") !== new URL(c.req.url).origin || c.req.header("Sec-Fetch-Site") === "cross-site") {
+      return c.html(briefErrorHtml("Open the brief form on this site to send your request."), 403);
+    }
+    let fields: URLSearchParams;
+    try {
+      // Allows percent-encoded Unicode within the field caps, without an unbounded body read.
+      fields = new URLSearchParams(await boundedResponseText(new Response(c.req.raw.body), 32_768));
+    } catch {
+      return c.html(briefErrorHtml("This form was too large or could not be read. Please send a shorter brief."), 413);
+    }
+    const draft: BriefDraft = { description: fields.get("description") ?? "", contact: fields.get("contact") ?? "", offer_usdc: fields.get("offer_usdc") ?? "" };
+    const offer = Number(draft.offer_usdc.trim());
+    if ([...fields.keys()].some(key => fields.getAll(key).length !== 1) ||
+      [...draft.description].length > COMMISSION_DESCRIPTION_CAP || [...draft.contact].length > COMMISSION_CONTACT_CAP ||
+      !Number.isFinite(offer) || offer < 0) {
+      return c.html(briefErrorHtml(`Use one value per field, a brief up to ${COMMISSION_DESCRIPTION_CAP} characters, a contact up to ${COMMISSION_CONTACT_CAP} characters, and a non-negative budget (or leave it blank).`, draft), 400);
+    }
+    const request = await recordCommission(c.env, { description: draft.description, contact: draft.contact,
+      offer, verifiedIdentity: undefined, suggestListing: undefined });
+    if (!request) return c.html(briefErrorHtml("Please include the work you want reviewed and a reply contact.", draft), 400);
+    return c.redirect(`/api/commission/${request.id}`, 303);
+  }
   const body: unknown = await c.req.json().catch(() => null);
   if (!isRecord(body)) {
     return c.json(

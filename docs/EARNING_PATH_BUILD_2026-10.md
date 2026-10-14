@@ -263,3 +263,44 @@ TypeScript typecheck, all three bundle dry runs and whitespace validation
 passed. Full CI remains required before merge. These checks establish local
 behavior, not cold-agent usability, search visibility or acquisition impact.
 All changes remain uncommitted and undeployed.
+
+
+## Seventh increment — first batch and release integration, October 14
+
+The keeper delegated merge timing after the implementation review. The release
+branch incorporates current main, including its withdrawn bounty listings,
+reporting changes, declarations, personal shopper and payment discovery work.
+Main's prior guide fingerprints were reproduced by restoring only its guide
+source before pinning the combined text.
+
+Four concrete drafts now appear on the existing keeper posting desk: a free
+receipt-check journey, one retained census row, the verifier quickstart and an
+overlooked-use demonstration. Scope and acceptance criteria are editable.
+Rewards and closing/review/payment deadlines are intentionally blank. Reading
+the desk posts no work, and drafts are never added to the public task index.
+The initial two draft regression tests failed before implementation.
+
+The [portfolio inventory](AGENT_JOB_PORTFOLIO_2026-10.md) maps broader assignments
+to actual existing tools and a bounded first experiment. It includes expense
+tracking, duplicate signups, trial reminders, endpoint checks, client reports,
+portable evidence and signing tools. These are task-fit hypotheses, not observed
+frequency or adoption.
+
+The first integration run caught the OpenAPI growth allowance exceeding its
+existing ceiling. Current main's shorter purpose wording is retained; shared
+response/input schemas and concise request prose reduce repeated data. Purchase
+parameter names, constraints and payment accepts remain inline for shallow
+readers. No budget was raised and no financial mechanism changed.
+
+Integrated local validation: **540 tests passed across 20 affected files**;
+TypeScript typecheck, all three bundle dry runs, claims checks (54/54 resolved)
+and the scalability audit passed. The audit retains five existing warnings
+within its budget. The full CI shards and merge gate remain required before
+merge. No public task or reward commitment has been created.
+
+Remaining after code release: qualify the deployed empty/list/detail paths;
+set the first batch's total budget, rewards and dates and explicitly post it;
+review voluntary reports and record useful fixes, costs and keeper time; run
+the earning/broader-job AEO panels; qualify Tab installation and its next
+job-specific answers. Sponsored testing, provisioned tasks, portable work
+history and outside-opportunity discovery remain later bounded experiments.

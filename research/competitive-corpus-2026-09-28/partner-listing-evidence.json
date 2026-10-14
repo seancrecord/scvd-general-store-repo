@@ -1,0 +1,33 @@
+{
+  "kind": "unsigned_listing_evidence_projection",
+  "source": {
+    "url": "https://scvd.store/corpus/10.json",
+    "digest": "b51ab44dcbf63c8f0e16f07c8819361b7f36e26ffc49bf3a9a3b08370df4e2eb",
+    "row_pointer": "/round/hosts/8",
+    "snapshot_captured_at": "2026-09-27T11:02:17.930Z"
+  },
+  "endpoint": "https://stableupload.dev/api/upload",
+  "method": "POST",
+  "observed_at": "2026-09-21T02:30:36.271Z",
+  "x402_verdict": "ready",
+  "battery": "preflight-v2",
+  "catalog_comparison": {
+    "state": "differs",
+    "fields": [
+      "amount on eip155:8453: catalog 5000, door 2000000",
+      "amount on solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: catalog 5000, door 2000000"
+    ],
+    "last_updated": "2026-09-20T23:34:14.611Z"
+  },
+  "protocols_spoken": [
+    "x402",
+    "mpp"
+  ],
+  "verification": "Snapshot canonical digest and Ed25519 signature verified against supplied key. Key identity, chain continuity and Bitcoin timestamp were not independently checked by this adapter.",
+  "does_not_establish": [
+    "Current readiness or current catalog accuracy",
+    "Payment or delivery success",
+    "Every endpoint at this host",
+    "A score, endorsement, repair cause or directory acceptance"
+  ]
+}

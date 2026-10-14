@@ -42,7 +42,7 @@ it("lists every retained MPP sale as a row: who, which settlement, what, and whe
     rows: Array<{ id: string; payer: string; transaction: string; item?: string; house: boolean; month: string }>;
     months: string[]; months_unreadable: string[]; malformed: number;
   };
-  expect(json.rows).toEqual([{ id, month, payer, transaction: tx, amount: "1000", house: false, item: "spot_check" }]);
+  expect(json.rows).toEqual([{ id, month, payer, transaction: tx, amount: "1000", house: false, item: "spot_check", effective_house: false, classification: "confirmed" }]);
   expect(json.months).toContain(month);
   expect(json.months_unreadable).toEqual([]);
   expect(json.malformed).toBe(0);

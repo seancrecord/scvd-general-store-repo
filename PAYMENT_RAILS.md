@@ -1,5 +1,26 @@
 # PAYMENT_RAILS.md — the second-rail work order, and the audit that gates it
 
+## October 12 — Arc Gateway integration, configured locally, awaiting release
+
+The keeper authorized full Arc checkout and a historical receipt audit: “I want
+to do both. no pilots just add it as long as it doesnt mess anything up.” This
+supersedes the earlier flag-dark/pilot sequencing for this integration. The
+existing shelf prices and preparation-before-payment contract remain.
+
+The local implementation adds Arc (`eip155:5042`) through Circle Gateway on
+all shared x402 purchase paths. A valid, explicitly supplied `ARC_PAY_TO`
+recipient enables the offer. The address must be configured identically on
+the store and quote Workers. The keeper supplied it on October 12; both
+checked-in configurations carry it. Nothing has been enabled in production. This is a configuration requirement,
+not a one-product pilot. Existing rails remain available independently.
+
+Gateway acceptance precedes batch settlement. Certificates sign acceptance,
+purchase recovery retains later states, and confirmed Gateway sales have a
+separate ledger. The legacy counter repair cannot import them. Per-payment
+reconciliation trusts Circle's transfer API; no independent Arc wallet walk
+or automatic Gateway withdrawal is claimed. See
+[implementation and release requirements](docs/ARC_GATEWAY_2026-10.md).
+
 ## Current status — 2026-09-18
 
 Checkout is live on Base, Polygon, Arbitrum, World, and Solana, in native

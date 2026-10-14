@@ -102,7 +102,7 @@ beforeAll(() => {
 });
 async function seed(network = BASE_NETWORK, id = "aura_walk") {
   const item = items.find(row => row.id === id)!, tool = shelves(item)[0]!;
-  const args: Record<string, unknown> & { detail: string } = { ...baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()} — original full brief` };
+  const args: Record<string, unknown> & { detail: string } = { ...await baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()} — original full brief` };
   const quote = await call(item, "http", args, tool);
   const offer = quote.offers.find(row => row.network === network)!;
   const wire = await evmPayment(offer);

@@ -1,0 +1,42 @@
+[
+  {
+    "method": "GET",
+    "path": "/document.md",
+    "status": 200
+  },
+  {
+    "method": "OPTIONS",
+    "path": "/document.md",
+    "status": 204
+  },
+  {
+    "method": "GET",
+    "path": "/document.md",
+    "status": 304
+  },
+  {
+    "method": "OPTIONS",
+    "path": "/room",
+    "status": 204
+  },
+  {
+    "method": "GET",
+    "path": "/room",
+    "status": 200
+  },
+  {
+    "method": "OPTIONS",
+    "path": "/personal.json",
+    "status": 204
+  },
+  {
+    "method": "GET",
+    "path": "/personal.json",
+    "status": 200
+  },
+  {
+    "method": "OPTIONS",
+    "path": "/document.md",
+    "status": 404
+  }
+]

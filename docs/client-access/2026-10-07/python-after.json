@@ -1,0 +1,81 @@
+{
+  "taken_at": "2026-10-07T16:14:53.504990+00:00",
+  "client": [
+    [
+      "User-agent",
+      "Python-urllib/3.13"
+    ]
+  ],
+  "rows": [
+    {
+      "path": "/llms.txt",
+      "method": "GET",
+      "status": 200,
+      "ray": "a46e3369bba71efc-EWR",
+      "bytes": 27676
+    },
+    {
+      "path": "/llms.txt",
+      "method": "HEAD",
+      "status": 200,
+      "ray": "a46e336a59cbe5d0-EWR",
+      "bytes": 0
+    },
+    {
+      "path": "/robots.txt",
+      "method": "GET",
+      "status": 200,
+      "ray": "a46e336af9def7ee-EWR",
+      "bytes": 3403
+    },
+    {
+      "path": "/robots.txt",
+      "method": "HEAD",
+      "status": 200,
+      "ray": "a46e336f0f7cd084-ATL",
+      "bytes": 0
+    },
+    {
+      "path": "/agents.md",
+      "method": "GET",
+      "status": 200,
+      "ray": "a46e33720db07ba8-ATL",
+      "bytes": 22012
+    },
+    {
+      "path": "/agents.md",
+      "method": "HEAD",
+      "status": 200,
+      "ray": "a46e33767cf94352-EWR",
+      "bytes": 0
+    },
+    {
+      "path": "/openapi.json",
+      "method": "GET",
+      "status": 200,
+      "ray": "a46e3376fb652a96-IAD",
+      "bytes": 684702
+    },
+    {
+      "path": "/openapi.json",
+      "method": "HEAD",
+      "status": 200,
+      "ray": "a46e337ccb5858d7-EWR",
+      "bytes": 0
+    },
+    {
+      "path": "/menu.json",
+      "method": "GET",
+      "status": 200,
+      "ray": "a46e337e9efafd66-EWR",
+      "bytes": 486417
+    },
+    {
+      "path": "/menu.json",
+      "method": "HEAD",
+      "status": 200,
+      "ray": "a46e338ddcc83547-EWR",
+      "bytes": 0
+    }
+  ]
+}

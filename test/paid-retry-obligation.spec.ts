@@ -71,7 +71,7 @@ for (const id of ["context_anchor", "service_audit", "aura_walk", "the_collab"])
   for (const network of [BASE_NETWORK, POLYGON_NETWORK]) for (const after of ["none", "lookup", "incomplete"]) {
     it(`${id} ${network} ${after}: a certificate alone cannot close the owed delivery`, async () => {
       const item = items.find(item => item.id === id)!;
-      const args = { ...baseline(item), purpose: `SCVD-E2E-${crypto.randomUUID()}` };
+      const args = { ...await baseline(item), purpose: `SCVD-E2E-${crypto.randomUUID()}` };
       const quote = await call(item, "http", args);
       const offer = quote.offers.find(offer => offer.network === network)!;
       expect(offer).toBeTruthy();

@@ -58,7 +58,7 @@ export type LicensePolicyClass =
  * catalog at all.
  *
  * "core" is every item whose price is an exact number of cents.
- * "extension_only" is the four sub-cent items — $0.001, $0.004,
+ * "extension_only" is for the sub-cent items — $0.001, $0.004,
  * $0.005, $0.006 — which cannot be written as USD minor units without
  * either inventing a price the till would not charge or rounding a
  * real one to zero. They stay purchasable over x402 at the price they
@@ -247,6 +247,8 @@ const SHELF_COMMERCE: Record<string, ItemCommerce> = {
     license_policy: "artifact",
     visibility: "core",
   },
+  change_check: { sku: "SCVD-CHANGE-CHECK", categories: ["corpus"], tags: ["comparison", "our-books", "micropayment"], license_policy: "artifact", visibility: "extension_only" },
+  batch_spot_check: { sku: "SCVD-BATCH-SPOT-CHECK", categories: ["corpus"], tags: ["batch", "our-books", "micropayment"], license_policy: "artifact", visibility: "core" },
   spot_check: {
     sku: "SCVD-SPOT-CHECK",
     categories: ["chain-observation", "corpus"],

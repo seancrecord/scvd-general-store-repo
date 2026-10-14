@@ -1,3 +1,4 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
 import { A2A_ACTIONS } from "@/store/a2a-repair";
 import type { MenuItem } from "@/types";
 
@@ -162,6 +163,13 @@ export function securityBlock(
  * exactly what they were.
  */
 export const BUY_REFUSAL_CODES: readonly DoorError[] = [
+  {
+    code: "baseline_unavailable",
+    http: 400,
+    charged: false,
+    means: "the named earlier Spot Check has no valid retained signed original for this host; no comparison or payment was attempted",
+    what_to_do: "Use a Spot Check certificate for the same host whose original is available at /api/spot-checks/{cert_id}. Old certificates without retained originals cannot serve as baselines.",
+  },
   {
     code: "window_refused", http: 409, charged: false,
     means: "the shop window has nothing to pick (nobody has opened a pack yet), or this wallet picked inside the last twelve hours; the pick was refused before any settle call",
@@ -562,7 +570,7 @@ export const MCP_REFUSAL_CODES: readonly RpcRefusal[] = [
    * code, wherever the refusal is the same. A 400 there is -32602
    * here; everything else is -32000.
    */
-  ...(["target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled", "purchase_resolved"] as const).map(
+  ...(["baseline_unavailable", "target_refused", "passport_refused", "upstream_unavailable", "delivery_failed", "payment_declined", "settlement_unknown", "invalid_settlement_receipt", "payment_identity_unavailable", "purchase_record_unavailable", "purchase_recovery_pending", "purchase_not_settled", "purchase_resolved"] as const).map(
     (code): RpcRefusal => {
       const door = BUY_REFUSAL_CODES.find((entry) => entry.code === code);
       if (!door) {
@@ -686,7 +694,7 @@ function expectedOutcome(item: MenuItem, facts: PaidDoorFacts): string {
     item.term_days === undefined
       ? ""
       : ` The purchase covers a ${String(item.term_days)}-day term as one payment; nothing renews it by itself, because there is no mechanism here that could.`;
-  return `${delivery}${term} Every delivery carries a signed certificate, a sequential patron number, a badge URL and a verify URL that is free to call forever, by anyone, without asking us. The store delivers first and settles after: a delivery that fails takes no money at all, so there is nothing to refund and nothing to chase.`;
+  return `${delivery}${term} Every delivery carries a signed certificate, a sequential patron number, a badge URL and a verify URL that is free to call forever, by anyone, without asking us. ${DELIVERY_ORDER}`;
 }
 
 function whatYouCanUseItFor(task: string | undefined): string {

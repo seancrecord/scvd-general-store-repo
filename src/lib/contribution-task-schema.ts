@@ -5,11 +5,14 @@ const ref = (name: string) => ({$ref: `#/components/schemas/${name}`});
 const response = (schema: object) => ({description: "Current terms or private task state; no funds sent.", content: {"application/json": {schema}}});
 const steps = {type: "array", items: ref("ContributionStep")};
 const reportStrings = {type: "object", properties: Object.fromEntries(Object.keys(CONTRIBUTION_REPORT_FIELDS).map(k => [k, text]))};
+const key = {type: "string", pattern: "^[a-f0-9]{64}$", description: "Local random reservation key, reused for retries. Never a wallet key."};
 export const CONTRIBUTION_SCHEMAS = {
+  ContributionKeyInput: {type: "object", additionalProperties: false, required: ["reservation_key"], properties: {reservation_key: key}},
+  ContributionReportStrings: reportStrings,
   ContributionStep: {type: "object", required: ["action", "method", "url", "required_fields", "deadline_at", "note"], properties: {action: text, method: {type: "string", enum: ["GET", "POST"]}, url: text, required_fields: {type: "array", items: text}, deadline_at: {type: ["string", "null"]}, note: text}},
   ContributionWorkPacket: {type: "object", properties: {
     ...Object.fromEntries(["task_id", "task_url", "target", "brief", "acceptance", "guidance_is"].map(k => [k, text])),
-    evidence_prompts: reportStrings, report_draft: reportStrings,
+    evidence_prompts: ref("ContributionReportStrings"), report_draft: ref("ContributionReportStrings"),
     costs: {type: "object", properties: {required_store_spend_usd: {type: "number", const: 0}, reward_usd: {type: "number"}, net_earnings: {type: "null"}, worker_costs: text, payment: text, funding: text}},
     deadlines: {type: "object", properties: {new_reservations_close_at: text, submission: text, review_days: {type: "integer"}, payment_days: {type: "integer"}}},
   }},
@@ -35,14 +38,14 @@ export const CONTRIBUTION_RESPONSES = {
 const error = {$ref: "#/components/responses/ContributionError"};
 const errors = Object.fromEntries([400, 404, 409, 413, 503].map(code => [String(code), error]));
 const id = {name: "id", in: "path", required: true, schema: {type: "string", pattern: "^[a-z0-9][a-z0-9-]{2,63}$"}};
-const key = {type: "string", pattern: "^[a-f0-9]{64}$", description: "Local random reservation key, reused for retries. Never a wallet key."};
+
 export const CONTRIBUTION_PATHS = [CONTRIBUTION_API, `${CONTRIBUTION_API}/{id}`, ...["reserve", "submit", "status", "release"].map(action => `${CONTRIBUTION_API}/{id}/${action}`)];
 export const CONTRIBUTION_OPENAPI = {
   [CONTRIBUTION_API]: {get: {summary: "Posted contribution work without a purchase", description: "Briefs, capacity, rewards, review terms and request shapes. Templates are not open tasks. Free.", parameters: [{name: "cursor", in: "query", schema: text}], responses: {"200": response({type: "object", properties: {tasks: {type: "array", items: ref("ContributionTask")}, truncated: {type: "boolean"}, cursor: {type: ["string", "null"]}, requests: {type: "object"}, templates: {type: "array", items: {type: "object", properties: {kind: text, title: text, brief: text, acceptance: text}}}}}), "503": error}}},
   [`${CONTRIBUTION_API}/{id}`]: {get: {summary: "Read a contribution brief", parameters: [id], responses: {"200": response({type: "object", properties: {task: ref("ContributionTask"), work_packet: ref("ContributionWorkPacket"), next_steps: steps}}), "404": error, "503": error}}},
   ...Object.fromEntries(["reserve", "submit", "status", "release"].map(action => [`${CONTRIBUTION_API}/{id}/${action}`, {post: {
     summary: `${action} contribution work`, description: "Free. Acceptance is a keeper decision; reported payment is not chain verification.", parameters: [id],
-    requestBody: {required: true, content: {"application/json": {schema: {type: "object", additionalProperties: false, required: action === "submit" ? ["reservation_key", "payout_to", "report"] : ["reservation_key"], properties: {
+    requestBody: {required: true, content: {"application/json": {schema: action !== "submit" ? ref("ContributionKeyInput") : {type: "object", additionalProperties: false, required: action === "submit" ? ["reservation_key", "payout_to", "report"] : ["reservation_key"], properties: {
       reservation_key: key,
       ...(action === "submit" ? {arrival: ref("ContributionArrival"), payout_to: {type: "string", pattern: "^0x[a-fA-F0-9]{40}$"}, report: {type: "object", additionalProperties: false, required: Object.keys(CONTRIBUTION_REPORT_FIELDS), properties: Object.fromEntries(Object.entries(CONTRIBUTION_REPORT_FIELDS).map(([name, description]) => [name, {type: "string", minLength: 1, maxLength: CONTRIBUTION_FIELD_CAP, description}]))}} : {}),
     }}}}}, responses: {"200": response(ref("ContributionState")), ...errors},

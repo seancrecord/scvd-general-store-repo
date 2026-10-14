@@ -31,6 +31,7 @@
  * a change to what the chain holds, not to what the probe keeps.
  */
 import { jcsCanonicalize } from "@/lib/jcs";
+import { r2ReadText } from "@/lib/r2-read";
 import type { CorpusRecord } from "@/services/corpus-list";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 import type { WatchEvidenceCapture } from "@/services/watch-evidence";
@@ -159,11 +160,11 @@ export async function readEvidence(env: Env, record: CorpusRecord, host: string)
     };
   }
   if (!row.evidence_digest) return { found: false, reason: "no_evidence_on_row" };
-  const object = env.CORPUS_R2
-    ? await env.CORPUS_R2.get(evidenceShardKey(record.snapshot.sequence, await evidenceShardOf(host)))
+  const text = env.CORPUS_R2
+    ? await r2ReadText(env.CORPUS_R2, evidenceShardKey(record.snapshot.sequence, await evidenceShardOf(host)))
     : null;
-  if (!object) return { found: false, reason: "evidence_unreadable" };
-  const shard = JSON.parse(await object.text()) as Record<string, WatchEvidenceCapture>;
+  if (text === null) return { found: false, reason: "evidence_unreadable" };
+  const shard = JSON.parse(text) as Record<string, WatchEvidenceCapture>;
   const evidence = shard[host];
   if (!evidence) return { found: false, reason: "evidence_unreadable" };
   const canonical = canonicalEvidence(evidence);

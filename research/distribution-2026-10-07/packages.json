@@ -1,0 +1,85 @@
+{
+  "method": "Public latest metadata only; no tarball install or provenance verification.",
+  "records": [
+    {
+      "url": "https://registry.npmjs.org/scvd-cli/latest",
+      "read_at": "2026-10-07T16:34:00.281Z",
+      "http_status": 200,
+      "name": "scvd-cli",
+      "source_version": "0.5.0",
+      "latest_version": "0.5.0",
+      "version_matches": true,
+      "sha256": "1ca72c3a2370e5fc480c77197eb795a405737511f1176bfcdc20c5e10922ae20"
+    },
+    {
+      "url": "https://registry.npmjs.org/scvd-tab/latest",
+      "read_at": "2026-10-07T16:34:00.305Z",
+      "http_status": 200,
+      "name": "scvd-tab",
+      "source_version": "0.11.2",
+      "latest_version": "0.11.2",
+      "version_matches": true,
+      "sha256": "f7eb96f1ff4cecc41f37eb83e9ede1af9da159fb3adde14ca4ab9c1026391d14"
+    },
+    {
+      "url": "https://registry.npmjs.org/x402-verify/latest",
+      "read_at": "2026-10-07T16:34:00.306Z",
+      "http_status": 200,
+      "name": "x402-verify",
+      "source_version": "1.11.0",
+      "latest_version": "1.11.0",
+      "version_matches": true,
+      "sha256": "238cd78f6cd078a42645887ffe6eb712e4f91398e4d63834f7a865a56aaf9ea3"
+    },
+    {
+      "url": "https://registry.npmjs.org/x402-sign/latest",
+      "read_at": "2026-10-07T16:34:00.307Z",
+      "http_status": 200,
+      "name": "x402-sign",
+      "source_version": "1.0.3",
+      "latest_version": "1.0.3",
+      "version_matches": true,
+      "sha256": "7052e17855c4c754b0c3f1958f289f2d5a4e46044c55caa90a0b5ea1b4e115dd"
+    },
+    {
+      "url": "https://registry.npmjs.org/scvd-preflight/latest",
+      "read_at": "2026-10-07T16:34:00.308Z",
+      "http_status": 200,
+      "name": "scvd-preflight",
+      "source_version": "0.3.1",
+      "latest_version": "0.3.1",
+      "version_matches": true,
+      "sha256": "7b539c8264f2bbb9467b28b7a1aa4890a713f92030de9f8cebc563426a68b23a"
+    },
+    {
+      "url": "https://registry.npmjs.org/scvd-corpus-client/latest",
+      "read_at": "2026-10-07T16:34:00.309Z",
+      "http_status": 200,
+      "name": "scvd-corpus-client",
+      "source_version": "0.1.0",
+      "latest_version": "0.1.0",
+      "version_matches": true,
+      "sha256": "3ce5208eba5a27e9d43e8e5f48c562e36f1bec984a20c714e655be75f196b8ef"
+    },
+    {
+      "url": "https://registry.npmjs.org/scvd-defects/latest",
+      "read_at": "2026-10-07T16:34:00.309Z",
+      "http_status": 200,
+      "name": "scvd-defects",
+      "source_version": "0.22.0",
+      "latest_version": "0.21.0",
+      "version_matches": false,
+      "sha256": "ed68d471850b9ab16559b8e0ddf0af7983537dff9cc338b4e05a4e1742f206ec"
+    },
+    {
+      "url": "https://registry.npmjs.org/scvd-mcp-starter/latest",
+      "read_at": "2026-10-07T16:34:00.310Z",
+      "http_status": 200,
+      "name": "scvd-mcp-starter",
+      "source_version": "0.2.0",
+      "latest_version": "0.2.0",
+      "version_matches": true,
+      "sha256": "2f5a2fcc6135d959c636666de1e5165ffae31dcc287e87457f88a120e38f0f7c"
+    }
+  ]
+}

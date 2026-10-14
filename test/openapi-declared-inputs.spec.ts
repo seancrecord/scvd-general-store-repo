@@ -57,7 +57,17 @@ type Op = Record<string, any>;
 async function spec(): Promise<Record<string, Record<string, Op>>> {
   const response = await probeFetch(`${BASE}/openapi.json`);
   expect(response.status).toBe(200);
-  return ((await response.json()) as { paths: Record<string, Record<string, Op>> }).paths;
+  const document = await response.json() as { paths: Record<string, Record<string, Op>>; components: { parameters: Record<string, Op> } };
+  for (const item of Object.values(document.paths)) for (const op of Object.values(item)) {
+    op.parameters = params(op).map(parameter => {
+      if (!parameter.$ref) return parameter;
+      const name = String(parameter.$ref).replace("#/components/parameters/", "");
+      const resolved = document.components.parameters[name];
+      expect(resolved, parameter.$ref).toBeDefined();
+      return resolved;
+    });
+  }
+  return document.paths;
 }
 
 function contentType(response: Response): string {

@@ -2,7 +2,7 @@ import { readMppCore } from "@/services/mpp-core";
 import { sampleA2AKit } from "@/services/a2a-sample";
 import { surfacesSectionOf, type SurfaceReads } from "@/services/surface-reads";
 import { NO_VERDICT } from "@/services/case-file";
-import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
+import { PREFLIGHT_BATTERY, PREFLIGHT_VERSION, PREFLIGHT_VERSION_NEXT, checksForBattery, batteryDifference, probeOnce, runChecks } from "@/services/preflight";
 import {
   AUDIT_CRITERIA_VERSION,
   AUDIT_SCOPE,
@@ -159,8 +159,8 @@ export async function sampleOnceOver(
     outcome.method,
   );
   const v1Verdict = ran.checks.every((check) => check.ok) ? "ready" : "not_ready";
-  const v2Checks = [...ran.checks, ...(ran.l3b ?? [])];
-  const v2Verdict = v2Checks.every((check) => check.ok) ? "ready" : "not_ready";
+  const currentChecks = checksForBattery(ran, PREFLIGHT_VERSION_NEXT);
+  const currentVerdict = currentChecks.every((check) => check.ok) ? "ready" : "not_ready";
   return {
     specimen: true,
     mark: SAMPLE_MARK,
@@ -176,8 +176,8 @@ export async function sampleOnceOver(
       observed_at: SAMPLE_OBSERVED_AT,
       /* The same sentence the paid artifact prints, not a copy of it. */
       criteria: auditCriteriaNote(env.STORE_BASE_URL),
-      verdict: v2Verdict,
-      checks: v2Checks,
+      verdict: currentVerdict,
+      checks: currentChecks,
       advisories: ran.advisories,
       /*
        * THE SECOND READING, and the differential test is what put it
@@ -186,7 +186,7 @@ export async function sampleOnceOver(
        * the sample quietly cheaper than the product, on the one field
        * that shows why the two batteries exist.
        *
-       * Computed from the L3b trio only. The paid version also folds
+       * Computed from the same offline checks. The paid version also folds
        * the Solana rail read, which is a NETWORK call; nothing is
        * dialled to build a specimen, so the difference line says so
        * rather than implying a read we did not do.
@@ -194,7 +194,7 @@ export async function sampleOnceOver(
       also_under: {
         battery: PREFLIGHT_BATTERY,
         verdict: v1Verdict,
-        difference: `${AUDIT_CRITERIA_VERSION} folds the L3b consistency trio into the verdict; ${PREFLIGHT_BATTERY} reports the same observations as advisories. On this constructed probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"} \u2014 which is the whole reason a purchased report carries both. On a REAL purchase the ${AUDIT_CRITERIA_VERSION} reading also folds the Solana rail read; no network call was made to build this specimen, so that check is absent here and present there.`,
+        difference: `${batteryDifference(PREFLIGHT_VERSION_NEXT, currentChecks, PREFLIGHT_VERSION, ran.checks)} This is a constructed probe; no network call was made to build this specimen, so Solana receivability is not scored.`,
       },
       /*
        * THE SURFACES SECTION (S8 Tier B), built through the paid

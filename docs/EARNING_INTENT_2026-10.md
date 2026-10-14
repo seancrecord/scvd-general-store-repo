@@ -1,7 +1,7 @@
 # Earning intent — October 13, 2026
 
-Implementation update, October 13: the first additive increment is built locally
-on `codex/earning-path`; it is not deployed. See [build scope and validation](EARNING_PATH_BUILD_2026-10.md). The brief below retains the broader proposed work.
+Implementation update: the additive workflow is implemented on
+`codex/earning-path`. See [build scope and validation](EARNING_PATH_BUILD_2026-10.md). The brief below retains the broader proposed work.
 
 Status: research and proposed direction, not a launch or budget change.
 Demand tag: the keeper reports agents arriving through bounties after being

@@ -54,6 +54,15 @@ function expectLeadsWith(surface: string, body: string): void {
 }
 
 describe("the sixty words are one constant", () => {
+  it("does not advertise unsigned inspection as a signed, expiring artifact", async () => {
+    const spec = JSON.parse(await text("/openapi.json")) as {
+      info: { description: string };
+    };
+    expect(spec.info.description).not.toContain("Every artifact is signed, expires");
+    expect(spec.info.description).toContain("free inspection is unsigned");
+    expect(spec.info.description).toContain("Signed observations are dated");
+  });
+
   it("is the keeper's ink, dated, and opens the shared opening", () => {
     expect(VALUE_PROPOSITION_DATED).toBe("2026-09-03");
     // Roughly sixty words: the name is a promise about length too.

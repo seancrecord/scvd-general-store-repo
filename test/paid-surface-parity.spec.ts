@@ -59,6 +59,7 @@ async function seedCensus(host: string, verdict: string, at: string) {
               host,
               url: `https://${host}/api/x`,
               verdict,
+              observed_at: at,
               failed: [],
               advisories: [],
             },

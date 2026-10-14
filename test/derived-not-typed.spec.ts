@@ -253,6 +253,22 @@ describe("no tier without its fraction", () => {
   }, WALK_TIMEOUT_MS);
 });
 
+// Match the longest complete product name, and never carry a mention across
+// another product's name to its price. Batch Spot Check is not Spot Check.
+function quotedPrices(body: string): { name: string; quoted: number; expected: number }[] {
+  const names = [...MENU_ITEMS].sort((a, b) => b.name.length - a.name.length)
+    .map(item => Array.from(item.name, char => "^$.*+?()[]{}|\\".includes(char) ? "\\" + char : char).join("")).join("|");
+  const near = new RegExp(`(${names})(?:(?!(?:${names}))[^$\\n]){0,80}\\$([0-9]+(?:\\.[0-9]{1,3})?)`, "gi");
+  return [...body.matchAll(near)].map(match => ({ name: match[1]!, quoted: Number(match[2]),
+    expected: MENU_ITEMS.find(item => item.name.toLowerCase() === match[1]!.toLowerCase())!.price_usdc }));
+}
+
+it("price guard distinguishes overlapping names and still catches wrong prices", () => {
+  expect(quotedPrices("Batch Spot Check — $0.01")).toEqual([{ name: "Batch Spot Check", quoted: 0.01, expected: 0.01 }]);
+  expect(quotedPrices("Spot Check; Change Check — $0.005")).toEqual([{ name: "Change Check", quoted: 0.005, expected: 0.005 }]);
+  expect(quotedPrices("Spot Check — $0.01")).toEqual([{ name: "Spot Check", quoted: 0.01, expected: 0.001 }]);
+});
+
 describe("no surface quotes a price the menu does not charge", () => {
   /**
    * The storefront defect generalised. An item's name and a dollar
@@ -263,20 +279,8 @@ describe("no surface quotes a price the menu does not charge", () => {
   it("checks every item name that appears beside a number", async () => {
     const wrong: string[] = [];
     for (const [path, body] of await surfaces()) {
-      for (const item of MENU_ITEMS) {
-        // Look for the item's display name followed closely by a price.
-        const near = new RegExp(
-          `${item.name.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}[^$\\n]{0,80}\\$([0-9]+(?:\\.[0-9]{1,3})?)`,
-          "gi",
-        );
-        for (const match of body.matchAll(near)) {
-          const quoted = Number.parseFloat(match[1] ?? "");
-          if (Number.isFinite(quoted) && quoted !== item.price_usdc) {
-            wrong.push(
-              `${path}: "${item.name}" quoted at $${quoted}, menu says $${item.price_usdc}`,
-            );
-          }
-        }
+      for (const { name, quoted, expected } of quotedPrices(body)) {
+        if (quoted !== expected) wrong.push(`${path}: "${name}" quoted at $${quoted}, menu says $${expected}`);
       }
     }
     expect(wrong, `a price is typed rather than derived:\n${wrong.join("\n")}`).toEqual(

@@ -1081,3 +1081,29 @@ test("the default fetch is bound, so a browser does not answer 'Illegal invocati
     globalThis.fetch = original;
   }
 });
+
+test("a delivered Spot Check visibly offers an optional human note and same-origin next purchases", async () => {
+  const { renderResult } = await import("./till.js");
+  const doc = fakeDocument();
+  doc.location = {origin:"https://scvd.store"};
+  const output=doc.createElement("pre"); output.ownerDocument=doc;
+  const body={counter_note:{optional:true,text:"Dated evidence for example.com. <script>untrusted</script>"},follow_up:{free_alternatives:[{name:"History",price_usdc:0,url:"https://scvd.store/corpus/host/example.com.json"}],options:[{name:"Change Check",price_usdc:0.005,listing_url:"https://scvd.store/menu/change_check?host=example.com"},{name:"Hostile",price_usdc:1,listing_url:"https://elsewhere.example/pay"}]}};
+  renderResult({result:{outcome:"delivered",body},say:()=>{},output,item:{name:"Spot Check"}});
+  const section=doc.inserted.find(node=>Object.hasOwn(node.attributes,"data-counter-note"));
+  assert.ok(section,"the follow-up must be visible outside the raw response");
+  const nodes=section.children.flatMap(row=>[row,...row.children]);
+  assert.equal(nodes.find(row=>row.tag==="textarea").value,body.counter_note.text);
+  assert.ok(nodes.some(row=>row.tag==="a" && row.href.includes("/menu/change_check")));
+  assert.ok(!nodes.some(row=>row.href?.includes("elsewhere.example")));
+  assert.ok(nodes.every(row=>Object.keys(row.listeners).length===0),"nothing sends or buys automatically");
+});
+
+test('Gateway signing uses the offered contract and full batch validity window', () => {
+  const accept = { scheme: 'exact', network: 'eip155:5042', asset: USDC_BASE, payTo: '0x3333333333333333333333333333333333333333', amount: '10000', maxTimeoutSeconds: 604900,
+    extra: { name: 'GatewayWalletBatched', version: '1', verifyingContract: '0x77777777dcc4d5a8b6e418fd04d8997ef11000ee', minValiditySeconds: 604800 } };
+  assert.deepEqual(acceptProblems(accept, 5042), []);
+  const authorization = buildAuthorization({ from: '0x2222222222222222222222222222222222222222', accept, nowSeconds: 1000, nonce: `0x${'aa'.repeat(32)}` });
+  assert.equal(authorization.validBefore, '605900');
+  assert.equal(buildTypedData(accept, authorization).domain.verifyingContract, accept.extra.verifyingContract);
+  assert.ok(acceptProblems({ ...accept, extra: { ...accept.extra, verifyingContract: 'bad' } }, 5042).length);
+});

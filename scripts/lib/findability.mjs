@@ -46,6 +46,7 @@ export const SIGNALS = [
   { id: "erc8004-registration", where: "site", path: "/.well-known/agent-registration.json", readers: "ERC-8004 indexers and endpoint-domain acknowledgment consumers" },
   { id: "oasf-record", where: "site", path: "/agents/general-store", readers: "OASF capability consumers; public bytes do not establish federation publication" },
   { id: "oasf-domain-key", where: "site", path: "/.well-known/jwks.json", readers: "AGNTCY domain-name verification" },
+  { id: "website-skills-index", where: "site", path: "/.well-known/skills/index.json", readers: "Hermes and Skills CLI website installers; index includes all supporting files" },
   { id: "skills-index", where: "site", path: "/.well-known/agent-skills/index.json", readers: "Agent Skills Discovery clients" },
   { id: "protocol-records", where: "site", path: "/trust", readers: "people and machines reading dated discovery records by protocol" },
   { id: "a2a-card", where: "site", path: "/.well-known/agent-card.json", readers: "A2A clients and registries (also the older /.well-known/agent.json)" },

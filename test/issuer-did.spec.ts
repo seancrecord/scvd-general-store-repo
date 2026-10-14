@@ -23,8 +23,12 @@ beforeAll(() => {
 });
 
 describe("the issuer inside the signed bytes", () => {
-  it("is the last signed field and never a URL", () => {
-    expect(CERT_FIELDS[CERT_FIELDS.length - 1]).toBe("issuer");
+  it("is a signed field, placed after the quote it was appended behind, and never a URL", () => {
+    // CERT_FIELDS is append-only, so a position is fixed by what came
+    // before it, not by being last: "last" was true the day R1 landed
+    // and would have forbidden every later field (cited_artifact,
+    // 2026-10-01, was the first).
+    expect(CERT_FIELDS.indexOf("issuer")).toBe(CERT_FIELDS.indexOf("quote") + 1);
     expect(issuerDid(BASE)).toBe("did:web:scvd.store");
     expect(issuerDid(BASE)).not.toContain("http");
   });

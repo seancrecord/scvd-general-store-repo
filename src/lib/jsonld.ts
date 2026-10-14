@@ -49,12 +49,11 @@ export const JSONLD_ACCEPTED_PAYMENT =
   paymentMethod();
 
 /**
- * THE ONE PRICED OFFER THAT IS NOT PAID OVER x402 (2026-09-03): the
- * trade counter's. A marketplace is billed on a statement, in the
- * store's own dollars, and a buyer reading that Offer must not be
+ * THE TRADE COUNTER'S BILLING (2026-09-03). A marketplace is billed
+ * on a statement, in the store's own dollars, and a buyer reading that Offer must not be
  * told USDC over x402 — that is the front door's truth, not this
- * one's. The currency guard accepts exactly these two sentences and
- * nothing in between.
+ * one's. The endpoint pilot separately carries its delivery-invoice
+ * terms; the currency guard checks that exception on its own URL.
  */
 export const JSONLD_TRADE_ACCEPTED_PAYMENT =
   "Billed to a marketplace trade account on a statement (scvd.store/trade); not paid over x402";

@@ -5,6 +5,19 @@ version forever (0.1.1 exists because of that). Minor versions add
 commands and never change an existing command's output shape or exit
 code; a change to either is a major.
 
+## 0.5.0 — 2026-10-01
+
+Add `scvd init [--dry-run] [--yes] [--verifier] [--dir <path>]`: detect the
+agent hosts on this machine (Claude Code, Cursor, Codex) and wire the store's
+MCP door into the project's host configuration — `.mcp.json` for Claude Code,
+`.cursor/mcp.json` for Cursor; Codex gets a TOML snippet printed, never written.
+Shows the exact change and asks before writing; `--yes` consents up front;
+without a terminal and without `--yes` it prints the plan and exits 2. Never
+overwrites an existing entry under the same name with a different value
+(exit 1, file untouched). No network call, no key, no account. The first
+command here that writes a file, and it writes only inside the project it is
+pointed at. Existing commands, output shapes and exit codes are unchanged.
+
 ## 0.4.0 — 2026-09-28
 
 Add `scvd inspect <url>` using the existing unpaid preflight endpoint and

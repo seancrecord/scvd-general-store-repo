@@ -50,7 +50,7 @@ export function prepareHandoff(root,selection,out,frozen=null) {
   if(typeof final!=='string'||!final.trim())throw Error('No buyer final report to hand off.');
   const pinned=readRecipientVerifier(frozen?.plan);
   const machinery=pinned??['evidence-bundle.js','x402-verify.js'].map(file=>({file,bytes:fs.readFileSync(new URL('../verifier/'+file,import.meta.url))}));
-  const manifest={...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),...(pinned?{verifier:frozen.plan.recipient.verifier}:{}),schema_version:1,scope:selection.scope,citation_policy:unclassified?'unclassified':'reviewer_declared',subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
+  const manifest={...(frozen?.plan.evidence_workflow?{evidence_workflow:frozen.plan.evidence_workflow}:{}),...(frozen?{protocol_sha256:frozen.protocol.protocol_sha256,plan_content_sha256:hash(JSON.stringify(frozen.plan))}:{}),...(pinned?{verifier:frozen.plan.recipient.verifier}:{}),schema_version:1,scope:selection.scope,citation_policy:unclassified?'unclassified':'reviewer_declared',subject:run.subject,run_sha256:hash(runBytes),trace_sha256:run.trace_sha256,
     ...(observationPolicy?{observation_policy:observationPolicy}:{}),
     selection_sha256:hash(JSON.stringify(selection)),capture_state:run.retained_artifacts.state,capture_issues:run.retained_artifacts.issues??[],
     files:inputs.map(x=>x.row),buyer_report:{file:'buyer-handoff.md',sha256:hash(final),source:'Verbatim final buyer text from the hash-checked host trace.'},

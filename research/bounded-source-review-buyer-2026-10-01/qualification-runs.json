@@ -1,0 +1,551 @@
+{
+  "codex": {
+    "started_at": "2026-10-01T14:53:41.994Z",
+    "ended_at": "2026-10-01T14:56:20.953Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-10-01T14:53:41.994Z",
+      "ended_at": "2026-10-01T14:56:20.953Z",
+      "wall_elapsed_ms": 158959,
+      "monotonic_elapsed_ms": 158960.878208,
+      "max_callback_gap_ms": 1002.4138749999984,
+      "interruption": null
+    },
+    "trace_sha256": "7698245616e6c338927e0d1237f8551439052f7044054694491c3b6dc0cd755b",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 162426,
+      "files": [
+        {
+          "file": "evidence/report-original.json",
+          "bytes": 577,
+          "sha256": "2f120b3c644e7bbfb78d2bbed0a4e2be8dd8e80b9038d76a5e908875a86b4e8a"
+        },
+        {
+          "file": "evidence/public.bin",
+          "bytes": 2189,
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        {
+          "file": "evidence/source/x402-verify.js",
+          "bytes": 46958,
+          "sha256": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017"
+        },
+        {
+          "file": "evidence/source/evidence-bundle.js",
+          "bytes": 9551,
+          "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+        },
+        {
+          "file": "evidence/source/payment-identity.js",
+          "bytes": 719,
+          "sha256": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74"
+        },
+        {
+          "file": "evidence/source/evidence-cli.mjs",
+          "bytes": 14081,
+          "sha256": "6d95f5663de2c04648293e84d56abd2d5377ef752f073124372c50ae4562c624"
+        },
+        {
+          "file": "evidence/source/evidence-report.js",
+          "bytes": 5318,
+          "sha256": "ec90d8dda960d5d5f897e19ffb7ed33232d2b2ff2504ff7b47ea2153ee997d34"
+        },
+        {
+          "file": "evidence/source/package.json",
+          "bytes": 1615,
+          "sha256": "90f415847298b7d035ef9d73c52b4eea8de19e5ac604cbcbb62b292e374a7113"
+        },
+        {
+          "file": "evidence/installed/x402-verify.js",
+          "bytes": 46958,
+          "sha256": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017"
+        },
+        {
+          "file": "evidence/installed/evidence-bundle.js",
+          "bytes": 9551,
+          "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+        },
+        {
+          "file": "evidence/installed/payment-identity.js",
+          "bytes": 719,
+          "sha256": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74"
+        },
+        {
+          "file": "evidence/installed/evidence-cli.mjs",
+          "bytes": 14081,
+          "sha256": "6d95f5663de2c04648293e84d56abd2d5377ef752f073124372c50ae4562c624"
+        },
+        {
+          "file": "evidence/installed/evidence-report.js",
+          "bytes": 5318,
+          "sha256": "ec90d8dda960d5d5f897e19ffb7ed33232d2b2ff2504ff7b47ea2153ee997d34"
+        },
+        {
+          "file": "evidence/installed/package.json",
+          "bytes": 1615,
+          "sha256": "90f415847298b7d035ef9d73c52b4eea8de19e5ac604cbcbb62b292e374a7113"
+        },
+        {
+          "file": "evidence/installed-report.md",
+          "bytes": 2453,
+          "sha256": "5ff61fd7584fe1e45e2904c509199ca9d10a7f920236c33e550554eafee7165a"
+        },
+        {
+          "file": "evidence/package-review.json",
+          "bytes": 503,
+          "sha256": "c8335f81a077de35593a5ccac3764b78b73f5efd497731a440abe30cd08dade9"
+        },
+        {
+          "file": "evidence/capability.json",
+          "bytes": 158,
+          "sha256": "7654710c207c9e17dbf03460c8741b7f2b05224db5954cd271d45bdd613b4436"
+        },
+        {
+          "file": "evidence/verification-diagnostics.txt",
+          "bytes": 62,
+          "sha256": "ec8fb14fbb2aefec08c99958bd057cbdb27ac70532dcb3937a567c3bcb650f8a"
+        }
+      ],
+      "issues": []
+    },
+    "prepared_source_directories": [
+      "evidence/source"
+    ],
+    "counts": {
+      "tool_calls": 12,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 275483,
+        "cached_input_tokens": 251648,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6549,
+        "reasoning_output_tokens": 1049
+      },
+      "resolved_models": [],
+      "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+    },
+    "capability": {
+      "schema_version": 1,
+      "host": "codex",
+      "state": "pass",
+      "retention": {
+        "state": "pass",
+        "reason": "Retained bytes match the runner's independent fetch.",
+        "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+        "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "local_check": {
+        "state": "pass",
+        "reason": "Reported signature results match the runner's vectors and a local command completed.",
+        "expected": {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        "reported": {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        "report_matches_retained": true
+      },
+      "commands": {
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh"
+        ],
+        "denied": [],
+        "failed": [
+          "/bin/zsh"
+        ]
+      },
+      "limits": [
+        "Directed qualification includes the named pinned reporting package; not unbranded discovery or a buyer result.",
+        "Command outcomes are read from host events; hidden host work and batched calls are not visible.",
+        "The commands lists contain first words of invocations, not tool-wide availability findings; command_events retains the full invocation and trace line."
+      ],
+      "package_report": {
+        "state": "pass",
+        "reason": "Pinned public installation completed; retained runtime matches every frozen module and the generated report reproduces independently.",
+        "limits": "Checks retained runtime bytes, generated report and visible command execution; not general package security, hidden host actions or a buyer journey.",
+        "source_review": {
+          "flow": "bounded-fetch-v1",
+          "state": "recorded",
+          "decision": "proceed",
+          "reason": "Bounded review of all six pinned files found a zero-dependency manifest and verifier paths using filesystem APIs, WebCrypto, and fetch for documented verification functions; no child_process, spawn, exec, or eval usage was found. The verify-source CLI path states it makes no network requests and writes only a new report. Review remains bounded: source prefixes and targeted line reads were inspected, not every source byte semantically audited; pinned hashes matched.",
+          "source_commit": "25be137d516d502a536062145058176e91e1ce78",
+          "inspection": "hashes_and_visible_order_checked",
+          "limits": "Decision and reasoning are self-reported. No proof of comprehension, safety or verified registry provenance."
+        },
+        "report_sha256": "5ff61fd7584fe1e45e2904c509199ca9d10a7f920236c33e550554eafee7165a",
+        "original_sha256": "2f120b3c644e7bbfb78d2bbed0a4e2be8dd8e80b9038d76a5e908875a86b4e8a",
+        "version": "1.9.0"
+      }
+    }
+  },
+  "claude": {
+    "started_at": "2026-10-01T14:56:21.072Z",
+    "ended_at": "2026-10-01T14:58:17.045Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-10-01T14:56:21.072Z",
+      "ended_at": "2026-10-01T14:58:17.045Z",
+      "wall_elapsed_ms": 115973,
+      "monotonic_elapsed_ms": 115973.35541700001,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "trace_sha256": "9a8bf1157e7a2731658ee9e8cdeb072483dea976ba7533d2cc0c5e363b926e3a",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 164080,
+      "files": [
+        {
+          "file": "evidence/report-original.json",
+          "bytes": 714,
+          "sha256": "dee30f01601aee121e1d4e1e72ae4aa2205c29ee4ade78035d6b765cda5b9a65"
+        },
+        {
+          "file": "evidence/public.bin",
+          "bytes": 2189,
+          "sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+        },
+        {
+          "file": "evidence/source/x402-verify.js",
+          "bytes": 46958,
+          "sha256": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017"
+        },
+        {
+          "file": "evidence/source/evidence-bundle.js",
+          "bytes": 9551,
+          "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+        },
+        {
+          "file": "evidence/source/payment-identity.js",
+          "bytes": 719,
+          "sha256": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74"
+        },
+        {
+          "file": "evidence/source/evidence-cli.mjs",
+          "bytes": 14081,
+          "sha256": "6d95f5663de2c04648293e84d56abd2d5377ef752f073124372c50ae4562c624"
+        },
+        {
+          "file": "evidence/source/evidence-report.js",
+          "bytes": 5318,
+          "sha256": "ec90d8dda960d5d5f897e19ffb7ed33232d2b2ff2504ff7b47ea2153ee997d34"
+        },
+        {
+          "file": "evidence/source/package.json",
+          "bytes": 1615,
+          "sha256": "90f415847298b7d035ef9d73c52b4eea8de19e5ac604cbcbb62b292e374a7113"
+        },
+        {
+          "file": "evidence/installed/x402-verify.js",
+          "bytes": 46958,
+          "sha256": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017"
+        },
+        {
+          "file": "evidence/installed/evidence-bundle.js",
+          "bytes": 9551,
+          "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24"
+        },
+        {
+          "file": "evidence/installed/payment-identity.js",
+          "bytes": 719,
+          "sha256": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74"
+        },
+        {
+          "file": "evidence/installed/evidence-cli.mjs",
+          "bytes": 14081,
+          "sha256": "6d95f5663de2c04648293e84d56abd2d5377ef752f073124372c50ae4562c624"
+        },
+        {
+          "file": "evidence/installed/evidence-report.js",
+          "bytes": 5318,
+          "sha256": "ec90d8dda960d5d5f897e19ffb7ed33232d2b2ff2504ff7b47ea2153ee997d34"
+        },
+        {
+          "file": "evidence/installed/package.json",
+          "bytes": 1615,
+          "sha256": "90f415847298b7d035ef9d73c52b4eea8de19e5ac604cbcbb62b292e374a7113"
+        },
+        {
+          "file": "evidence/installed-report.md",
+          "bytes": 2453,
+          "sha256": "b87cd1fed83aeb46bcdc43f9aa8937ffd7b70cd8bbae399351664b62e9337777"
+        },
+        {
+          "file": "evidence/package-review.json",
+          "bytes": 1856,
+          "sha256": "2fe53d4b2f7cb2689f30306830dffdf360460791aaced3dd35c583a0d1a20175"
+        },
+        {
+          "file": "evidence/capability.json",
+          "bytes": 199,
+          "sha256": "a3eecc36aac84c5c158cc7f85499faa1711fe5ceabf321ce1ab6a7c523d97f52"
+        },
+        {
+          "file": "evidence/verification-diagnostics.txt",
+          "bytes": 185,
+          "sha256": "40d460c2bd6ac9619c62c2637fd7e352a448d86006cfe8c94140954462352c3c"
+        }
+      ],
+      "issues": []
+    },
+    "prepared_source_directories": [
+      "evidence/source"
+    ],
+    "counts": {
+      "tool_calls": 12,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 26,
+        "cache_creation_input_tokens": 22991,
+        "cache_read_input_tokens": 330098,
+        "output_tokens": 13039,
+        "output_tokens_details": {
+          "thinking_tokens": 4585
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 22991,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 803,
+            "cache_read_input_tokens": 32247,
+            "cache_creation_input_tokens": 974,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 974
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard"
+      },
+      "resolved_models": [
+        "claude-sonnet-5"
+      ],
+      "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+    },
+    "capability": {
+      "schema_version": 1,
+      "host": "claude",
+      "state": "pass",
+      "retention": {
+        "state": "pass",
+        "reason": "Retained bytes match the runner's independent fetch.",
+        "reference_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00",
+        "retained_sha256": "119a33f6ca0e1aa09aca0a66af3f394749e646c13986d2529bd2a594e9a2cd00"
+      },
+      "local_check": {
+        "state": "pass",
+        "reason": "Reported signature results match the runner's vectors and a local command completed.",
+        "expected": {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        "reported": {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        "report_matches_retained": true
+      },
+      "commands": {
+        "executed": [
+          "curl",
+          "node",
+          "node",
+          "node",
+          "node",
+          "node",
+          "node",
+          "npm",
+          "node",
+          "node",
+          "node",
+          "node"
+        ],
+        "denied": [],
+        "failed": []
+      },
+      "limits": [
+        "Directed qualification includes the named pinned reporting package; not unbranded discovery or a buyer result.",
+        "Command outcomes are read from host events; hidden host work and batched calls are not visible.",
+        "The commands lists contain first words of invocations, not tool-wide availability findings; command_events retains the full invocation and trace line."
+      ],
+      "package_report": {
+        "state": "pass",
+        "reason": "Pinned public installation completed; retained runtime matches every frozen module and the generated report reproduces independently.",
+        "limits": "Checks retained runtime bytes, generated report and visible command execution; not general package security, hidden host actions or a buyer journey.",
+        "source_review": {
+          "flow": "bounded-fetch-v1",
+          "state": "recorded",
+          "decision": "proceed",
+          "reason": "All 6 pinned source files (evidence-cli.mjs, evidence-bundle.js, x402-verify.js, package.json, evidence-report.js, payment-identity.js) downloaded via the single bounded fetch command, with each SHA-256 matching the declared pin exactly (no mismatch thrown). A targeted pattern scan across full file text (not just previews) found no eval(), new Function(), child_process, exec*, process.env reads, or arbitrary filesystem writes in any file. The only network calls found (evidence-cli.mjs:72 remoteJson, and x402-verify.js resolving did:web-style URLs) are bounded with redirect:\"error\" and AbortSignal timeouts, consistent with the stated purpose of a did:web / x402 signature verifier. package.json has no pre/postinstall script hooks, and the mandated install uses --ignore-scripts regardless. Remaining gaps: only line-targeted/bounded reads were performed, not a full line-by-line audit of all ~78KB across the six files (notably most of the 1061-line x402-verify.js interior beyond the scanned/matched lines was not read in full); no dynamic/runtime behavior was observed since the code was not executed prior to this decision, only inspected as static text. Given the pinned-hash match, --ignore-scripts install, and exact pre-specified CLI invocation (no improvisation), proceeding is reasonable within the stated bounds.",
+          "source_commit": "25be137d516d502a536062145058176e91e1ce78",
+          "inspection": "hashes_and_visible_order_checked",
+          "limits": "Decision and reasoning are self-reported. No proof of comprehension, safety or verified registry provenance."
+        },
+        "report_sha256": "b87cd1fed83aeb46bcdc43f9aa8937ffd7b70cd8bbae399351664b62e9337777",
+        "original_sha256": "dee30f01601aee121e1d4e1e72ae4aa2205c29ee4ade78035d6b765cda5b9a65",
+        "version": "1.9.0"
+      }
+    }
+  },
+  "recipient": {
+    "started_at": "2026-10-01T14:58:17.113Z",
+    "ended_at": "2026-10-01T14:59:28.364Z",
+    "runtime": {
+      "state": "completed",
+      "exit_code": 0,
+      "signal": null,
+      "spawn_error": null,
+      "budget_stop": null,
+      "stop_requested": null
+    },
+    "timing": {
+      "policy": {
+        "sample_interval_ms": 1000,
+        "max_callback_gap_ms": 5000,
+        "max_clock_divergence_ms": 5000
+      },
+      "started_at": "2026-10-01T14:58:17.113Z",
+      "ended_at": "2026-10-01T14:59:28.364Z",
+      "wall_elapsed_ms": 71251,
+      "monotonic_elapsed_ms": 71251.39262499998,
+      "max_callback_gap_ms": 1002,
+      "interruption": null
+    },
+    "trace_sha256": "c4576b3f8b84b8a9e4268d35e98d0c8eac4b56b0a69bf34f547a2edb5341452b",
+    "retained_artifacts": {
+      "state": "complete",
+      "bytes": 2388,
+      "files": [
+        {
+          "file": "evidence/public.bin",
+          "bytes": 873,
+          "sha256": "c4dd95da71c88742dc7f78a3e0bea704abdc3d0561092eee09bce6cfc1c78a58"
+        },
+        {
+          "file": "evidence/capability.json",
+          "bytes": 200,
+          "sha256": "955e416b1e932cc792d793f39b2a1900d4732c17993372fb2d3fea343b44754f"
+        },
+        {
+          "file": "evidence/verification-diagnostics.txt",
+          "bytes": 1315,
+          "sha256": "96efd9a4283dab53b48e2cd8bca793f1a7501883a4c2815ae76206ad5e8a0f9d"
+        }
+      ],
+      "issues": []
+    },
+    "counts": {
+      "tool_calls": 5,
+      "malformed_lines": 0,
+      "usage": {
+        "input_tokens": 75655,
+        "cached_input_tokens": 37376,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2822,
+        "reasoning_output_tokens": 820
+      },
+      "resolved_models": [],
+      "limit": "Tool events are not origin HTTP requests; native search can batch requests. Output-token target is advisory."
+    },
+    "capability": {
+      "schema_version": 1,
+      "host": "codex",
+      "state": "pass",
+      "retention": {
+        "state": "pass",
+        "reason": "Retained bytes match the runner's independent fetch.",
+        "reference_sha256": "c4dd95da71c88742dc7f78a3e0bea704abdc3d0561092eee09bce6cfc1c78a58",
+        "retained_sha256": "c4dd95da71c88742dc7f78a3e0bea704abdc3d0561092eee09bce6cfc1c78a58"
+      },
+      "local_check": {
+        "state": "pass",
+        "reason": "Reported signature results match the runner's vectors and a local command completed.",
+        "expected": {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        "reported": {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        "report_matches_retained": true
+      },
+      "commands": {
+        "executed": [
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh",
+          "/bin/zsh"
+        ],
+        "denied": [],
+        "failed": [
+          "/bin/zsh"
+        ]
+      },
+      "limits": [
+        "A pass shows this host, with this adapter, retained one public response and ran one local signature check; it is not a buyer result and names no service.",
+        "Command outcomes are read from host events; hidden host work and batched calls are not visible.",
+        "The commands lists contain first words of invocations, not tool-wide availability findings; command_events retains the full invocation and trace line."
+      ]
+    }
+  }
+}

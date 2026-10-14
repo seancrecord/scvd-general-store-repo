@@ -3,7 +3,7 @@ import { OASF_RECORD_PATH } from "@/lib/oasf-record";
 /** Protocol scope is separate from whether anybody has indexed it. */
 export const DISCOVERY_PROTOCOLS = [
   { id: "x402", label: "x402", path: "/conformance", status: "available", scope: "Payment challenges, endpoint inspection and signed offer/receipt verification. The current quote names available checkout rails." },
-  { id: "mpp", label: "MPP", path: "/developers", status: "inspection", scope: "Read-only MPP inspection. Checkout availability is declared separately in current payment capabilities; inspection is not a promise that every product accepts MPP." },
+  { id: "mpp", label: "MPP", path: "/developers", status: "available", scope: "Read-only MPP endpoint inspection and native MPP checkout for enabled items. Current payment capabilities declare checkout availability, network and currency; inspection does not establish completed payment or delivery." },
   { id: "mcp", label: "MCP", path: "/mcp", status: "available", scope: "Remote tools for the store and a focused verifier at /mcp/verifier." },
   { id: "webmcp", label: "WebMCP", path: "/webmcp.js", status: "available", scope: "Browser tool registration on supported browsers; client support and origin-trial availability still apply." },
   { id: "erc8004", label: "ERC-8004", path: "/.well-known/agent-registration.json", status: "available", scope: "Canonical identity, service links and endpoint-domain acknowledgment. Indexing and ownership do not establish reputation." },
@@ -15,3 +15,6 @@ export const DISCOVERY_PROTOCOLS = [
 ] as const;
 
 export type DiscoveryProtocol = (typeof DISCOVERY_PROTOCOLS)[number]["id"];
+
+/** The hosted inspection, described identically at its human and agent entry points. */
+export const ENDPOINT_INSPECTION_DESCRIPTION = "Free endpoint inspection: observed x402/MPP protocols, unverified advertised terms, structural findings and coverage gaps. The readiness verdict remains x402-specific. One unpaid response; no payment, settlement, delivery or artifact-signature verification.";

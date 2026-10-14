@@ -105,7 +105,9 @@ describe("the delivery intent on the real money path", () => {
     });
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, unknown>;
-    expect(String(body["verdict"])).toContain("No undelivered sales");
+    expect(String(body["verdict"])).toContain("No unresolved overdue delivery markers in this scan");
+    expect(String(body["verdict"])).not.toContain("No undelivered sales");
+    expect(body["recorded_delivery"]).toEqual([]);
     // And it names the blind spot it exists to cover, so the desk
     // explains itself to whoever lands on it mid-incident.
     expect(String(body["blind_spot_this_covers"])).toContain(

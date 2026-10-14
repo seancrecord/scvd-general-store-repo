@@ -1,5 +1,10 @@
 # Research Comparison — September 24, 2026
 
+Updated October 5: #912 merged September 24 with all required checks green.
+[Public closeout](../research/research-comparison-2026-10-05/README.md) confirms
+the deployed product, unpaid HTTP/MCP quotes, an active Coinbase index entry
+and AgentCash origin discovery. Paid/buyer qualification remains deferred.
+
 Release preparation on `codex/research-comparison-release`, integrated with
 main at `eedbcb56` after the keeper authorized release, then reconciled with
 the documentation-only `dee13f08` update and Calling Card/buyer-cohort main
@@ -65,8 +70,8 @@ The practice counter and the current UCP commerce catalog include the item.
 Existing main already shares OpenAPI payment-header definitions; shorter repeated
 payment wording and shared MCP descriptions preserve the catalog-size limits.
 The product stays in the generated buy family already covered by the feature
-register; it adds no standalone room or API family. No external directory
-listing, crawl or Coinbase routing has been verified for this undeployed item.
+register; it adds no standalone room or API family. The October 5 closeout records external discovery and the validator’s active
+index reading. It does not establish Coinbase routing or a paid buyer journey.
 
 The free alternative is `POST /api/look/v1` with `{"url":"..."}`, once per
 endpoint, plus the separate free preflight and host-history views. It is a live

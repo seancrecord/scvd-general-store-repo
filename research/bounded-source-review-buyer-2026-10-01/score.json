@@ -1,0 +1,380 @@
+{
+  "schema_version": 2,
+  "discovery": {
+    "attempts": 0,
+    "pass": 0,
+    "fail": 0,
+    "incomplete": 0
+  },
+  "directed": {
+    "attempts": 4,
+    "pass": 0,
+    "fail": 3,
+    "incomplete": 1
+  },
+  "distinct_hosts_completed": 0,
+  "limitation": "Controlled cold usability evidence only; no organic adoption, paid completion or universal readiness claim.",
+  "capability": {
+    "plan_sha256": "a9873f1b49516b9b455bb358abefe533cd64f32e9fd15bf77cb256841f72a88b",
+    "source_sha256": "44ba5b016cb2943310fc56528d0962226cdef8d0c67a4dc1aaecd4018a435439",
+    "hosts": {
+      "codex": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      },
+      "claude": {
+        "state": "pass",
+        "retention": "pass",
+        "local_check": "pass",
+        "denied": []
+      }
+    }
+  },
+  "scorer_sha256": "75b34366f5a074fe7b774ff0f7557792d8d506b8530c906dad844d9f6a661199",
+  "plan_sha256": "a9873f1b49516b9b455bb358abefe533cd64f32e9fd15bf77cb256841f72a88b",
+  "runs": [
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r1",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Native trace shows access to the public guide and the unpaid merchant response. Claude uses WebFetch summaries; no full-guide comprehension is inferred.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "236594e2223d88141b059e029a6fb6e5794cbba8b800fc5cf1258ae5cb6be530"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Direct unpaid response for the exact endpoint observed. Signed observation and signature acceptance are separate.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "236594e2223d88141b059e029a6fb6e5794cbba8b800fc5cf1258ae5cb6be530"
+            },
+            {
+              "file": "evidence/corpus-10.body",
+              "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+            }
+          ]
+        },
+        "decide": {
+          "state": "incomplete",
+          "reason": "Native run stopped on observed tool call 21 against the frozen 20-call limit; no completed final. One retained report verifies the exact September 21 row, but the buyer was correcting a malformed header serialization when stopped. A copied source pin caused an earlier acquisition failure; actual retained source bytes match the frozen pins. Partial valid cryptography is not a completed explanation.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "236594e2223d88141b059e029a6fb6e5794cbba8b800fc5cf1258ae5cb6be530"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Retained original signed snapshot and separately fetched key record; controller hashes match. Recipient supply and eligibility remain separate gates.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "236594e2223d88141b059e029a6fb6e5794cbba8b800fc5cf1258ae5cb6be530"
+            },
+            {
+              "file": "evidence/corpus-10.body",
+              "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+            },
+            {
+              "file": "evidence/issuer-key.body",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "A completed, uninterrupted recipient with hash-bound runtime and final trace is required.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "236594e2223d88141b059e029a6fb6e5794cbba8b800fc5cf1258ae5cb6be530"
+            },
+            {
+              "file": "evidence/corpus-10.body",
+              "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+            },
+            {
+              "file": "evidence/issuer-key.body",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ],
+          "signature": true
+        }
+      },
+      "usable": "incomplete",
+      "verification": {
+        "state": "incomplete",
+        "reason": "A completed, uninterrupted recipient with hash-bound runtime and final trace is required.",
+        "signature": true
+      },
+      "exclusions": [
+        "Runtime did not complete; retained stage findings are partial.",
+        "Run reached tool_calls cap; full completion unproven."
+      ],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r1",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Native trace shows access to the public guide and the unpaid merchant response. Claude uses WebFetch summaries; no full-guide comprehension is inferred.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "6081f59ce1659988b1a04881dbea344cd9969ec35c524f46650b5feecc2ac1b1"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Direct unpaid response for the exact endpoint observed. Signed observation and signature acceptance are separate.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "6081f59ce1659988b1a04881dbea344cd9969ec35c524f46650b5feecc2ac1b1"
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "Buyer final at trace 103 and decision-summary.json claim no independent signed historical observation exists because lionx402 is not textually present in corpus/index.json. That index lists snapshot metadata, not merchants; its own verification field says to fetch each linked snapshot. No snapshot was fetched. This is an unsupported absence claim, not a failed signature. Its capabilities-only description also omits the separately documented corpus workflow.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "6081f59ce1659988b1a04881dbea344cd9969ec35c524f46650b5feecc2ac1b1"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No original signed snapshot retained; an unsigned summary or index cannot substitute.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "6081f59ce1659988b1a04881dbea344cd9969ec35c524f46650b5feecc2ac1b1"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No native signature verification of an original observation. Refusing an unsigned input is not a failed signature on a signed original.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "6081f59ce1659988b1a04881dbea344cd9969ec35c524f46650b5feecc2ac1b1"
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "codex-directed-r2",
+        "host": "codex",
+        "model": "gpt-5.6-luna",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Native trace shows access to the public guide and the unpaid merchant response. Claude uses WebFetch summaries; no full-guide comprehension is inferred.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "74ce0529596648cba94e047fb441404ea532d32d66ed6cb9e1bcf557ffa7f236"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Direct unpaid response for the exact endpoint observed. Signed observation and signature acceptance are separate.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "74ce0529596648cba94e047fb441404ea532d32d66ed6cb9e1bcf557ffa7f236"
+            },
+            {
+              "file": "evidence/snapshot-10.json",
+              "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+            }
+          ]
+        },
+        "decide": {
+          "state": "pass",
+          "reason": "Buyer retains and independently verifies snapshot 10 with Node Ed25519, compares the published key and digest, and limits authenticated history to the exact September 21 row. Journal names retry-key-not-in-challenge and signed-offers-not-in-challenge as structural advisories; final explicitly leaves retry behavior unverified. It voluntarily declines npm installation after its own verification; installation is not mandatory. No current delivery, settlement or independent issuer identity is asserted.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "74ce0529596648cba94e047fb441404ea532d32d66ed6cb9e1bcf557ffa7f236"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "pass",
+          "reason": "Retained original signed snapshot and separately fetched key record; controller hashes match. Recipient supply and eligibility remain separate gates.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "74ce0529596648cba94e047fb441404ea532d32d66ed6cb9e1bcf557ffa7f236"
+            },
+            {
+              "file": "evidence/snapshot-10.json",
+              "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ]
+        },
+        "verify": {
+          "state": "fail",
+          "reason": "Recipient misunderstood evidence scope.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "74ce0529596648cba94e047fb441404ea532d32d66ed6cb9e1bcf557ffa7f236"
+            },
+            {
+              "file": "evidence/snapshot-10.json",
+              "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+            },
+            {
+              "file": "evidence/issuer-key.json",
+              "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+            }
+          ],
+          "signature": true
+        }
+      },
+      "usable": "fail",
+      "verification": {
+        "state": "fail",
+        "signature": true,
+        "reason": "Recipient misunderstood evidence scope."
+      },
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    },
+    {
+      "schema_version": 2,
+      "cell": {
+        "id": "claude-directed-r2",
+        "host": "claude",
+        "model": "sonnet",
+        "lane": "directed",
+        "verification": "prompted",
+        "entry": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md"
+      },
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "stages": {
+        "discover": {
+          "state": "not_applicable",
+          "reason": "Supplied entry URL; no discovery claim."
+        },
+        "connect": {
+          "state": "pass",
+          "reason": "Native trace shows access to the public guide and the unpaid merchant response. Claude uses WebFetch summaries; no full-guide comprehension is inferred.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "2b99520796cbb8fd43ea37828513bb7e9133cc20c2c856996a3435ed1eb29f72"
+            }
+          ]
+        },
+        "check": {
+          "state": "pass",
+          "reason": "Direct unpaid response for the exact endpoint observed. Signed observation and signature acceptance are separate.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "2b99520796cbb8fd43ea37828513bb7e9133cc20c2c856996a3435ed1eb29f72"
+            }
+          ]
+        },
+        "decide": {
+          "state": "fail",
+          "reason": "Final at trace 85 correctly labels host history unsigned and says cited originals were not fetched or verified. However its last limitations bullet states the shared receiving address indicates only shared custodial/facilitator infrastructure. The supplied caveat offers these as possible explanations and explicitly does not establish operator relationships or cause. Shared address alone cannot establish that infrastructure explanation. Missing signed-original acquisition and verification remain separate incomplete stages.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "2b99520796cbb8fd43ea37828513bb7e9133cc20c2c856996a3435ed1eb29f72"
+            }
+          ]
+        },
+        "obtain": {
+          "state": "incomplete",
+          "reason": "No original signed snapshot retained; an unsigned summary or index cannot substitute.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "2b99520796cbb8fd43ea37828513bb7e9133cc20c2c856996a3435ed1eb29f72"
+            }
+          ]
+        },
+        "verify": {
+          "state": "incomplete",
+          "reason": "No native signature verification of an original observation. Refusing an unsigned input is not a failed signature on a signed original.",
+          "evidence": [
+            {
+              "file": "events.jsonl",
+              "sha256": "2b99520796cbb8fd43ea37828513bb7e9133cc20c2c856996a3435ed1eb29f72"
+            }
+          ]
+        }
+      },
+      "usable": "fail",
+      "verification": null,
+      "exclusions": [],
+      "catalogue_absence": "unverified"
+    }
+  ]
+}

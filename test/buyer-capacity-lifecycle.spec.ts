@@ -36,7 +36,7 @@ beforeAll(() => {
 afterEach(() => { settlementFixture = "none"; settlementTime = undefined; vi.restoreAllMocks(); vi.setSystemTime(NOW); });
 async function fixture(network = laborNetworks()[0]!) {
   const item = items.find(row => row.id === "the_collab")!, menu = MENU_ITEMS.find(row => row.id === item.id)!;
-  const args = { ...baseline(item), detail: `SCVD-E2E capacity lifecycle ${crypto.randomUUID()}` };
+  const args = { ...await baseline(item), detail: `SCVD-E2E capacity lifecycle ${crypto.randomUUID()}` };
   const quote = await call(item, "mcp", args, shelves(item)[0]!);
   const terms = quote.offers.find(offer => offer.network === network)! as PaymentRequirements;
   expect(terms).toBeDefined();

@@ -6,6 +6,7 @@ export interface DefectClass {
   costs: string;
   detectable: "unpaid" | "paid";
   our_signal: string | null;
+  verdict_signal?: string;
   falsified_by: string;
   repair_hint: string;
   buyer_hint: string;

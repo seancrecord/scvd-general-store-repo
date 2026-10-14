@@ -71,13 +71,14 @@ export interface Env {
   /** A2A results need read-after-write consistency; unavailable storage refuses new tasks. */
   A2A_KITS?: DurableObjectNamespace<import("@/services/a2a-kit").A2AKitStore>;
   A2A_TASKS?: DurableObjectNamespace<import("@/services/a2a-tasks").A2ATaskStore>;
+  /** Per-brief reservations and private evidence; missing storage refuses contribution work. */
+  CONTRIBUTION_TASKS?: DurableObjectNamespace<import("@/services/contribution-task").ContributionTask>;
   /**
    * One claim at a time per bounty (2026-09-09). Optional like the
    * rest: a deployment without it keeps the guarantees the board had
    * before — the KV replay guard and the chain — rather than refusing
    * every walker because a lock is missing.
    */
-  CONTRIBUTION_TASKS?: DurableObjectNamespace<import("@/services/contribution-task").ContributionTask>;
   BOUNTY_CLAIM_LOCKS?: DurableObjectNamespace<
     import("@/services/bounty-claim-locks").BountyClaimLocks
   >;
@@ -199,6 +200,8 @@ export interface Env {
   /** Explicit checkout enablement; never inferred from another chain. */
   ARBITRUM_PAY_TO?: string;
   WORLD_PAY_TO?: string;
+  /** Own Arc Gateway receiving address; absent means no Arc checkout offer. */
+  ARC_PAY_TO?: string;
   WORLD_RPC_URL?: string;
   WORLD_RPC_URL_PRIMARY?: string;
   WORLD_RPC_URL_SECONDARY?: string;
@@ -566,6 +569,8 @@ export interface OrderRecord {
   created_at: string;
   sla_hours: number;
   paid_usdc: number;
+  /** Immutable admission evidence; later finality lives on the purchase. */
+  gateway_payment_at_issue?: import("@/lib/arc-gateway").GatewayPayment;
   tip_usdc: number;
   payer?: string;
   agent_name?: string;
@@ -629,6 +634,9 @@ export interface Certificate {
   network?: string;
   payer?: string;
   settlement_tx?: string;
+  /** Acceptance at issue time, separate from chain settlement; never revised after signing. */
+  gateway_payment?: import("@/lib/arc-gateway").GatewayPayment;
+  accepted_usdc?: number;
   /**
    * THE TRADE COUNTER'S FOUR (2026-09-03, services/trade-counter.ts).
    * A sale that came in through a marketplace's trade account was
@@ -698,6 +706,25 @@ export interface Certificate {
    * honored; the mandate's own scope says whose claim those are.
    */
   mandate_id?: string;
+  /**
+   * THE CITED ARTIFACT, added 2026-10-01. Any item, optional: one
+   * line naming an artifact that lives OUTSIDE this store — the
+   * approval, intent or session receipt the buyer's own runtime
+   * signed before it came here — as `<format>:<reference>`, the
+   * format a short token for the envelope kind (dsse, jws, …) and the
+   * reference the artifact's own id or digest as its issuer spells
+   * it. Recorded verbatim and signed, the same law as purpose: an
+   * unsigned link to an outside approval would be forgeable onto
+   * anyone's receipt. Never fetched, never verified, never resolved
+   * by this store — that is the difference from mandate_id, which
+   * resolves to a record WE hold. What the signature proves: that
+   * the buyer cited this reference at purchase time. Whether the
+   * artifact exists, verifies, or says what the buyer implies is for
+   * its own verifier; the certificate just gives the two chains a
+   * shared link held by a party to neither. Seats, not occupants: no
+   * vendor is named in the schema.
+   */
+  cited_artifact?: string;
   /**
    * The maker's mark: who chose or made this, for the shelves where a
    * buyer could not otherwise tell. "keeper" a person did it for you,

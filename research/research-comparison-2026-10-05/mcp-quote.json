@@ -1,0 +1,59 @@
+{
+  "observed_at": "2026-10-05T19:46:40.219282+00:00",
+  "url": "https://scvd.store/mcp",
+  "request_body": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "buy_observation",
+      "arguments": {
+        "item_id": "research_comparison"
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "response_sha256": "2e5e41e977210e410a5082b99f5d0687e3364dd359985cd190ebe21fb654c60d",
+  "body": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32602,
+      "message": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased. Nothing charged.",
+      "data": {
+        "charged": false,
+        "code": "bad_request",
+        "error": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased. Nothing charged.",
+        "input_field": "urls",
+        "required_params": [
+          "urls"
+        ],
+        "input_contract_url": "https://scvd.store/menu/research_comparison?view=compact",
+        "issues": [
+          {
+            "field": "urls",
+            "code": "required",
+            "location": "arguments"
+          }
+        ],
+        "retry_same_request": false,
+        "next_step": {
+          "method": "GET",
+          "url": "https://scvd.store/menu/research_comparison?view=compact",
+          "payment_required": false,
+          "mcp": {
+            "url": "https://scvd.store/mcp",
+            "tool": "find_in_catalog",
+            "arguments": {
+              "item_id": "research_comparison"
+            }
+          }
+        },
+        "next_action": "Read the free input contract for prices and required fields, correct the inputs, then retry the same purchase. No charge was taken."
+      }
+    }
+  }
+}

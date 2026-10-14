@@ -1,0 +1,24 @@
+{
+  "recorded_at": "2026-09-28 16:55:22 UTC",
+  "status": "sent_verified_awaiting_reply",
+  "comment_id": 5874641977,
+  "comment_url": "https://github.com/Merit-Systems/x402scan/issues/1197#issuecomment-5874641977",
+  "posted_by": "seancrecord",
+  "body": "Thanks, Salman — we completed the free unpaid check on September 28.\n\n- Your new OpenAPI and reliability URLs returned 200. The reliability response reports the September 28 13:05:08 UTC profile timestamp and both readiness flags as true.\n- At 16:30 UTC, your exact synthetic POST returned 402. The decoded PAYMENT-REQUIRED header matches the response body: x402 v2, Base USDC, exact/EIP-3009, 0.005 USDC, 60-second timeout.\n- The synthetic input and Bazaar discovery data validate against their published schemas.\n\nOne clarification: your update mentions `HOLD_PAPER`, while OpenAPI allows `PROMOTE`, `HOLD`, or `OBSERVE`. Does the paid response normalize the internal state, or should that enum change? We have not observed a paid response violating it.\n\nOur standard Launch Check also needs a request-body capability before it can preserve your required `pair` and `tax`; that is our instrument limitation. We sent no payment, so settlement, paid output and its freshness remain unverified. We can share the captured responses and offline checks. Would these observations help you confirm or change the public contract?",
+  "authorization": "User explicitly authorized drafting and sending the results reply.",
+  "presend": {
+    "comments_checked": true,
+    "prior_comment_count": 3,
+    "new_clarification_found": false,
+    "schema_status": 200,
+    "recommendation_enum": [
+      "PROMOTE",
+      "HOLD",
+      "OBSERVE"
+    ],
+    "schema_capture": "captures/bix-results-presend-schema.json"
+  },
+  "verification": "Fetched posted comment and matched its exact body.",
+  "payment_sent": false,
+  "partner_usefulness": "unknown"
+}

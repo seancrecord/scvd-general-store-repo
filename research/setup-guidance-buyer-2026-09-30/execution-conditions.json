@@ -1,0 +1,29 @@
+{
+  "series": {
+    "buyers-conditions.jsonl": {
+      "samples": 124,
+      "ac_samples": 0,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "20d6cf71c4972e22b4f86ab375592b79d193da6bf7f5a8b8c097ece0a1c96737",
+      "battery_samples": 124
+    },
+    "codex-directed-r1-recipient-conditions.jsonl": {
+      "samples": 2,
+      "ac_samples": 0,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "99aa89aa8c6b6fd3e7b7140f532ef204a4e11788a12a1bf789fb5b6df3857267",
+      "battery_samples": 2
+    },
+    "qualification-conditions.jsonl": {
+      "samples": 80,
+      "ac_samples": 0,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "1534e12aa72f23443216e6f977d5e8c5cff27b29847f7cc52399fa28fae9145d",
+      "battery_samples": 80
+    }
+  },
+  "limits": "Sample observations, not continuous proof of host state. No controller tests ran during native acquisition. Runtime timing gaps and stops are recorded individually in runs.json; no native attempt was restarted or granted a larger budget."
+}

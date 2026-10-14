@@ -61,8 +61,8 @@ export function renderFunnelPage(
     <p>${escapeHtml(report.input_gate_reading)}</p>
     <p><small>Printed above the tables on purpose. Every row below that
     names a missing input invites the conclusion that required inputs are
-    where the shelf loses people — and the doors requiring none are the
-    control group for that claim, sitting on the same page. Until
+    where the shelf loses people. Doors requiring none provide a comparison,
+    but different clients, items and observation windows prevent a causal conclusion. Until
     2026-09-21 this page called a bare price ask a LOCKED DOOR, which
     pointed at a discoverability fix that had already shipped
     (required_params has ridden the PAYMENT-REQUIRED description since

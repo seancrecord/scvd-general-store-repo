@@ -44,7 +44,7 @@ async function fillQueue(item: MenuItem, kind: Saturation) {
 for (const menu of labor) for (const door of ["mcp", "mcp-standard"] as const) {
   for (const network of laborNetworks()) for (const kind of ["item", "house", "unknown"] as const) for (const paying of [false, true]) {
     it(`${menu.id} ${door} ${network} ${kind} ${paying ? "signed" : "unpaid"}: refuses new labor when queue capacity is unavailable`, async () => {
-      const item = items.find(i => i.id === menu.id)!, args = { ...baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
+      const item = items.find(i => i.id === menu.id)!, args = { ...await baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
       const quote = await call(item, "mcp", args, shelves(item)[0]!);
       expect(quote.quote).toBe(true);
       const payment = await signLabor(quote.offers.find(o => o.network === network)!);

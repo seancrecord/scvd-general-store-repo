@@ -1,5 +1,8 @@
 import { contributionRoutes } from "@/routes/contribution-tasks";
+import { sellerDeclarationRoutes } from "@/routes/seller-declarations";
+import { evidencePilotRoutes } from "@/routes/evidence-pilot";
 import { a2aDeskRoutes } from "@/routes/a2a-desk";
+import { documentDiscovery } from "@/lib/document-discovery";
 import { whereToLookNext } from "@/lib/store-links";
 import { signalStore } from "@/services/signal-store";
 import { watchSweepGaps, type WatchSweepReport } from "@/services/watch-sweep";
@@ -103,6 +106,7 @@ import {
   beforeYouPayRoutes,
   lookRoutes,
   goodBuyerRoutes,
+  spotEvidenceRoutes,
   preflightRoutes,
   discoveryRoutes,
   ucpRoutes,
@@ -184,7 +188,10 @@ const app = new Hono<HonoEnv>();
 for (const middleware of edgeMiddleware) {
   app.use("*", middleware);
 }
+// Discovery does not enter the paid-door chain shared with the doors Worker.
+app.use("/:document{(?!api/buy(?:/|$)).*}", documentDiscovery);
 
+app.route("/", evidencePilotRoutes);
 app.route("/", storefrontRoutes);
 app.route("/", developerRoutes);
 app.route("/", deprecationRoutes);
@@ -200,6 +207,7 @@ app.route("/", okfRoutes);
 app.route("/", defectRoutes);
 app.route("/", noticeRoutes);
 app.route("/", standingNoteRoutes);
+app.route("/", sellerDeclarationRoutes);
 app.route("/", trustRoutes);
 app.route("/", agentAuthRoutes);
 app.route("/", askRoutes);
@@ -227,6 +235,7 @@ app.route("/", beforeYouPayRoutes);
 app.route("/", lookRoutes);
 /* The signed half of the same reading, served forever and free. */
 app.route("/", goodBuyerRoutes);
+app.route("/", spotEvidenceRoutes);
 app.route("/", discoveryRoutes);
 app.route("/", ucpRoutes);
 app.route("/", ucpCheckoutRoutes);
@@ -1309,14 +1318,15 @@ const worker: ExportedHandler<Env> = {
      * /admin/recount has to stop at a cap because a page that times out
      * is worse than one that says how far it got — which makes its
      * figure a window, not a month. Nothing renders here, so this walk
-     * reads every row and the published correction is a real month
-     * total. It recurs because the crawler table keeps gaining entries
+     * lists retained rows and reuses cached inputs for unchanged pages.
+     * A bounded value-read budget warms the cache across invocations; only
+     * a complete pass can publish a month correction. It recurs because the crawler table keeps gaining entries
      * and every entry retroactively changes what old rows mean; a
      * correction computed once is a correction with an expiry date
      * nobody wrote down.
      */
     ctx.waitUntil(
-      recomputeCorrections(env).then(
+      recomputeCorrections(env, new Date(), { cache: true }).then(
         () => undefined,
         (error) =>
           sendAlert(env, {

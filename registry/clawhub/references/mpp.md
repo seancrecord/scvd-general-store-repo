@@ -2,7 +2,18 @@
 
 Use the read-only preflight tool or
 `POST https://scvd.store/api/preflight/v1` with the public endpoint URL.
-Inspect the actual returned `protocols_spoken` and `mpp` block.
+Read the returned `inspection` block when present: preserve its protocol set,
+unverified term summaries, structural findings, coverage and gaps. Report
+`inspection.observed_at`; missing observation time remains unknown.
+Older reports may lack this view. Read their actual `protocols_spoken`, `mpp`
+and `mpp_core` fields rather than constructing a replacement observation.
+
+The `mpp` and `mpp_core` blocks are separate, versioned readings. Keep each
+battery, cited source and named result with its own scope; do not combine their
+checks into a global pass. The core block's `unmeasured` state and unmeasured
+checks are gaps, not failures or proof of absence. A missing block says nothing
+about whether the endpoint supports MPP. Inspection signatures remain
+`not_checked`, even when challenge-shape checks pass.
 
 The top-level preflight `verdict` retains its x402 meaning. An MPP-only endpoint
 can therefore be `not_ready` for x402 while advertising MPP. Describe the
@@ -25,3 +36,7 @@ by that instrument; do not invent a result from this reference.
 
 For historical evidence, preserve the fields present in each dated record.
 Older records without protocol-specific observations remain unmeasured.
+With `look_at_door`, the fresh preflight is under `now.the_door`; its inspection
+time belongs to that fresh response. The headline and live-versus-held verdict
+comparison concern x402. Read the cited host-history rows for their separate
+MPP observations; never fill an older signed row from the current response.

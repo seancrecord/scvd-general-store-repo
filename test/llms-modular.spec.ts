@@ -1,3 +1,4 @@
+// 2026-10-12: add the consumer files index beside the digested index; HEAD baseline passed before re-pinning.
 import { env, SELF } from "cloudflare:test";
 import type { Env } from "@/types";
 import { describe, expect, it } from "vitest";
@@ -1157,17 +1158,74 @@ const BASE = "https://scvd.store";
 // Integrated with the AEO SDK/protocol corrections on 2026-09-28. Restoring
 // only declined.ts to origin/main reproduced both main pins (14/14 passed);
 // these pins preserve both that correction and main's purchase-template clause.
-// 2026-10-13: six shared job answers in the detailed menu-area guide, with
-// a short index pointer; the full answers would exceed the index budget.
-// Restoring only llms.ts to HEAD reproduced both preceding pins (14/14).
-// The second increment adds posted contribution terms and the board pointer.
-// 2026-10-14: the earning answer now names contribution work first and separates
-// manual contribution payment from shopping authorizations. Restoring only those
-// two answers reproduced both October 13 pins (14/14); no other guide text moved.
+// 2026-09-28, PS7: clarify mixed MPP/x402 responses and add the shared
+// inspection guidance. Reversing only those two edits reproduced both
+// prior pins (14/14 tests); these pins retain the reviewed new wording.
+// 2026-09-30: re-taken for one clause in spot_check's first house rule —
+// "(a url is read for its hostname)" — the guide prints each listing's
+// constraints on its shelf line, so the decline desk's host-from-url
+// alias moved both pins and nothing else did. Verified the way this file
+// asks: with src/store/menu-utility.ts alone restored to main, e4488cc0
+// here and 21a941ef below reproduced (14/14), and this copy reproduces
+// the new ones.
+// 2026-09-30, main: MPP checkout scope and source package versions now flow
+// through the shared discovery copy. Main source reproduces both old pins
+// (14/14 tests); reversing only that scope and those labels in the captured
+// guide also reproduces both exactly. Shorten the package-link sentence
+// to retain the existing reader budget. No other guide wording changed.
+// 2026-09-30, THE MERGE of those two: both halves re-pinned this line for
+// their own reasons — this branch for spot_check's house-rule clause, main
+// for the MPP checkout scope and package versions — and the merged guide
+// carries BOTH, so neither half's digest describes it. Verified inside the
+// merged tree: with menu-utility.ts alone restored to main, main's c62925d7
+// here and 9a58296b below reproduced (14/14); these copies reproduce the
+// merged document.
+// 2026-10-01: the Spot Check additions, their free alternatives and refusal
+// vocabulary change the derived guide. Stashing this release reproduced
+// both main pins (14/14); restoring it reproduced the new pins below.
+// 2026-10-01: verifier source 1.10.0 changes only its derived package label.
+// Restoring only package.json version 1.9.0 reproduced both prior pins
+// (14/14); source 1.10.0 produces these two digests. No prose was edited.
+// Same-day draft-check source 1.11.0 changes that label once more.
+// The 1.9.0 reversal reproduced the old pins (14/14); 1.10.0 reproduced
+// the intermediate digests above, and these pins cover 1.11.0 only.
+// 2026-10-02: S8 v3 adds two readiness checks, derives current guide links,
+// retains v1/v2 links, and updates the audit shelf criteria. The unchanged
+// base reproduced both previous pins (14/14); the reviewed S8 diff produces
+// the new pair. Existing signed artifacts are not part of this guide pin.
+// 2026-10-06: scvd-defects source 0.22.0 changes only its derived package
+// label. Restoring only defects/package.json to 0.21.0 reproduced both
+// previous pins (14/14 tests); the intended version produces this pair.
+// 2026-10-07: narrow the shared signature/expiry claim to signed observations
+// and explicitly name unsigned inspection. Before changing position.ts, both
+// prior pins passed (14/14); this one-sentence source change yields this pair.
+// 2026-10-07: joined the bounded pilot offer and index pointer to main's
+// unsigned-inspection wording. Removing only the two pilot paragraphs
+// reproduced main's pins (14/14); these pins cover both intentional changes.
+// 2026-10-07: keeper writing adds attribution, dates and retained ranking evidence.
+// Restoring only askedForBlock to main 55d8da1c reproduced both old pins
+// (14/14 tests). The short index links to the complete evidence separately.
+// Follow-through: retain the compact vocabulary section verbatim in every
+// guide and file detailed writing under trust as its own complete section.
+// The previous pins passed in CI; only this reviewed section move changes them.
+// Re-pinned 2026-10-10 for the authorized offer-path guidance, shared operator
+// proposition and Aura Walk value sentence. No section was removed.
+// 2026-10-10: delivery-order limits and recovery-handle locations were
+// corrected together. Restoring only llms.ts, DELIVERY_ORDER and the recovery
+// guidance to 3d50daba reproduces both prior pins (39/39 focused checks).
+// The new pins cover those reviewed sentences, with all guide sections intact.
+// 2026-10-10: merging seller declarations adds only its free guidance and
+// history pointer. Restoring main llms.ts reproduces both prior pins (14/14).
+// 2026-10-12: personal shopper links and removal of redundant navigation prose.
+// Restoring llms.ts from the parent reproduces both prior pins (14/14).
+// 2026-10-12: one Arc clause distinguishes signed acceptance from settlement.
+// Restoring only llms.ts to main 2e7a52fa reproduces both old pins (14/14).
+// 2026-10-14: integrated earning answers and contribution guide. Restoring
+// only llms.ts to main cbf68660 reproduced both main fingerprints (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a231bc78f285835074342996961b2c02327018673be8b1358a23ae6265a08d31";
+  "cd5761a14d808affb6f85878a5a07df243834ff721381b61916658d1459525af";
 
-/** The llmstxt.org recommendation the index is being held to. */
+/** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
 
 function normalize(text: string): string {
@@ -1262,7 +1320,13 @@ describe("nothing was rewritten", () => {
       // buy_url_template with the slots filled, never at the bare door.
       // Verified the way this file asks: with that clause alone reverted,
       // 1ac33b17 reproduced, and this copy reproduces the new one.
-      "890507edc82f3ed54e5670608e497efe6619a64605d3e491d9a95edfac401230",
+      // 2026-09-30: re-taken for spot_check's house-rule clause (see the
+      // note on GUIDE_DIGEST_BEFORE_THE_SPLIT); with menu-utility.ts alone
+      // restored to main, 21a941ef reproduced. Then across the merge with
+      // main's own 09-30 re-pin: with the same file restored, main's
+      // 9a58296b reproduced, and this copy is the merged guide.
+      // 2026-10-06: source 0.22.0 package label, verified above.
+      "b55b113a9551d359beb6672d6a83742768066f2d063a23f278d7f9d4fdd98365",
     );
   });
 
@@ -1283,7 +1347,7 @@ describe("nothing was rewritten", () => {
 });
 
 describe("the index is an index", () => {
-  it("fits the convention's recommendation, with room", async () => {
+  it("fits the existing reader budget, with room", async () => {
     const index = await body("/llms.txt");
     expect(index.length).toBeLessThan(INDEX_CHARACTER_BUDGET);
     // And is genuinely smaller than what it replaced, not trimmed to

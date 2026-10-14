@@ -4,6 +4,8 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { takeCorpusSnapshot } from "@/services/corpus";
 import { DEFECT_CLASSES } from "@/store/defect-vocabulary";
 import { delisting } from "@/store/delisted";
+import { CORPUS_DATASET_DESCRIPTION, CORPUS_DATASET_LICENSE } from "@/store/corpus-dataset";
+import { organizationRef } from "@/lib/jsonld";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -74,6 +76,11 @@ describe("one page per observed host", () => {
     const dataset = jsonLd.find((b) => b["@type"] === "Dataset")!;
     expect(dataset["sameAs"]).toBe(`${BASE}/corpus/host/ready-door.example.json`);
     expect((dataset["about"] as { url: string }).url).toBe("https://ready-door.example/");
+    expect(dataset["isPartOf"]).toMatchObject({
+      description: CORPUS_DATASET_DESCRIPTION,
+      license: CORPUS_DATASET_LICENSE,
+      creator: organizationRef(BASE),
+    });
   });
 
   it("agrees with its JSON twin on the tier", async () => {
@@ -115,6 +122,11 @@ describe("one page per signed week", () => {
     const parent = dataset["isPartOf"] as { "@id": string; identifier: { value: string } };
     expect(parent["@id"]).toBe(`${BASE}/corpus.json`);
     expect(parent.identifier.value).toMatch(/^10\.5281\/zenodo\./);
+    expect(parent).toMatchObject({
+      description: CORPUS_DATASET_DESCRIPTION,
+      license: CORPUS_DATASET_LICENSE,
+      creator: organizationRef(BASE),
+    });
   });
 
   it("serves the brief as JSON to a caller that asks for JSON, and 404s a week it does not hold", async () => {

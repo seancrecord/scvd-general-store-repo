@@ -1,0 +1,30 @@
+{
+  "read_at": "2026-09-30T13:42:36.787537+00:00",
+  "html_url": "https://github.com/seancrecord/scvd-general-store-repo",
+  "description": "scvd.store is an evidence observatory for agentic commerce. Free preflight and conformance checks on any issuer's x402 doors, offers and receipts. Every verdict is one dated observation, signed and verifiable offline. Bitcoin-anchored corpus. USDC on Base, Arbitrum One, World Chain, Polygon & Solana.",
+  "homepage": "https://scvd.store",
+  "topics": [
+    "agentic-commerce",
+    "ai-agents",
+    "api-monitoring",
+    "attestation",
+    "base",
+    "cloudflare-workers",
+    "conformance",
+    "ed25519",
+    "gemini-cli-extension",
+    "mcp",
+    "mcp-server",
+    "micropayments",
+    "observability-data",
+    "observatory",
+    "polygon",
+    "solana",
+    "usdc",
+    "verification",
+    "x402",
+    "x402-protocol"
+  ],
+  "default_branch": "main",
+  "pushed_at": "2026-09-30T13:30:17Z"
+}

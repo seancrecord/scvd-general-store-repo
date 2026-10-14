@@ -8,7 +8,7 @@ import mcp from '../../mcp-starter/package.json';
 // The public names and descriptions belong to the packages, not a second catalog.
 export const DEVELOPER_PACKAGES = [verifier, signer, preflight, corpus, defects, mcp].map(p => ({
   href: `https://www.npmjs.com/package/${p.name}`,
-  label: p.name,
+  label: `${p.name} · source ${p.version}`,
   what: p.description,
 }));
 const source = preflight.repository.url.replace(/^git\+/, '').replace(/\.git$/, '');

@@ -1,3 +1,5 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
+import { type GatewaySale, type GatewaySummary, emptyGatewaySummary, isGatewayFinal } from "@/services/gateway-sales";
 import { isHouseWallet } from "@/lib/channel";
 import type { MppHouseCorrection, MppSalesSummary } from "@/services/mpp-sales";
 import { DurableObject } from "cloudflare:workers";
@@ -132,6 +134,16 @@ export class CounterLedger extends DurableObject<Env> {
     return sql.exec<{ evidence: string }>("SELECT evidence FROM mpp_sales ORDER BY id").toArray().map(row => row.evidence);
   }
 
+  /** One RPC and one joined snapshot per month, including later house corrections. */
+  async listMppSalesWithCorrections(): Promise<{ sale: string; correction: string | null }[]> {
+    const sql = this.ctx.storage.sql;
+    if (!sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_sales'").toArray().length) return [];
+    const corrections = sql.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'mpp_house_corrections'").toArray().length;
+    return corrections
+      ? sql.exec<{ sale: string; correction: string | null }>("SELECT s.evidence AS sale, c.evidence AS correction FROM mpp_sales s LEFT JOIN mpp_house_corrections c ON s.id = c.id ORDER BY s.id").toArray()
+      : sql.exec<{ sale: string; correction: null }>("SELECT evidence AS sale, NULL AS correction FROM mpp_sales ORDER BY id").toArray();
+  }
+
   /** One monthly source, disjoint from every legacy x402 counter. */
   async recordMppSale(sale: MppSaleEvidence): Promise<void> {
     if (!/^[a-f0-9]{64}$/.test(sale.id) || !/^\d{4}-\d{2}$/.test(sale.month) ||
@@ -178,6 +190,52 @@ export class CounterLedger extends DurableObject<Env> {
     const summary = this.rowValue<MppSalesSummary>(key);
     if (summary) await this.mirror(key, JSON.stringify(summary));
     if (!sale.house) await this.mirror(payerKey, JSON.stringify({ address: sale.payer }));
+  }
+
+  /** Idempotent batch accounting. The original authorization owns one row;
+   * a shared batch hash never merges buyers or increments the tally twice. */
+  async recordGatewaySale(sale: GatewaySale): Promise<void> {
+    if (sale.network !== ARC_NETWORK || sale.payment.reference !== `gateway:${sale.purchase_id}` ||
+      !/^0x[0-9a-f]{64}$/i.test(sale.payment.nonce) || !/^0x[0-9a-f]{40}$/i.test(sale.payer) || !/^0x[0-9a-f]{40}$/i.test(sale.recipient) ||
+      !["accepted", "received", "batched", "confirmed", "completed", "failed"].includes(sale.payment.state) ||
+      (isGatewayFinal(sale.payment) && !/^0x[0-9a-f]{64}$/i.test(sale.payment.batch_transaction ?? "")) ||
+      !/^[a-f0-9]{64}$/.test(sale.purchase_id) || !/^\d{4}-\d{2}-/.test(sale.created_at) ||
+      !/^\d+$/.test(sale.amount_atomic) || BigInt(sale.amount_atomic) <= 0n || !/^\d+$/.test(sale.tip_atomic) || BigInt(sale.tip_atomic) > BigInt(sale.amount_atomic) || typeof sale.house !== "boolean" ||
+      (sale.item !== undefined && !validMppItemKey(sale.item))) throw new Error("Invalid Gateway sale");
+    await this.ctx.storage.setAlarm(Date.now() + FLUSH_MS);
+    const rowKey = `gateway_sale:${sale.purchase_id}`, summaryKey = `gateway:summary:${sale.created_at.slice(0, 7)}`;
+    const conflict = this.ctx.storage.transactionSync(() => {
+      const sql = this.schema();
+      const previous = this.rowValue<GatewaySale>(rowKey);
+      if (previous) {
+        for (const field of ["path", "payer", "recipient", "amount_atomic", "tip_atomic", "house", "item", "created_at", "network"] as const) {
+          if (previous[field] !== sale[field]) return "Gateway sale evidence changed";
+        }
+        if (previous.payment.reference !== sale.payment.reference || previous.payment.nonce !== sale.payment.nonce) return "Gateway authorization changed";
+        if (previous.payment.state === "completed" || previous.payment.state === "failed" ||
+          (isGatewayFinal(previous.payment) && sale.payment.state !== "completed")) return;
+      }
+      const write = (key: string, value: unknown) => {
+        sql.exec("INSERT INTO rows (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", key, JSON.stringify(value));
+        sql.exec("INSERT OR IGNORE INTO dirty (key) VALUES (?)", key);
+      };
+      write(rowKey, sale);
+      if (isGatewayFinal(sale.payment) && (!previous || !isGatewayFinal(previous.payment))) {
+        const summary = this.rowValue<GatewaySummary>(summaryKey) ?? emptyGatewaySummary();
+        const channel = sale.house ? "house" : "organic";
+        summary[channel]++;
+        summary[`${channel}_amount_atomic`] = String(BigInt(summary[`${channel}_amount_atomic`]) + BigInt(sale.amount_atomic));
+        if (sale.item) (summary.by_item[sale.item] ??= { organic: 0, house: 0 })[channel]++;
+        write(summaryKey, summary);
+        if (!sale.house) write(`gateway:payer:${sale.payer.toLowerCase()}`, { address: sale.payer.toLowerCase() });
+      }
+    });
+    if (conflict) throw new Error(conflict);
+    const current = this.rowValue<GatewaySale>(rowKey);
+    if (current) await this.mirror(rowKey, JSON.stringify(current));
+    const summary = this.rowValue<GatewaySummary>(summaryKey);
+    if (summary) await this.mirror(summaryKey, JSON.stringify(summary));
+    if (current && isGatewayFinal(current.payment) && !current.house) await this.mirror(`gateway:payer:${current.payer.toLowerCase()}`, JSON.stringify({ address: current.payer.toLowerCase() }));
   }
 
   /** Point read only; an inspection never initializes or repairs storage. */

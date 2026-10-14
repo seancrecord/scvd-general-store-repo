@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "source_version": "0.2.4",
+  "manifest_fields_equal": [
+    "$schema",
+    "name",
+    "description",
+    "title",
+    "repository",
+    "version",
+    "websiteUrl",
+    "remotes"
+  ],
+  "exact_version_and_latest_read": true
+}

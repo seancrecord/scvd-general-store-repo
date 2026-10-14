@@ -16,7 +16,7 @@ function certificate(body: Obj): Obj { return Object.keys(object(body.certificat
 for (const menu of MENU_ITEMS) for (const door of ["http", "mcp", "mcp-standard"] as const) {
   it(`${menu.id} ${door}: preserves a whole emoji at the published name boundary`, async () => {
     const item = items.find(i => i.id === menu.id)!, value = "n".repeat(NAME_CAP - 1) + "🧵";
-    const args = { ...baseline(item), ...(item.id === "the_confession" ? { sign_as: value } : { agent_name: value }) };
+    const args = { ...await baseline(item), ...(item.id === "the_confession" ? { sign_as: value } : { agent_name: value }) };
     const offer = (await call(item, "mcp", args, shelves(item)[0]!)).offers[0]!;
     const bought = await sendLabor(item.id, door, args, await signLabor(offer), crypto.randomUUID());
     expect(bought.refused).toBe(false); expect(JSON.stringify(certificate(bought.body).name)).toBe(JSON.stringify(value)); expect(transfers).toBe(1);
@@ -29,7 +29,7 @@ for (const id of ["the_collab", "aura_walk", "bitcoin_anchor"]) for (const door 
     expect(limit).toBeGreaterThan(0);
     const prefix = "  SCVD-E2E vector<int> & 🧵\nExact text. ";
     const value = prefix + "x".repeat(limit - [...prefix].length - 1) + "🪡";
-    const args = { ...baseline(item), [field]: value };
+    const args = { ...await baseline(item), [field]: value };
     const offer = (await call(item, "mcp", args, shelves(item)[0]!)).offers.find(o => o.network === network)!;
     const bought = await sendLabor(id, door, args, await signLabor(offer), crypto.randomUUID());
     expect(bought.refused).toBe(false);
@@ -40,7 +40,7 @@ for (const id of ["the_collab", "aura_walk", "bitcoin_anchor"]) for (const door 
 for (const id of ["hello", "the_collab", "bitcoin_anchor"]) for (const door of ["http", "mcp", "mcp-standard"] as const) {
   it(`${id} ${door}: refuses an over-limit supplied string before quoting`, async () => {
     const item = items.find(i => i.id === id)!, field = id === "hello" ? "agent_name" : id === "bitcoin_anchor" ? "label" : "detail";
-    const limit = field === "agent_name" ? NAME_CAP : Number(object(item.spec.inputs.properties[field]).maxLength), args = { ...baseline(item), [field]: "🧵".repeat(limit + 1) };
+    const limit = field === "agent_name" ? NAME_CAP : Number(object(item.spec.inputs.properties[field]).maxLength), args = { ...await baseline(item), [field]: "🧵".repeat(limit + 1) };
     const refused = await sendLabor(id, door, args);
     expect(refused.quote).toBe(false); expect(refused.refused).toBe(true);
     expect(refused.body).toMatchObject({ code: "bad_request", charged: false, input_field: field, max_length: limit });
@@ -69,7 +69,7 @@ for (const [id, field] of [["context_anchor", "summary"], ["the_confession", "co
     const item = items.find(i => i.id === id)!, limit = Number(object(item.spec.inputs.properties[field]).maxLength);
     expect(Number.isFinite(limit)).toBe(true);
     const prefix = "  vector<int> & 🧵\n", value = prefix + "x".repeat(limit - [...prefix].length - 2) + "🪡 ";
-    const args = { ...baseline(item), [field]: value };
+    const args = { ...await baseline(item), [field]: value };
     const offer = (await call(item, "mcp", args, shelves(item)[0]!)).offers[0]!;
     const bought = await sendLabor(id, door, args, await signLabor(offer), crypto.randomUUID());
     expect(bought.refused).toBe(false);
@@ -85,7 +85,7 @@ for (const [id, field] of [["context_anchor", "summary"], ["the_confession", "co
 for (const id of ["the_confession", "graffiti_on_a_train"]) for (const door of ["http", "mcp", "mcp-standard"] as const) {
   it(`${id} ${door}: the stored buyer name agrees with its exact signed name`, async () => {
     const item = items.find(i => i.id === id)!, name = "  <i>Ada</i> & 🧵\n  ";
-    const args = { ...baseline(item), [id === "the_confession" ? "sign_as" : "agent_name"]: name };
+    const args = { ...await baseline(item), [id === "the_confession" ? "sign_as" : "agent_name"]: name };
     const offer = (await call(item, "mcp", args, shelves(item)[0]!)).offers[0]!;
     const bought = await sendLabor(id, door, args, await signLabor(offer), crypto.randomUUID());
     expect(bought.refused).toBe(false); expect(certificate(bought.body).name).toBe(name);

@@ -1,0 +1,34 @@
+[
+  {
+    "cell": "codex-directed-r1",
+    "file": "evidence/corpus-10-verification-report.md",
+    "sha256": "acd53240b37eabfd6397233de907e6eb367c12c14e6e3e92033cd056cfd35c86",
+    "byte_identical": true,
+    "exit_code": 0,
+    "command": [
+      "node",
+      "/private/tmp/scvd-bounded-source-review-buyer-2026-10-01/buyers/verifier/evidence-cli.mjs",
+      "verify-source",
+      "./evidence/corpus-10.body",
+      "--public-key",
+      "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+      "--max-bytes",
+      "33554432",
+      "--subject",
+      "https://lionx402.com/api/x402/wallet-screen-json",
+      "--format",
+      "markdown",
+      "--report-out",
+      "/private/tmp/scvd-bounded-source-review-buyer-2026-10-01/report-replay/codex-directed-r1.md",
+      "--challenge-headers",
+      "./evidence/wallet-screen-response.headers.txt"
+    ],
+    "receipt": {
+      "report_file": "/private/tmp/scvd-bounded-source-review-buyer-2026-10-01/report-replay/codex-directed-r1.md",
+      "source_sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+      "valid": true,
+      "evidence_complete": true
+    },
+    "limits": "Replays original saved headers, including literal backslash-n serialization error. The stdout-only replay has one console newline beyond file output; exact file-writing mode reproduces the retained report. No replacement supplied to native sessions. The buyer remains capped and incomplete."
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "checked": 10,
+  "rows": [
+    {
+      "file": "/private/tmp/scvd-setup-guidance-buyer-2026-09-30/qualification/codex/prompt.txt",
+      "sha256": "b4473030e0df1910fe798b4d8a9546639d9cc87f704f7aa4d2626c49623aafc6",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-setup-guidance-buyer-2026-09-30/qualification/claude/prompt.txt",
+      "sha256": "6c91b41ccc01a45cad84378ad14b7c982a670af93c0fcb106149d46036b11245",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-setup-guidance-buyer-2026-09-30/buyers/codex-directed-r1/prompt.txt",
+      "sha256": "13695dbfd0f2fb1cd8e87d03d160d3c4ca330860aa20cd02400f23ac10166918",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-setup-guidance-buyer-2026-09-30/buyers/claude-directed-r1/prompt.txt",
+      "sha256": "09bbf310b9d4361f7f6d69dda8335460783b8faefa504dec0c248c3ed0d0f8ce",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-setup-guidance-buyer-2026-09-30/buyers/codex-directed-r2/prompt.txt",
+      "sha256": "13695dbfd0f2fb1cd8e87d03d160d3c4ca330860aa20cd02400f23ac10166918",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-setup-guidance-buyer-2026-09-30/buyers/claude-directed-r2/prompt.txt",
+      "sha256": "09bbf310b9d4361f7f6d69dda8335460783b8faefa504dec0c248c3ed0d0f8ce",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-buyer-setup-acquisition-2026-10-01/qualification/codex/prompt.txt",
+      "sha256": "c51a9b4d71800449c0fe02499e6326d6e1ee990480750e758331e898aef82cc8",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-buyer-setup-acquisition-2026-10-01/qualification/claude/prompt.txt",
+      "sha256": "a9f9ffbc5d1ad4ded0c4fccab9c219d8ebf7825dc9c9279f2b4e357512a39a6d",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-source-directories-buyer-2026-10-01/qualification/codex/prompt.txt",
+      "sha256": "20d14a8d06f63133265c74264b5eb727635e0d6f6b14a54d7a8c60749a0a4dae",
+      "unchanged": true
+    },
+    {
+      "file": "/private/tmp/scvd-source-directories-buyer-2026-10-01/qualification/claude/prompt.txt",
+      "sha256": "ee89f7b2fe82483c45d9d3b0d004ca2d09cb32a2018711e84c76196a5ab31f63",
+      "unchanged": true
+    }
+  ]
+}

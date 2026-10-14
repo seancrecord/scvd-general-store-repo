@@ -1,0 +1,29 @@
+{
+  "id": "bix-unpaid-challenge",
+  "requested_url": "https://creator.linkhco.com/paid/v1/creator-edge",
+  "method": "POST",
+  "observed_at": "2026-09-28T16:30:08.751776+00:00",
+  "request_body": "{\"pair\":\"USDG\",\"tax\":1}",
+  "request_sha256": "88059687e3776335498c903eca33d9fa53109eb18cdcaf7d2fc42f159878543a",
+  "request_headers": {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "User-Agent": "scvd-partner-research/0.1 (+https://scvd.store; unpaid public reads)"
+  },
+  "payment_sent": false,
+  "authenticated": false,
+  "max_bytes": 2097152,
+  "timeout_seconds": 15,
+  "retries": 0,
+  "purpose": "Operator-requested unpaid discovery/request-preparation check.",
+  "status": 402,
+  "headers": {
+    "Date": "Mon, 28 Sep 2026 16:30:09 GMT",
+    "Content-Type": "application/json",
+    "payment-required": "eyJ4NDAyVmVyc2lvbiI6MiwiZXJyb3IiOiJwYXltZW50X3JlcXVpcmVkIiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9jcmVhdG9yLmxpbmtoY28uY29tL3BhaWQvdjEvY3JlYXRvci1lZGdlIiwiZGVzY3JpcHRpb24iOiJGb3J3YXJkLXRlc3RlZCBSb2Jpbmhvb2QgQ2hhaW4gY3JlYXRvci1mZWUgcHJvZmlsZSBkZWNpc2lvbiBzdXBwb3J0LiIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsInNlcnZpY2VOYW1lIjoiQmlYIENyZWF0b3IgRWRnZSIsInRhZ3MiOlsicm9iaW5ob29kIiwiY3JlYXRvciIsImNyeXB0byIsImRlY2lzaW9uIiwieDQwMiJdfSwiYWNjZXB0cyI6W3sic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhbW91bnQiOiI1MDAwIiwiYXNzZXQiOiIweDgzMzU4OWZDRDZlRGI2RTA4ZjRjN0MzMkQ0ZjcxYjU0YmRhMDI5MTMiLCJwYXlUbyI6IjB4ZTM2QzUwNTMyZURjZDIxQTU0RjU4QTk5MDhmMTYyNTRhNDVhZDQ0MSIsIm1heFRpbWVvdXRTZWNvbmRzIjo2MCwiZXh0cmEiOnsibmFtZSI6IlVTRCBDb2luIiwidmVyc2lvbiI6IjIiLCJhc3NldFRyYW5zZmVyTWV0aG9kIjoiZWlwMzAwOSJ9fV0sImV4dGVuc2lvbnMiOnsiYmF6YWFyIjp7ImluZm8iOnsiaW5wdXQiOnsidHlwZSI6Imh0dHAiLCJtZXRob2QiOiJQT1NUIiwiYm9keVR5cGUiOiJqc29uIiwiYm9keSI6eyJwYWlyIjoiVVNERyIsInRheCI6MX19LCJvdXRwdXQiOnsidHlwZSI6Impzb24iLCJleGFtcGxlIjp7InN0YXR1cyI6Ik9LIiwicGFpciI6IlVTREciLCJ0YXhfcGN0IjoxLCJyZWNvbW1lbmRhdGlvbiI6IlBST01PVEUiLCJwcm9maWxlX3VwZGF0ZWRfYXQiOiIyMDI2LTA5LTI4VDEzOjA1OjA4KzAwOjAwIiwiZGlzY2xhaW1lciI6IkRlY2lzaW9uIHN1cHBvcnQgb25seTsgbm90IGEgZ3VhcmFudGVlIG9mIHByb2ZpdC4ifX19LCJzY2hlbWEiOnsiJHNjaGVtYSI6Imh0dHBzOi8vanNvbi1zY2hlbWEub3JnL2RyYWZ0LzIwMjAtMTIvc2NoZW1hIiwidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiaW5wdXQiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsidHlwZSI6eyJjb25zdCI6Imh0dHAifSwibWV0aG9kIjp7ImNvbnN0IjoiUE9TVCJ9LCJib2R5VHlwZSI6eyJjb25zdCI6Impzb24ifSwiYm9keSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJwYWlyIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkNyZWF0b3ItZmVlIHByb2ZpbGUgcGFpciBzdWNoIGFzIFVTREcgb3IgU1BZLiJ9LCJ0YXgiOnsidHlwZSI6Im51bWJlciIsIm1pbmltdW0iOjAsIm1heGltdW0iOjEwMCwiZGVzY3JpcHRpb24iOiJDcmVhdG9yIHRheCBwZXJjZW50YWdlLiJ9fSwicmVxdWlyZWQiOlsicGFpciIsInRheCJdLCJhZGRpdGlvbmFsUHJvcGVydGllcyI6ZmFsc2V9fSwicmVxdWlyZWQiOlsidHlwZSIsIm1ldGhvZCIsImJvZHlUeXBlIiwiYm9keSJdLCJhZGRpdGlvbmFsUHJvcGVydGllcyI6ZmFsc2V9LCJvdXRwdXQiOnsidHlwZSI6Im9iamVjdCJ9fSwicmVxdWlyZWQiOlsiaW5wdXQiXSwiYWRkaXRpb25hbFByb3BlcnRpZXMiOnRydWV9fX19"
+  },
+  "truncated": false,
+  "bytes": 1579,
+  "sha256": "0abdecbb33d1ab23fa463a2ebacf92bc51f2f5092b85ebe4bf2c51e156eaacfe",
+  "body_file": "bix-unpaid-challenge.body"
+}

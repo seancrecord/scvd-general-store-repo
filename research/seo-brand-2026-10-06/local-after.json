@@ -1,0 +1,97 @@
+{
+  "observed_at": "2026-10-07T16:33:12.355311+00:00",
+  "scope": "Bounded public-page sample; not a Google crawl, index inventory or ranking measurement",
+  "site_name": "SCVD General Store",
+  "sitemap_urls": 145,
+  "gaps": [],
+  "pages": [
+    {
+      "url": "http://127.0.0.1:8790/",
+      "status": 200,
+      "title": [
+        "SCVD General Store \u2014 x402 verification for AI agents"
+      ],
+      "canonical": [
+        "https://scvd.store/"
+      ],
+      "issues": []
+    },
+    {
+      "url": "http://127.0.0.1:8790/what",
+      "status": 200,
+      "title": [
+        "What is scvd.store? Independent x402 verification, signed evidence, and endpoint-readiness data, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/what"
+      ],
+      "issues": []
+    },
+    {
+      "url": "http://127.0.0.1:8790/developers",
+      "status": 200,
+      "title": [
+        "SCVD General Store developer documentation, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/developers"
+      ],
+      "issues": []
+    },
+    {
+      "url": "http://127.0.0.1:8790/menu",
+      "status": 200,
+      "title": [
+        "The Shelf, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/menu"
+      ],
+      "issues": []
+    },
+    {
+      "url": "http://127.0.0.1:8790/menu/hello",
+      "status": 200,
+      "title": [
+        "The cheapest real x402 payment, to test a client end to end \u2014 A Signed Hello, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/menu/hello"
+      ],
+      "issues": []
+    },
+    {
+      "url": "http://127.0.0.1:8790/conformance",
+      "status": 200,
+      "title": [
+        "The conformance desk, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/conformance"
+      ],
+      "issues": []
+    },
+    {
+      "url": "http://127.0.0.1:8790/corpus",
+      "status": 200,
+      "title": [
+        "The corpus, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/corpus"
+      ],
+      "issues": []
+    },
+    {
+      "url": "http://127.0.0.1:8790/try",
+      "status": 200,
+      "title": [
+        "The Practice Counter, scvd.store"
+      ],
+      "canonical": [
+        "https://scvd.store/try"
+      ],
+      "issues": []
+    }
+  ]
+}

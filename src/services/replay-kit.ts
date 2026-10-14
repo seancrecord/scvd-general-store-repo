@@ -69,6 +69,7 @@ export interface ReplayKit {
     date: string;
     purpose?: string;
     mandate_id?: string;
+    cited_artifact?: string;
     attests?: string;
   };
   offer: ReplayKitOffer;
@@ -218,6 +219,7 @@ export async function buildReplayKit(
       date: cert.date,
       ...(cert.purpose ? { purpose: cert.purpose } : {}),
       ...(cert.mandate_id ? { mandate_id: cert.mandate_id } : {}),
+      ...(cert.cited_artifact ? { cited_artifact: cert.cited_artifact } : {}),
       ...(cert.attests ? { attests: cert.attests } : {}),
     },
     offer: {

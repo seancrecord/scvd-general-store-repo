@@ -85,7 +85,7 @@ for (const id of ["aura_walk", "the_collab"]) for (const door of ["http", "mcp"]
     it(`${id} ${door} ${network} ${point}: resumes one paid order without erasing completed work`, async () => {
       const item = items.find(i => i.id === id)!, tool = shelves(item)[0]!, menu = getMenuItem(id)!;
       const canary = `SCVD-E2E-${crypto.randomUUID()}-${"x".repeat(100)}`;
-      const args = { ...baseline(item), detail: canary, purpose: "SCVD-E2E human-order recovery", callback_url: "https://buyer-fixture.example/callback" };
+      const args = { ...await baseline(item), detail: canary, purpose: "SCVD-E2E human-order recovery", callback_url: "https://buyer-fixture.example/callback" };
       const quote = await call(item, door, args, tool);
       expect(quote.quote, JSON.stringify(quote.body)).toBe(true);
       const payment = btoa(JSON.stringify(await evmPayment(quote.offers.find(o => o.network === network)!)));
@@ -141,7 +141,7 @@ for (const id of ["aura_walk", "the_collab"]) for (const door of ["http", "mcp"]
 for (const door of ["http", "mcp"] as const) for (const network of [BASE_NETWORK, POLYGON_NETWORK]) {
   it(`${door} ${network}: retains the paid human SLA when the catalog changes before order creation`, async () => {
     const item = items.find(i => i.id === "aura_walk")!, tool = shelves(item)[0]!, menu = getMenuItem(item.id)!;
-    const args = { ...baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
+    const args = { ...await baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
     const quote = await call(item, door, args, tool);
     expect(quote.quote).toBe(true);
     const payment = btoa(JSON.stringify(await evmPayment(quote.offers.find(o => o.network === network)!)));

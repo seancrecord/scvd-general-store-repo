@@ -5,6 +5,39 @@ a spending decision for the item, network and maximum amount before signing.
 Never ask for a private key, seed phrase or wallet secret; the user's authorized
 wallet signs locally. If the result is lost, recover before buying again.
 
+## Start small; keep the recovery handle
+
+Use `https://scvd.store/menu.json?view=compact` for a paged shortlist and
+`/menu/{item_id}?view=compact` for one input contract before fetching the full catalog.
+
+Keep `recovery.purchase_id`, `recovery.status_token` and `recovery.status_url`
+from the JSON purchase response. MCP wraps them under
+`result.structuredContent.recovery`; legacy refusals can use `error.data.recovery`.
+Paid publication pages return the handle in the base64-JSON `Purchase-Recovery`
+response header. A missing top-level purchase ID does not mean no handle exists.
+Keep the token private. Read `status_url` with `Authorization: Bearer <status_token>`
+or call `check_purchase` with the pair. These reads submit no payment.
+
+If `recovery_state=pending`, poll after `retry_after_seconds`; this is advice,
+not a delivery deadline. `delivery_state=not_established_by_this_record` means
+this journal lacks the goods, not proof that goods were never delivered.
+Use `fulfillment` when ready; an order still needs human completion.
+
+## Native MPP, when offered
+
+Read the live checkout guide at `https://scvd.store/developers/llms.txt` and the
+item's `payment_capabilities`. The quote determines enabled methods and terms.
+For HTTP, use the quoted `WWW-Authenticate: Payment` challenge with a compatible
+MPP client and retry identical inputs with `Authorization: Payment` plus the
+quote's retry key. Do not combine MPP and x402 credentials. A client needs the
+asset's authorization domain; use its supported asset registry or explicit
+authorization settings rather than guessing them from the challenge.
+
+MCP's connection instructions and purchase-tool descriptions name the challenge
+and credential metadata keys for that connection. WebMCP's quote returns
+`payment_challenge`; completion takes `signed_credential`. Package checkout
+remains x402. Keep the original credential and recovery handle if interrupted.
+
 ## Execution structure
 
 ### Buying, any shelf (x402 v2)
@@ -51,10 +84,7 @@ wallet signs locally. If the result is lost, recover before buying again.
    slots are keyed by the VERIFIED paying wallet, so echoing the key
    can only ever reach your own earlier purchase, never somebody
    else's.
-4. **The store delivers first and settles after.** The goods are
-   produced, then the payment is presented at the last moment before
-   the artifact is signed — so a delivery that fails takes no money at
-   all and leaves nothing to refund. Instant items arrive in the
+4. The store prepares instant goods or the order before requesting settlement. A failure before settlement takes no money. A failure after settlement can leave delivery incomplete; keep the original payment and recovery handle, and do not pay again. Instant items arrive in the
    response body. Human-queue items return an `order_id` to poll at
    `https://scvd.store/api/order/{order_id}`; an optional
    `callback_url` gets a POST on completion.
@@ -155,8 +185,8 @@ luckies never sell out.
   response. The verify response also carries `settlement_state`:
   how the money moved, the order it moved in, and whether the
   delivery-audit row for the settlement is closed — derived on each
-  read. A failed attempt never appears there, because a delivery that
-  fails takes no money and mints nothing; per-attempt state is on
+  read. A failure before settlement takes no money and mints no receipt;
+  a failure after settlement can still leave delivery pending. Per-attempt state is on
   your own purchase status (`check_purchase`, or
   `/api/purchase-status/{id}` with your token).
 - What you own once you buy it: `https://scvd.store/rights`. Yours

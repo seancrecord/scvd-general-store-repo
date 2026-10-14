@@ -1,0 +1,724 @@
+{
+  "reading": {
+    "read_at": "2026-09-30T13:40:54.391890+00:00",
+    "url": "https://scvd.store/.well-known/trust.json",
+    "status": 200,
+    "final_url": "https://scvd.store/.well-known/trust.json",
+    "http_date": "Wed, 30 Sep 2026 13:40:54 GMT",
+    "content_type": "application/json",
+    "sha256": "d93f844e04aed2f03cec6815efab60701f791dbbab8bfd3b5b5dff5f7c68c46d",
+    "bytes": 97527
+  },
+  "records": [
+    {
+      "url": "https://agenterc.com/explore/base/86957",
+      "registry": "AgentERC \u2014 ERC-8004 agent index",
+      "protocols": [
+        "erc8004"
+      ],
+      "confirmed": "2026-09-23",
+      "what_it_proves": "That AgentERC indexes SCVD's existing Base identity and displays its canonical registration, MCP, A2A and OASF service links and enabled x402 flag. The operator confirmed ingestion after our request; the public profile was read September 23. This establishes indexing, not a service health check, reputation, validation or successful purchase. Not an endorsement and not an audit."
+    },
+    {
+      "url": "https://withai.top/tool/scvd-store",
+      "registry": "WithAI.Top \u2014 community tool directory",
+      "protocols": [
+        "general"
+      ],
+      "confirmed": "2026-09-23",
+      "what_it_proves": "That WithAI.Top accepted the operator-submitted listing and serves a public scvd.store page linking to the store. The September 19 acceptance was checked against the public page on September 23. This is discovery evidence, not protocol certification. Not an endorsement and not an audit of the service."
+    },
+    {
+      "url": "https://ucptools.dev/directory/scvd.store",
+      "registry": "UCP.tools \u2014 community merchant directory",
+      "protocols": [
+        "ucp"
+      ],
+      "confirmed": "2026-09-20",
+      "what_it_proves": "That UCP.tools published an operator-submitted SCVD General Store listing on September 20, 2026, displaying REST and linking to the store and its live UCP profile. The directory's score and grade remain its own and are not adopted here. This is discovery evidence, not an endorsement, an audit, paid checkout qualification or Google admission."
+    },
+    {
+      "url": "https://ucpchecker.com/check/scvd.store",
+      "registry": "UCP Checker \u2014 public profile report",
+      "protocols": [
+        "ucp"
+      ],
+      "confirmed": "2026-09-19",
+      "what_it_proves": "That UCP Checker fetched the store's public UCP profile and published a Verified report on September 19, 2026, detecting catalog search/lookup, checkout, order and the custom USDC payment handler. Its report retains schema warnings, including root signing-key placement. This is a dated discovery report, not an endorsement, a paid checkout qualification or Google admission."
+    },
+    {
+      "url": "https://www.mppscan.com/server/d58b4c8d9dc872c8308b594e4b4117bff2255f83b47f054e492b2a2fbc0ddb7b",
+      "registry": "MPPScan \u2014 payment API directory",
+      "protocols": [
+        "mpp"
+      ],
+      "confirmed": "2026-09-19",
+      "what_it_proves": "That MPPScan accepted the store's public origin and displays SCVD General Store with a resource list linking back to scvd.store. Registration reported 193 of 195 resources accepted, including free resources; two path templates were excluded after 404 probes, and nonblocking schema/payment warnings remained. This is a dated listing record, not proof of complete coverage or correct payment parsing. Not an endorsement and not an audit of purchases or settlement."
+    },
+    {
+      "url": "https://github.com/hashgraph-online/awesome-ai-plugins#tools--integrations",
+      "registry": "HOL \u2014 Awesome AI Plugins community catalog",
+      "protocols": [
+        "skills",
+        "mcp"
+      ],
+      "confirmed": "2026-09-19",
+      "what_it_proves": "That HOL accepted SCVD General Store into its community plugin catalog through PR #349. The source README and machine-readable plugins.json both list the repository, its skills and hosted MCP. This establishes catalog admission, not inclusion in HOL's separate ERC-8004 agent index or acceptance by every supported client marketplace. Not an endorsement and not an audit of runtime behavior, purchases or security."
+    },
+    {
+      "url": "https://a2aregistry.org/api/agents/3ec62f32-4e67-4382-8d15-2b6bf689f33a",
+      "registry": "A2A Registry \u2014 community API register",
+      "protocols": [
+        "a2a"
+      ],
+      "confirmed": "2026-09-18",
+      "what_it_proves": "That this separate community registry retained SCVD's canonical Agent Card and three evidence skills after submission. Its public API reports card conformance and endpoint health, but its task smoke test failed with category OTHER. The published test sends a plain-text greeting; a fresh direct check rejected that greeting and completed the documented JSON readiness task. Issue #184 asks the operator to distinguish probe compatibility; their task verification remains failed. This is listing evidence, not certification. Not an endorsement and not an audit of purchases."
+    },
+    {
+      "url": "https://geminicli.com/extensions/?name=seancrecordscvd-general-store-repo",
+      "registry": "Gemini CLI \u2014 extension gallery",
+      "protocols": [
+        "skills",
+        "mcp"
+      ],
+      "confirmed": "2026-09-18",
+      "what_it_proves": "That Google's Gemini CLI gallery lists the public scvd-general-store extension at version 0.2.4 with MCP and Skills labels and an installation command pointing to this repository. Search and the detail panel were opened. Google states these third-party extensions are not vetted or endorsed. Not an endorsement and not an audit. Gallery presence does not establish model execution, purchase success or security review."
+    },
+    {
+      "url": "https://www.a2a-registry.org/agent/store.scvd.scvd_evidence_agent",
+      "registry": "Global A2A Registry \u2014 community agent directory",
+      "protocols": [
+        "a2a"
+      ],
+      "confirmed": "2026-09-18",
+      "what_it_proves": "That this community registry lists SCVD Evidence Agent with its canonical Agent Card, endpoint and three free evidence skills. We submitted the public URL and opened the resulting record. The keeper completed the ownership claim September 18 and the public Verified label was confirmed; that label is directory ownership verification, not a service audit. On September 18, after the operator repaired issue #7, a fresh read showed application/json for both input and output modes, matching the retained card. This checks those fields for this record, not every parser field. Not an endorsement and not an audit."
+    },
+    {
+      "url": "https://github.com/sing1ee/a2a-directory#readme",
+      "registry": "A2A Directory \u2014 community source catalog",
+      "protocols": [
+        "a2a",
+        "x402"
+      ],
+      "confirmed": "2026-09-17",
+      "what_it_proves": "That the community-maintained A2A Directory lists SCVD's evidence agent, its Agent Card and separate x402 instruments. Its source README includes SCVD in the tools, A2A agents and x402 service sections. This establishes a source-catalog listing, not inclusion in every downstream website or protocol certification. Not an endorsement and not an audit of purchases."
+    },
+    {
+      "url": "https://8004scan.io/agents/base/86957",
+      "registry": "8004scan \u2014 ERC-8004 agent index",
+      "protocols": [
+        "erc8004"
+      ],
+      "confirmed": "2026-09-17",
+      "what_it_proves": "That 8004scan indexes this Base identity and displays its MCP, A2A and OASF services. On the confirmation date its cached MCP health showed HTTP 405 while a fresh protocol initialization succeeded; the two observations have different times and scopes. Not an endorsement and not an audit of purchases; its health reading remains its own."
+    },
+    {
+      "url": "https://agentscan.info/agents/0711e5ab-eca5-42cc-a7ca-38b433689d56",
+      "registry": "Agentscan \u2014 ERC-8004 agent index",
+      "protocols": [
+        "erc8004"
+      ],
+      "confirmed": "2026-09-17",
+      "what_it_proves": "That Agentscan indexes the store's Base identity and displays its current registration fields. On the confirmation date its separate AI taxonomy said Image Generation and Banking while its OASF service block showed the canonical payment, blockchain, fact-verification and API-schema taxonomy. Not an endorsement and not an audit; the conflicting classifications need reconciliation."
+    },
+    {
+      "url": "https://8004agents.ai/base/agent/86957",
+      "registry": "8004agents \u2014 ERC-8004 agent index",
+      "protocols": [
+        "erc8004"
+      ],
+      "confirmed": "2026-09-17",
+      "what_it_proves": "That 8004agents returns SCVD under its Base identity, with its name and owner in the search result. The observation establishes indexing, not a complete protocol check or a successful purchase. Not an endorsement and not an audit."
+    },
+    {
+      "url": "https://trust8004.xyz/agents/8453%3A86957",
+      "registry": "trust8004 \u2014 ERC-8004 agent index",
+      "protocols": [
+        "erc8004"
+      ],
+      "confirmed": "2026-09-17",
+      "what_it_proves": "That trust8004 indexes this identity. On the confirmation date its x402 flag and MCP/A2A skill labels differed from the canonical source: x402 was shown unsupported and OASF taxonomy labels appeared as protocol tools/skills. Refresh and parsing need reconciliation. Not an endorsement and not an audit; listing presence does not establish metadata accuracy."
+    },
+    {
+      "url": "https://robinsaige.com/s/store.scvd/general-store",
+      "registry": "robinsaige.com \u2014 MCP server observatory",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-17",
+      "what_it_proves": "That robinsaige.com keeps a verification record for this server under the official registry name, store.scvd/general-store, built from its own weekly probes of the live MCP door (initialize and tools/list, no tool ever fired), with a verdict, a because-clause, a signed receipt and a public dispute route on the page. Not an endorsement and not an audit by this store: an observatory's page proves the door was found and answered its handshake, its verdict is its instrument under its published method, and nothing on it establishes a purchase or a delivery."
+    },
+    {
+      "url": "https://crosspeel.com/endpoints/scvd-store/",
+      "registry": "Crosspeel (crosspeel.com) \u2014 endpoint observer",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-10",
+      "what_it_proves": "That Crosspeel keeps a per-provider page for this store's x402 endpoints under the slug scvd-store \u2014 observations, price history and every stored response, in its own words, with named goods among them. Not an endorsement and not an audit: an observer's page proves the doors were found and knocked on, nothing about the goods behind them or whether a purchase ever settled."
+    },
+    {
+      "url": "https://publishyoursaas.com/listing/scvd-store",
+      "registry": "PublishYourSaaS",
+      "confirmed": "2026-09-10",
+      "what_it_proves": "That a SaaS launch directory carries a listing for scvd.store whose opening line is the sixty words' first sentence, verbatim. Not an endorsement and not an audit: a listing proves indexing under the current text, nothing about the goods."
+    },
+    {
+      "url": "https://aitoolscapital.com/tools/scvd-general-store/",
+      "registry": "AI Tools Capital",
+      "confirmed": "2026-09-10",
+      "what_it_proves": "That an AI-tools review directory carries a page for SCVD General Store, shaped as a review ('Worth It?') and reading it as an evidence observatory and marketplace for agentic commerce with x402 payments and endpoint verification, priced from free. Not an endorsement and not an audit: a review-shaped directory page is still a directory page \u2014 it proves indexing, and its verdict is its own."
+    },
+    {
+      "url": "https://agenstry.com/agents/scvd.store",
+      "registry": "Agenstry \u2014 agent directory",
+      "protocols": [
+        "a2a"
+      ],
+      "confirmed": "2026-09-08",
+      "what_it_proves": "That Agenstry indexes the store's agent card and publishes its own observations and card history. Not an endorsement and not an audit by this store: Agenstry's grades and probe conclusions remain its own, and a listing does not establish successful purchases or delivery."
+    },
+    {
+      "url": "https://agenstry.com/mcp/store.scvd/general-store",
+      "registry": "Agenstry \u2014 MCP directory",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-08",
+      "what_it_proves": "That Agenstry lists SCVD General Store's MCP server, names https://scvd.store/mcp as its primary URL and publishes tool and resource metadata. Not an endorsement and not an audit: the listing establishes that the server was indexed, not that the mirrored catalog is complete or current or that a purchase succeeded."
+    },
+    {
+      "url": "https://mcpfind.org/servers/store-scvd-general-store",
+      "registry": "MCPFind",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-08",
+      "what_it_proves": "That MCPFind lists SCVD General Store with its repository and describes its x402 preflight, receipt checks and settlement attestations. Not an endorsement and not an audit: the directory page establishes that the server was indexed, not that a purchase or delivery succeeded."
+    },
+    {
+      "url": "https://www.licium.ai/directory/scvd-store-mcp~aHR0cHM6Ly9zY3ZkLnN0b3JlL21jcA",
+      "registry": "Licium",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That Licium lists the store's MCP endpoint and publishes its endpoint history. Not an endorsement and not an audit of purchases: a directory record does not prove successful payment or delivery."
+    },
+    {
+      "url": "https://www.zero.xyz/c/scvd-signature-agent-card-15cd521c",
+      "registry": "Zero.xyz \u2014 SCVD Signature Agent Card",
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That Zero.xyz carries a service listing for SCVD Signature Agent Card. Not an endorsement and not an audit of its output: the listing is a discovery record, not evidence that anyone invoked the service or bought it."
+    },
+    {
+      "url": "https://neuronto.com/ard-publishers/scvd.store",
+      "registry": "Neuronto ARD Registry",
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That Neuronto has indexed this store's published ARD resources and gives the domain a publisher page. Its search impressions count appearances in that index, not visitors or purchases; our own verification queries may appear among them. Not an endorsement and not an audit of the goods. The page carries its current observations rather than a grade copied here."
+    },
+    {
+      "url": "https://wellknownhq.com/d/scvd.store",
+      "registry": "WellKnown",
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That WellKnown has indexed this store's discovery catalog and publishes a domain page with its own checks. Not an endorsement and not an audit of the goods: the grade describes what its discovery checker observed, not whether a purchase succeeds or an entry remains accurate. Its live page and README badge carry the current reading."
+    },
+    {
+      "url": "https://github.com/seancrecord/scvd-general-store-repo",
+      "registry": "GitHub (the store's own source)",
+      "confirmed": "2026-08-26",
+      "what_it_proves": "That the code running this store is public and readable: the settlement path, the signing, the verifier, the CLI and every test that guards them. It proves nothing about the operator and it is not an endorsement or an audit \u2014 nobody has paid anyone to review it, which /trust says elsewhere in those words. What it does mean is that every claim made anywhere on this site has a file behind it somebody can go and read, which no directory entry can offer."
+    },
+    {
+      "url": "https://github.com/pjt222/agent-almanac/blob/main/skills/test-x402-payment-client/SKILL.md",
+      "registry": "agent-almanac (pjt222), a curated skills repository on GitHub",
+      "protocols": [
+        "skills",
+        "x402"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That a curated third-party skills repository carries, by its maintainer's merge, a skill that instructs agents to test an x402 payment client against this store's cheapest door ($0.001 on 2026-09-03, the day this was recorded; the menu is the live price) and to check offers and receipts at the free conformance desk. The skill was written from this side (author cv-scvd) and accepted by theirs, so it proves a maintainer read it and kept it. Not an endorsement and not an audit: nobody independent vouches for the store by it. The prices and endpoints it names were checked against the menu on the day it was recorded."
+    },
+    {
+      "url": "https://mcppedia.org/s/store-scvd-general-store",
+      "registry": "MCPpedia",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That an independent index discovered this store from the official MCP registry and scores it daily by a published algorithm over public data: known CVEs, tool-metadata poisoning patterns, maintenance signals, README structure and transports. Not an endorsement and not an audit: the score is a static read of metadata, says so on its own methodology page, and moves with the inputs. It proves the metadata was read by something that cannot be talked to."
+    },
+    {
+      "url": "https://www.getmcp.es/servers/general-store",
+      "registry": "getmcp.es",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://lightnow.ai/servers/store.scvd/general-store/versions",
+      "registry": "lightnow.ai",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://mcplookup.com/server/store.scvd/general-store",
+      "registry": "MCP Lookup",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://roninforge.org/data/state-of-mcp/servers/store.scvd/general-store/",
+      "registry": "Ronin Forge, State of MCP",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://socketcat.com/servers/store.scvd/general-store",
+      "registry": "socketcat",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://tracevero.com/mcp/store-scvd-general-store",
+      "registry": "Tracevero",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://signal402.com/services/scvd-store",
+      "registry": "signal402",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://402.ad/service/0ca76ae0-f524-4cfa-a782-ff262f38e489/collaborative-creative-commission-api",
+      "registry": "402.ad",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-10",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03 and again 2026-09-10). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://decipherranker.com/dashboard/merchant/https:%2F%2Fscvd.store%2Fapi%2Fbuy%2Fnomenclature",
+      "registry": "Decipher Ranker",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That one more index carries the store under its own page (the keeper opened it 2026-09-03). A listing: evidence of being indexed and nothing else, not an endorsement and not an audit. Which generation of the store's text it carries is read by the listings check."
+    },
+    {
+      "url": "https://toll402.com/resource/scvd-store-buy-graffiti-on-a-train-get-x402-api--6551e8200c4f7fa4ccb7ab6c",
+      "registry": "toll402",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-03",
+      "what_it_proves": "That an independent prober fetched the store's tiered doors on 2026-08-24 and recorded what a stock Node client saw: a 402 whose headers overflowed Node's 16KB limit. Not an endorsement and not an audit; a dated observation of a defect this store has since fixed and holds under test, and the row stands as they wrote it until they probe again."
+    },
+    {
+      "url": "https://agentpluginsdirectory.com/plugins/scvd-general-store",
+      "registry": "Agent Plugins Directory",
+      "protocols": [
+        "skills",
+        "mcp"
+      ],
+      "confirmed": "2026-09-08",
+      "what_it_proves": "That Agent Plugins Directory indexes the repository's plugin bundle, names Record Creative Co. LLC as author, lists its skill and MCP servers, and publishes its own manifest-schema verification date. Not an endorsement and not an audit of runtime behavior: a manifest check does not prove client marketplace acceptance, installation support, purchases or delivery."
+    },
+    {
+      "url": "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
+      "registry": "x402scan",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-07-27",
+      "what_it_proves": "That an independent scanner read this store's x402 declaration and OPENAPI contract and probed the paid routes itself, rather than taking the listing at face value. Still not an endorsement and not an audit \u2014 it confirms the endpoints answer as declared, not that the goods are any good or the operator trustworthy."
+    },
+    {
+      "url": "https://agentic.market/services/scvd-store",
+      "registry": "The x402 Bazaar (Coinbase CDP), via agentic.market",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-07-27",
+      "what_it_proves": "That fourteen of this store's endpoints are registered to its wallet in the CDP discovery list, which is the authoritative index for x402 services rather than a browsable mirror. Not an endorsement and not an audit: registration means the endpoints were declared and accepted, and the wallet they are registered to is the one declared at /house-ledger.json."
+    },
+    {
+      "url": "https://mcpservers.org/servers/seancrecord/scvd-general-store-repo",
+      "registry": "mcpservers.org",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-07-29",
+      "what_it_proves": "That the MCP server is listed and claimed by its operator, categorised under Finance. Not an endorsement and not an audit: a claimed listing proves the operator controls the repository, nothing about the service."
+    },
+    {
+      "url": "https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo",
+      "registry": "Glama MCP server index",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-07-31",
+      "what_it_proves": "That this store's MCP server was auto-indexed by a third-party directory that crawled it without being asked. Unclaimed, and it mirrors the repository README. Not an endorsement and not an audit: an index entry means somebody's crawler found us and filed us."
+    },
+    {
+      "url": "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+      "registry": "x402-list.com",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-08-02",
+      "what_it_proves": "That an x402 directory ran its automated checks against this store's own service page and graded it A (14 of 14) \u2014 a third party testing the endpoints rather than repeating a listing \u2014 and that the store verified domain ownership with the directory on 2026-08-02 and again on 2026-08-11 when the listing moved to the Finance category with an updated description. Not an endorsement and not an audit of the goods."
+    },
+    {
+      "url": "https://glama.ai/mcp/connectors/store.scvd/general-store",
+      "registry": "Glama MCP connectors",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-04",
+      "what_it_proves": "That Glama also carries this store as a connector page, distinct from its earlier auto-crawled server index entry. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service."
+    },
+    {
+      "url": "https://mcpindex.ai/server/store-scvd-general-store",
+      "registry": "mcpindex.ai",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-04",
+      "what_it_proves": "That mcpindex.ai lists the MCP server with its own live verdict page. Not an endorsement and not an audit: their verdict is their instrument, read on their page \u2014 this record only proves the listing exists."
+    },
+    {
+      "url": "https://agent-tools.cloud/services/scvd-store-bazaar",
+      "registry": "agent-tools.cloud (x402 services)",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-15",
+      "what_it_proves": "That agent-tools.cloud carries this origin among the x402 services it indexes, and that the operator proved control of the domain to them. Not an endorsement and not an audit: the page's description is the store's own words, and its quality grade is their measurement on their schedule \u2014 read it there rather than here."
+    },
+    {
+      "url": "https://agent-tools.cloud/a2a/agents/scvd-evidence-agent",
+      "registry": "agent-tools.cloud (A2A agents)",
+      "protocols": [
+        "a2a"
+      ],
+      "confirmed": "2026-09-15",
+      "what_it_proves": "That the same directory carries the SCVD Evidence Agent in its A2A population, resolved from the agent card at /.well-known/agent-card.json. Not an endorsement and not an audit: it proves the card was fetched and parsed, nothing about what the agent does when asked."
+    },
+    {
+      "url": "https://agent-tools.cloud/mcp/servers/scvd-general-store-scvd-store",
+      "registry": "agent-tools.cloud (MCP servers)",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-15",
+      "what_it_proves": "That the same directory carries this store's MCP server, listed against the endpoint at /mcp. Not an endorsement and not an audit: it proves the server was reachable and its card read, nothing about the tools behind it."
+    },
+    {
+      "url": "https://x402.fuchss.app/provider/scvd.store",
+      "registry": "x402.fuchss.app (provider index)",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-01",
+      "what_it_proves": "That an independent x402 provider index carries this origin as a provider \u2014 keyed on the domain rather than on a submitted listing. Not an endorsement and not an audit: an index proves the door was found, nothing about what comes through it."
+    },
+    {
+      "url": "https://agents.traderszone.net/a/urn%3Adirectory%3Aagentic-market%3Ahttps%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fcertificate_of_patronage",
+      "registry": "AgentIndex (agents.traderszone.net)",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-01",
+      "what_it_proves": "That AgentIndex carries this store's doors as resources it found on its own \u2014 this row is the certificate_of_patronage door as their crawl of the agentic.market listing saw it; the host page at agents.traderszone.net/explore?host=scvd.store lists the rest. Not an endorsement and not an audit: an index proves the door was found, and this one also proves how long a found listing can lag the shelf."
+    },
+    {
+      "url": "https://agentcatalog.com/publishers/scvd.store?q=",
+      "registry": "AgentMesh Catalog (agentcatalog.com)",
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That AgentMesh Catalog groups what it found published under this domain \u2014 the MCP server card and the catalog entries \u2014 and says on the page that the domain has not claimed the grouping and that each entry repeats only what its source said. Not an endorsement and not an audit: a publisher page proves the sources were found and read, nothing about the goods."
+    },
+    {
+      "url": "https://www.skills.sh/seancrecord/scvd-general-store-repo/scvd-general-store",
+      "registry": "skills.sh (open Agent Skills directory)",
+      "protocols": [
+        "skills"
+      ],
+      "confirmed": "2026-09-08",
+      "what_it_proves": "That the open Agent Skills directory publishes this repository's scvd-general-store skill, its SKILL.md excerpt and an installation command. Not an endorsement and not an audit: a skill index proves the skill was found under this repository, nothing about the store the skill walks into."
+    },
+    {
+      "url": "https://cairnwake.com/2026-08-25-cold-walk-scvd.html",
+      "registry": "Cairn (cairnwake.com) \u2014 the cold walk, published by arrangement",
+      "kind": "peer_verification",
+      "found_against_us": "The store refused the X-PAYMENT header most of the ecosystem speaks. Filed on /corrections, fixed the next day, and Cairn re-ran the walk with fresh authorizations rather than take the keeper's word for the fix.",
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That an independent tester walked the store cold on 2026-08-25, paid with their own wallet, verified the certificate offline against the published key, read the settlement back from a Base RPC, watched the public ledger move, found one defect (the X-PAYMENT header refused) and re-tested the fix the next day with fresh authorizations. Not an endorsement and not an audit of anything beyond that night: one dated observation by one buyer, published with the unflattering part in it, and the defect it found is on /corrections under its own date."
+    },
+    {
+      "url": "https://github.com/seancrecord/scvd-general-store-repo/issues/188#issuecomment-5555985899",
+      "registry": "0200project (base-tx-explain) \u2014 an independent re-derivation of a field walk, published in thread",
+      "kind": "peer_verification",
+      "found_against_us": "Two findings, both on /corrections, and the thread's first two rounds went against this store: the walk ledger published an EIP-3009 authorization nonce under prose calling it a transaction hash (2026-09-04), and then the overcorrection \u2014 our \"no node will ever answer it\", when AuthorizationUsed is indexed and answers exactly that (2026-09-05). Sharpest of all was about our own instrument: our reconciliation's \"gap $0.00\" was this store's tooling agreeing with itself, where a second instrument agreeing with the chain is the different and stronger claim. The walk report now says so beside the number on every run.",
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That on 2026-09-06 an outside operator re-derived this store's 2026-09-05 field walk from a public Base node using none of our tooling: 34 chain transfers totalling $0.0350 against 34 settled ledger rows, all 31 rows carrying a transaction hash agreeing with the chain on amount and recipient, and the 3 rows whose receipts named no transaction recovered from their authorization nonce. Zero disagreements. Their own decoder separately read one of those transactions and agreed with our row on every field both instruments hold. Not an endorsement and not an audit: one run, one day, 34 settlements on the simplest shape either instrument handles, and it establishes nothing about the paid audits, watches or attestations. The same thread carries two findings against this store, both on /corrections, and one the other operator disclosed against their own product."
+    },
+    {
+      "url": "https://stillosdigitalholdings.com/notary/trust",
+      "registry": "StillOS Notary \u2014 the receipt treaty, two instruments reading each other",
+      "kind": "peer_verification",
+      "protocols": [
+        "x402"
+      ],
+      "found_against_us": "Four things, and the exchange is worth citing because of them rather than in spite of them. Their rail rule \u2014 a zero requires EVERY advertised rail to resolve empty \u2014 moved one of our five sealed answers from ZERO_OBSERVED to UNKNOWN, and our own reader had already carried the reason in its own words and returned the zero anyway. Reading their five exposed a bug ours could not see against our own: a complete-window branch shadowing the stronger nonce argument, so facts we could prove for all of history were handed back in their weaker windowed form. Their truncation near-miss \u2014 a payTo re-entered from a 22-character display, producing a confident zero on a door carrying 805 settlements \u2014 established the rule that an identifier must reach a read by reference and never be re-typed, which our frozen door files now carry as provenance on every address. And their log-horizon failure mode, published 2026-09-19, named a defect latent in our own reader: a provider pruning logs answers an empty array rather than an error, which our instrument would have read as a zero. Fixed the same day with a horizon canary, under test.",
+      "confirmed": "2026-09-19",
+      "what_it_proves": "That between 2026-09-11 and 2026-09-19 an independent operator and this store each read the other's advertised payTo addresses with their own code, under verdict definitions and four rules frozen in public before either side read a chain, and published both columns including the misses. Both sealed commitments verify by digest and byte length in both directions. Ten doors were read this way; where the two disagreed, every difference but one resolved to a declared difference of scope, and the exception resolved to a page cap in their instrument which they found and corrected against their own published number. Not an endorsement and not an audit: it establishes that two instruments agree about ten doors on the rails they share, that each found real defects in the other, and nothing about this store's paid audits, watches or attestations. The artifacts are theirs as well as ours \u2014 their sealed answers and their MIT zero-nonce reader are published in their own repositories under stillmarcus24, and this store's half is in research/blind-key-2026-09-15/ with their three files copied in unmodified so the digest check reproduces from either tree."
+    },
+    {
+      "url": "https://probe402.com/grade?url=https%3A%2F%2Fscvd.store%2Fapi%2Fbuy%2Fsmall_blessing",
+      "registry": "probe402 \u2014 dated probe record",
+      "kind": "instrument",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That an independent x402 prober reads the small_blessing door and publishes a dated record of what it saw \u2014 status, price, payTo, and how many observations stand behind the page. Not an endorsement and not an audit: it is their observation on their page, re-taken on their schedule, and it never buys anything, so it cannot speak to what comes through the door once money moves."
+    },
+    {
+      "url": "https://agents.circle.com/sell/score?url=scvd.store%2Fapi%2Fbuy%2Fhello",
+      "registry": "Circle \u2014 Sell to Agents readiness score",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-09-01",
+      "what_it_proves": "That Circle's readiness scanner reaches this origin, fetches its OpenAPI contract and its live 402, and scores how legible the paid interface is to a buying agent. Scored per endpoint with no summary page, so one door stands for the set \u2014 every paid door here is described by the same contract and answers the same challenge, which is the fact the reading actually turns on. An instrument reading, not a listing and not an audit: it measures the shape of the door \u2014 payment terms declared, inputs described, guidance present \u2014 and never buys anything, so it says nothing about the goods behind it."
+    },
+    {
+      "url": "https://webmcpdirectory.com/tool/scvd-store",
+      "registry": "WebMCP Directory (webmcpdirectory.com)",
+      "protocols": [
+        "webmcp"
+      ],
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That a directory of WebMCP-enabled sites carries a page for this store's browser surface. Not an endorsement and not an audit: it proves the origin declares tools an in-browser agent can find, and says nothing about whether those tools return anything worth having."
+    },
+    {
+      "url": "https://webmcp.ora.ai/scvd.store",
+      "registry": "Ora \u2014 WebMCP directory (webmcp.ora.ai)",
+      "protocols": [
+        "webmcp"
+      ],
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That Ora's WebMCP directory carries this origin. Not an endorsement and not an audit: a directory page proves indexing. Their rows say HOW each site's support is known \u2014 a registry claim, tools observed live, or a full audit with its score \u2014 which is the same claim-versus-observation line this store draws in its own readings; what tier they give us is theirs to change and is deliberately not restated here."
+    },
+    {
+      "url": "https://directory.ora.ai/scvd.store",
+      "registry": "Ora Directory (directory.ora.ai)",
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That Ora's wider agentic index of the web carries a page for this store. Not an endorsement and not an audit: a directory page proves indexing. Listed apart from their WebMCP directory above on purpose \u2014 being in an index of agent-usable sites is a different fact from declaring browser tools, and collapsing the two would count one listing twice."
+    },
+    {
+      "url": "https://ora.ai/score/scvd.store",
+      "registry": "Ora \u2014 agent-readiness score",
+      "confirmed": "2026-09-06",
+      "what_it_proves": "That Ora's scanner reaches this origin and grades how legible it is to an arriving agent. An instrument reading, not a listing and not an audit: it measures the shape of what we serve and never buys anything, so it says nothing about the goods behind the doors. The number is theirs and moves when they change the battery; this records that the reading exists, never what it says."
+    },
+    {
+      "url": "https://partners.circle.com/partner/scvdstore",
+      "registry": "Circle partner directory",
+      "confirmed": "2026-09-04",
+      "what_it_proves": "That Circle's partner directory carries a per-partner page for this store, submitted by the keeper and listed after review. Not an endorsement and not an audit: a directory page proves the listing exists and that a submission was accepted, nothing about the goods \u2014 and being listed by the issuer of the stablecoin this store is paid in says the store is on their map, not that they stand behind what it sells."
+    },
+    {
+      "url": "https://www.getdrio.com/mcp/store-scvd-general-store",
+      "registry": "Drio (getdrio.com)",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-01",
+      "what_it_proves": "That Drio's MCP index carries the server under its canonical name. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods."
+    },
+    {
+      "url": "https://index.zbs.gg/en/mcp/store-scvd-general-store/",
+      "registry": "ZBS Index (index.zbs.gg)",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-01",
+      "what_it_proves": "That the ZBS MCP index carries the server, under the same canonical name every other registry resolved it to. Not an endorsement and not an audit: a directory page proves indexing, nothing about the goods."
+    },
+    {
+      "url": "https://verifymcp.io/servers/store-scvd-general-store/scvd",
+      "registry": "VerifyMCP (verifymcp.io)",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-10",
+      "what_it_proves": "That VerifyMCP connected to the live door, read its tools and scored what it found \u2014 endpoint security, schema quality, tool safety, spec recency \u2014 with the derivation of each row on the page. Not an endorsement and not an audit: an instrument reading on the shape of the door, taken by their probe on their schedule, which says nothing about the goods behind it. Their handshake name is verifymcp-probe."
+    },
+    {
+      "url": "https://verifymcp.io/servers/store-scvd-tab/scvd-tab",
+      "registry": "VerifyMCP (verifymcp.io) \u2014 the tab",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That VerifyMCP carries the second server this repo publishes, scvd-tab, and scored it from the npm package and the repository \u2014 the first third-party number on the tab at all. Not an endorsement and not an audit: their instrument, their rows, read on their page."
+    },
+    {
+      "url": "https://chatgpt.com/plugins/plugin_asdk_app_6aaa9b3afcc081918be808a0d8cfd212",
+      "registry": "ChatGPT Plugin Directory (chatgpt.com) \u2014 the verifier door",
+      "protocols": [
+        "skills",
+        "mcp"
+      ],
+      "confirmed": "2026-09-17",
+      "what_it_proves": "That OpenAI reviewed the free verifier door at /mcp/verifier against its own submission guidelines and admitted it to the plugin directory, on the second attempt. Not an endorsement and not an audit: a directory review checks a listing's claims, its test cases and its tool annotations, and says nothing about whether the goods on this store's other doors are worth buying. It covers the five read-only tools on that door only."
+    },
+    {
+      "url": "https://mcpbeat.com/mcp-servers/scvd/general-store/",
+      "registry": "mcpbeat (mcpbeat.com)",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That mcpbeat lists the server, pings the door on a fifteen-minute loop, and shows the tool list it read there. Not an endorsement and not an audit: a liveness directory proves the door answered its last knock, nothing about the goods. Its handshake name is mcpbeat."
+    },
+    {
+      "url": "https://mcpbeat.com/mcp-servers/scvd/tab/",
+      "registry": "mcpbeat (mcpbeat.com) \u2014 the tab",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That mcpbeat carries scvd-tab too, from the same registry ingest. Not an endorsement and not an audit: a directory page proves indexing, nothing more."
+    },
+    {
+      "url": "https://catalog.agentage.io/mcp/store-scvd-general-store",
+      "registry": "agentage MCP Catalog (catalog.agentage.io)",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That the agentage catalog, synced from the official MCP registry, carries the server under its registry name. Their page says plainly that it holds only what the registry entry says; a directory page proves indexing, nothing about the goods. Not an endorsement and not an audit."
+    },
+    {
+      "url": "https://catalog.agentage.io/mcp/store-scvd-tab",
+      "registry": "agentage MCP Catalog (catalog.agentage.io) \u2014 the tab",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-09-02",
+      "what_it_proves": "That the same catalog carries scvd-tab, from the same registry sync. Not an endorsement and not an audit: indexing, nothing more."
+    },
+    {
+      "url": "https://mcpservers.org/servers/scvd-store-llms-txt",
+      "registry": "mcpservers.org (llms.txt entry)",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-04",
+      "what_it_proves": "That mcpservers.org carries a second, llms.txt-derived entry beside the claimed server listing above \u2014 the store's own machine-readable front door, independently ingested. Not an endorsement and not an audit."
+    },
+    {
+      "url": "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v",
+      "registry": "m8ven.ai",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-18",
+      "what_it_proves": "That a third-party scanner audits this repository's declared dependencies against OSV and republishes its findings \u2014 an instrument pointed at us, not a listing we wrote. Not an endorsement and not an audit of the goods. Its readings can lag or misattribute (its 2026-08-04 CVE flag was a dev-only tool, upgraded same day; its env-var table describes a test script, not the MCP bridge, which needs none), and this record claims only that the scanner watches, not that its current score is right."
+    },
+    {
+      "url": "https://mcp-marketplace.io/server/store-scvd-general-store",
+      "registry": "mcp-marketplace.io",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-04",
+      "what_it_proves": "That mcp-marketplace.io lists the MCP server and republishes an OpenSSF Scorecard reading against the repository \u2014 an instrument, not a listing we wrote. Not an endorsement and not an audit of the goods: its scorecard measures repository hygiene (workflow permissions, update tooling, review process), several items of which were fixed the day this record was added, and the reading lags the repo until its next crawl."
+    },
+    {
+      "url": "https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7",
+      "registry": "x402-bazaar.com (Bazaar mirror)",
+      "protocols": [
+        "x402"
+      ],
+      "confirmed": "2026-08-04",
+      "what_it_proves": "That a Bazaar mirror the store never submitted to serves per-resource pages for its items \u2014 found by the keeper within hours of the registration run, which is the settle-triggered discovery pipeline observed propagating to a surface we did not know existed. ONE URL STANDS FOR THE SET on purpose: the mirror pages every registered resource separately and has no summary page, and a row per endpoint would repeat a single fact fourteen times, which is the logo wall this array's docblock refuses. Not an endorsement and not an audit: a mirror proves the source catalog carries us, nothing more."
+    },
+    {
+      "url": "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
+      "registry": "Agent Identity Registry (AIR) \u2014 scvd-store, AIR-BYYP-0MQC-TAKR",
+      "confirmed": "2026-08-01",
+      "what_it_proves": "That an agent-identity registry scored this store 470/1000 (grade B) against five weighted dimensions, resolving did:web:scvd.store, at verification level VERIFIED BY USER \u2014 self-attested, not organization-verified, and the record says so. Not an endorsement and not an audit of the goods: it is an automated score of posture. Its highest dimension is Transparency (650) \u2014 the radical-honesty layer showing \u2014 and its two lowest, Security Posture (300) and Peer Attestations (300), are the same two this store already flags itself: the OpenSSF Scorecard's security items, and the fact that no peer has yet cross-attested us (there is no peer-attestation prior art in x402 to have earned one from)."
+    },
+    {
+      "url": "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+      "registry": "mcpmarket.com",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-11",
+      "what_it_proves": "That mcpmarket.com carries a per-server page for this store. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service \u2014 and this one's generated summary paraphrases an earlier README (it leads with the marketplace framing, omits the conformance desk and corpus, and lists a 'zodiac readings' item that has never existed here), so it lags the repository until its next crawl."
+    },
+    {
+      "url": "https://deepwiki.com/seancrecord/scvd-general-store-repo",
+      "registry": "DeepWiki (Cognition/Devin)",
+      "confirmed": "2026-08-11",
+      "what_it_proves": "That DeepWiki (Cognition's repository index, the one Devin consults) carries a page for this repository, with a generated wiki requested by the keeper on 2026-08-11. Not an endorsement and not an audit: the wiki is a machine's reading of the source, it can lag or misread until its next regeneration, and the repository it derives from is public beside it."
+    },
+    {
+      "url": "https://cursor.directory/plugins/scvd-general-store-repo",
+      "registry": "Cursor Directory",
+      "protocols": [
+        "skills",
+        "mcp"
+      ],
+      "confirmed": "2026-09-18",
+      "what_it_proves": "That Cursor Directory carries a plugin page for this store. On September 18 the owner updated its name, description and keywords, replaced the stale skill with the current general-store skill, added the verification skill and pinned the Tab server to the published package version. The public page displayed both skills and both MCP servers. Not an endorsement and not an audit: this community listing does not establish official Cursor marketplace acceptance, a security-scan verdict or native Cursor skill activation."
+    },
+    {
+      "url": "https://smithery.ai/servers/seancrecord/scvd-general-store",
+      "registry": "Smithery",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-11",
+      "what_it_proves": "That Smithery carries a per-server page for this store, submitted by the keeper, with its own quality scan. Not an endorsement and not an audit: a directory page proves indexing \u2014 and this one's capability reading (0 of 40, descriptions 0 of 0) is a fault of ours, not a finding about the tools: its scanner reads our server card instead of calling tools/list, and from 2026-08-30 that card declared tools and named none. The card lists all thirteen since, so the reading lags until its next scan."
+    },
+    {
+      "url": "https://mcp.so/servers/scvd-store",
+      "registry": "mcp.so",
+      "protocols": [
+        "mcp"
+      ],
+      "confirmed": "2026-08-10",
+      "what_it_proves": "That mcp.so carries a per-server page for this store whose summary leads with the current positioning. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service \u2014 and this one's auto-extracted install config and mirrored skill text lag the repository until its next crawl."
+    }
+  ]
+}

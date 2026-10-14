@@ -14,7 +14,7 @@ for (const catalogItem of MENU_ITEMS) {
     const fields = Object.entries(item.spec.inputs.properties).filter(([, spec]) => spec.type === "string");
     expect(fields.length).toBeGreaterThan(0);
     for (const [field] of fields) for (const value of invalid) {
-      const reading = await call(item, "mcp", { ...baseline(item), [field]: value }, tool);
+      const reading = await call(item, "mcp", { ...await baseline(item), [field]: value }, tool);
       expect(reading.body, `${item.id}.${field}=${kind(value)}`).toMatchObject({
         charged: false, code: "bad_request", input_field: field, expected_type: "string", received_type: kind(value),
       });
@@ -31,10 +31,10 @@ for (const field of ["summary", "tag", "win", "detail", "purpose"]) {
     const item = items.find(entry => field in entry.spec.inputs.properties && shelves(entry).length > 0)!;
     expect(item).toBeTruthy();
     const tool = shelves(item)[0]!;
-    const quote = await call(item, "http", baseline(item));
+    const quote = await call(item, "http", await baseline(item));
     expect(quote.offers.length).toBeGreaterThan(0);
     for (const offer of quote.offers) for (const value of [123, false]) {
-      const reading = await call(item, "mcp", { ...baseline(item), [field]: value }, tool, signature(offer), crypto.randomUUID());
+      const reading = await call(item, "mcp", { ...await baseline(item), [field]: value }, tool, signature(offer), crypto.randomUUID());
       expect(reading.body).toMatchObject({ charged: false, code: "bad_request", input_field: field,
         expected_type: "string", received_type: typeof value });
       expect(reading.quote).toBe(false);

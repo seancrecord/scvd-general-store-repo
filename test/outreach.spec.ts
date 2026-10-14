@@ -158,6 +158,7 @@ describe("the draft: a dated observation with receipts, never a score", () => {
     round("2026-W34", [
       host("agents.chain.link", "not_ready", {
         failed: ["status-402", "challenge-header"],
+        observed_at: "2026-08-19T12:00:00.000Z",
         volume_claim: CLAIM,
       }),
     ]),
@@ -670,7 +671,7 @@ describe("the desk and its doors", () => {
     const readyList = summary.slice(summary.indexOf("Ready doors — the welcome"));
     expect(readyList).not.toContain('action="/admin/outreach/send"');
     expect(readyList).toContain("open in Gmail — the welcome written");
-    expect(readyList).toContain('href="mailto:hello%40ready.example?subject=a%20dated%20page');
+    expect(readyList).toContain('href="mailto:hello%40ready.example?subject=an%20archived%20reading');
     expect(readyList).toContain('href="#card-ready.example"');
     // The card carries the contact and the same link.
     const card = text.slice(text.indexOf('<section id="card-ready.example">'));
@@ -731,7 +732,7 @@ describe("the ready doors — the welcome with the passport page (2026-09-01)", 
     const note = draftWelcome(deriveWelcomes(latest, round("2026-W34", []))[0]!, BASE);
     expectOneLinkNoImage(note, `${BASE}/passport/new.example`);
     // Still says the things that make it worth reading.
-    expect(note).toContain("never says \"passed\"");
+    expect(note).toContain("Paid settlement and successful delivery were not tested");
     expect(note).toContain("first week");
     expect(note).toContain("nothing to unsubscribe from");
   });
@@ -798,14 +799,14 @@ describe("the date a note carries is the row's, not the seal's (2026-09-05)", ()
   it("dates a prospect by the row where the probe wrote a time down", () => {
     const byHost = Object.fromEntries(deriveProspects(latest, null).map((p) => [p.host, p]));
     expect(byHost["stamped.example"]!.observed_at).toBe("2026-09-01T13:27:08.998Z");
-    expect(byHost["unstamped.example"]!.observed_at).toBe("2026-09-05T13:27:08.998Z");
+    expect(byHost["unstamped.example"]!.observed_at).toBeNull();
     expect(draftNote(byHost["stamped.example"]!, BASE)).toContain("On 2026-09-01 our weekly probe");
   });
 
   it("dates a welcome the same way", () => {
     const byHost = Object.fromEntries(deriveWelcomes(latest, null).map((w) => [w.host, w]));
     expect(byHost["stamped-ready.example"]!.observed_at).toBe("2026-09-02T08:00:00.000Z");
-    expect(byHost["unstamped-ready.example"]!.observed_at).toBe("2026-09-05T13:27:08.998Z");
-    expect(draftWelcome(byHost["stamped-ready.example"]!, BASE)).toContain("On 2026-09-02 our weekly pass");
+    expect(byHost["unstamped-ready.example"]!.observed_at).toBeNull();
+    expect(draftWelcome(byHost["stamped-ready.example"]!, BASE)).toContain("At 2026-09-02T08:00:00.000Z");
   });
 });

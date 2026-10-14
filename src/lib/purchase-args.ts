@@ -1,3 +1,5 @@
+import { spotHosts, BASELINE_CERT_PATTERN } from "@/lib/spot-check-terms";
+import { readSpotOriginal } from "@/services/spot-evidence";
 import { EVM_TRANSACTION_PATTERN } from "@/lib/purchase-input-syntax";
 import { checkOptionalObservationConstraints } from "@/lib/purchase-constraints";
 import { unicodeLength, hasUnpairedSurrogate } from "@/lib/unicode";
@@ -8,7 +10,7 @@ import { target as a2aTarget } from "@/lib/a2a-instrument";
 import { a2aAdmission } from "@/lib/a2a-admission";
 import { inspectionNetworkGuide } from "@/lib/base-rpc";
 import { CASE_FILE_CLAIM_CAP } from "@/services/case-file";
-import { buyInputExample, buyInputSchema, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
+import { buyInputExample, buyInputSchema, CITED_ARTIFACT_PATTERN, PURCHASE_PURPOSE_MAX_LENGTH } from "@/lib/bazaar-discovery";
 import { InvalidPatronageTarget, requireRenewalPass } from "@/services/patronage";
 import { isSolanaSignature } from "@/lib/solana-rpc";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
@@ -211,6 +213,20 @@ export async function checkPurchaseInputSafety(env: Env, item: MenuItem, rawArgs
     return refuse(400, "bad_request",
       `${args.field("purpose")} exceeds ${PURCHASE_PURPOSE_MAX_LENGTH} Unicode characters. Shorten it before purchasing; we do not truncate signed statements. Nothing charged.`,
       { input_field: "purpose", max_length: PURCHASE_PURPOSE_MAX_LENGTH });
+  }
+  /**
+   * THE CITED ARTIFACT (2026-10-01): shape only, before quoting. The
+   * store does not fetch it, verify it, or know its issuer; it checks
+   * that the line is a line — format token, colon, printable reference
+   * — because a certificate field is forever and a malformed one would
+   * be signed forever. The length cap was already refused by the
+   * schema loop above; this is the pattern.
+   */
+  const citedArtifact = args.get("cited_artifact");
+  if (citedArtifact !== undefined && citedArtifact !== "" && !CITED_ARTIFACT_PATTERN.test(citedArtifact)) {
+    return refuse(400, "bad_request",
+      `${args.field("cited_artifact")} wants <format>:<reference> — a short lowercase token naming the envelope kind (dsse, jws, …), a colon, then the artifact's own id or digest as its issuer spells it, printable and without spaces, e.g. dsse:art_e415901189dc1613. Recorded verbatim and signed; never fetched or verified here. Nothing charged.`,
+      { input_field: "cited_artifact" });
   }
   const passId = args.get("pass_id");
   if (item.id === "recurring_patronage" && (passId !== undefined || args.has?.("pass_id"))) {
@@ -664,11 +680,21 @@ export async function checkPurchaseArgs(
     }
   }
 
+  if (item.id === "batch_spot_check") {
+    try { spotHosts(read("hosts")); }
+    catch { return refuse(400, "bad_request", "Give a JSON array of distinct bare hostnames within the published batch bounds. Nothing charged.", { input_field: "hosts" }); }
+  }
+  if (item.id === "change_check") {
+    const id = read("baseline_cert_id") ?? "";
+    if (!new RegExp(BASELINE_CERT_PATTERN).test(id) || !(await readSpotOriginal(env, id, (read("host") ?? "").trim().toLowerCase()))) {
+      return refuse(400, "baseline_unavailable", "The earlier Spot Check original is unavailable, invalid or for a different host. Nothing charged. Read the free history instead.", { input_field: "baseline_cert_id" });
+    }
+  }
   if (item.id === "research_comparison") {
     try { comparisonUrls(read("urls"), env.STORE_BASE_URL); }
     catch (error) { return refuse(400, "bad_request", `${error instanceof Error ? error.message : "Invalid endpoint set."} Nothing charged.`, { input_field: "urls" }); }
   }
-  if (item.id === "spot_check") {
+  if (item.id === "spot_check" || item.id === "change_check") {
     const { validSpotCheckHost } = await import("@/services/spot-check");
     if (!validSpotCheckHost(read("host"))) {
       return refuse(
@@ -896,6 +922,8 @@ export function purchaseInputFrom(
   const args = readerFor(item, rawArgs);
   const read = (name: string) => args.get(name);
   const input: FulfillmentInput = {};
+  if (item.id === "batch_spot_check") input.spotHosts = read("hosts");
+  if (item.id === "change_check") input.baselineCertId = read("baseline_cert_id");
   if (item.id === "research_comparison") input.comparisonUrls = read("urls");
 
   /**
@@ -992,7 +1020,7 @@ export function purchaseInputFrom(
     input.statementHours = read("hours");
     input.statementNetwork = read("network");
   }
-  if (item.id === "spot_check") {
+  if (item.id === "spot_check" || item.id === "change_check") {
     input.spotCheckHost = (read("host") ?? "").replace(/\0/g, "");
   }
   if (item.id === "coffees_for_closers") {
@@ -1101,6 +1129,12 @@ export function purchaseInputFrom(
   const mandateId = read("mandate_id");
   if (mandateId) {
     input.mandateId = mandateId;
+  }
+  // The outside link, any item: shape-checked by checkPurchaseArgs,
+  // carried verbatim, never resolved.
+  const citedArtifact = read("cited_artifact");
+  if (citedArtifact) {
+    input.citedArtifact = citedArtifact;
   }
   if (item.id === "the_mandate") {
     input.mandateText = read("mandate") ?? "";

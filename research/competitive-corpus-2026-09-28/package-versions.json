@@ -1,0 +1,151 @@
+[
+  {
+    "name": "mppx",
+    "version": "0.11.0",
+    "license": "MIT",
+    "repository": {
+      "url": "https://github.com/wevm/mppx.git",
+      "type": "git"
+    },
+    "dist": {
+      "shasum": "446204227b016bd4f700489fc9899da47a9b887f",
+      "tarball": "https://registry.npmjs.org/mppx/-/mppx-0.11.0.tgz",
+      "fileCount": 485,
+      "integrity": "sha512-4cgsF8EAqj21oT8UDEj90xHHpi529INi4KjriirxAJEpBNs6U3Zcj7QVGME/coBQBT9cyK95omC3yVYhrlBPYA==",
+      "signatures": [
+        {
+          "sig": "MEUCIQDa2orJnU3oyLpRRMVpvQDldGX4Ozk/XuMreQ7mN9W2nAIgHNQb4AKMVs8Fq1UkewUyZbY0FAeA4g/JVqGsC7x8tHY=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEYCIQDNyMvUH+mDFCqbhq0E2FFKZ9/h3/j+wcGyYTt1vToFjgIhAMajVcff9S9gNREzjaJcH9IK42udWUkx91PCtirVBLYv",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/mppx@0.11.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 4713005
+    }
+  },
+  {
+    "name": "@x402/extensions",
+    "version": "2.27.0",
+    "license": "Apache-2.0",
+    "repository": "https://github.com/x402-foundation/x402",
+    "dist": {
+      "shasum": "ec9376f827fcf62f72a3f60da02908ae75b78e51",
+      "tarball": "https://registry.npmjs.org/@x402/extensions/-/extensions-2.27.0.tgz",
+      "fileCount": 50,
+      "integrity": "sha512-eGBZZCTNtJsbzYoOe72Mfo/HN7Ir4i8+gmBUQ3ScrTiO91Q0bscO6LjGg2d3oJiFQ6g+YVXn+5fLxCEwoqgFsA==",
+      "signatures": [
+        {
+          "sig": "MEQCIDewBijPgsFkQHh8zbioQijQkELa5gUxoHeCdj6ScAhKAiAXMj+VkKHugzAkO5Op0tSOlzGm7BztXHa36gZS38cAIA==",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEUCIQDUdzixECqsyk/lnTGY/PnPdXLOVT27D52TG6waSYmCAwIgQ4yWeXI6ZyjdfIDyCPJQyGu6ePicK1mS3wFXRppJh+w=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/@x402%2fextensions@2.27.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 1727340
+    }
+  },
+  {
+    "name": "@agentcash/discovery",
+    "version": "1.7.5",
+    "license": "MIT",
+    "repository": {
+      "url": "https://github.com/merit-systems/agentcash-discovery",
+      "type": "git"
+    },
+    "dist": {
+      "shasum": "73226b68d8b4bdc7cf2bf0377a00ddcf87435b75",
+      "tarball": "https://registry.npmjs.org/@agentcash/discovery/-/discovery-1.7.5.tgz",
+      "fileCount": 19,
+      "integrity": "sha512-L2de/VDCoG7Eg7Xc3sTRL/DXVAGMHQh00kASI6ycUnR26n9L4iVAf7pvrGqIlTjZiHGDv5b9LEGWVGZ+Ut7ayw==",
+      "signatures": [
+        {
+          "sig": "MEUCIQC76Z/LnqATxrv21mzWz/tWVZWw+40qUug8D6T2TD7C7QIgN29RzvZzxJAh1qf0bQkPL1tQ10ssUZai8DzQJjdK5qo=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "unpackedSize": 3736472
+    }
+  },
+  {
+    "name": "x402-verify",
+    "version": "1.9.0",
+    "license": "MIT",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "verifier"
+    },
+    "dist": {
+      "shasum": "c258d6818038f8ea4229870274b2b99995499d6e",
+      "tarball": "https://registry.npmjs.org/x402-verify/-/x402-verify-1.9.0.tgz",
+      "fileCount": 27,
+      "integrity": "sha512-oqUrFoL2bAnthQf3hOc2B9j2JU20XUX8dvVZepa3kH6wapDlk3nanV7+uYTaj17CtJ4BqcGDwyjtuo2lyuAyyQ==",
+      "signatures": [
+        {
+          "sig": "MEYCIQDYbRVYw3rh3CuZ/I+//l3LZ1NXYkByroW5WgSjlVkoRAIhAL1Xi7/Y993+z5dmfqlE7SoMOdRSEreLXFV/LOvwSvxp",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEUCIB1EqxGevqB3n020XcdvoqC6N0Msj96NZvS3B2UDkYJiAiEAhcOP932aS9OrG9JPNGoK/Jx3m/BlMhmpyfdX/K1fJVI=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/x402-verify@1.9.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 322939
+    }
+  },
+  {
+    "name": "scvd-preflight",
+    "version": "0.2.0",
+    "license": "MIT",
+    "repository": {
+      "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+      "type": "git",
+      "directory": "x402-preflight"
+    },
+    "dist": {
+      "shasum": "7322ea331d48be37368f63c5d336e0bc97338f38",
+      "tarball": "https://registry.npmjs.org/scvd-preflight/-/scvd-preflight-0.2.0.tgz",
+      "fileCount": 12,
+      "integrity": "sha512-7/EOtFIJ4JtAur+RruFhoVKbpncpIJZBZ/asgokXFP2d86BzNCQNWxSBgQLC4Q0WerLDY95mI16LGZ638XSysg==",
+      "signatures": [
+        {
+          "sig": "MEUCIQDIztPmGKuPMdm0CqvoVXNvUQE6QUVA8VikjQW6Uy/wcwIgRPtiq5GNxgVrHGuFLOkPqUjBcl86ZEyTQalZA3Jk4Jc=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEYCIQDFmu0m4uGCi9a/x72eWsB59TYNPjZSH5kGZViJ/ReR/QIhAM7IiffoqPLSDs6oZRajDoLSChFsYC7vJ8uqN4ets3HG",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-preflight@0.2.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "unpackedSize": 45635
+    }
+  }
+]

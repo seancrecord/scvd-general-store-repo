@@ -111,7 +111,8 @@ const KNOWN_UNACKNOWLEDGED = [
   "../src/services/patron-anchors.ts",
   "../src/services/phantom.ts",
   "../src/services/refunds.ts",
-  "../src/services/requests.ts",
+  // requests.ts now carries request coverage to the counter. Its waitlist and
+  // failed-item scans remain outside this repair; this guard is per file.
   /*
    * stats.ts CAME OFF THIS LIST ON 2026-09-13, and both of its bounded
    * reads had to answer before it could — this check works per file,

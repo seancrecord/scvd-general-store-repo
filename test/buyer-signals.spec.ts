@@ -262,7 +262,7 @@ describe("at the doors", () => {
   });
 
   it("the keeper's page scans in one glance and expands on request", async () => {
-    await recordSettleSignal(testEnv, { door: "mcp", network: "solana:mainnet", item: "hello", purpose: "reading the shelf", house: false });
+    await recordSettleSignal(testEnv, { door: "mcp", network: "solana:mainnet", item: "hello", purpose: "reading the shelf", house: false, exampleCopied: ["name", "note"] });
     const page = await SELF.fetch(`${BASE}/admin/signals`, { headers: AUTH });
     expect(page.status).toBe(200);
     const html = await page.text();
@@ -272,7 +272,8 @@ describe("at the doors", () => {
     expect(html).toContain("reading the shelf");
     expect(html).toContain("BUYER_SIGNALS_ENABLED");
     expect(html).toContain("Who reads receipts");
-    expect(html).toContain("The worked example, bought as-is");
+    expect(html).toContain("Worked-example input matches");
+    expect(html).toContain("2 copied-example field matches, not distinct purchases");
     expect(html).toContain('href="/admin/disclosure"');
   });
 });

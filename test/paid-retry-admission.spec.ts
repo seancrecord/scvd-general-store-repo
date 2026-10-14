@@ -77,7 +77,7 @@ for (const door of ["http", "mcp", "mcp-standard"] as const) {
     for (const recovery of [false, true]) for (const network of recovery ? [BASE_NETWORK, POLYGON_NETWORK] : [BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK]) {
       it(`${id} ${door} ${closure} ${network} ${recovery ? "interrupted" : "cached"}: paid retrieval survives admission closing`, async () => {
         const item = items.find(i => i.id === id)!;
-        const args = { ...baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` }, key = recovery ? undefined : crypto.randomUUID();
+        const args = { ...await baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` }, key = recovery ? undefined : crypto.randomUUID();
         const quote = await call(item, "mcp", args, shelves(item)[0]!);
         expect(quote.quote).toBe(true);
         const offer = quote.offers.find(o => o.network === network)!;

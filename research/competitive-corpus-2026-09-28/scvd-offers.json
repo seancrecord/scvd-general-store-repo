@@ -1,0 +1,67 @@
+[
+  {
+    "id": "settlement_attestation",
+    "price_usdc": 0.004,
+    "at_a_glance": {
+      "attests": "The whole observation object: the transaction hash asked about, what the chain said, the block height, the chain head at reading, the confirmations, the moment observed, the desk's battery, and the binding — what, if anything, ties the transaction to one payment authorization (none, authorization_nonce or the reserved input_commitment), beside what was asked. When a facilitator's settlement response was supplied, input_claims is signed too: the sha256 of the bytes received and a per-field table of whether each claim agrees with the chain — never the claimed values themselves, echoed outside the signature under received_not_observed. The projection beside the artifact is signed on its own, points back by evidence_hash, and is never the record. Observations signed before 2026-09-11 carry neither battery nor binding: read that as predating binding classes, never as unbound; a battery cited without a binding is defective. From battery v3, a nonce checked against a successful receipt adds signed binding.evidence: pairing result, reason and, when readable, authorizer, nonce, recipient, atomic amount and receipt positions — one canonical USDC AuthorizationUsed immediately followed by its Transfer, every supplied term matching; ambiguous authorizers need payer, unknown ordering stays unestablished. Battery v2's independent nonce and transfer matches can overstate correspondence: consult /corrections before citing its binding claim. Battery v4 also checks the EVM receipt's transaction identity, reported chain, block height, chain head and status before signing; malformed provider answers, and missing or duplicate batch answers, are refused rather than labelled. From settlement-attestation-v5, a signed auth_capture field names each USDC leg that touched the x402 auth-capture escrow set (role, deployment, direction, source); absent, none did; status and binding never move for it. Historical signed bytes are unchanged; a sheaf (attestation_bundle) is this artifact at volume, every member signed alone.",
+      "input": "tx_hash (query parameters; input schema and checkout: https://scvd.store/menu/settlement_attestation?view=compact)",
+      "output": "A signed JSON observation of one transaction on Base, Polygon, or Solana — the identifier's shape picks the chain — with status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height (slots on Solana), confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+      "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+      "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+      "price_and_fulfilment": "$0.004 USDC fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could; delivered instantly",
+      "does_not_attest": "That goods or services were delivered, that a NOT_FOUND will never settle later, or that the payment was legitimate. That the transaction was the settlement of any particular request: binding says what it ties, and authorization_nonce ties one EIP-3009 authorization, not one 402 challenge — whether the door tied that nonce to a single request is the door's work and unobserved. Under auth-capture, the lifecycle: whether the hold auth_capture names was later captured, voided or refunded was not read. Anything a facilitator's settlement response says: it is received, not observed, and an agreement row that reads disagrees is a finding about the response, not a verdict on anyone. One RPC read of public state, at one moment, signed by a party with no interest in the answer."
+    }
+  },
+  {
+    "id": "research_comparison",
+    "price_usdc": 0.01,
+    "at_a_glance": {
+      "attests": "The supplied endpoint set, observation window, per-endpoint preflight reports, advertised atomic terms, host history with dates and coverage, same-endpoint network comparisons, shared receiving-address matches, gaps and limits. SHA-256 of observation.signed_payload is bound into the purchase certificate as attests; observation.signature_jcs also covers the RFC 8785 canonical record.",
+      "input": "urls (query parameters; input schema and checkout: https://scvd.store/menu/research_comparison?view=compact)",
+      "output": "One signed comparison: live atomic payment terms, dated host history and gaps, same-endpoint network changes, shared receivers and limits. No research quality or ownership verdict. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+      "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+      "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+      "price_and_fulfilment": "$0.01 USDC fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could; delivered instantly",
+      "does_not_attest": "Research accuracy, freshness, licensing or suitability for a trade; common ownership or common underlying sources; complete market coverage; final variable costs; settlement or delivery success. An advertised address match is not an identity verdict. No ranking, recommendation or Coinbase endorsement."
+    }
+  },
+  {
+    "id": "a2a_repair_kit",
+    "price_usdc": 49,
+    "at_a_glance": {
+      "attests": "RFC 8785 canonical observation bytes: the card and endpoint URLs, moment, battery and protocol version, bounded exchanges, per-check states, counts and gaps. The purchase certificate binds the initial observation hash; each recheck and card-watch pass is signed separately.",
+      "input": "url (query parameters; input schema and checkout: https://scvd.store/menu/a2a_repair_kit?view=compact)",
+      "output": "A signed A2A report, suggested repairs, regression runner URL, private one-use recheck token and finite card-watch history Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+      "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+      "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+      "price_and_fulfilment": "$49 USDC fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could; delivered instantly",
+      "does_not_attest": "Complete A2A conformance, untested versions or transports, application correctness, safety, uptime, or that the suggested repairs were applied. The store authored the suggestions; implementation is separately scoped. Missing watch slots are counted against the observer."
+    }
+  },
+  {
+    "id": "service_audit",
+    "price_usdc": 5,
+    "at_a_glance": {
+      "attests": "The whole report: the audited URL, the moment, the criteria version, the verdict, every check and advisory, and the report's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
+      "input": "url (query parameters; input schema and checkout: https://scvd.store/menu/service_audit?view=compact)",
+      "output": "A signed JSON audit report — verdict (ready, not_ready or unreachable), every check and advisory from the published preflight battery, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable report URL serving the record free forever. Instant; one GET at one moment, never monitoring. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+      "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+      "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+      "price_and_fulfilment": "$5 USDC fixed, one-off; nothing here charges again by itself, ever — there is no mechanism that could; delivered instantly",
+      "does_not_attest": "That the endpoint is endorsed, reliable, or up at any other moment. One GET against published criteria; an unreachable verdict is a fact about one network path at one moment."
+    }
+  },
+  {
+    "id": "conformance_watch",
+    "price_usdc": 5,
+    "at_a_glance": {
+      "attests": "Each daily pass on its own: the watch id, the watched URL, the moment, the verdict, the names of failed checks and of advisories — in the declared canonical order, so any single day can be quoted alone.",
+      "input": "url (query parameters; input schema and checkout: https://scvd.store/menu/conformance_watch?view=compact)",
+      "output": "A watch id and a permanent history URL, readable immediately and filling in daily for seven days: one signed pass per day carrying the verdict, every failed check and advisory by name, plus a summary deriving the days the store missed and whether the readout drifted between passes. Bounded and prepaid; ends after seven days, renews only by repurchase. Every artifact carries a cert_id and verifies free at https://scvd.store/api/verify/{cert_id}.",
+      "cryptography": "ed25519 signature by this store's key, published at https://scvd.store/.well-known/scvd-signing-key and carried inside every 402",
+      "verify": "GET https://scvd.store/api/verify/{cert_id} — free, no account, no rate limit, checkable offline with the published key",
+      "price_and_fulfilment": "$5 USDC fixed, covering a 7-day term, one payment; nothing here charges again by itself, ever — there is no mechanism that could; delivered instantly",
+      "does_not_attest": "Anything about the hours between passes, or about days nobody checked — those are derived at read and counted against us. One pass a day is conformance cadence, never uptime. Nor is it bought. The watched party pays — the rating agency's model, whose one defect is that the rater drifts favorable — so the terms say it at spec level: payment buys frequency and permanence, never outcome. An endpoint that degrades while its operator is paying gets signed readouts saying so, in public, at the URL the operator paid for. The clause rides every watch history as who_pays_and_what_it_buys."
+    }
+  }
+]

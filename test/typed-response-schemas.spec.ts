@@ -425,9 +425,12 @@ describe("every paid door declares its shape, not just the ones walked", () => {
     for (const [path, ops] of Object.entries(paths)) {
       if (!path.startsWith("/api/buy/")) continue;
       for (const [method, op] of Object.entries(ops as Record<string, any>)) {
+        // The 200 itself is a component reference on the paid doors
+        // (Delivered / OrderQueued, 2026-10-01); resolve it before the
+        // schema inside it, or every door reads as declaring nothing.
         const schema = deref(
           doc,
-          op?.["responses"]?.["200"]?.["content"]?.["application/json"]?.[
+          deref(doc, op?.["responses"]?.["200"])?.["content"]?.["application/json"]?.[
             "schema"
           ],
         );
@@ -455,7 +458,7 @@ describe("every paid door declares its shape, not just the ones walked", () => {
       const properties =
         deref(
           doc,
-          op["responses"]?.["200"]?.["content"]?.["application/json"]?.[
+          deref(doc, op["responses"]?.["200"])?.["content"]?.["application/json"]?.[
             "schema"
           ],
         )?.["properties"] ?? {};

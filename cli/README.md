@@ -42,10 +42,16 @@ Zero dependencies. Node 18.17+. MIT.
   edited after the fact.
 -->
 
+**Version requirements:** `init` requires scvd-cli 0.5.0 or later; `inspect` requires 0.4.0 or later.
+Check the version available on npm with `npm view scvd-cli version`.
+If your installed release predates that command, run
+`node cli/scvd.mjs inspect <url>` from this checkout.
+
 ## What it does
 
 | Command | What it asks the store |
 | --- | --- |
+| `scvd init [--dry-run] [--yes] [--verifier] [--dir <path>]` | Wire the store's MCP door into the agent hosts found on this machine. Shows the exact change and asks before writing. No network call. Added in 0.5.0; see below. |
 | `scvd preflight <url>` | Does that x402 door answer a well-formed 402? One probe, every check named, testnet traps flagged. |
 | `scvd inspect <url>` | Observed protocols, unverified advertised terms, structural findings, observation time and gaps. No signature verification or payment. Added in 0.4.0. |
 | `scvd conformance <file\|->` | Is that compact-JWS signed offer or receipt well-formed, correctly signed and unexpired? Any issuer's, including ones the store competes with. |
@@ -85,7 +91,41 @@ cannot complete a paid purchase even if you asked it to. Paid shelves
 belong in an x402 client you already trust, or in the MCP server at
 `https://scvd.store/mcp`.
 
-**It stores nothing.** No config file, no cache, no telemetry.
+**It stores nothing of its own.** No config file, no cache, no
+telemetry. The one command that writes anything is `scvd init`, and it
+writes a host's MCP configuration inside the project you point it at,
+only after showing you the exact change and hearing yes.
+
+## Wiring a host (`scvd init`)
+
+```
+cd your-project
+scvd init --dry-run     # look: which hosts were found, which files, what goes in them
+scvd init               # the same, then "Write N files? [y/N]"
+scvd init --yes         # consent up front, for a script
+```
+
+It detects the agent hosts on this machine and writes the store's MCP
+door into the file each one reads from the project:
+
+| Host | Detected by | File written | Entry |
+| --- | --- | --- | --- |
+| Claude Code | `~/.claude`, `~/.claude.json` or `./.claude` | `.mcp.json` | `{ "type": "http", "url": "https://scvd.store/mcp" }` |
+| Cursor | `~/.cursor` or `./.cursor` | `.cursor/mcp.json` | `{ "url": "https://scvd.store/mcp" }` |
+| Codex | `~/.codex` | none — a TOML snippet is printed for you to paste into `~/.codex/config.toml` | `[mcp_servers.scvd-store]` |
+
+No host found still offers `.mcp.json`, the portable file. Existing
+entries under other names are kept; an existing `scvd-store` entry with
+a different value is **kept as is** and reported (exit `1`), because
+that is your decision and not this tool's. Nothing outside the project
+is ever written, and `init` makes no network request. `--verifier`
+wires the free-only door (`/mcp/verifier`, named `scvd-verifier`) instead
+of the store, for a host that must never list a paid tool. Without a
+terminal and without `--yes` it prints the plan and exits `2`.
+
+The door it wires is the same one the published plugin manifests name;
+`init` is for the developer who would rather write one small file than
+wait on a marketplace review.
 
 ## What to do about it
 

@@ -29,17 +29,19 @@
  *   npm run doors:check                    # read the live store, compare, report
  *   npm run doors:check -- --base=http://localhost:8787
  *   npm run doors:check -- --json          # the observation, for a pipe
+ *   npm run doors:check -- --clients-only  # discovery access by user-agent
  *   npm run doors:check -- --record        # write it down as the new baseline
  *   npm run doors:check -- --review=webmcp # mark one door re-read today
  *
  * EXIT CODES, because CI branches on them:
  *   0  nothing fell, no review overdue
- *   1  a criterion that was met is no longer met, OR a door's review
- *      is overdue. Both are work; neither is a crash.
+ *   1  a criterion that was met is no longer met, a client is blocked,
+ *      OR a door's review is overdue. These are work, not crashes.
  *   2  the run could not reach a verdict at all.
  */
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { collectClientAccess, readClientAccess } from "./lib/client-access.mjs";
 import {
   AS_A_BROWSER,
   DOORS,
@@ -137,6 +139,7 @@ async function collect() {
     mcpTools,
     preflightNoAuth,
     registry,
+    clientAccess,
   ] = await Promise.all([
     get(`${base}/`, { headers: AS_A_BROWSER }),
     get(`${base}/openapi.json`),
@@ -156,6 +159,7 @@ async function collect() {
       body: "{}",
     }),
     get("https://registry.modelcontextprotocol.io/v0/servers?search=scvd"),
+    collectClientAccess(`${base}/llms.txt`),
   ]);
   const rooms = await sweepRooms(sitemap.text, base, get);
   const challenge = await knock(openapi.json);
@@ -174,6 +178,7 @@ async function collect() {
     preflightNoAuth,
     registry,
     rooms,
+    clientAccess,
     // The manifest a republish would actually send. Read from disk
     // rather than described in prose, so the registry criterion
     // compares two real strings instead of a keyword against a hope.
@@ -334,6 +339,14 @@ function report(observation, diff, due, previous) {
 /* ── run ─────────────────────────────────────────────────────────────── */
 
 const now = Date.now();
+if (flag("clients-only")) {
+  const rows = await collectClientAccess(`${base}/llms.txt`);
+  const result = readClientAccess(rows);
+  console.log(JSON.stringify({ base, taken_at: new Date(now).toISOString(), ...result,
+    rows: rows.map(({ text, ...row }) => ({ ...row, bytes: Buffer.byteLength(text ?? "") })),
+  }, null, 2));
+  process.exit(result.verdict === "met" ? 0 : result.verdict === "unmet" ? 1 : 2);
+}
 const record = loadRecord();
 
 // --review marks a door re-read and writes nothing else. Kept separate
@@ -373,10 +386,11 @@ if (recording) {
   if (!asJson) console.log(`\nRecorded to ${RECORD.pathname}.`);
 }
 
-// A door we could not read is not a door that fell. Only real falls and
-// overdue reviews are worth a red build; everything else is a report.
+// A door we could not read is not a door that fell. An observed client
+// block fails even before the keeper records a baseline for the new check.
 const unreadable = observation.doors.every(
   (door) => door.tally.met + door.tally.partial + door.tally.unmet === 0,
 );
 if (unreadable) process.exit(2);
-process.exit(diff.regressions.length > 0 || due.length > 0 ? 1 : 0);
+const clientBlocked = readClientAccess(snapshot.clientAccess).verdict === "unmet";
+process.exit(clientBlocked || diff.regressions.length > 0 || due.length > 0 ? 1 : 0);

@@ -21,6 +21,7 @@
 import { canonicalAddress } from "@/lib/addresses";
 
 export const KV_KEYS = {
+  spotEvidence: (certId: string): string => `spot_evidence:${certId}`,
   callingCardKey: (id: string): string => `calling_card:key:${id}`,
   callingCardRevoked: (id: string): string => `calling_card:revoked:${id}`,
   callingCardReportPrefix: "calling_card:report:",

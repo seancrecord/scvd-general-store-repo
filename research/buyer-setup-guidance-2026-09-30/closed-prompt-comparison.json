@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-09-30T21:05:57.011Z",
+  "source_archive": "setup-guidance-buyer-2026-09-30",
+  "comparisons": [
+    {
+      "file": "buyers/codex-directed-r1/prompt.txt",
+      "sha256": "13695dbfd0f2fb1cd8e87d03d160d3c4ca330860aa20cd02400f23ac10166918",
+      "unchanged": true
+    },
+    {
+      "file": "buyers/claude-directed-r1/prompt.txt",
+      "sha256": "09bbf310b9d4361f7f6d69dda8335460783b8faefa504dec0c248c3ed0d0f8ce",
+      "unchanged": true
+    },
+    {
+      "file": "buyers/codex-directed-r2/prompt.txt",
+      "sha256": "13695dbfd0f2fb1cd8e87d03d160d3c4ca330860aa20cd02400f23ac10166918",
+      "unchanged": true
+    },
+    {
+      "file": "buyers/claude-directed-r2/prompt.txt",
+      "sha256": "09bbf310b9d4361f7f6d69dda8335460783b8faefa504dec0c248c3ed0d0f8ce",
+      "unchanged": true
+    },
+    {
+      "file": "qualification/codex/prompt.txt",
+      "sha256": "b4473030e0df1910fe798b4d8a9546639d9cc87f704f7aa4d2626c49623aafc6",
+      "unchanged": true
+    },
+    {
+      "file": "qualification/claude/prompt.txt",
+      "sha256": "6c91b41ccc01a45cad84378ad14b7c982a670af93c0fcb106149d46036b11245",
+      "unchanged": true
+    },
+    {
+      "file": "buyers/recipient-prompt.txt",
+      "sha256": "4b9ec2b2f788184c293a076c0b88c4b3a3041caadee3bb8501e0edcf1b5c1dd3",
+      "unchanged": true
+    }
+  ]
+}

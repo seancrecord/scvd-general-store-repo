@@ -138,6 +138,8 @@ interface SettleRecordValue {
   at?: string;
   transaction?: string;
   source?: string;
+  /** Stamped by the till when it booked the settle as house (2026-10-02). */
+  house?: boolean;
   /**
    * Stamped by the backfill when a rebooked settle's certificate
    * predates the rail-meter seam: the rail count was left to the
@@ -211,6 +213,7 @@ export async function backfillPayerSettlesFromCertificates(
     const transaction = cert?.settlement_tx;
     if (!cert || !payer || !transaction) continue;
     const protocol = await certificateProtocol(env, cert, context);
+    if (protocol === "gateway") continue;
     if (protocol !== "x402") {
       result.skipped_certificates.push({ cert_id: cert.cert_id, reason: protocol });
       // A previous legacy repair may already have written this key. Do not

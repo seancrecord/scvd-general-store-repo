@@ -20,7 +20,7 @@ async function claim(certId?: unknown, network = laborNetworks()[0]!, stranger =
 }
 async function buy(id: string, door: LaborDoor, network = laborNetworks()[0]!) {
   const item = items.find(i => i.id === id)!;
-  const args: Obj = { ...baseline(item), purpose: `SCVD-E2E claims ${crypto.randomUUID()}`, ...(id === "spot_check" ? { host: "claims-fixture.example" } : id === "the_confession" ? { confession: `private fixture ${crypto.randomUUID()}` } : {}) };
+  const args: Obj = { ...await baseline(item), purpose: `SCVD-E2E claims ${crypto.randomUUID()}`, ...(id === "spot_check" ? { host: "claims-fixture.example" } : id === "the_confession" ? { confession: `private fixture ${crypto.randomUUID()}` } : {}) };
   const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(o => o.network === network)!;
   const first = await sendLabor(id, door, args, await signLabor(offer), crypto.randomUUID());
   expect(first.refused).toBe(false);

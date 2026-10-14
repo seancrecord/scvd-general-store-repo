@@ -1,0 +1,166 @@
+[
+  {
+    "id": "x402-foundation--x402",
+    "repo": "x402-foundation/x402",
+    "path": "typescript/packages/extensions/README.md",
+    "revision": "a9955ae5538e5531557405091910136a2a2864c8",
+    "url": "https://raw.githubusercontent.com/x402-foundation/x402/a9955ae5538e5531557405091910136a2a2864c8/typescript/packages/extensions/README.md",
+    "source_url": "https://github.com/x402-foundation/x402/blob/a9955ae5538e5531557405091910136a2a2864c8/typescript/packages/extensions/README.md",
+    "status": 200,
+    "sha256": "fb98595e47f07614657be4e775f27236f22ea30dd57ca09cfa722d69f995cf2b",
+    "bytes": 2589,
+    "retrieved_at": "2026-09-28T23:53:02.550Z"
+  },
+  {
+    "id": "wevm--mppx",
+    "repo": "wevm/mppx",
+    "path": "CHANGELOG.md",
+    "revision": "42e9b8f6e677f894d275392b75bc31db272ffa6f",
+    "url": "https://raw.githubusercontent.com/wevm/mppx/42e9b8f6e677f894d275392b75bc31db272ffa6f/CHANGELOG.md",
+    "source_url": "https://github.com/wevm/mppx/blob/42e9b8f6e677f894d275392b75bc31db272ffa6f/CHANGELOG.md",
+    "status": 200,
+    "sha256": "7654ea1fdbf9503c56be61130af97b9bbff19f6cce94fd3704d02ff6365c5713",
+    "bytes": 61921,
+    "retrieved_at": "2026-09-28T23:53:02.843Z"
+  },
+  {
+    "id": "a2aproject--a2a-inspector",
+    "repo": "a2aproject/a2a-inspector",
+    "path": "README.md",
+    "revision": "8aa064639af106ff771d60428ef6d460f5454743",
+    "url": "https://raw.githubusercontent.com/a2aproject/a2a-inspector/8aa064639af106ff771d60428ef6d460f5454743/README.md",
+    "source_url": "https://github.com/a2aproject/a2a-inspector/blob/8aa064639af106ff771d60428ef6d460f5454743/README.md",
+    "status": 200,
+    "sha256": "4e83b171380c2f9102eb926b5e698e5957c7ef3a8dd4aa029bcfbfe9015087c1",
+    "bytes": 4888,
+    "retrieved_at": "2026-09-28T23:53:02.431Z"
+  },
+  {
+    "id": "a2aproject--a2a-tck",
+    "repo": "a2aproject/a2a-tck",
+    "path": "README.md",
+    "revision": "263b9cfaf16a554bdfb166a7ba5b67716e946349",
+    "url": "https://raw.githubusercontent.com/a2aproject/a2a-tck/263b9cfaf16a554bdfb166a7ba5b67716e946349/README.md",
+    "source_url": "https://github.com/a2aproject/a2a-tck/blob/263b9cfaf16a554bdfb166a7ba5b67716e946349/README.md",
+    "status": 200,
+    "sha256": "ef32b440b50fcb33849051114b99bd72c866c6cc56820dd89ee333998007db0e",
+    "bytes": 6297,
+    "retrieved_at": "2026-09-28T23:53:02.431Z"
+  },
+  {
+    "id": "modelcontextprotocol--inspector",
+    "repo": "modelcontextprotocol/inspector",
+    "path": "README.md",
+    "revision": "1e31c78fbf81a989e8eb47021c6281d7876ad7fd",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/inspector/1e31c78fbf81a989e8eb47021c6281d7876ad7fd/README.md",
+    "source_url": "https://github.com/modelcontextprotocol/inspector/blob/1e31c78fbf81a989e8eb47021c6281d7876ad7fd/README.md",
+    "status": 200,
+    "sha256": "370ef1263e69056682d553491a5373e94f2cb31e1e96d0bf39a5282a87b7b979",
+    "bytes": 9724,
+    "retrieved_at": "2026-09-28T23:53:02.551Z"
+  },
+  {
+    "id": "Merit-Systems--x402scan",
+    "repo": "Merit-Systems/x402scan",
+    "path": "docs/DISCOVERY.md",
+    "revision": "131a5d3ca9f71f145b6da4a40334c0b52544194c",
+    "url": "https://raw.githubusercontent.com/Merit-Systems/x402scan/131a5d3ca9f71f145b6da4a40334c0b52544194c/docs/DISCOVERY.md",
+    "source_url": "https://github.com/Merit-Systems/x402scan/blob/131a5d3ca9f71f145b6da4a40334c0b52544194c/docs/DISCOVERY.md",
+    "status": 200,
+    "sha256": "15f522118e702208c91f3dab520f005999ed23aba105afccd378c0fe4101526d",
+    "bytes": 4579,
+    "retrieved_at": "2026-09-28T23:53:02.430Z"
+  },
+  {
+    "id": "amgb20--MPP-Inspector",
+    "repo": "amgb20/MPP-Inspector",
+    "path": "README.md",
+    "revision": "648d61abdd3046b2132e61ab3744517faf52c949",
+    "url": "https://raw.githubusercontent.com/amgb20/MPP-Inspector/648d61abdd3046b2132e61ab3744517faf52c949/README.md",
+    "source_url": "https://github.com/amgb20/MPP-Inspector/blob/648d61abdd3046b2132e61ab3744517faf52c949/README.md",
+    "status": 200,
+    "sha256": "b744bf433842b121a4959cde2f3b138446cd16b216379a2819f1f705b1c411f9",
+    "bytes": 37595,
+    "retrieved_at": "2026-09-28T23:53:02.551Z"
+  },
+  {
+    "id": "x402-offer-receipt",
+    "url": "https://raw.githubusercontent.com/x402-foundation/x402/a9955ae5538e5531557405091910136a2a2864c8/typescript/packages/extensions/src/offer-receipt/README.md",
+    "status": 200,
+    "sha256": "a6d72dd528ea51fdcdd3a52f8572973290ce70de1c8fb3c085bfbd84b5b1b9eb",
+    "bytes": 10344,
+    "retrieved_at": "2026-09-28T23:55:47.010Z"
+  },
+  {
+    "id": "x402-readme",
+    "url": "https://raw.githubusercontent.com/x402-foundation/x402/a9955ae5538e5531557405091910136a2a2864c8/README.md",
+    "status": 200,
+    "sha256": "a89795dbb847aaf8b78dd4b024c7faddc0f34993e6841868da6d7e588a332dab",
+    "bytes": 9530,
+    "retrieved_at": "2026-09-28T23:55:47.085Z"
+  },
+  {
+    "id": "scvd-developers",
+    "url": "https://scvd.store/developers",
+    "status": 200,
+    "sha256": "2d40bda5a3168e8f9053d5c1e7218df81cfa6672f2a3c74d83dbbe74354002fb",
+    "bytes": 24052,
+    "retrieved_at": "2026-09-28T23:55:47.740Z"
+  },
+  {
+    "id": "scvd-menu",
+    "url": "https://scvd.store/menu.json",
+    "status": 200,
+    "sha256": "e08553d50d0f7e986bed84bae53194c11a3d6c4f2e4f9d89689b7b0f0801d39a",
+    "bytes": 451347,
+    "retrieved_at": "2026-09-28T23:55:48.913Z"
+  },
+  {
+    "id": "scvd-a2a",
+    "url": "https://scvd.store/a2a",
+    "status": 200,
+    "sha256": "bfa252399f41bec5610b95a0c884f937baac5bcee20578739c9a14dedd005dbb",
+    "bytes": 2578,
+    "retrieved_at": "2026-09-28T23:55:48.935Z"
+  },
+  {
+    "id": "scvd-corpus-index",
+    "url": "https://scvd.store/corpus/index.json",
+    "status": 200,
+    "sha256": "3d34a3ba567e7cdea57bdd5a266e4bbecf8983d045cc5c8bc30220339c590448",
+    "bytes": 2697,
+    "retrieved_at": "2026-09-28T23:55:50.109Z"
+  },
+  {
+    "id": "x402-watch",
+    "url": "https://docs.x402.watch/",
+    "status": 200,
+    "sha256": "6a4617cfea775553cc9a9ed74ee36f7f7c70465c66ab4d884e08232d1d2bf94c",
+    "bytes": 8876,
+    "retrieved_at": "2026-09-28T23:55:50.258Z"
+  },
+  {
+    "id": "merit-issue",
+    "url": "https://api.github.com/repos/Merit-Systems/x402scan/issues/1014/comments",
+    "status": 200,
+    "sha256": "4f178f481e11ff6edd6e3a58e2df55b7e973bbf99dff31da127238b8c6a31b6f",
+    "bytes": 9522,
+    "retrieved_at": "2026-09-28T23:55:50.479Z"
+  },
+  {
+    "id": "x402-verifier-exports",
+    "url": "https://raw.githubusercontent.com/x402-foundation/x402/a9955ae5538e5531557405091910136a2a2864c8/typescript/packages/extensions/src/offer-receipt/index.ts",
+    "status": 200,
+    "sha256": "b6d4b736d0310a30e2cbe045cbbfc864bb66e564d2d907f13ed555b33f6a44a5",
+    "bytes": 2092,
+    "retrieved_at": "2026-09-28T23:58:34.937Z"
+  },
+  {
+    "id": "scvd-a2a-desk",
+    "url": "https://scvd.store/a2a-desk.json",
+    "status": 200,
+    "sha256": "4f00b1a894a2005924b39d1c56a7f2a2cdc931d51e1bea1005b0c332db3317a3",
+    "bytes": 9452,
+    "retrieved_at": "2026-09-28T23:58:35.028Z"
+  }
+]

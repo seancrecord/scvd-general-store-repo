@@ -1,0 +1,53 @@
+{
+  "series": {
+    "buyers-conditions.jsonl": {
+      "samples": 135,
+      "battery_samples": 0,
+      "ac_samples": 135,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "e7470ff2d206f6f156c8b5ea24ca306b7392cd47fc026f0a9279f5d869af30e1"
+    },
+    "claude-directed-r1-recipient-conditions.jsonl": {
+      "samples": 12,
+      "battery_samples": 0,
+      "ac_samples": 12,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "9fd8db323789bb84b9fe740ebd0e644cd48405731f7206185e8f44f951823696"
+    },
+    "claude-directed-r2-recipient-conditions.jsonl": {
+      "samples": 15,
+      "battery_samples": 0,
+      "ac_samples": 15,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "21b4ac8a90d30355543b252217605fcfb801f27a3e44b9766672e08063e6e698"
+    },
+    "codex-directed-r2-recipient-conditions.jsonl": {
+      "samples": 18,
+      "battery_samples": 0,
+      "ac_samples": 18,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "9e6369ad9115418515dbc12666a42ffd7c86ee85e922e23f32515d11e0c28ec4"
+    },
+    "prelaunch-wait-conditions.jsonl": {
+      "samples": 1,
+      "battery_samples": 0,
+      "ac_samples": 1,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "2ac881ae4862284bd29b40279b1622843093646d8c1549c005a1bebcca289114"
+    },
+    "qualification-conditions.jsonl": {
+      "samples": 70,
+      "battery_samples": 0,
+      "ac_samples": 70,
+      "max_vitest_processes": 0,
+      "max_workerd_processes": 0,
+      "sha256": "e9db4701202707588965a679a69adf88f851ff1255375e14a12fc70e2790ecd5"
+    }
+  },
+  "limits": "Sample observations, not continuous proof of host state. No controller tests ran during native acquisition. Runtime timing gaps and stops are recorded individually in runs.json; no native attempt was restarted or granted a larger budget."
+}

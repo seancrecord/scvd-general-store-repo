@@ -15,7 +15,7 @@ import { defectClass } from "@/store/defect-vocabulary";
  * TWO KINDS OF NUMBER, KEPT APART. A month holds several rounds, and
  * a door probed in four rounds was probed four times. So the month
  * carries (a) its CLOSING reading — the last signed week's counts,
- * which is what "the state at month end" means — and (b) its
+ * which is the latest available week until the month closes — and (b) its
  * DOOR-WEEK totals — every round's counts summed, labelled as such,
  * which is what "how much did the round see this month" means. The
  * page never divides one by the other and never prints a share; a
@@ -50,7 +50,7 @@ export interface MonthState {
   weeks: { week: string; sequence: number; digest: string; taken_at: string }[];
   /** Batteries the month's verdicts cite, when the rows say. */
   batteries: string[];
-  /** The last signed week of the month: the state at month end. */
+  /** The latest available signed week in the month; more may arrive before close. */
   closing: MonthReading & { week: string };
   /** Every round's counts summed: door-weeks, not doors. */
   door_weeks: MonthReading & { rounds: number };
@@ -70,7 +70,7 @@ export interface MonthState {
 }
 
 export const MONTHLY_NOT_A_RANKING =
-  "Counts with their denominators, for one calendar month of signed rounds. No door is named; the closing reading is the last signed week's, and the door-week totals are every round's counts summed and labelled as such, never divided into a share. The month before is beside this one as two readings, and the direction is the reader's to read. Never a ranking, and never a verdict without its derivation and denominator beside it.";
+  "Counts with their denominators, for one calendar month of signed rounds. No door is named; the closing reading is the latest available signed week's in that month and can change while the month is open, and the door-week totals are every round's counts summed and labelled as such, never divided into a share. The month before is beside this one as two readings, and the direction is the reader's to read. Never a ranking, and never a verdict without its derivation and denominator beside it.";
 
 function reading(point: WeekPoint): MonthReading {
   return {

@@ -43,7 +43,7 @@ describe("the refund promise is loud where it matters", () => {
     );
     expect(humanItems.length).toBeGreaterThan(0);
     for (const item of humanItems) {
-      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
+      const response = await SELF.fetch(`${BASE}/api/buy/${item.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === item.id)!)).map(([key, value]) => [key, String(value)]))}`);
       expect(response.status).toBe(402);
       const body = (await response.json()) as Record<string, unknown>;
       const promise = String(body["refund_promise"] ?? "");
@@ -60,7 +60,7 @@ describe("the refund promise is loud where it matters", () => {
   it("stays out of instant items' 402s, where there is no window to miss", async () => {
     const instant = MENU_ITEMS.find((item) => item.fulfillment === "instant");
     expect(instant).toBeDefined();
-    const response = await SELF.fetch(`${BASE}/api/buy/${instant?.id}?${new URLSearchParams(Object.entries(baseline(items.find(row => row.id === instant!.id)!)).map(([key, value]) => [key, String(value)]))}`);
+    const response = await SELF.fetch(`${BASE}/api/buy/${instant?.id}?${new URLSearchParams(Object.entries(await baseline(items.find(row => row.id === instant!.id)!)).map(([key, value]) => [key, String(value)]))}`);
     expect(response.status).toBe(402);
     const body = (await response.json()) as Record<string, unknown>;
     expect(body["refund_promise"]).toBeUndefined();

@@ -156,6 +156,14 @@ export function decisionBlock(passport: EndpointPassport): string {
   return `<section class="decision" data-decision="${escapeHtml(s.decision)}">
     <p class="decision-word">${escapeHtml(s.decision)}</p>
     ${becauseHtml(passport)}
+    ${s.observation ? `<p class="menu-desc" data-observation-scope>
+      <strong>Request:</strong> <code>${escapeHtml(s.observation.method ?? "method not recorded")}</code>
+      <code>${escapeHtml(s.observation.url)}</code><br>
+      <strong>Observed:</strong> ${escapeHtml(s.observed_at ?? "request time unknown")}<br>
+      ${escapeHtml(s.observation.scope)}<br>
+      ${s.observation.evidence_url ? `<a href="${escapeHtml(s.observation.evidence_url)}">Raw challenge evidence</a>` : "raw challenge not retained in this passport's source"}
+      ${s.observation.source_url ? ` · <a href="${escapeHtml(s.observation.source_url)}">Original signed snapshot</a>` : ""}
+    </p>` : ""}
     <p class="menu-meta">${escapeHtml(DECISION_MEANING[s.decision])}
     Derived from <code>status: ${escapeHtml(s.status)}</code> ${basis("derived")} ·
     <a href="/passport#decision">the rule</a> · ${escapeHtml(BASIS_LEGEND)}</p>
@@ -634,7 +642,7 @@ export function refusalCard(input: {
    * rendering a withdrawn finding as a refusal about the host would
    * be publishing the retracted claim in a smaller font.
    */
-  reason: "never-observed" | "not-ready" | "retracted-reading" | "protocol-unmeasured";
+  reason: "never-observed" | "not-ready" | "retracted-reading" | "protocol-unmeasured" | "observation-undated";
   detail: string;
 }): string {
   const decision = input.reason === "not-ready" ? "NOT_READY" : "INDETERMINATE";

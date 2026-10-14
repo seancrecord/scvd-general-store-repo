@@ -314,7 +314,13 @@ Give `tx_hash`; optional `mandate_id`, `url`, `claim`, `launch_check_id`.
 Served forever at `https://scvd.store/case/{case_id}`. It never says who
 was wronged; if this store is a party, the file says so on its face.
 
-### The Aura Walk (3.14.0, 2026-09-02)
+### Agent shopping audit — The Aura Walk
+
+Find where a cold agent gets stuck so you can prioritize changes to discovery,
+instructions and checkout before sending more buyers through them. Scope,
+current terms and free first step: https://scvd.store/operators#shopping-audit.
+A report identifies observed friction; implementing fixes is separate.
+
 
 `aura_walk` ($150) — your own x402 door shopped cold by models of
 different strength, by the keeper's hand, the method this store runs

@@ -4,6 +4,54 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## Unreleased — advisory scope and exported-bundle reports
+
+`verify-source --subject` adds bounded reader commentary beside signed advisory
+codes, with observed facts and unknown behavior separate. Missing retry-key or
+signed-offer declarations do not become claims of endpoint-wide absence;
+declared retry fields do not prove retry safety. Unknown codes remain
+uninterpreted. Commentary is not signed evidence; original rows, signature
+checks, exit meanings and file-overwrite protection are unchanged. This source
+change is not a published release or a native buyer acceptance result.
+
+`verify <bundle.json>` now accepts the same compact report options as
+`verify-source`: subject selection, JSON/Markdown, saved challenge headers and
+exclusive report output. Without report options, `verify` retains its full
+result. Reports identify the input kind and hash the exact input bytes; bundle
+context is unsigned. Wrong input forms receive fixed command guidance without
+reflecting input contents. Detached corpus payloads need their signature
+envelope. These October 12 changes passed local regression and retained-bundle
+replay checks; they have not been published or accepted by a fresh native study.
+## 1.11.0 — source prepared 2026-10-01
+
+**Added.** Optional `verify-source --check-identifiers SAVED_DRAFT` compares
+long hexadecimal tokens in a saved UTF-8 draft against identifiers from a
+fresh local verification. The draft hash, counts, bounded token readings and
+coverage limits travel with the result. No text is corrected or rewritten.
+Exit 4 indicates an unrecognized token or no candidates; existing signature,
+incomplete-evidence and command-error exits retain precedence. The option
+cannot be combined with `--report-out`.
+
+This checks lexical values only, not their labels or the truth of the prose.
+Short, split and non-hex identifiers are outside coverage; later final text is
+not covered by a check of earlier draft bytes. Existing generated reports and
+commands without the option are unchanged. Publication and native adoption
+remain separate gates.
+
+## 1.10.0 — source prepared 2026-10-01
+
+**Added.** `sources SAVED_JSON [--subject EXACT_URL]` extracts candidate
+snapshot links from a saved corpus index or unsigned host history. Host history
+requires an exact endpoint, including its query. Index rows name snapshots,
+not merchants; the result never establishes subject presence or absence.
+It counts malformed, duplicate, unselected and omitted links, preserves
+pagination gaps, and binds the reading to the original file hash. Only whole
+links fit within the bounded JSON output. No URLs are fetched, no files are
+written and no signature, date or issuer claim is authenticated by this command.
+
+Existing export and verification commands, exit meanings and generated reports
+are unchanged. Source preparation is not npm publication or buyer acceptance.
+
 ## 1.9.0 — source prepared 2026-09-28
 
 **Added.** `verify-source --format markdown --report-out NEW_FILE` saves a

@@ -1,0 +1,24 @@
+{
+  "observed_date": "2026-10-05",
+  "note": "Projection of the AgentCash tool response; exact call time was not retained.",
+  "source": "openapi",
+  "origin": "https://scvd.store",
+  "trustTier": "ownership_verified",
+  "total_endpoints": 215,
+  "matches": [
+    {
+      "path": "/api/buy/research_comparison",
+      "method": "GET",
+      "summary": "Compare payment terms, dated host history and shared receiving addresses before an agent buys research from a set of x402 endpoints",
+      "authMode": "paid",
+      "price": "0.01 USD",
+      "pricingMode": "fixed",
+      "currency": "USD",
+      "protocols": [
+        "x402",
+        "mpp"
+      ],
+      "resourceKey": "https://scvd.store GET /api/buy/research_comparison"
+    }
+  ]
+}

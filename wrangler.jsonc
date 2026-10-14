@@ -158,6 +158,8 @@
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",
+    // Public Arc recipient chosen by the keeper on October 12. Deploy with the Gateway integration.
+    "ARC_PAY_TO": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
     // UCP checkout is NOT a var here, on purpose: its switch lives in
     // secrets (below), where the keeper turns it on one rail and one
     // item at a time without a deploy, and where a deploy cannot wipe

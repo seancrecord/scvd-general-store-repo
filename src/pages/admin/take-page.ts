@@ -25,8 +25,29 @@ export interface TakePageData {
   loadNotes: string[];
 }
 
+function revenueSummary(data: TakePageData): string {
+  const r = data.take?.revenue;
+  if (!r) return "<section><h2>Revenue at a glance</h2><p>Research attribution was not loaded. The detailed books below retain their own coverage.</p></section>";
+  const groups = [
+    ["Not linked to a rewarded study", r.outside_unlinked],
+    ["Linked to a rewarded study", r.research],
+    ["House", r.house], ["Payer unknown", r.unknown_payer],
+  ] as const;
+  return `<section><h2>Revenue at a glance — all-time certificate receipts</h2>
+    ${r.incomplete ? '<p><strong>Attribution incomplete.</strong> At least one scan or retained purchase could not be fully read. Unlinked does not mean unrewarded; totals may be a floor.</p>' : ""}
+    <table><thead><tr><th>Receipt group</th><th>Count</th><th>USDC before refunds</th></tr></thead><tbody>${groups.map(([label, row]) => `<tr><th>${label}</th><td>${row.sales}</td><td>${row.usdc.toFixed(3)}</td></tr>`).join("")}</tbody></table>
+    <p><strong>Activity:</strong> visits, tool calls and copied-example field matches are not purchases or people. <a href="/admin/signals">Read buyer signals</a>.</p>
+    <details><summary>What these totals include</summary>
+    <p>Outside means not on the current house-wallet list; it is not proof of unsubsidized demand. Research links match retained settlement, network, payer, item and amount, never just a wallet. Unlinked receipts may include other incentives or testing.</p>
+    <p><strong>Rewarded research:</strong> ${r.study_purchases} distinct settled purchase IDs in the scanned debriefs; ${r.study_purchases_inspected} confirmed by retained purchase reads. ${r.rewards_authorized_usdc.toFixed(2)} USDC of reward authorizations recorded, not confirmed redemptions. Study purchases can include pages without certificates, so this count is not subtracted from the receipt total.</p>
+    <p>Reward spend, refunds, operating costs and non-certificate sales are separate; this is not profit.</p>
+    <p>Receipts reuse the certificate walk below. No new transaction or payout is triggered by this report.</p></details>
+  </section>`;
+}
+
 export function renderTakePage(data: TakePageData): string {
   const body = `
+  ${revenueSummary(data)}
   <p><a href="/admin/purchases">Inspect a purchase by its purchase ID</a></p>
   ${data.stats?.payments ? paymentRollupHtml(data.stats.payments, data.stats.payment_sources) : ""}
   ${(data.stats?.payment_sources ?? []).filter(source => source.amounts).map(source => {

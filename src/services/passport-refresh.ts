@@ -26,6 +26,7 @@ import type { MppCensusReading } from "@/services/mpp-census";
  */
 
 export interface RefreshObservation {
+  probe_method?: import("@/services/ward-round").WardHostResult["probe_method"];
   battery?: string;
   protocols_spoken?: ("x402" | "mpp")[];
   mpp?: MppCensusReading;
@@ -108,6 +109,7 @@ export async function performPassportRefresh(
     verdict: probe.verdict === "not_probed" ? "unreachable" : probe.verdict,
     failed: probe.failed,
     advisories: probe.advisories,
+    ...(probe.probe_method ? { probe_method: probe.probe_method } : {}),
     ...(probe.battery ? { battery: probe.battery } : {}),
     ...(probe.protocols_spoken ? { protocols_spoken: probe.protocols_spoken } : {}),
     ...(probe.mpp ? { mpp: probe.mpp } : {}),

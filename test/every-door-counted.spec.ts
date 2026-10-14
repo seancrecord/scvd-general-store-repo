@@ -156,6 +156,8 @@ const UNCOUNTED_TODAY: readonly string[] = [
   "GET /ledger/:file{[0-9]{4}-W[0-9]{2}\\.json}",
   "GET /ledger/:week{[0-9]{4}-W[0-9]{2}}",
   "GET /case/:case_id",
+  // Retained purchase evidence has its own spot_evidence_read counter, not an acquisition visit.
+  "GET /api/spot-checks/:cert_id",
   "GET /almanac/:slug",
   // Open for Business issues (2026-09-18): a paid page like the
   // almanac's, on the same terms — the free index is counted at the

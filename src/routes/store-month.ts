@@ -65,6 +65,8 @@ function fiveAnswers(base: string): Record<string, unknown> {
 function entryDocument(record: StoreMonthRecord): Record<string, unknown> {
   return {
     ...record,
+    // Outside the signed document: old records retain their exact bytes.
+    reporting_scope: reportingScope(record),
     /*
      * THE EXACT STRING THE SIGNATURE COVERS, served rather than
      * described. Telling a reader "canonicalize it yourself" is how a
@@ -75,6 +77,12 @@ function entryDocument(record: StoreMonthRecord): Record<string, unknown> {
     signature_covers:
       "the signed_payload string exactly, UTF-8, ed25519 over public_key; digest is sha256 of the same bytes",
   };
+}
+
+function reportingScope(record: StoreMonthRecord): string {
+  return record.document.figures.total_organic_settled === undefined
+    ? "The monthly funnel covers x402 only. Combined monthly sales were not retained in this signed record; native MPP monthly sales cannot be inferred from it."
+    : "The monthly funnel covers x402 only. Combined monthly sales include x402 and native MPP, with the native contribution named separately.";
 }
 
 storeMonthRoutes.get("/store-month.json", async (c) => {
@@ -98,8 +106,9 @@ storeMonthRoutes.get("/store-month/verify.json", async (c) => {
   });
 });
 
-storeMonthRoutes.get("/store-month/:month{[0-9]{4}-[0-9]{2}}.json", async (c) => {
-  const record = await getStoreMonth(c.env, c.req.param("month"));
+storeMonthRoutes.get("/store-month/:file{[0-9]{4}-[0-9]{2}\\.json}", async (c) => {
+  const month = c.req.param("file").slice(0, -5);
+  const record = await getStoreMonth(c.env, month);
   if (!record) {
     const { records } = await listStoreMonths(c.env);
     return c.json(
@@ -128,9 +137,13 @@ function figureRows(record: StoreMonthRecord): string {
   const rows: Array<[string, string]> = [
     ["offered (402s to organic traffic)", String(figures.organic_challenges)],
     ["presented", String(figures.organic_payments_presented)],
-    ["settled", String(figures.organic_settled)],
+    ["x402 settled", String(figures.organic_settled)],
     ["declined", String(figures.organic_declines)],
   ];
+  if (figures.total_organic_settled !== undefined) {
+    rows.unshift(["all-protocol sales (x402 + native MPP)", String(figures.total_organic_settled)],
+      ["of those, native MPP", String(figures.mpp_organic_settled ?? "unavailable")]);
+  }
   return rows
     .map(
       ([label, value]) =>
@@ -153,6 +166,7 @@ function entrySection(record: StoreMonthRecord): string {
   return `<section class="month-entry">
     <h3>${escapeHtml(document.month)} <span class="menu-meta">#${escapeHtml(String(document.sequence))}, sealed ${escapeHtml(document.taken_at)}</span></h3>
     <p class="menu-meta">${escapeHtml(document.figures.window)}</p>
+    <p class="menu-meta">${escapeHtml(reportingScope(record))}</p>
     <table class="figures"><tbody>${figureRows(record)}</tbody></table>
     <h4>By rail <span class="menu-meta">(all time, not this month)</span></h4>
     <table class="figures"><tbody>${railRows}</tbody></table>

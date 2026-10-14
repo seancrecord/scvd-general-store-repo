@@ -127,9 +127,9 @@ export function renderMcpWardPage(
       </ul>
       <p style="opacity:0.75">The public face of all of this is
       <a href="/mcp-ward">/mcp-ward</a>, JSON at <a href="/mcp-ward.json">/mcp-ward.json</a>.
-      Nothing here is private: the ward observes a public registry and issues
-      no verdict on anybody, so there is no per-operator finding to hold back
-      the way the x402 ward holds its per-host rows.</p>
+      These observations describe public registry listings; they do not
+      establish endpoint readiness. The separate x402 ward publishes its dated
+      per-host observations in <a href="/corpus">the signed corpus</a>.</p>
     </section>
     ${cannotSeeHtml(CANNOT_SEE)}`,
   );

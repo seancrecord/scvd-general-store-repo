@@ -1,6 +1,8 @@
 import { settlementExplorer } from "@/lib/payment-networks";
 import { storeLinks } from "@/lib/store-links";
 import { EVIDENCE_TOOLS_SOURCE, EVIDENCE_TOOLS_DESCRIPTION } from "@/store/evidence-tools";
+import { readSpotEvidence } from "@/services/spot-evidence";
+import { spotFollowUp } from "@/lib/spot-follow-up";
 import { Hono } from "hono";
 import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import {
@@ -83,7 +85,7 @@ import {
   rotationsPerformed,
 } from "@/store/key-registry";
 import type { KeyAttribution } from "@/store/key-registry";
-import { ARTIFACT_CLASSES, artifactClassForItem } from "@/store/attestation-spec";
+import { ARTIFACT_CLASSES, artifactClassForItem, WHOSE_EYES } from "@/store/attestation-spec";
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { Certificate, HonoEnv } from "@/types";
@@ -418,7 +420,7 @@ function audienceHtml(audience: ReceiptAudience, links: StoreLinks): string {
     return `<section>
       <h2>Your purchase, checked</h2>
       <p class="menu-desc">This is the receipt for what your agent just bought. It will verify at this URL forever, for anyone.</p>
-      ${nextStepsHtml(links, "What agents who bought this buy next")}
+      ${nextStepsHtml(links, "Optional next steps")}
       <p class="menu-desc"><a href="/bell">Ring the bell</a> (free, one a day, a card comes with it) · <a href="/api/stamp">take a visit stamp</a> (free, signed, dated) · <a href="/guestbook">sign the guestbook</a>.</p>
       ${developerDoorsHtml(links)}
     </section>`;
@@ -453,8 +455,9 @@ function receiptPageHtml(
   // (retired items keep verifying forever; their receipts say what
   // the buyer's records say).
   const itemName = getMenuItem(cert.item)?.name ?? cert.item;
-  const money =
-    cert.paid_usdc !== undefined
+  const money = cert.gateway_payment
+    ? `$${cert.accepted_usdc ?? "unknown"} USDC — Gateway ${cert.gateway_payment.state} at issue; later batch settlement is on the private purchase status`
+    : cert.paid_usdc !== undefined
       ? `$${cert.paid_usdc} ${cert.asset ?? "USDC"}${cert.tip_usdc ? ` (includes $${cert.tip_usdc} tip)` : ""}`
       : cert.settled_via
         ? `Trade account — ${cert.trade_partner ?? "a marketplace"} collected its customer's payment; none reached this store`
@@ -483,6 +486,7 @@ function receiptPageHtml(
           ? `Signature verified just now (${escapeHtml(form)} form) — this receipt is genuine.`
           : "SIGNATURE DID NOT VERIFY. Do not trust this page's contents; the machine record below is the authority."
       }</strong></p>
+      <p class="menu-meta">${escapeHtml(WHOSE_EYES.receipt_line)}</p>
       ${row("Item", getMenuItem(cert.item) ? `<a href="/menu/${escapeHtml(cert.item)}">${escapeHtml(itemName)}</a>` : escapeHtml(itemName))}
       ${row("Date", escapeHtml(cert.date.slice(0, 10)))}
       ${row("Paid", escapeHtml(money))}
@@ -493,6 +497,7 @@ function receiptPageHtml(
       ${cert.quote ? row("Accepted quote", `<code>${escapeHtml(cert.quote)}</code> <span class="menu-meta">(sha256 of the RFC 8785 form of the five x402 terms the payment signature was bound to — scheme, network, asset, payTo, amount; the same five the store's signed offer in the 402 commits to, EVM addresses lowercased before hashing, so a held offer matches this line without asking us)</span>`) : ""}
       ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
       ${cert.mandate_id ? row("Acting under recorded mandate", `<a href="/api/mandate/${escapeHtml(cert.mandate_id)}">${escapeHtml(cert.mandate_id)}</a> <span class="menu-meta">(the authorization your agent claims it was given, recorded and signed BEFORE this purchase — the link resolves to the full record and its honest limits)</span>`) : ""}
+      ${cert.cited_artifact ? row("Cited artifact from your agent's runtime", `<code>${escapeHtml(cert.cited_artifact)}</code> <span class="menu-meta">(a reference your agent gave at purchase, recorded verbatim and signed — the store never fetched or verified it; check it with the verifier of whatever signed it, and this line is where the two records meet)</span>`) : ""}
       ${explorer ? row("On-chain settlement", `<a href="${escapeHtml(explorer)}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
       ${cert.settled_via ? row("How it was paid for", `Trade account <strong>${escapeHtml(cert.trade_partner ?? "")}</strong>${cert.settled_via === "trade_account_test" ? " (test mode: nothing booked)" : ""}, listed trade price $${escapeHtml(String(cert.trade_price_usd ?? ""))}. <span class="menu-meta">The marketplace collected its customer's payment; this store saw none and names no chain. Refunds go through the account holder, who took the payment. Instruction digest <code>${escapeHtml(cert.trade_instruction ?? "")}</code>.</span>`) : ""}
       ${cert.issuer ? row("Issuer", `<code>${escapeHtml(cert.issuer)}</code> <span class="menu-meta">(inside the signed bytes; resolves at <a href="/.well-known/did.json">/.well-known/did.json</a>, which also names the same key as a did:key so this name survives a domain move)</span>`) : ""}
@@ -525,7 +530,7 @@ function receiptPageHtml(
       <p class="menu-meta">Derived on this load from the signed fields above and the delivery-audit row for the settlement, never stored beside the receipt.</p>
       <ul>
         ${check(`Payment — <strong>${escapeHtml(checks.settlement.payment_state.replace(/_/g, " "))}</strong>.`)}
-        ${check(`Order of operations — <strong>${escapeHtml(checks.settlement.order_of_operations.replace(/_/g, " "))}</strong> <span class="menu-meta">(since ${DELIVER_FIRST_SINCE} the goods are produced first and the money moves at the last line before the signature; a delivery that fails takes nothing)</span>.`)}
+        ${check(`Order of operations — <strong>${escapeHtml(checks.settlement.order_of_operations.replace(/_/g, " "))}</strong> <span class="menu-meta">${cert.gateway_payment ? "Gateway acceptance precedes batch settlement; the signed receipt records the state at issue" : `since ${DELIVER_FIRST_SINCE} the goods are produced first and the money moves at the last line before the signature; a delivery that fails takes nothing`}</span>.`)}
         ${check(`Delivery audit — <strong>${escapeHtml(checks.settlement.delivery_audit.state.replace(/_/g, " "))}</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.delivery_audit.means)})</span>.`)}
         ${check(`Failed attempts on this receipt — <strong>none possible</strong> <span class="menu-meta">(${escapeHtml(checks.settlement.failed_attempts.why)} ${escapeHtml(checks.settlement.failed_attempts.where)})</span>.`)}
       </ul>
@@ -666,6 +671,9 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       record.public_key,
     );
     const valid = form !== "invalid";
+    const spotOriginal = valid && ["spot_check", "change_check", "batch_spot_check"].includes(record.certificate.item)
+      ? await readSpotEvidence(c.env, id).catch(() => null) : null;
+    const spotContext = spotOriginal ? spotFollowUp(c.env.STORE_BASE_URL, id, spotOriginal) : null;
     /**
      * THE EXISTED-BY BOUND (2026-09-05), on both faces of the receipt.
      * Computed once, up here, from the same signed payload the JSON
@@ -727,7 +735,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
               ...(record.certificate.settlement_tx ? { settlement: { tx: record.certificate.settlement_tx, item: record.certificate.item } } : {}),
             }),
             receiptAudience(record.certificate),
-          )}${jsonLdScript({
+          )}${spotContext ? `<section><h2>A note for your human</h2><p>${escapeHtml(spotContext.counter_note.text)}</p><p><a href="${escapeHtml(spotContext.counter_note.source_url)}">Read the original and review optional next steps</a></p></section>` : ""}${jsonLdScript({
             "@context": "https://schema.org",
             "@type": "DigitalDocument",
             name: `Receipt ${record.certificate.cert_id}`,
@@ -789,6 +797,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         item: record.certificate.item,
         ...(record.certificate.settlement_tx ? { settlement: { tx: record.certificate.settlement_tx, item: record.certificate.item } } : {}),
       }),
+      ...(spotContext ? spotContext : {}),
       certificate: record.certificate,
       offline_verification: { source: EVIDENCE_TOOLS_SOURCE, description: EVIDENCE_TOOLS_DESCRIPTION },
       signature: record.signature,

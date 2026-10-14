@@ -5,7 +5,8 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { OPEN_FOR_BUSINESS_USDC } from "@/store/copy/open-for-business";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
-import { countedWindow, draftOpenForBusiness, publishClosedWeek, renderOpenForBusinessMarkdown, weekCloseInstant } from "@/services/open-for-business";
+import { countedWindow, declinesInWindow, draftOpenForBusiness, publishClosedWeek, readWindowDeclines, renderOpenForBusinessMarkdown, weekCloseInstant } from "@/services/open-for-business";
+import { invertedTimestamp } from "@/lib/kv-keys";
 import { readWeekChanges, renderWeekChangesMarkdown, weekChanges, type PullsFetcher } from "@/services/week-changes";
 import { getMenuItem } from "@/store";
 import type { Env } from "@/types";
@@ -347,6 +348,8 @@ describe("the counted window and the honest leads", () => {
   beforeEach(async () => {
     await clearShelf();
     await clearWeekChanges();
+    const declines = await testEnv.COUNTERS.list({ prefix: KV_KEYS.declineEventPrefix });
+    for (const key of declines.keys) await testEnv.COUNTERS.delete(key.name);
   });
 
   it("names the days it counted: the week to the drafting day, from the day the counters went live", () => {
@@ -436,6 +439,44 @@ describe("the counted window and the honest leads", () => {
     // The porch surfaces are the week's too.
     expect(entry.numbers.find((n) => n.label.startsWith("organic surface visits"))?.value).toBe(9);
     expect(entry.rows).toEqual([["/llms.txt", 9]]);
+  });
+
+  it("reads the decline desk without a filter and narrows the week itself: house and machinery out, the reach stated", async () => {
+    const window = countedWindow(WEEK, MIDWEEK);
+    const row = (at: string, reason: string, extra: Partial<{ house: boolean; channel: string; user_agent: string }> = {}) => ({
+      at, item: "hello", reason, stage: "verify" as const, fault: "theirs" as const, reading: "", channel: "direct", house: false, ...extra,
+    });
+    const report = {
+      declines: [
+        row("2026-10-27T10:00:00.000Z", "insufficient_funds"),
+        row("2026-10-28T09:00:00.000Z", "insufficient_funds"),
+        row("2026-10-28T09:30:00.000Z", "invalid_signature"),
+        row("2026-10-25T23:59:59.000Z", "insufficient_funds"), // the day before the window
+        row("2026-10-29T00:00:00.000Z", "insufficient_funds"), // after the drafting day
+        row("2026-10-27T11:00:00.000Z", "insufficient_funds", { house: true }),
+        row("2026-10-27T12:00:00.000Z", "insufficient_funds", { channel: "infrastructure", user_agent: "census-probe/1.0" }),
+      ],
+      index_complete: false,
+      oldest_row_seen: "2026-10-01T00:00:00.000Z",
+      filter: undefined,
+    };
+    const narrowed = declinesInWindow(report as never, window);
+    expect(narrowed).toEqual({ outside_count: 3, by_reason: { insufficient_funds: 2, invalid_signature: 1 }, reach: "past_window", filtered: false });
+    expect(declinesInWindow({ ...report, oldest_row_seen: "2026-10-27T00:00:00.000Z" } as never, window).reach).toBe("capped");
+    expect(declinesInWindow({ ...report, index_complete: true } as never, window).reach).toBe("index_complete");
+
+    // Through the desk itself: two index rows, one inside the window, and the read carries no filter.
+    const put = async (at: string) =>
+      testEnv.COUNTERS.put(KV_KEYS.declineEvent(invertedTimestamp(Date.parse(at)), Math.random().toString(36).slice(2, 8)), JSON.stringify({ kind: "decline", at, item: "hello", note: "insufficient_funds", channel: "direct", house: false, user_agent: "python-httpx/0.27" }));
+    await put("2026-10-27T10:00:00.000Z");
+    await put("2026-10-20T10:00:00.000Z");
+    const read = await readWindowDeclines(testEnv, window);
+    expect(read.filtered).toBe(false);
+    expect(read.outside_count).toBe(1);
+    const draft = await draftOpenForBusiness(testEnv, MIDWEEK, pullsOf([]));
+    const declined = draft.sections[0]!.numbers.find((n) => n.label.startsWith("payments presented and declined"));
+    expect(declined?.value).toBe(1);
+    expect(declined?.note).toBe("index read to its end");
   });
 
   it("a week the counters never saw is laid as not read, never as zeros", async () => {

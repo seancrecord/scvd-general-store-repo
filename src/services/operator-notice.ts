@@ -1,3 +1,4 @@
+import { PREFLIGHT_VERSION_NEXT } from "@/lib/preflight-batteries";
 import { DEFECT_CLASSES, type DefectClass } from "@/store/defect-vocabulary";
 import { subjectHistory, type SubjectRound } from "@/services/subject-history";
 import type { Env } from "@/types";
@@ -171,7 +172,7 @@ export async function buildOperatorNotice(
     ],
     how_to_answer: [
       `Disagree with a finding? Every class we use is defined at ${base}/defects, including what would prove it wrong. Show that and the observation is corrected in place with the date — this store appends corrections and never overwrites them.`,
-      `Want the current state rather than last week's? POST {"url":"<your endpoint>"} to ${base}/api/preflight/v2. Free, no account, no wallet, and it runs the same checks you see above.`,
+      `Want the current state rather than last week's? POST {"url":"<your endpoint>"} to ${base}/api/preflight/${PREFLIGHT_VERSION_NEXT}. Free, no account, no wallet, and it runs the same checks you see above.`,
       `Want our whole record on you, including the weeks we did NOT look and why? ${base}/corpus/host/${host}.json.`,
     ],
   };

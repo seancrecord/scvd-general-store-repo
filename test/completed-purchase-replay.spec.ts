@@ -38,7 +38,7 @@ async function wire(id: string, door: LaborDoor, args: Obj, payment: Obj, key?: 
 }
 async function purchase(id: string, door: LaborDoor, network: string) {
   const item = items.find(i => i.id === id)!, canary = `SCVD-E2E-${crypto.randomUUID()}`;
-  const args = { ...baseline(item), agent_name: canary, purpose: canary };
+  const args = { ...await baseline(item), agent_name: canary, purpose: canary };
   const offer = (await call(item, "mcp", args, shelves(item)[0])).offers.find(o => o.network === network)!;
   const payment = await signLabor(offer), key = crypto.randomUUID();
   expect((await sendLabor(id, door, args, payment, key)).refused).toBe(false);
@@ -84,7 +84,7 @@ for (const door of doors) for (const network of laborNetworks()) {
     if (mutation === "product") expect(other.price_usdc).toBe(items.find(i => i.id === id)!.price_usdc);
     const p = await purchase(id, door, network), verifies = facilitator.verifyCalls;
     const result = await wire(mutation === "product" ? other.id : id, door,
-      mutation === "inputs" ? { ...p.args, purpose: "wrong input" } : { ...baseline(other), ...p.args }, p.payment);
+      mutation === "inputs" ? { ...p.args, purpose: "wrong input" } : { ...await baseline(other), ...p.args }, p.payment);
     expect(result.refused).toBe(true);
     expect(facilitator.verifyCalls).toBeGreaterThan(verifies);
     expect(result.body).toMatchObject({ code: "purchase_input_mismatch", charged: true, settlement_attempted: false });

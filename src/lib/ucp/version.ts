@@ -28,6 +28,9 @@ export const SCVD_NAMESPACE = "store.scvd";
 /** UCP's own namespace, for the capabilities it defines. */
 export const UCP_NAMESPACE = "dev.ucp";
 
+/** The dated release shared by specification, transport and schema links. */
+export const UCP_RELEASE_BASE = `https://ucp.dev/${UCP_VERSION}`;
+
 /**
  * Where the pinned release publishes UCP's schemas. The unversioned
  * /schemas/ paths return 404; the release path is part of discovery,
@@ -37,4 +40,4 @@ export const UCP_NAMESPACE = "dev.ucp";
  * pointing a negotiating platform at the copy would be claiming
  * authorship of somebody else's contract.
  */
-export const UCP_SCHEMA_BASE = `https://ucp.dev/${UCP_VERSION}/schemas`;
+export const UCP_SCHEMA_BASE = `${UCP_RELEASE_BASE}/schemas`;

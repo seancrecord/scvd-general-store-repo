@@ -123,7 +123,7 @@ function monthHtml(m: InstrumentMonth): string {
       )}, paid calls ${signed(m.paid_tools.reduce((s, r) => s + (r.delta ?? 0), 0))}.</small></p>`
     : `<p><small>No stored reading for this month yet; the Δ column starts on the next visit.</small></p>`;
   return `<section>
-    <h3>${escapeHtml(m.month)}${m.truncated ? " <small>(ledger scan capped — floors)</small>" : ""}</h3>
+    <h2>${escapeHtml(m.month)}${m.truncated ? " <small>(ledger scan capped — floors)</small>" : ""}</h2>
     <p><strong>Free instruments: ${m.free_total} organic uses</strong> — argument-carrying <strong>${m.argument_uses}</strong>, reads ${m.read_uses}
     · paid tool calls: ${m.paid_tool_calls}${settled}
     <small>(${channels(m.free_by_channel) || "no channel split"})</small></p>

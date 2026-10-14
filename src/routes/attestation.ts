@@ -15,6 +15,7 @@ import {
   MONEY_PATH,
   NOT_BUILT,
   TRUST_MODELS,
+  WHOSE_EYES,
   WHY_SIGNED_PAYLOAD,
 } from "@/store/attestation-spec";
 import {
@@ -169,6 +170,7 @@ attestationRoutes.get("/attestation", (c) => {
     why_signed_payload: WHY_SIGNED_PAYLOAD,
     key_continuity: keyContinuity(base),
     trust_models: TRUST_MODELS,
+    whose_eyes: WHOSE_EYES,
     ard_trust_verification: {
       ...ardTrustDeclaration(base),
       anchor_check: ARD_ANCHOR_CHECK,
@@ -260,6 +262,11 @@ attestationRoutes.get("/attestation", (c) => {
       </section>
       <section>
         <h2>Whose word you are taking</h2>
+        <h3>${escapeHtml(WHOSE_EYES.heading)}</h3>
+        <p class="menu-desc">${escapeHtml(WHOSE_EYES.runtime)}</p>
+        <p class="menu-desc">${escapeHtml(WHOSE_EYES.party)}</p>
+        <p class="menu-desc">${escapeHtml(WHOSE_EYES.observer)}</p>
+        <p class="menu-meta">${escapeHtml(WHOSE_EYES.none)}</p>
         ${models}
       </section>
       <section>

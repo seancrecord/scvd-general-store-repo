@@ -96,9 +96,11 @@ export const POSITION_LINE =
  * ("delivered as signed, dated evidence anyone can check" said what
  * the sixth sentence already says, and the paragraph has a ceiling).
  */
+// 2026-10-07: correct only the signature/expiry scope. Free inspection
+// is unsigned; archived signed artifacts retain their original bytes.
 export const VALUE_PROPOSITION_DATED = "2026-09-03";
 export const VALUE_PROPOSITION =
-  "scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Every artifact is signed, expires, and names what we did not see. Not escrow, not a rating, not a guarantee.";
+  "scvd.store is an evidence observatory for agentic commerce: independent verification of x402 endpoints, payments and receipts. Before an agent pays an x402 endpoint, we check that it can be paid. After it pays, we check the signed receipt. Over time we watch endpoints and publish a dated, signed corpus. Sellers use it to prove a door works; buyers use it before spending. Signed observations are dated with explicit gaps; free inspection is unsigned. Not escrow, not a rating, not a guarantee.";
 
 /**
  * THE THREE PATHS, in the order the sixty words name them, each into
@@ -193,11 +195,15 @@ export const positionRegister = (base: string): string =>
  * money moving first is now wrong, and there were eleven of them.
  *
  * Stated from the BUYER's side rather than the gate's, because that
- * is the part that matters to a reader: the consequence of a failed
- * delivery is no charge, not a refund to chase.
+ * is the part that matters to a reader. Only a pre-settlement failure
+ * guarantees no charge; signing and storage still follow settlement.
  */
 export const DELIVERY_ORDER =
-  "The store delivers first and settles after: the goods are produced, then the payment is presented at the last moment before the artifact is signed. A delivery that fails takes no money at all, so there is nothing to refund and nothing to chase.";
+  "The store prepares instant goods or the order before requesting settlement. A failure before settlement takes no money. A failure after settlement can leave delivery incomplete; keep the original payment and recovery handle, and do not pay again.";
+
+/** Repeated per OpenAPI operation; the full recovery explanation lives above. */
+export const DELIVERY_ORDER_SHORT =
+  "Prepared before settlement; later delivery can fail. Recover without paying again.";
 
 /**
  * The same fact with its history attached, for surfaces that a reader

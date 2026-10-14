@@ -145,7 +145,20 @@ beforeAll(async () => {
   vi.setSystemTime(FROZEN);
   const bound = storeBinding();
   handed = bound.handed;
-  doorsEnv = { ...storeEnv, STORE: bound.binding };
+  // What doors/wrangler.jsonc provides, and nothing it does not: the
+  // doors reference the store's COUNTER_LEDGER, but own no classes and
+  // have none of the other namespaces (the missing bench binding once
+  // hid a live 500; test/doors-labor-bench.spec.ts is the case).
+  doorsEnv = {
+    ...storeEnv,
+    STORE: bound.binding,
+    PAID_RECOVERIES: undefined,
+    SIGNALS: undefined,
+    TRADE_NONCES: undefined,
+    A2A_KITS: undefined,
+    A2A_TASKS: undefined,
+    BOUNTY_CLAIM_LOCKS: undefined,
+  } as Env;
 });
 
 afterAll(() => {

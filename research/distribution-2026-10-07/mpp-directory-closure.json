@@ -1,0 +1,14 @@
+{
+  "read_at": "2026-10-07T16:24:59.194Z",
+  "url": "https://github.com/tempoxyz/mpp/pull/991",
+  "comments": [
+    {
+      "url": "https://github.com/tempoxyz/mpp/pull/991#issuecomment-5948763437",
+      "author": "github-actions[bot]",
+      "body": "Closing this PR. The recommended way to list your service is through **[MPPScan](https://mppscan.com/register)**—it follows the standard [MPP discovery format](https://mpp.dev/protocol/discovery) and makes your service immediately discoverable by agents, no PR required.",
+      "created_at": "2026-10-02T09:05:48Z"
+    }
+  ],
+  "reviews": [],
+  "limit": "Metadata and closure comment establish a changed submission route, not MPPScan acceptance or rejection of SCVD's implementation."
+}

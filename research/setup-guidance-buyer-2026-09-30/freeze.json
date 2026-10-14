@@ -1,0 +1,117 @@
+{
+  "frozen_at": "2026-09-30T20:19:11.388Z",
+  "source_commit": "fc00e713dd3dd2580867ab5094aadb44e45e36fb",
+  "plan_sha256": "2474db2eeb9582acc36f08160334a23b8e83fc6df69dcefbaa6a7dacbefba06e",
+  "public_readback": [
+    {
+      "file": "skill.md",
+      "url": "https://scvd.store/.well-known/agent-skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 15510,
+      "sha256": "d904552e72d76c58bc4cbd85ea49396a3e1bcdadf96ead92db04f1c2645bfb8a",
+      "read_at": "2026-09-30T20:18:32.300854+00:00"
+    },
+    {
+      "file": "entry.md",
+      "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/main/skills/scvd-x402-verification/SKILL.md",
+      "status": 200,
+      "bytes": 15510,
+      "sha256": "d904552e72d76c58bc4cbd85ea49396a3e1bcdadf96ead92db04f1c2645bfb8a",
+      "read_at": "2026-09-30T20:18:32.612555+00:00"
+    },
+    {
+      "file": "host.json",
+      "url": "https://scvd.store/corpus/host/lionx402.com.json",
+      "status": 200,
+      "bytes": 15774,
+      "sha256": "7b00cf67876a907c753b3741a78980699467f4866f19279c56dfbff6ba1d79c1",
+      "read_at": "2026-09-30T20:18:34.878667+00:00"
+    },
+    {
+      "file": "candidate-original.json",
+      "url": "https://scvd.store/corpus/10.json",
+      "status": 200,
+      "bytes": 9333858,
+      "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+      "read_at": "2026-09-30T20:18:40.347021+00:00"
+    },
+    {
+      "file": "candidate-key.json",
+      "url": "https://scvd.store/.well-known/scvd-signing-key",
+      "status": 200,
+      "bytes": 3139,
+      "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8",
+      "read_at": "2026-09-30T20:18:40.843745+00:00"
+    },
+    {
+      "file": "openapi.json",
+      "url": "https://scvd.store/openapi.json",
+      "status": 200,
+      "bytes": 686770,
+      "sha256": "f1f1a42baefc69f02e9c5af2398a418b25703b9d651db6d51a0d7b29543cddff",
+      "read_at": "2026-09-30T20:18:41.800648+00:00"
+    }
+  ],
+  "source_review": {
+    "read_at": "2026-09-30T20:18:42.648832+00:00",
+    "source_commit": "25be137d516d502a536062145058176e91e1ce78",
+    "files": [
+      {
+        "name": "evidence-cli.mjs",
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/25be137d516d502a536062145058176e91e1ce78/verifier/evidence-cli.mjs",
+        "sha256": "6d95f5663de2c04648293e84d56abd2d5377ef752f073124372c50ae4562c624",
+        "bytes": 14081
+      },
+      {
+        "name": "evidence-bundle.js",
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/25be137d516d502a536062145058176e91e1ce78/verifier/evidence-bundle.js",
+        "sha256": "be0140f1b39fa4cf03994acd1eb71f326190ef368f51eb279d9ea9e5934ece24",
+        "bytes": 9551
+      },
+      {
+        "name": "x402-verify.js",
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/25be137d516d502a536062145058176e91e1ce78/verifier/x402-verify.js",
+        "sha256": "7adc282f57fc649fd99727317b105fed0cb0fb1e413f18c7a53a6224eff25017",
+        "bytes": 46958
+      },
+      {
+        "name": "package.json",
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/25be137d516d502a536062145058176e91e1ce78/verifier/package.json",
+        "sha256": "90f415847298b7d035ef9d73c52b4eea8de19e5ac604cbcbb62b292e374a7113",
+        "bytes": 1615
+      },
+      {
+        "name": "evidence-report.js",
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/25be137d516d502a536062145058176e91e1ce78/verifier/evidence-report.js",
+        "sha256": "ec90d8dda960d5d5f897e19ffb7ed33232d2b2ff2504ff7b47ea2153ee997d34",
+        "bytes": 5318
+      },
+      {
+        "name": "payment-identity.js",
+        "url": "https://raw.githubusercontent.com/seancrecord/scvd-general-store-repo/25be137d516d502a536062145058176e91e1ce78/verifier/payment-identity.js",
+        "sha256": "8b5fe049585d50ce9d3e0559f7d74f2418f19fc0b70fb29908ef8d0b9a748a74",
+        "bytes": 719
+      }
+    ],
+    "limits": "Public source bytes match controller runtime pin; not a native review or an independent provenance/safety verdict."
+  },
+  "published_verifier": {
+    "version": "1.9.0",
+    "readback_sha256": "5073430af8ed804ae2940c1d1f278bfdf81e8ff458bb8206442083355cf4f3f3"
+  },
+  "candidate": [
+    {
+      "pointer": "/round/hosts/57",
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-21T02:30:40.084Z"
+    }
+  ],
+  "openapi": {
+    "bytes": 686770,
+    "budget": 700000,
+    "within_budget": true
+  },
+  "awake_policy": "Keeper explicitly waived the charger requirement on September 30. Battery operation permitted and sampled. Temporary caffeinate -i per native invocation; existing deadlines and timing guard unchanged. No overlapping controller tests.",
+  "scope": "Separate qualification with explicit standalone-node-v1 setup guidance and the merged literal command matcher repair. Previous attempts stay closed; this is a changed condition, not a retry or causal comparison. Buyer prompts, models, budgets, permissions, zero spend, subject, fourteen-day observation policy and offline recipient remain unchanged. Battery operation remains keeper-approved. All hosts must qualify before any buyer acquisition.",
+  "prior_attempt_policy": "All earlier attempts stay closed and unchanged. One qualification per online host and offline recipient; buyers only after all pass. No retries or budget expansion."
+}

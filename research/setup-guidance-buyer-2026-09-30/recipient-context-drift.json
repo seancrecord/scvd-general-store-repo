@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-09-30T20:40:30.317Z",
+  "environment_changed": true,
+  "versions_before": {
+    "codex": "codex-cli 0.155.0-alpha.16.3",
+    "claude": "2.1.274 (Claude Code)"
+  },
+  "versions_after": {
+    "codex": "codex-cli 0.155.0-alpha.16.4",
+    "claude": "2.1.274 (Claude Code)"
+  },
+  "skills_added": [],
+  "skills_removed": [],
+  "plugins_before": false,
+  "plugins_after": false,
+  "recipient_spawned": false,
+  "attempt_lock_exists": false,
+  "limits": "Read-only comparison after prelaunch rejection; no settings changed or gate bypassed."
+}

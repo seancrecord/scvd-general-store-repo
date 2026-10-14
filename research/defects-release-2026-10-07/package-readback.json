@@ -1,0 +1,238 @@
+[
+  {
+    "name": "scvd-defects",
+    "version": "0.22.0",
+    "source_commit": "1a6f70f06e83a5358b6f0eb50e560f9976491d0e",
+    "read_at": "2026-10-07T18:54:18.726436+00:00",
+    "provenance_source_commit": "384978f8da37c63cb041f3152ead8cf6c528eeee",
+    "status": "passed",
+    "latest": "0.22.0",
+    "integrity": "sha512-+AS0xveRKo3hdH2NuMxXaS1NdboC0PlZijhW+T6Ayymg4zIyWXHvlyvDHFs9IT1SWrqwPElfDrv0s4JgrMYOww==",
+    "tarball_url": "https://registry.npmjs.org/scvd-defects/-/scvd-defects-0.22.0.tgz",
+    "attestations_url": "https://registry.npmjs.org/-/npm/v1/attestations/scvd-defects@0.22.0",
+    "attestation_payloads": [
+      {
+        "_type": "https://in-toto.io/Statement/v0.1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-defects@0.22.0",
+            "digest": {
+              "sha512": "f804b4c6f7912a8de1747d8db8cc57692d4d75ba02d0f9598a3856f93e80cb29a0e332325971ef972bc31c5b3d213d525abab03c495f0ebbf4b38260acc60ec3"
+            }
+          }
+        ],
+        "predicateType": "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+        "predicate": {
+          "name": "scvd-defects",
+          "version": "0.22.0",
+          "registry": "https://registry.npmjs.org"
+        }
+      },
+      {
+        "_type": "https://in-toto.io/Statement/v1",
+        "subject": [
+          {
+            "name": "pkg:npm/scvd-defects@0.22.0",
+            "digest": {
+              "sha512": "f804b4c6f7912a8de1747d8db8cc57692d4d75ba02d0f9598a3856f93e80cb29a0e332325971ef972bc31c5b3d213d525abab03c495f0ebbf4b38260acc60ec3"
+            }
+          }
+        ],
+        "predicateType": "https://slsa.dev/provenance/v1",
+        "predicate": {
+          "buildDefinition": {
+            "buildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+            "externalParameters": {
+              "workflow": {
+                "ref": "refs/heads/main",
+                "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+                "path": ".github/workflows/publish-npm.yml"
+              }
+            },
+            "internalParameters": {
+              "github": {
+                "event_name": "workflow_dispatch",
+                "repository_id": "1308179937",
+                "repository_owner_id": "196247948"
+              }
+            },
+            "resolvedDependencies": [
+              {
+                "uri": "git+https://github.com/seancrecord/scvd-general-store-repo@refs/heads/main",
+                "digest": {
+                  "gitCommit": "384978f8da37c63cb041f3152ead8cf6c528eeee"
+                }
+              }
+            ]
+          },
+          "runDetails": {
+            "builder": {
+              "id": "https://github.com/actions/runner/github-hosted"
+            },
+            "metadata": {
+              "invocationId": "https://github.com/seancrecord/scvd-general-store-repo/actions/runs/37669852883/attempts/1"
+            }
+          }
+        }
+      }
+    ],
+    "attestation_signature_verification": "not performed; payload and registry integrity read independently",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "bytes": 11012,
+        "sha256": "0777d7328f2405944630e0b3c26568d2dfec54a9c3c7bd2d8980eec7d958efb8"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 1068,
+        "sha256": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14"
+      },
+      {
+        "path": "README.md",
+        "bytes": 4402,
+        "sha256": "a996389653109330299875cd729de8094422910aea01fde6c273ca11a79525b3"
+      },
+      {
+        "path": "defects.d.ts",
+        "bytes": 1583,
+        "sha256": "07795341d837e0aaa97b9c5a6497c652cf674b603f8e90df46d9d307cfb03e61"
+      },
+      {
+        "path": "defects.js",
+        "bytes": 3363,
+        "sha256": "cf077a6a0c01aa633dd722911aefac8527548583996dd8b8980bdcffcf1568bc"
+      },
+      {
+        "path": "defects.json",
+        "bytes": 77821,
+        "sha256": "85acc8efcee70abd408eb9e0c7f3a4ca05b9056eb350822fc3c3dbdd782c906e"
+      },
+      {
+        "path": "example.mjs",
+        "bytes": 418,
+        "sha256": "c4c75683eae390b6380e855468ac40a46d5e0380fe160ba7d3315588767ec613"
+      },
+      {
+        "path": "fixtures/doors/accepts-empty.json",
+        "bytes": 348,
+        "sha256": "aa34f4b20327d658971a9bd5e545d3b446acac1c0b5e236aa17dff7ace7179a5"
+      },
+      {
+        "path": "fixtures/doors/accepts-missing-asset.json",
+        "bytes": 606,
+        "sha256": "25626ded86e7a66a5a3ad42b9d6d695d971407fabe7c9a7defb9379d208dde93"
+      },
+      {
+        "path": "fixtures/doors/answers-200.json",
+        "bytes": 383,
+        "sha256": "4d7cd798c8804901bd9cd4d63624cc94a0e8b7e17770fba4af436b27cf855009"
+      },
+      {
+        "path": "fixtures/doors/body-offers.json",
+        "bytes": 1330,
+        "sha256": "2ed6a9094d64db60758f01869e2b575df31ce0160e88d307c0556e2193abb1cb"
+      },
+      {
+        "path": "fixtures/doors/clean-402.json",
+        "bytes": 657,
+        "sha256": "7bcc6ee4c20af9f97e449d3ce97b4755b40c4a390ad240a91854399610d72c3e"
+      },
+      {
+        "path": "fixtures/doors/header-absent.json",
+        "bytes": 433,
+        "sha256": "e8ab588edeb21a75cbee17b664d0be6a1cf3f1a3976d3d3906aad52b8ce70d35"
+      },
+      {
+        "path": "fixtures/doors/header-unparseable.json",
+        "bytes": 385,
+        "sha256": "a440f143bc126a58206cb99ee74ad013b7815f12a897798beb312f185b6310ab"
+      },
+      {
+        "path": "fixtures/doors/two-surfaces.json",
+        "bytes": 1153,
+        "sha256": "267228b01f2eb2ef767d2f193d565845266abb7cc2b095ec8f8802664f495d3c"
+      },
+      {
+        "path": "fixtures/doors/wrong-version.json",
+        "bytes": 691,
+        "sha256": "d9e33ac18a04539328faaa315b8ae0416f28863374d263405101a0666c5e1892"
+      },
+      {
+        "path": "fixtures/settlement-responses/draft-status-fields.json",
+        "bytes": 1448,
+        "sha256": "5ebdee70faf2e0b7a47843b563d6c5eb09eca711d0826810beefe1da7a6a739c"
+      },
+      {
+        "path": "fixtures/settlement-responses/failed-invalid-signature.json",
+        "bytes": 845,
+        "sha256": "78dede7afd2ead7fa01b5fc48fad0c7493e88ba0f53124c65860fbf02fdf44b8"
+      },
+      {
+        "path": "fixtures/settlement-responses/failed-no-reason.json",
+        "bytes": 847,
+        "sha256": "a7757cda8703fada646839ac150896ec432ab801dfbe2ece95c796a513ea8905"
+      },
+      {
+        "path": "fixtures/settlement-responses/legacy-null-transaction.json",
+        "bytes": 920,
+        "sha256": "db0083563637fe76ff871d4d1618fa1540e635dabe9b4f540aa9023c6d7a0d7a"
+      },
+      {
+        "path": "fixtures/settlement-responses/not-json.json",
+        "bytes": 679,
+        "sha256": "8364b5d6f606cbaf0da4c96818a46d266b1aca8e1a001f227352c47a0b2516d7"
+      },
+      {
+        "path": "fixtures/settlement-responses/pending-with-hash.json",
+        "bytes": 1295,
+        "sha256": "e37fe8396dafeaeb1be1e0fa0d2db8f7d38a982f8d98df24a11a9c0e579c0ef5"
+      },
+      {
+        "path": "fixtures/settlement-responses/pending-without-hash.json",
+        "bytes": 993,
+        "sha256": "14c6930761e07a353143ca50a8021f843c6acc1e7f64c9ff0bd39da0a05f2075"
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-amount-not-atomic.json",
+        "bytes": 1087,
+        "sha256": "5990ba9ff1c5585626f0be7de4ad8f5f6954bb6362a0bf908d8ee7f500580fe6"
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-clean.json",
+        "bytes": 947,
+        "sha256": "2d024d0a99e51e4183647211278423fc6bc13804e8a11cff5d3c08168fda964e"
+      },
+      {
+        "path": "fixtures/settlement-responses/settled-v1-network-name.json",
+        "bytes": 1034,
+        "sha256": "8e7c89ba622e5ee3b390f32ab2a61285d92f6fd6c2bcb1e34d0be7d3ba2a1a7d"
+      },
+      {
+        "path": "fixtures/settlement-responses/success-not-boolean.json",
+        "bytes": 970,
+        "sha256": "09616d198e6d7750decf658854f2ace39d09466ca9c78c78fe467b02fe876172"
+      },
+      {
+        "path": "fixtures/settlement-responses/success-with-error-reason.json",
+        "bytes": 1026,
+        "sha256": "e4efad6e699fb553d528d036fb79965b905846bb8a9ad0b11b55bbf8dd6a53b6"
+      },
+      {
+        "path": "package.json",
+        "bytes": 1567,
+        "sha256": "b283fb2d78f59c5504eea7b2828f8e0f7af181212f74860d2dd81f5a72091f60"
+      },
+      {
+        "path": "settlement-response.d.ts",
+        "bytes": 1124,
+        "sha256": "77e3d8441a1a0a80915f8dd5f54111c2a3fefbe20a8fe54ecee82a82c74b0fca"
+      },
+      {
+        "path": "settlement-response.js",
+        "bytes": 8151,
+        "sha256": "c1317d1f0dcea48108498883fa80170585613adf74e5a1126ae956823e5a4dbc"
+      }
+    ]
+  }
+]

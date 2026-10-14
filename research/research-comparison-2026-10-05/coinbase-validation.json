@@ -1,0 +1,604 @@
+{
+  "observed_at": "2026-10-05T19:46:40.677981+00:00",
+  "url": "https://api.cdp.coinbase.com/platform/v2/x402/validate",
+  "request_body": {
+    "resource": "https://scvd.store/api/buy/research_comparison",
+    "method": "GET"
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "response_sha256": "b2346cca830d65ae1ff67d85a3863dcc3d0b0b89116ec2b1328a5b48be81ca45",
+  "body": {
+    "bazaarExtension": {
+      "info": {
+        "input": {
+          "method": "GET",
+          "queryParams": {
+            "agent_name": "friendly-agent",
+            "urls": "[\"https://research-a.example/quote\",\"https://research-b.example/quote\"]"
+          },
+          "type": "http"
+        },
+        "output": {
+          "example": {
+            "badge_url": "https://scvd.store/badges/41.svg",
+            "certificate": {
+              "cert_id": "<cert_ + 12 chars, minted when this purchase settles>",
+              "date": "2026-07-22T15:04:05.000Z",
+              "item": "research_comparison",
+              "patron_number": 41
+            },
+            "deliverable": "<the Research Comparison itself, as text>",
+            "item_id": "research_comparison",
+            "message": "Pleasure doing business. Here's your goods, warm off the shelf.",
+            "paid_usdc": 0.01,
+            "patron_number": 41,
+            "signature": "<128 hex chars, ed25519>",
+            "tip_usdc": 0,
+            "verify_url": "https://scvd.store/api/verify/<your cert_id>"
+          },
+          "type": "json"
+        }
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "input": {
+            "additionalProperties": false,
+            "properties": {
+              "method": {
+                "enum": [
+                  "GET"
+                ],
+                "type": "string"
+              },
+              "queryParams": {
+                "properties": {
+                  "agent_name": {
+                    "description": "Optional name to put on the certificate and patron badge, up to 80 characters.",
+                    "maxLength": 80,
+                    "type": "string"
+                  },
+                  "came_from": {
+                    "description": "Optional. Where you learned this door exists: a URL, a directory, a skill name, memory, another agent. Referrers never reach us; this does.",
+                    "maxLength": 160,
+                    "type": "string"
+                  },
+                  "cited_artifact": {
+                    "description": "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
+                    "maxLength": 160,
+                    "pattern": "^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$",
+                    "type": "string"
+                  },
+                  "client": {
+                    "description": "Optional. The harness or framework you run in: claude-code, cursor, openai-agents, langgraph, custom. Counted, never on the certificate.",
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  "model": {
+                    "description": "Optional. The model running you, as you would name it: claude-opus-5, gpt-5.6, a local model. Counted, never printed on the certificate.",
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  "operator": {
+                    "description": "Optional. Who runs you: a name, handle, company or URL. Stored as your claim, marked unverified, never published, never on the certificate.",
+                    "maxLength": 120,
+                    "type": "string"
+                  },
+                  "operator_kind": {
+                    "description": "Optional. solo: one person runs you. company: a team does. research: a study. self: you act for yourself.",
+                    "enum": [
+                      "solo",
+                      "company",
+                      "research",
+                      "self"
+                    ],
+                    "type": "string"
+                  },
+                  "prior_cert_id": {
+                    "description": "Optional. A cert_ id from an earlier purchase here. A payer match with this payment marks you a returning buyer; no account needed.",
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  "purpose": {
+                    "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
+                    "maxLength": 280,
+                    "type": "string"
+                  },
+                  "urls": {
+                    "description": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased.",
+                    "maxLength": 4114,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "urls"
+                ],
+                "type": "object"
+              },
+              "type": {
+                "const": "http",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "method"
+            ],
+            "type": "object"
+          },
+          "output": {
+            "properties": {
+              "example": {
+                "type": "object"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      }
+    },
+    "index": {
+      "active": true,
+      "lastCrawledAt": "2026-10-02T10:17:32.238Z"
+    },
+    "paymentRequirements": {
+      "x402Version": 2,
+      "error": "Payment required",
+      "resource": {
+        "url": "https://scvd.store/api/buy/research_comparison",
+        "description": "Research Comparison. REQUIRES ?urls= on the paid request \u2014 a signed request without it is refused before the gate and no money moves. One signed comparison: live atomic payment terms, dated host history and gaps, same-endpoint network changes, shared receivers and limits. No research quality or ownership verdict. Full listing: https://scvd.store/menu/research_comparison. MCP tool: buy_research_comparison.",
+        "mimeType": "application/json",
+        "serviceName": "SCVD General Store",
+        "tags": [
+          "x402",
+          "signed-artifacts",
+          "verification",
+          "attestation",
+          "conformance"
+        ],
+        "iconUrl": "https://scvd.store/favicon.svg"
+      },
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "10000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "maxTimeoutSeconds": 300,
+          "extra": {
+            "name": "USD Coin",
+            "version": "2",
+            "assetTransferMethod": "eip3009",
+            "quotedAt": "2026-10-05T19:46:41.045Z"
+          }
+        },
+        {
+          "scheme": "exact",
+          "network": "eip155:137",
+          "amount": "10000",
+          "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "maxTimeoutSeconds": 300,
+          "extra": {
+            "name": "USD Coin",
+            "version": "2",
+            "assetTransferMethod": "eip3009",
+            "quotedAt": "2026-10-05T19:46:41.045Z"
+          }
+        },
+        {
+          "scheme": "exact",
+          "network": "eip155:42161",
+          "amount": "10000",
+          "asset": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "maxTimeoutSeconds": 300,
+          "extra": {
+            "name": "USD Coin",
+            "version": "2",
+            "assetTransferMethod": "eip3009",
+            "quotedAt": "2026-10-05T19:46:41.045Z"
+          }
+        },
+        {
+          "scheme": "exact",
+          "network": "eip155:480",
+          "amount": "10000",
+          "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "maxTimeoutSeconds": 300,
+          "extra": {
+            "name": "USDC",
+            "version": "2",
+            "assetTransferMethod": "eip3009",
+            "quotedAt": "2026-10-05T19:46:41.045Z"
+          }
+        },
+        {
+          "scheme": "exact",
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "amount": "10000",
+          "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "payTo": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+          "maxTimeoutSeconds": 300,
+          "extra": {
+            "feePayer": "BENrLoUbndxoNMUS5JXApGMtNykLjFXXixMtpDwDR9SP",
+            "quotedAt": "2026-10-05T19:46:41.045Z"
+          }
+        }
+      ],
+      "extensions": {
+        "bazaar": {
+          "info": {
+            "input": {
+              "type": "http",
+              "queryParams": {
+                "agent_name": "friendly-agent",
+                "urls": "[\"https://research-a.example/quote\",\"https://research-b.example/quote\"]"
+              },
+              "method": "GET"
+            },
+            "output": {
+              "type": "json",
+              "example": {
+                "message": "Pleasure doing business. Here's your goods, warm off the shelf.",
+                "item_id": "research_comparison",
+                "deliverable": "<the Research Comparison itself, as text>",
+                "paid_usdc": 0.01,
+                "tip_usdc": 0,
+                "patron_number": 41,
+                "badge_url": "https://scvd.store/badges/41.svg",
+                "certificate": {
+                  "cert_id": "<cert_ + 12 chars, minted when this purchase settles>",
+                  "item": "research_comparison",
+                  "patron_number": 41,
+                  "date": "2026-07-22T15:04:05.000Z"
+                },
+                "signature": "<128 hex chars, ed25519>",
+                "verify_url": "https://scvd.store/api/verify/<your cert_id>"
+              }
+            }
+          },
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "http"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "GET"
+                    ]
+                  },
+                  "queryParams": {
+                    "type": "object",
+                    "properties": {
+                      "agent_name": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "description": "Optional name to put on the certificate and patron badge, up to 80 characters."
+                      },
+                      "purpose": {
+                        "type": "string",
+                        "maxLength": 280,
+                        "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions."
+                      },
+                      "cited_artifact": {
+                        "type": "string",
+                        "maxLength": 160,
+                        "pattern": "^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$",
+                        "description": "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here."
+                      },
+                      "model": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "description": "Optional. The model running you, as you would name it: claude-opus-5, gpt-5.6, a local model. Counted, never printed on the certificate."
+                      },
+                      "client": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "description": "Optional. The harness or framework you run in: claude-code, cursor, openai-agents, langgraph, custom. Counted, never on the certificate."
+                      },
+                      "operator": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "description": "Optional. Who runs you: a name, handle, company or URL. Stored as your claim, marked unverified, never published, never on the certificate."
+                      },
+                      "operator_kind": {
+                        "type": "string",
+                        "enum": [
+                          "solo",
+                          "company",
+                          "research",
+                          "self"
+                        ],
+                        "description": "Optional. solo: one person runs you. company: a team does. research: a study. self: you act for yourself."
+                      },
+                      "came_from": {
+                        "type": "string",
+                        "maxLength": 160,
+                        "description": "Optional. Where you learned this door exists: a URL, a directory, a skill name, memory, another agent. Referrers never reach us; this does."
+                      },
+                      "prior_cert_id": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "description": "Optional. A cert_ id from an earlier purchase here. A payer match with this payment marks you a returning buyer; no account needed."
+                      },
+                      "urls": {
+                        "type": "string",
+                        "maxLength": 4114,
+                        "description": "JSON-encoded array of 2\u20134 distinct public HTTPS URLs (1024 characters each), for unauthenticated GET payment challenges. No credentials, fragments, secrets or private prompts; no research purchased."
+                      }
+                    },
+                    "required": [
+                      "urls"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "method"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              }
+            },
+            "required": [
+              "input"
+            ]
+          }
+        },
+        "required-inputs": {
+          "queryParams": [
+            "urls"
+          ],
+          "note": "This door cannot be served without ?urls=. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.",
+          "retry_url_template": "https://scvd.store/api/buy/research_comparison?urls=<urls>",
+          "price_discovery_url": "https://scvd.store/menu/research_comparison?view=compact"
+        },
+        "offer-receipt": {
+          "info": {
+            "offers": [
+              {
+                "format": "jws",
+                "acceptIndex": 0,
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6ODQ1MyIsImFzc2V0IjoiMHg4MzM1ODlmQ0Q2ZURiNkUwOGY0YzdDMzJENGY3MWI1NGJkQTAyOTEzIiwicGF5VG8iOiIweEREMzUwOTc2QjhjZkZjNjU5MzhDMDQ2NGQzOUEyQzc4QkUwNzliZDAiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjE3OTEyMjk5MDF9.zx2AxgBjMWAOQ2kBPw6n-vOnhWgQrHf4gsrOIYenlXH7ZeKld6pGerIXNo7b1P40ZoHNWMfNtBEYm_zVpvH1Aw"
+              },
+              {
+                "format": "jws",
+                "acceptIndex": 1,
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6MTM3IiwiYXNzZXQiOiIweDNjNDk5YzU0MmNFRjVFMzgxMWUxMTkyY2U3MGQ4Y0MwM2Q1YzMzNTkiLCJwYXlUbyI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCIsImFtb3VudCI6IjEwMDAwIiwidmFsaWRVbnRpbCI6MTc5MTIyOTkwMX0.np3bGB7JeqWhr3OGgOBmhrE6c6aiHPWhm9A6gRr-isw0Kwx-NUfrdALRcNth9ienqqnX27pqvYYm8dJ2BLFSDw"
+              },
+              {
+                "format": "jws",
+                "acceptIndex": 2,
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NDIxNjEiLCJhc3NldCI6IjB4YWY4OGQwNjVlNzdjOGNDMjIzOTMyN0M1RURiM0E0MzIyNjhlNTgzMSIsInBheVRvIjoiMHhERDM1MDk3NkI4Y2ZGYzY1OTM4QzA0NjRkMzlBMkM3OEJFMDc5YmQwIiwiYW1vdW50IjoiMTAwMDAiLCJ2YWxpZFVudGlsIjoxNzkxMjI5OTAxfQ.6HPlblAhLnsytKi6FOi--ThqvZgsFIxPZkOoDGB0rz3ovV1ujpbxQEZoyEDYoBToNXZ0ukMFvDWykpmyYWNfDA"
+              },
+              {
+                "format": "jws",
+                "acceptIndex": 3,
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NDgwIiwiYXNzZXQiOiIweDc5YTAyNDgyYTg4MGJjZTNmMTNlMDlkYTk3MGRjMzRkYjRjZDI0ZDEiLCJwYXlUbyI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCIsImFtb3VudCI6IjEwMDAwIiwidmFsaWRVbnRpbCI6MTc5MTIyOTkwMX0.ZrpcM4FhGTOgi6NRw9ER_1zDbJHw_y5QU3-4RxWZLL2slMEQZxdC3Qtyi9FdwNama1Edp4B582PkcyejDmXbDQ"
+              },
+              {
+                "format": "jws",
+                "acceptIndex": 4,
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3Jlc2VhcmNoX2NvbXBhcmlzb24iLCJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJzb2xhbmE6NWV5a3Q0VXNGdjhQOE5KZFRSRXBZMXZ6cUtxWkt2ZHAiLCJhc3NldCI6IkVQakZXZGQ1QXVmcVNTcWVNMnFOMXh6eWJhcEM4RzR3RUdHa1p3eVREdDF2IiwicGF5VG8iOiJER3hjUHJBSEw5WU0zaFc3aVh1SEZKbXI4N1pyNkFNQTRqQ1lIQnB1dk1nRSIsImFtb3VudCI6IjEwMDAwIiwidmFsaWRVbnRpbCI6MTc5MTIyOTkwMX0.WcjpcF2sTp2ZciH6MgPQa7-Yqf6WpsnNw_CJrtTn10bEF_y0iOHqGBgsC0ZqWADzMIupLO20MlQC5PWoCQ5xBg"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "preflight": [
+      {
+        "check": "url_valid",
+        "detail": "URL is well-formed",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "https",
+        "check": "url_https",
+        "detail": "Resource URL uses HTTPS",
+        "expected": "https",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "endpoint_reachable",
+        "detail": "Endpoint responded with status 402",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "402",
+        "check": "returns_402",
+        "detail": "Endpoint correctly returns HTTP 402 Payment Required",
+        "expected": "402",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "valid_json",
+        "detail": "Response body parsed as JSON",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "2",
+        "check": "x402_version",
+        "detail": "x402 version is 2",
+        "expected": "2",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "PAYMENT-REQUIRED header",
+        "check": "payment_required_header",
+        "detail": "PaymentRequired delivered via the PAYMENT-REQUIRED response header",
+        "expected": "PaymentRequired delivered via PAYMENT-REQUIRED response header",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "has_accepts",
+        "detail": "Found 5 payment method(s) in accepts array",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "exact",
+        "check": "accepts[0].scheme",
+        "detail": "Scheme is exact",
+        "expected": "exact or upto",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "eip155:8453",
+        "check": "accepts[0].network",
+        "detail": "Network eip155:8453 is supported",
+        "expected": "a facilitator-supported network (Base, Solana, Polygon, Arbitrum, World)",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "check": "accepts[0].asset",
+        "detail": "Asset is USDC",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "10000",
+        "check": "accepts[0].amount",
+        "detail": "Amount 10000 meets $0.001 USDC minimum",
+        "expected": ">= 1000",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+        "check": "accepts[0].payTo",
+        "detail": "payTo address present",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "accepts[0].maxTimeoutSeconds",
+        "detail": "maxTimeoutSeconds is set",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "has_resource",
+        "detail": "Resource URL: https://scvd.store/api/buy/research_comparison",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "has_bazaar_extension",
+        "detail": "Bazaar extension found",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "bazaar.info",
+        "detail": "Bazaar info block present",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "bazaar.info.input",
+        "detail": "Input metadata present in bazaar info",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "http",
+        "check": "bazaar.info.input.type",
+        "detail": "Input type is \"http\"",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "GET",
+        "check": "bazaar.info.input.method",
+        "detail": "HTTP method is \"GET\"",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "actual": "GET",
+        "check": "bazaar.info.input.method.matches_request",
+        "detail": "Declared method GET matches the probed method",
+        "expected": "GET",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "bazaar.info.output",
+        "detail": "Output metadata present in bazaar info",
+        "passed": true,
+        "severity": "advisory"
+      },
+      {
+        "check": "bazaar.info.output.example",
+        "detail": "Output example provided",
+        "passed": true,
+        "severity": "advisory"
+      },
+      {
+        "check": "bazaar.schema",
+        "detail": "Bazaar schema present",
+        "passed": true,
+        "severity": "required"
+      },
+      {
+        "check": "parse",
+        "detail": "Bazaar discovery extension parsed successfully",
+        "passed": true,
+        "severity": "required"
+      }
+    ],
+    "simulation": {
+      "outcome": "accepted"
+    },
+    "statusCode": 402,
+    "valid": true,
+    "x402Version": 2
+  }
+}

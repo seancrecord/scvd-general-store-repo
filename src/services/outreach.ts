@@ -218,7 +218,7 @@ export interface Prospect {
   verdict: "not_ready" | "unreachable";
   failed: string[];
   week: string;
-  observed_at: string;
+  observed_at: string | null;
   claim?: WardVolumeClaim;
   /**
    * The rails this door's own 402 offered when we read it, carried so
@@ -276,9 +276,8 @@ export function deriveProspects(
       verdict: entry.verdict,
       failed: entry.failed,
       week: latest.week,
-      // The row's own read time where the probe wrote one (2026-09-05);
-      // the seal time only for rows walked before it did.
-      observed_at: entry.observed_at ?? latest.at,
+      // Never substitute the round seal for an unknown request time.
+      observed_at: entry.observed_at ?? null,
       ...(claim ? { claim } : {}),
       ...(entry.offer?.networks ? { networks: entry.offer.networks } : {}),
       newly_failing: newlyFailing,
@@ -321,7 +320,8 @@ export interface Welcome {
   host: string;
   url: string;
   week: string;
-  observed_at: string;
+  observed_at: string | null;
+  probe_method?: WardHostResult["probe_method"];
   newly_listed: boolean;
   claim?: WardVolumeClaim;
   reason: string;
@@ -353,10 +353,11 @@ export function deriveWelcomes(
          * THE DATE THE WELCOME CARRIES IS THE ROW'S (2026-09-05). The
          * operator of tensorfeed.ai read "On 2026-09-05" in the note
          * and "observed 2026-09-01" on the passport it linked, and
-         * said so. The seal time is the fallback for rows the probe
-         * did not stamp.
+         * said so. An unstamped row now stays unknown; the seal is
+         * a different event and cannot establish freshness.
          */
-        observed_at: entry.observed_at ?? latest.at,
+        observed_at: entry.observed_at ?? null,
+        ...(entry.probe_method ? { probe_method: entry.probe_method } : {}),
         newly_listed: newlyListed,
         ...(claim ? { claim } : {}),
         reason,
@@ -373,22 +374,22 @@ export function deriveWelcomes(
 }
 
 export function draftWelcome(welcome: Welcome, base: string): string {
-  const date = welcome.observed_at.slice(0, 10);
+  const when = welcome.observed_at ? `At ${welcome.observed_at}` : "In the archived weekly pass (request time unknown)";
   const freshLine = welcome.newly_listed
     ? "\nIt was not in the listings on our previous pass, so this note is probably arriving in your first week. Congratulations on the door.\n"
     : "";
-  return `Subject: a dated page for your x402 endpoint at ${welcome.host}
+  return `Subject: ${welcome.observed_at ? "a dated page" : "an archived reading"} for your x402 endpoint at ${welcome.host}
 
 Hello — I run an evidence observatory for agentic commerce, and a small store on the same door.
 
-On ${date} our weekly pass of doors listed in public x402 discovery fetched
+${when}, our census made an unpaid request (${welcome.probe_method ?? "method not recorded"}) to
   ${welcome.url}
-and it answered the way a buyer needs: a payable 402. That observation, dated, with the date after which to stop trusting it, is on a page that already exists:
+and received an unpaid payment challenge that passed our published checks. Paid settlement and successful delivery were not tested. This observation concerns that exact endpoint; it does not assess the operator's other products or protocols. The recorded scope, evidence and freshness limits are available here:
   ${base}/passport/${welcome.host}
 ${freshLine}
-Reading it is free forever, and it re-derives from each weekly pass on its own. It is not a badge and it never says "passed"; it says you were observed, which is the thing a counterparty can check. The page also carries a chip you can paste beside your door if you want one, a free re-check you can run yourself, and a way to put your own words beside our observation.
+Reading it is free forever, and it re-derives from each weekly pass on its own. It describes our observation and its limits. The page also carries a chip you can paste beside your door if you want one, a free re-check you can run yourself, and a way to put your own words beside our observation.
 
-This is a one-off note about one dated observation. You're not on a list and there is nothing to unsubscribe from.
+This is a one-off note about one recorded observation. You're not on a list and there is nothing to unsubscribe from.
 
 — the keeper, SCVD General Store`;
 }
@@ -426,14 +427,15 @@ export function draftNote(
   base: string,
   opts: { firstSeenWeek?: string } = {},
 ): string {
-  const date = prospect.observed_at.slice(0, 10);
+  const date = prospect.observed_at?.slice(0, 10);
+  const when = date ? `On ${date}` : "In the archived weekly pass (request time unknown)";
   /*
    * THE RE-CHECK LINE names the moment, not "seconds ago". The wire's
    * reading is seconds old at send and a hand delivery's is minutes
    * or an hour; both are true as of the timestamp, and the timestamp
    * is what the operator can find in their own logs.
    */
-  const verifiedLine = opts.firstSeenWeek
+  const verifiedLine = opts.firstSeenWeek && prospect.observed_at
     ? `\n(First seen on our ${opts.firstSeenWeek} weekly pass; re-checked live at ${prospect.observed_at.slice(11, 16)} UTC on ${date}, so the observation above is current as of that re-check, not the week.)\n`
     : "";
   /*
@@ -468,7 +470,7 @@ export function draftNote(
 
 Hello — I run a small store and free conformance desk in the x402 ecosystem.
 
-On ${date} our weekly probe of doors listed in public x402 discovery fetched
+${when} our weekly probe of doors listed in public x402 discovery fetched
   ${prospect.url}
 and ${finding}. Any buyer that finds you through those listings hits the same thing.
 ${verifiedLine}${freshLine}${claimLine}
@@ -1087,7 +1089,7 @@ export function claimAtStamp(
   }
   if (prospect) {
     return claimFrom(
-      { at: prospect.observed_at, verdict: prospect.verdict, failed: prospect.failed },
+      { at: prospect.observed_at ?? "", verdict: prospect.verdict, failed: prospect.failed },
       prospect.week,
       prospect.networks,
     );

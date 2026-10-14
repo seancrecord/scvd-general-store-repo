@@ -22,6 +22,7 @@ const auth = { Authorization: `Basic ${btoa(`keeper:${bindings.ADMIN_PASSWORD}`)
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(now);
   await bindings.COUNTERS.delete(KV_KEYS.adminFailByIp("unknown"));
+  for (const key of (await bindings.ORDERS.list({ prefix: KV_KEYS.deliveryIntentPrefix })).keys) await bindings.ORDERS.delete(key.name);
   await runInDurableObject(ledger(), async (_instance, state) => { await state.storage.deleteAll(); });
 });
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
@@ -230,4 +231,110 @@ it("treats malformed correction JSON as unavailable rather than silently absent"
     state.storage.sql.exec("INSERT INTO mpp_house_corrections VALUES (?, ?)", record.id, "null");
   });
   expect((await inspectPurchase(bindings, record.id)).body.purchase?.accounting_check).toBe("unavailable");
+});
+
+it("separates a stale delivery marker from a matching retained delivery, without clearing it", async () => {
+  const record = await fixture(); await sale(record);
+  const { openDeliveryIntent, auditDeliveries } = await import("@/services/delivery-audit");
+  const key = await openDeliveryIntent(bindings, { path: record.path, transaction: record.payment!.transaction,
+    payer: record.payer, paid_usdc: 1, settled_at: new Date(now.getTime() - 3600000).toISOString() });
+  const before = await bindings.ORDERS.get(key);
+  const audit = await auditDeliveries(bindings, now);
+  expect(audit.undelivered).toEqual([]);
+  expect(audit.recorded_delivery).toMatchObject([{ purchase_id: record.id, delivery_state: "delivered", key }]);
+  expect(await bindings.ORDERS.get(key)).toBe(before);
+  const response = await request("/admin/deliveries");
+  const body = await response.json() as { verdict: string; recorded_delivery: unknown[] };
+  expect(body.verdict).toContain("1 retained delivery");
+  expect(JSON.stringify(body)).not.toContain(marker);
+});
+
+it("keeps mismatched, missing and unavailable delivery evidence in the review queue", async () => {
+  const record = await fixture(); await sale(record);
+  const { openDeliveryIntent, auditDeliveries } = await import("@/services/delivery-audit");
+  const key = await openDeliveryIntent(bindings, { path: "/api/buy/hello", transaction: record.payment!.transaction,
+    payer: record.payer, paid_usdc: 1, settled_at: new Date(now.getTime() - 3600000).toISOString() });
+  expect((await auditDeliveries(bindings, now)).undelivered).toHaveLength(1);
+  await bindings.ORDERS.delete(key);
+  await openDeliveryIntent(bindings, { path: record.path, transaction: record.payment!.transaction,
+    payer: record.payer, paid_usdc: 1, settled_at: new Date(now.getTime() - 3600000).toISOString() });
+  delete record.delivery; await save(record);
+  expect((await auditDeliveries(bindings, now)).undelivered).toHaveLength(1);
+  expect((await auditDeliveries({ ...bindings, PAID_RECOVERIES: undefined }, now)).undelivered).toHaveLength(1);
+});
+
+it("does not infer customer fulfillment from a human order being opened", async () => {
+  const record = await fixture(); record.item = getMenuItem("aura_walk"); await save(record); await sale(record);
+  const { openDeliveryIntent, auditDeliveries } = await import("@/services/delivery-audit");
+  await openDeliveryIntent(bindings, { path: record.path, transaction: record.payment!.transaction,
+    payer: record.payer, paid_usdc: 1, settled_at: new Date(now.getTime() - 3600000).toISOString() });
+  expect((await auditDeliveries(bindings, now)).undelivered).toHaveLength(1);
+});
+
+it("separates rewarded-study receipts without treating other purchases by that wallet as research", async () => {
+  const record = await fixture("x402");
+  const { takeSummary } = await import("@/services/books-summary");
+  const { renderTakePage } = await import("@/pages/admin/take-page");
+  const certKeys = ["research-receipt", "other-receipt"];
+  for (const id of certKeys) await bindings.PATRONS.put(KV_KEYS.cert(id), JSON.stringify({ certificate: {
+    cert_id: id, date: now.toISOString(), item: "context_anchor", paid_usdc: 1,
+    payer: record.payer, network: record.terms.network,
+    settlement_tx: id === certKeys[0] ? record.payment!.transaction : `0x${"44".repeat(32)}`,
+  } }));
+  const studyKey = KV_KEYS.study("sty_revenue_test");
+  await bindings.COUNTERS.put(studyKey, JSON.stringify({ study_id: "sty_revenue_test", debrief: {
+    reward_usd: 2, legs: [{ purchase_id: record.id, observed: { settled: true } }, { purchase_id: record.id, observed: { settled: true } }],
+  } }));
+  try {
+    const take = await takeSummary(bindings, { includeResearch: true });
+    expect(take.revenue?.research).toMatchObject({ sales: 1, usdc: 1 });
+    expect(take.revenue?.outside_unlinked).toMatchObject({ sales: 1, usdc: 1 });
+    expect(take.revenue?.study_purchases).toBe(1);
+    expect(take.revenue?.rewards_authorized_usdc).toBe(2);
+    const html = renderTakePage({ take, allTime: { organic: 4, house: 0 }, till: null, loadNotes: [] });
+    expect(html).toContain("Not linked to a rewarded study");
+    expect(html).toContain("field matches");
+    expect(html).not.toContain("settled on penny pages, which mint none");
+    expect(html).toContain("not proof of unsubsidized demand");
+  } finally {
+    await bindings.COUNTERS.delete(studyKey);
+    for (const id of certKeys) await bindings.PATRONS.delete(KV_KEYS.cert(id));
+  }
+});
+
+
+it("matches a direct x402 delivery reference only when all retained payment details agree", async () => {
+  const record = await fixture("x402");
+  const { openDeliveryIntent, auditDeliveries } = await import("@/services/delivery-audit");
+  const intent = { purchase_id: record.id, payment_network: record.terms.network, path: record.path,
+    transaction: record.payment!.transaction, payer: record.payer, paid_usdc: 1,
+    settled_at: new Date(now.getTime() - 3600000).toISOString() };
+  await openDeliveryIntent(bindings, intent);
+  expect((await auditDeliveries(bindings, now)).recorded_delivery).toHaveLength(1);
+  for (const changed of [{ payment_network: "eip155:1" }, { paid_usdc: 2 }, { payer: `0x${"99".repeat(20)}` }]) {
+    await openDeliveryIntent(bindings, { ...intent, ...changed });
+    const audit = await auditDeliveries(bindings, now);
+    expect(audit.recorded_delivery).toEqual([]);
+    expect(audit.undelivered).toHaveLength(1);
+  }
+  await openDeliveryIntent(bindings, intent);
+  const unavailable = await auditDeliveries({ ...bindings, PAID_RECOVERIES: undefined }, now);
+  expect(unavailable.undelivered[0]?.evidence_status).toBe("unavailable");
+});
+
+it("marks study attribution incomplete when retained research evidence cannot be read", async () => {
+  const record = await fixture("x402");
+  const { revenueBreakdown } = await import("@/services/revenue-breakdown");
+  const studyKey = KV_KEYS.study("sty_unreadable_revenue_test");
+  await bindings.COUNTERS.put(studyKey, JSON.stringify({ debrief: { reward_usd: 2,
+    legs: [{ purchase_id: record.id, observed: { settled: true } }] } }));
+  try {
+    const result = await revenueBreakdown({ ...bindings, PAID_RECOVERIES: undefined }, [], false);
+    expect(result.incomplete).toBe(true);
+    expect(result.study_purchases).toBe(1);
+    expect(result.study_purchases_inspected).toBe(0);
+    expect(result.research.sales).toBe(0);
+    await bindings.COUNTERS.put(studyKey, JSON.stringify({ debrief: { reward_usd: "unknown", legs: [] } }));
+    expect((await revenueBreakdown(bindings, [], false)).incomplete).toBe(true);
+  } finally { await bindings.COUNTERS.delete(studyKey); }
 });

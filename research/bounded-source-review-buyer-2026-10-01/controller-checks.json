@@ -1,0 +1,101 @@
+{
+  "codex-directed-r1": {
+    "originals": [
+      {
+        "file": "evidence/corpus-10.body",
+        "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+        "envelope_pointer": ""
+      }
+    ],
+    "issuer_records": [
+      {
+        "file": "evidence/issuer-key.body",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    ],
+    "checks": [
+      {
+        "original": {
+          "file": "evidence/corpus-10.body",
+          "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+        },
+        "envelope_pointer": "",
+        "issuer": {
+          "file": "evidence/issuer-key.body",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "signature_valid": true,
+        "evidence_complete": true,
+        "signed_subject_rows": [
+          {
+            "pointer": "/round/hosts/57",
+            "url": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-21T02:30:40.084Z",
+            "verdict": "ready"
+          }
+        ],
+        "publication_at": "2026-09-27T11:02:17.930Z",
+        "embedded_key_matches_separate_record": true
+      }
+    ],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  },
+  "claude-directed-r1": {
+    "originals": [],
+    "issuer_records": [],
+    "checks": [],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  },
+  "codex-directed-r2": {
+    "originals": [
+      {
+        "file": "evidence/snapshot-10.json",
+        "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58",
+        "envelope_pointer": ""
+      }
+    ],
+    "issuer_records": [
+      {
+        "file": "evidence/issuer-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    ],
+    "checks": [
+      {
+        "original": {
+          "file": "evidence/snapshot-10.json",
+          "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+        },
+        "envelope_pointer": "",
+        "issuer": {
+          "file": "evidence/issuer-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        },
+        "signature_valid": true,
+        "evidence_complete": true,
+        "signed_subject_rows": [
+          {
+            "pointer": "/round/hosts/57",
+            "url": "https://lionx402.com/api/x402/wallet-screen-json",
+            "observed_at": "2026-09-21T02:30:40.084Z",
+            "verdict": "ready"
+          }
+        ],
+        "publication_at": "2026-09-27T11:02:17.930Z",
+        "embedded_key_matches_separate_record": true
+      }
+    ],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  },
+  "claude-directed-r2": {
+    "originals": [],
+    "issuer_records": [
+      {
+        "file": "evidence/scvd-signing-key.txt",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      }
+    ],
+    "checks": [],
+    "limits": "Controller verification of retained bytes only; not native acceptance or independent issuer identity. Other retained key formats require trace review."
+  }
+}

@@ -1,4 +1,4 @@
-import { BATTERY_ADDS, PREFLIGHT_VERSION, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
+import { BATTERY_ADDS, PREFLIGHT_VERSION, PREFLIGHT_VERSION_V2, CROSS_SURFACE_CHECK_NAMES } from "@/services/preflight";
 
 /**
  * WHAT v2 CATCHES THAT v1 MISSES, COUNTED (2026-08-29).
@@ -48,7 +48,7 @@ import { BATTERY_ADDS, PREFLIGHT_VERSION, PREFLIGHT_VERSION_NEXT } from "@/servi
  */
 
 /** The checks v2 folds into its verdict that v1 does not. Derived, never retyped. */
-export const V2_ONLY_CHECKS: readonly string[] = BATTERY_ADDS[PREFLIGHT_VERSION_NEXT];
+export const V2_ONLY_CHECKS: readonly string[] = BATTERY_ADDS[PREFLIGHT_VERSION_V2];
 
 /** A census row, in the only shape this reader needs from it. */
 export interface ScoredRow {
@@ -98,7 +98,8 @@ export function batteryDelta(rows: readonly ScoredRow[]): BatteryDelta {
     if (row.failed.length === 0) {
       continue;
     }
-    const v2Only = row.failed.filter((name) => V2_ONLY_CHECKS.includes(name));
+    const legacyFailures = row.failed.filter((name) => !(CROSS_SURFACE_CHECK_NAMES as readonly string[]).includes(name));
+    const v2Only = legacyFailures.filter((name) => V2_ONLY_CHECKS.includes(name));
     /*
      * THE DISAGREEMENT TEST, and it is an ALL rather than an ANY. A
      * row that failed one v1 check and one v2 check was not_ready
@@ -108,7 +109,7 @@ export function batteryDelta(rows: readonly ScoredRow[]): BatteryDelta {
      * whose EVERY failure is v2-only would have been called ready by
      * v1, and those are the doors this exists to count.
      */
-    if (v2Only.length === row.failed.length) {
+    if (v2Only.length > 0 && v2Only.length === legacyFailures.length) {
       caught += 1;
       for (const name of v2Only) {
         byCheck[name] = (byCheck[name] ?? 0) + 1;
@@ -123,7 +124,7 @@ export function batteryDelta(rows: readonly ScoredRow[]): BatteryDelta {
     by_check: byCheck,
     batteries: {
       baseline: PREFLIGHT_VERSION,
-      compared: PREFLIGHT_VERSION_NEXT,
+      compared: PREFLIGHT_VERSION_V2,
     },
     what_this_does_not_settle: NOT_SETTLED,
   };
@@ -149,7 +150,7 @@ export interface BatteryDeltaSeries {
 }
 
 const WHAT_THIS_IS =
-  "How often the current battery (v2) reaches a different verdict than the frozen one (v1), over every signed week this store holds. v2's checks are v1's plus four, so the disagreement runs one way only: a door v1 would have called ready that v2 caught. Derived at read time from the check names each row already carries — no row was rewritten and nothing was resigned to produce this, so it covers the whole history rather than starting the day somebody thought to count.";
+  "How often the historical v2 battery reaches a different verdict than the frozen one (v1), over every signed week this store holds. v2's checks are v1's plus its published additions, so the disagreement runs one way only: a door v1 would have called ready that v2 caught. Derived at read time from the check names each row already carries, excluding later v3-only failures — no row was rewritten and nothing was resigned to produce this, so it covers the whole history rather than starting the day somebody thought to count.";
 
 /** Fold a set of already-scored rounds into per-week and overall tallies. */
 export function batteryDeltaSeries(

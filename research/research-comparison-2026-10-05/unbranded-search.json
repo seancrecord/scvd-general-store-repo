@@ -1,0 +1,78 @@
+{
+  "observed_date": "2026-10-05",
+  "source": "AgentCash search",
+  "query": "independent signed observations of x402 payment endpoints before buying API services",
+  "limit": 10,
+  "broad": true,
+  "page": 1,
+  "total_reported": 100,
+  "results": [
+    {
+      "origin": "https://minia2a.uk",
+      "path": "/x402/payment-audit",
+      "method": "GET",
+      "summary": "Black-box trust check that verifies whether an x402 endpoint correctly validates payment before delivering, returning SAFE, RISK, or NOT_X402."
+    },
+    {
+      "origin": "https://minia2a.uk",
+      "path": "/x402/payment-audit",
+      "method": "POST",
+      "summary": "Black-box trust check that verifies whether an x402 endpoint correctly validates payment before delivering content, returning SAFE, RISK, or NOT_X402."
+    },
+    {
+      "origin": "https://merit402.vercel.app",
+      "path": "/",
+      "method": "GET",
+      "summary": "Audits a public x402 payment endpoint before paying, detecting malformed terms, amount mismatches, wrong network, bad payTo address, and header/body inconsistencies."
+    },
+    {
+      "origin": "https://agentready-audit.seshiccse023.chatgpt.site",
+      "path": "/api/x402/inspect",
+      "method": "POST",
+      "summary": "Fetches and inspects a live x402 HTTP 402 payment challenge from an endpoint, reporting price, network, asset, recipient, and protocol risks without signing or sending payment.",
+      "price": "0.02 USD"
+    },
+    {
+      "origin": "https://x402meta.hergertsynthora.com",
+      "path": "/service",
+      "method": "POST",
+      "summary": "Verifies an x402 payment endpoint before you pay by probing liveness, checking CDP Bazaar catalog registration, and confirming the live payTo address matches the advertised one, returning a 0-100 score with a pay_ok/caution/do_not_pay verdict.",
+      "price": "0.010000 USD"
+    },
+    {
+      "origin": "https://merchant-audit.clankerceo.workers.dev",
+      "path": "/x402-endpoint-verify",
+      "method": "GET",
+      "summary": "Audit any x402 paid endpoint before sending money, returning a PASS/CAUTION/AVOID verdict with live liveness, price-drift, settlement history, and on-chain USDC verification checks.",
+      "price": "0.01 USD"
+    },
+    {
+      "origin": "https://402signal.com",
+      "path": "/route",
+      "method": "POST",
+      "summary": "Pre-flight paid check that verifies a live x402 API offer against your budget and rules before your agent's wallet pays, returning a signed purchase decision.",
+      "price": "0.01"
+    },
+    {
+      "origin": "https://moneypilot-c6f8c4.joedyermens.chatgpt.site",
+      "path": "/api/x402/x402-readiness",
+      "method": "POST",
+      "summary": "Probe an HTTPS endpoint and verify that it publishes a decodable HTTP 402 payment challenge for x402 protocol compliance.",
+      "price": "0.010000 USD"
+    },
+    {
+      "origin": "https://api.invoket.com",
+      "path": "/preflight/x402-seller",
+      "method": "POST",
+      "summary": "Checks an x402 seller endpoint before an AI agent pays it, returning trust signals and provenance from official sources."
+    },
+    {
+      "origin": "https://proofline-audit.chrismellado.chatgpt.site",
+      "path": "/api/x402/readiness-check",
+      "method": "POST",
+      "summary": "Inspects a public endpoint's unpaid x402 challenge to verify interoperability without ever paying the target.",
+      "price": "0.050000 USD"
+    }
+  ],
+  "limits": "First page of ten only; no claim about absence from the complete index."
+}

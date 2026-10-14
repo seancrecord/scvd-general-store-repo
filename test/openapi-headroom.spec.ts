@@ -11,6 +11,8 @@ import { nativeMcpCheckoutShape, nativeWebmcpCheckoutShape } from "@/lib/purchas
 
 // Golden schemas in fixtures/openapi-shared-schemas.json were captured from
 // 9d04efe5 before component reuse, not generated from the code under test.
+// ReadingCadence and ProbeUrlInput were captured from c9c8b9c8 before the
+// October integration reduction. Keep those expanded contracts unchanged.
 // Keep rail recipients and enabled lanes aligned with the other size guards.
 const allRails = productionShape(env as Env);
 
@@ -124,9 +126,18 @@ it("preserves each paid challenge header through its OpenAPI reference", async (
     if (!operation || !operation["x-payment"]) continue;
     const responses = operation.responses as Record<string, { headers: Record<string, unknown> }>;
     for (const [name, schema] of Object.entries(PAYMENT_CHALLENGE_HEADERS)) {
-      expect(expand(responses["402"]!.headers[name], document)).toEqual(schema);
+      const response = expand(responses["402"], document) as { headers: Record<string, unknown> };
+      expect(response.headers[name]).toEqual(schema);
     }
     checked++;
   }
   expect(checked).toBeGreaterThan(20);
+});
+
+it("retains the full conditional-read header contract through the shared parameter", async () => {
+  const document = await (await openapiRoutes.request("https://scvd.store/openapi.json", {}, allRails)).json() as Record<string, unknown>;
+  expect(expand({ $ref: "#/components/parameters/IfNoneMatch" }, document)).toEqual({
+    name: "If-None-Match", in: "header", required: false, schema: { type: "string" },
+    description: "Send a prior ETag (SHA-256 of exact response bytes). Unchanged content returns 304 with no body.",
+  });
 });

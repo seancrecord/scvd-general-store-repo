@@ -27,7 +27,7 @@ export async function paymentRecoverySigners(wire: unknown): Promise<{ network: 
       const chainId = Number(network.slice("eip155:".length));
       if (!Number.isSafeInteger(chainId) || chainId <= 0) return null;
       const valid = await verifyTypedData({ address: a.from,
-        domain: { name: extra.name, version: extra.version, chainId, verifyingContract: accepted.asset },
+        domain: { name: extra.name, version: extra.version, chainId, verifyingContract: address(extra.verifyingContract) ? extra.verifyingContract : accepted.asset },
         types: authorizationTypes, primaryType: "TransferWithAuthorization",
         message: { from: a.from, to: a.to, value: BigInt(String(a.value)), validAfter: BigInt(String(a.validAfter)),
           validBefore: BigInt(String(a.validBefore)), nonce: a.nonce as `0x${string}` },

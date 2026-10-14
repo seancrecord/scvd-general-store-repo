@@ -40,6 +40,18 @@ version rather than assuming it selected HTTP v2.
 
 ## Decide from the reading, not the label
 
+When present, `inspection` separates reachability, observed protocols,
+unverified advertised terms, structural findings and gaps. Include
+`inspection.observed_at` with the reading; a missing observation time remains
+unknown. The top-level `verdict` is x402-specific: an MPP-only endpoint may be
+`not_ready` there without being globally broken. Mixed endpoints retain both
+protocol readings. Read `mpp` and `mpp_core` under their own battery and source
+versions, including unmeasured checks. Inspection signatures are `not_checked`;
+shape is not signature validity, settlement, delivery or permission to pay.
+For an older response without this block, preserve the fields actually present.
+Missing historical MPP observations remain unmeasured; never amend signed bytes
+with the results of a fresh probe.
+
 1. **Preflight is unsigned and unpaid.** Read `verdict`, `reached_level`,
    the individual checks, advisories, method and stated gaps. `ready`
    means the checks reached passed. It does not prove a payment can settle,

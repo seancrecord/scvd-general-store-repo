@@ -29,6 +29,7 @@ export interface CreateOrderOptions {
   createdAt?: string;
   item: MenuItem;
   paidUsdc: number;
+  gatewayPayment?: import("@/lib/arc-gateway").GatewayPayment;
   tipUsdc: number;
   payer?: string;
   agentName?: string;
@@ -67,6 +68,7 @@ export async function createOrder(
     created_at: options.createdAt ?? new Date().toISOString(),
     sla_hours: options.slaHours ?? options.item.sla_hours ?? 168,
     paid_usdc: options.paidUsdc,
+    ...(options.gatewayPayment ? { gateway_payment_at_issue: options.gatewayPayment } : {}),
     tip_usdc: options.tipUsdc,
     patron_number: options.patronNumber,
     cert_id: options.certId,

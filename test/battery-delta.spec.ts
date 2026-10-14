@@ -8,7 +8,7 @@ import {
 import {
   BATTERY_ADDS,
   BATTERY_CHECK_NAMES,
-  PREFLIGHT_VERSION_NEXT,
+  PREFLIGHT_VERSION_V2,
 } from "@/services/preflight";
 
 /**
@@ -34,7 +34,7 @@ import {
  */
 
 const V1_CHECK = BATTERY_CHECK_NAMES[0]!;
-const V2_CHECK = BATTERY_ADDS[PREFLIGHT_VERSION_NEXT][0]!;
+const V2_CHECK = BATTERY_ADDS[PREFLIGHT_VERSION_V2][0]!;
 
 function row(verdict: string, failed: string[] = []): ScoredRow {
   return { verdict, failed };
@@ -45,7 +45,7 @@ describe("what v2 catches that v1 misses", () => {
     // Retyping this list is how the tally would come to disagree with
     // the battery it is measuring — the exact defect the store keeps
     // finding elsewhere.
-    expect(V2_ONLY_CHECKS).toEqual(BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]);
+    expect(V2_ONLY_CHECKS).toEqual(BATTERY_ADDS[PREFLIGHT_VERSION_V2]);
     expect(V2_ONLY_CHECKS.length).toBeGreaterThan(0);
   });
 
@@ -129,7 +129,7 @@ describe("what v2 catches that v1 misses", () => {
    */
   it("holds the superset relation the one-way reading depends on", () => {
     const v1 = new Set<string>(BATTERY_CHECK_NAMES);
-    const overlap = BATTERY_ADDS[PREFLIGHT_VERSION_NEXT].filter((name) =>
+    const overlap = BATTERY_ADDS[PREFLIGHT_VERSION_V2].filter((name) =>
       v1.has(name),
     );
     expect(
@@ -160,8 +160,18 @@ describe("the tally is served, not merely computed", () => {
     expect(Array.isArray(body.weeks)).toBe(true);
     // Derived, so a reader can recount without trusting us (rule 55).
     expect(body.how_to_rederive).toContain("failed[]");
-    expect(body.v2_only_checks).toEqual(BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]);
+    expect(body.v2_only_checks).toEqual(BATTERY_ADDS[PREFLIGHT_VERSION_V2]);
     // The number is an input to the keeper's call and says so here too.
     expect(body.the_open_question).toContain("keeper's call");
   });
+});
+
+it("keeps the v1/v2 projection accurate when census rows also carry v3 failures", () => {
+  const delta = batteryDelta([
+    { verdict: "not_ready", failed: ["offer-amount-matches-accepts"] },
+    { verdict: "not_ready", failed: [V2_CHECK, "discovery-info-validates"] },
+    { verdict: "not_ready", failed: ["status-402", "offer-amount-matches-accepts"] },
+  ]);
+  expect(delta).toMatchObject({ scored: 3, agreed: 2, caught_by_v2_only: 1, batteries: { baseline: "v1", compared: "v2" } });
+  expect(delta.by_check).toEqual({ [V2_CHECK]: 1 });
 });

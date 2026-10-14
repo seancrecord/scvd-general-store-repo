@@ -92,12 +92,12 @@ adminContributionRoutes.use("*", async (c, next) => {
 });
 adminContributionRoutes.get("/", async c => {
   const index = await adminBoard(c.env, c.req.query("cursor"));
-  return c.html(renderContributionDesk(index, null));
+  return c.html(renderContributionDesk(index, null, Date.now(), c.env.STORE_BASE_URL));
 });
 adminContributionRoutes.get("/:id", async c => {
   const id = c.req.param("id"); if (!validId(id)) return c.json({code: "task_missing", error: "No posted task with that id."}, 404);
   const state = await task(c.env, id).adminView();
-  return state ? c.html(renderContributionDesk(null, state)) : c.json({code: "task_missing", error: "No posted task with that id."}, 404);
+  return state ? c.html(renderContributionDesk(null, state, Date.now(), c.env.STORE_BASE_URL)) : c.json({code: "task_missing", error: "No posted task with that id."}, 404);
 });
 async function adminFormAction(c: Context<HonoEnv>, action: ContributionAdminAction, id: string | null, perform: (body: Record<string, unknown>, form: boolean) => Promise<Response>) {
   const form = c.req.header("content-type")?.includes("application/x-www-form-urlencoded") ?? false;

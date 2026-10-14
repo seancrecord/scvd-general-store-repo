@@ -1,3 +1,6 @@
+import { largerWorkHtml } from "@/pages/offer-paths";
+import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
+import { PERSONAL_SHOPPER, personalShopperPrompt } from "@/store/personal-shopper";
 import { checkoutMethod, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { ALTERNATE_NAMES, ASKED_FOR_NOUNS, INDEPENDENT_REPORTING, WRITTEN_ABOUT } from "@/store/copy/asked-for";
@@ -14,6 +17,7 @@ import {
 import { escapeHtml } from "@/lib/sanitize";
 import { priceLabel } from "@/lib/price-label";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
+import { keeperAuthorJsonLd, writingSectionHtml } from "@/pages/writing-section";
 import { catIsOut } from "@/services/porch";
 import type { FirstDollar } from "@/lib/metrics";
 import {
@@ -45,9 +49,9 @@ import { TRADE_PROPOSITION } from "@/store/trade-counter";
  *
  * Every token here is origin-bound and inert anywhere else, so these
  * are PUBLIC DATA, not secrets — the same class of thing as the DNS
- * record that proves we own the domain. Neither was registered for
- * subdomains or third-party injection: the narrowest grant that does
- * the job, and it matches what the store actually serves.
+ * record that proves we own the domain. Chrome is origin-only; the
+ * keeper's 2026-10-13 Edge renewal also covers subdomains. Neither
+ * grant permits third-party injection.
  *
  * WHEN A TRIAL ENDS the API goes back to feature-detection and
  * /webmcp.js keeps no-opping gracefully — no error, no broken page,
@@ -66,12 +70,11 @@ export const WEBMCP_ORIGIN_TRIAL_TOKENS: readonly {
       "AnY9gFUhvYlqmiw6Hxg8e8ZrnXjv32OUI6c4+jD1i1cRhvnw+rUYUGSaGiLFQZgwBbatEz6ZcGm1OL/Qm51ZDgkAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0=",
   },
   {
-    // Edge 150+. Registered by the keeper 2026-08-31; expires 2026-10-15
-    // — THIRTY-TWO DAYS BEFORE CHROME'S, which is exactly why the door
-    // battery reports the soonest of the two and not the first.
+    // Edge 150+. Renewed by the keeper 2026-10-13; expires 2026-11-27.
+    // Includes subdomains; Chrome now expires first.
     browser: "edge",
     token:
-      "A0e2lG+XKqhdeqtHOL7IqB0ohyilsql6Id8blCwWJH5ptWLTQTqt5Dy75GQrQemRMYjUUbv0zt0G44WDSRUns9EAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5MjA2OTkwN30=",
+      "A9FsMFiNyrUM4O5xHGogMAo/HlFBz1Dt8Mq1Gx0AsD9YVwoquYvjFGzYY75m7C7lKxPHJzLGBtX6tC/pR/0PBtUAAABdeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NTgwMTIxOCwiaXNTdWJkb21haW4iOnRydWV9",
   },
 ];
 
@@ -406,7 +409,7 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
     </div>`,
     )
     .join("\n");
-  return `<div class="wall-slips">\n${slips}\n    </div>`;
+  return `<div class="wall-slips" data-nosnippet>\n${slips}\n    </div>`;
 }
 
 /**
@@ -606,9 +609,8 @@ function freeServicesJsonLd(base: string): string {
    */
   const services = [
       service({
-        name: "x402 endpoint preflight",
-        description:
-          "Send any x402 door's URL and get back what its 402 actually serves: whether it answers a well-formed challenge, whether its payTo can be credited on the rail it named, and what was not checked. One probe, one moment — a shape check, never an uptime claim.",
+        name: "x402 and MPP endpoint inspection",
+        description: ENDPOINT_INSPECTION_DESCRIPTION,
         path: "/api/preflight",
         type: "API endpoint verification",
       }),
@@ -668,12 +670,13 @@ function productListJsonLd(base: string, paymentConfig?: PurchaseCapabilityConfi
       item: {
         "@type": "Product",
         name: item.name,
-        description: `${item.description} ${checkoutMethod(paymentConfig)}.`,
+        description: item.description,
         url: `${base}/menu/${item.id}`,
         image: `${base}${item.sample_url ?? "/og.png"}`,
         brand: { "@type": "Brand", name: STORE_SERVICE_NAME },
         offers: {
           "@type": "Offer",
+          "@id": `${base}/menu/${item.id}#offer`,
           price: String(item.price_usdc),
           ...offerCurrencyFields(paymentConfig),
           /**
@@ -843,12 +846,12 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
     alternateName: ALTERNATE_NAMES,
     /**
      * THE CATEGORY, IN THE FIELD FOR IT (2026-09-02). alternateName
-     * carries the phrases people type; knowsAbout carries them as
+     * carries the store's names; knowsAbout carries category phrases as
      * topics; subjectOf links what has been written about the store
-     * under a byline. The storefront prose does not change: the
-     * identity noun stays on every sentence a person reads, and these
-     * are the machine fields a question in anyone's words resolves
-     * through. store/copy/asked-for.ts has the reasoning.
+     * under a byline. The writing section renders the same article
+     * facts with the keeper's authorship explicit. These are the
+     * machine fields a question in anyone's words resolves through.
+     * store/copy/asked-for.ts has the reasoning.
      */
     knowsAbout: ASKED_FOR_NOUNS,
     url: "https://scvd.store",
@@ -919,30 +922,11 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
         areaServed: "001",
       },
     ],
-    /**
-     * THE FIELD schema.org PROVIDES FOR "here is independent record of
-     * us," and the direct answer to an outside model reporting it
-     * could find no external reputation footprint. Derived from
-     * EXTERNAL_RECORDS so this list and the trust document cannot
-     * disagree, and so an entry is added in exactly one place.
-     *
-     * ONLY URLS SOMEBODY HAS OPENED. A dead or invented link here is
-     * worse than an empty array: sameAs is the one field a resolver
-     * follows, and a broken one in the middle of an identity claim is
-     * the strongest possible argument that the identity is not real.
-     */
-    // KEEPER_SOCIAL rides along: the keeper's own account is textbook
-    // sameAs material, kept apart from EXTERNAL_RECORDS because those
-    // promise independent records and an owned account is not one.
-    // ENTITY_PROFILES too (2026-09-03): the registry pages the keeper
-    // wrote for the organisation, kept apart for the same reason.
-    ...(EXTERNAL_RECORDS.length > 0 || KEEPER_SOCIAL.length > 0 || ENTITY_PROFILES.length > 0
+    // Identity profiles identify this business. Outside measurements and
+    // directory records are about it, and belong in subjectOf below.
+    ...(KEEPER_SOCIAL.length > 0 || ENTITY_PROFILES.length > 0
       ? {
-          sameAs: [
-            ...EXTERNAL_RECORDS.map((record) => record.url),
-            ...KEEPER_SOCIAL,
-            ...ENTITY_PROFILES,
-          ],
+          sameAs: [...new Set([...KEEPER_SOCIAL, ...ENTITY_PROFILES])],
         }
       : {}),
     /**
@@ -995,15 +979,14 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
     // undated organization looks equally current whether it was
     // touched today or abandoned in the spring.
     dateModified: catalogLastUpdated(),
+    // These are the same offers described in full on the product nodes above.
+    // Join by identity: retain the distinct discovery description here, without
+    // repeating prices, availability and checkout terms for the whole catalog.
     makesOffer: MENU_ITEMS.map((item) => ({
-      "@type": "Offer",
+      "@id": `${base}/menu/${item.id}#offer`,
       name: item.name,
       description:
         SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
-      price: String(item.price_usdc),
-      ...offerCurrencyFields(paymentConfig),
-      availability: offerAvailability(item),
-      url: `${base}/menu/${item.id}`,
     })),
     /**
      * THE ROOMS, AS A GRAPH RATHER THAN AS PROSE. Until this was added
@@ -1019,6 +1002,11 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
      * is the defect this store keeps finding in its own work.
      */
     subjectOf: [
+      ...EXTERNAL_RECORDS.map((record) => ({
+        "@type": "WebPage",
+        name: record.registry,
+        url: record.url,
+      })),
       ...STOREFRONT_ROOMS.map((room) => ({
         "@type": "WebPage",
         name: room.name,
@@ -1034,6 +1022,10 @@ function organizationJsonLd(base: string, stats?: StoreStats | null, paymentConf
         "@type": "Article",
         headline: piece.title,
         url: piece.url,
+        datePublished: piece.datePublished,
+        description: piece.description,
+        author: keeperAuthorJsonLd(base),
+        about: organizationRef(base),
         publisher: { "@type": "Organization", name: piece.where },
       })),
       // And the independent reporting (2026-09-03): same edge, written
@@ -1081,6 +1073,7 @@ export function renderStorefront(data: StorefrontData): string {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${COPY.ogDescription}">
   <meta property="og:url" content="${data.base ?? "https://scvd.store"}/">
+  <meta property="og:site_name" content="${escapeHtml(STORE_SERVICE_NAME)}">
   <meta property="og:type" content="website">
   <meta property="og:image" content="${data.base ?? "https://scvd.store"}/og.png">
   <meta property="og:image:width" content="1200">
@@ -1155,19 +1148,31 @@ ${webmcpOriginTrialTags()}
       <p class="tube-line">${COPY.tubeLine}</p>
       <h1 class="neon"><span class="neon-name">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></span><span class="sr-only"> (${escapeHtml(STORE_SERVICE_NAME)}) — ${escapeHtml(COPY.h1Summary)}</span></h1>
       <div class="light-pool"></div>
+      <div class="store-intro">
+        <p class="store-name"><a href="/what">${escapeHtml(STORE_SERVICE_NAME)}</a></p>
+        <p class="store-summary">${escapeHtml(COPY.metaDescription)}</p>
+      </div>
+      <div data-nosnippet>
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${COPY.intentLine}</p>
+      </div>
       ${data.ledgerLine ? `<p class="track-record">${escapeHtml(data.ledgerLine)}</p>` : ""}
       <p class="pay-rails">${escapeHtml(checkoutMethod(data.paymentConfig))}. ${COPY.booksLink} <a href="/stats">/stats</a>. <a href="/rails">Payment breakdown</a>.</p>
     </header>
 
     <nav class="first-actions" data-first-actions aria-label="Start here">
-      <a class="door-cta" href="/menu">Browse the catalog</a>
-      <a class="door-cta" href="/try">Run a free preflight</a>
+      <a class="door-cta" href="/try">Check an endpoint · free</a>
+      <a class="door-cta" href="/conformance">Check a receipt · free</a>
+      <a class="door-cta" href="/menu/conformance_watch">Watch an endpoint</a>
+      <a class="door-cta" href="/operators">Get signed evidence</a>
       ${cheapest ? `<a class="door-cta" href="/menu/${escapeHtml(cheapest.id)}">Try ${escapeHtml(cheapest.name)} · ${escapeHtml(priceLabel(cheapest))}</a>` : ''}
       <a class="door-cta" href="/mcp.md">Connect through MCP</a>
     </nav>
+    <p class="shelf-more"><a href="#buy-with-agent">Buy with your agent →</a> · <a href="/menu">Browse the catalog</a></p>
+    <p class="shelf-more"><a href="#larger-work">Have a larger job? Compare audits, evidence reports and custom work →</a></p>
+
+    <p class="menu-meta">${escapeHtml(ENDPOINT_INSPECTION_DESCRIPTION)}</p>
 
     <div class="gauges">
       ${patronsGaugeHtml(data.patronCount)}
@@ -1213,6 +1218,8 @@ ${webmcpOriginTrialTags()}
       <p class="shelf-till"><a class="door-cta" href="/menu">${escapeHtml(COPY.shelvesTillCta)}</a> — ${escapeHtml(COPY.shelvesTillBody)}</p>
     </section>
 
+    ${largerWorkHtml(data.base ?? "https://scvd.store")}
+
     <section class="sold">
       <h2 class="night-head"><span class="sold-live" aria-hidden="true"></span>${COPY.soldHead}</h2>
       <p class="sold-lead">${escapeHtml(COPY.soldLine)}</p>
@@ -1235,12 +1242,19 @@ ${webmcpOriginTrialTags()}
     </section>
 
     <section class="doors">
-      <div class="door door-human">
+      <div class="door door-human" id="buy-with-agent">
         <span class="pushpin"></span>
         <h3>${COPY.doorHumanHead}</h3>
         <p>${COPY.doorHumanBody}
         <a class="door-cta" href="/what">/what</a>.</p>
         <p class="door-small">${COPY.doorHumanSmall}</p>
+        <h3>Buy with your agent</h3>
+        <p class="door-small">Choose a signed good, approve its price, and have your agent bring back the receipt. Reading and quotes are free; each purchase is a separate decision.</p>
+        <label class="door-small" for="personal-shopper-prompt">Copy this into your agent:</label>
+        <textarea id="personal-shopper-prompt" class="personal-shopper-prompt" readonly rows="9">${escapeHtml(personalShopperPrompt(data.base ?? "https://scvd.store"))}</textarea>
+        <p class="door-small"><a class="door-cta" href="${PERSONAL_SHOPPER.path}">Read the shopping skill</a>. Payment needs a compatible wallet and an agent that can use it. Your agent should explain any setup before you fund it.</p>
+        <p class="door-small"><a class="door-cta" href="${PERSONAL_SHOPPER.hostsPath}">Choose your agent’s connection</a> — Hermes, OpenClaw, Claude, Codex and chat agents. You can ask for a no-spend rehearsal first: see the quote, missing capabilities and approvals before funding anything.</p>
+        <details><summary>Install the skill</summary><p class="door-small"><code>npx skills add seancrecord/scvd-general-store-repo --skill ${PERSONAL_SHOPPER.name}</code></p></details>
         <p class="door-small">${COPY.doorHumanHandoffLead}</p>
         <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffRead)}</code></p>
         <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffMcp)}</code></p>
@@ -1262,6 +1276,8 @@ ${webmcpOriginTrialTags()}
       ${guestbookHtml(data.guestbook)}
       <p class="menu-meta"><a href="/visitors">The whole register's in the doorway.</a> <a href="/train">The train's out back.</a></p>
     </section>
+
+    ${writingSectionHtml()}
 
     <footer class="porch-print">
       <p class="porch-dare"><em>${escapeHtml(dareForDay(new Date().toISOString().slice(0, 10)))}</em></p>

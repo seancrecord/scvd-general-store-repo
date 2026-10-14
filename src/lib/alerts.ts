@@ -256,6 +256,8 @@ export interface AlertInput {
   detail: string;
   /** Extra dedupe discriminator (e.g. an order id). */
   key?: string;
+  /** Shared email window only; each route still retains its own alarm row. */
+  emailGroup?: "r2_read_unavailable";
 }
 
 /**
@@ -445,7 +447,13 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
      * knows about is how a mailbox stops being read — and the next
      * page after that is the one that mattered.
      */
-    if (await kvGet(env.COUNTERS, pageKey)) return;
+    // One storage outage can fail many host pages. Keep their rows above,
+    // but share a fixed notification window rather than paging per host.
+    // KV dedupe is best effort across concurrent edges, as for pageKey.
+    const groupKey = input.condition === "worker_health" && input.emailGroup
+      ? `alert_sent:group:${input.condition}:${input.emailGroup}`
+      : null;
+    if (await kvGet(env.COUNTERS, groupKey ?? pageKey)) return;
 
     /*
      * THE HOURLY BUDGET, spent only by pages that would actually send
@@ -467,10 +475,16 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
       }
     }
 
+    const groupNotice = groupKey
+      ? `\n\nRelated R2 read failures share a ${DEDUPE_TTL_SECONDS / 3600}-hour email window. Every affected route still keeps its own alarm row and repeat count at /admin/reconciliation#alarms.`
+      : "";
+    await emailKeeper(env, input.condition, detail + foldNotice + groupNotice, now, identity);
     await kvPut(env.COUNTERS, pageKey, "1", {
       expirationTtl: pageIntervalFor(repeats),
     });
-    await emailKeeper(env, input.condition, detail + foldNotice, now, identity);
+    if (groupKey) {
+      await kvPut(env.COUNTERS, groupKey, "1", { expirationTtl: DEDUPE_TTL_SECONDS });
+    }
   } catch (error) {
     // The alarm must never take down the till it watches.
     console.error("Alert plumbing failed:", error);
@@ -487,7 +501,7 @@ async function emailKeeper(
   if (!env.RESEND_API_KEY || !env.ALERT_EMAIL) {
     return;
   }
-  await fetch("https://api.resend.com/emails", {
+  const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: outboundHeaders({
       Authorization: `Bearer ${env.RESEND_API_KEY}`,
@@ -508,6 +522,9 @@ async function emailKeeper(
       text: `${at}\n\n${detail}\n\nOne of the ${ALERT_CONDITIONS.length} conditions that page you rather than waiting for the Sunday digest; this one is "${condition}". The back room: https://scvd.store/admin\n\nDone with this one? https://scvd.store/admin/reconciliation#alarms has a lever beside the row that stops it emailing you. The alarm keeps its row, its repeat count and its place on the trail; only the mail stops. This one is "${identity}".`,
     }),
   });
+  // A rejected send has earned no quiet window. Do not log the response,
+  // which may echo recipient details; the next occurrence may try again.
+  if (!response.ok) throw new Error("Alert email delivery failed");
 }
 
 /** Recent alerts, for the back room. */

@@ -1,3 +1,5 @@
+import { declarationComparison, type DeclarationComparison } from "@/services/seller-declaration";
+import { evidenceUrl } from "@/services/corpus-evidence";
 import { RECEIPT_ABSENT_CLASS } from "@/store/defect-vocabulary";
 import type { CatalogReading } from "@/services/catalog-agreement";
 import type { MppCensusReading } from "@/services/mpp-census";
@@ -123,6 +125,8 @@ export interface SubjectRound {
    * rows walked before the probe stamped its time.
    */
   observed_at?: string;
+  probe_method?: WardHostResult["probe_method"];
+  evidence_url?: string;
   verdict?: WardHostResult["verdict"];
   failed?: string[];
   advisories?: string[];
@@ -167,7 +171,7 @@ export interface SubjectRound {
 }
 
 export interface VerdictChange {
-  at: string;
+  at: string | null;
   week: string;
   from: WardHostResult["verdict"];
   to: WardHostResult["verdict"];
@@ -245,6 +249,7 @@ export interface SubjectHistory {
   corrections: string;
   /** The host's own standing note (G2 ruling §5), when one is attached. */
   standing_note?: StandingNote;
+  declared_vs_observed?: DeclarationComparison;
   /** T2 (G2 ruling): this door's own shared-wallet fact. Absent when
    * the chain never met the host. */
   payment_address?: HostWalletFact;
@@ -414,16 +419,10 @@ export async function subjectHistory(
 
     if (entry && entry.verdict !== "not_probed" && !degradedRow) {
       probed += 1;
-      /*
-       * THE ROW'S OWN MOMENT (2026-09-05). The walk knocks in hourly
-       * batches and the snapshot is taken when the round seals, so
-       * `taken_at` can sit days from the knock — the passport said
-       * "observed 09-01" of a row a note dated 09-05, and an operator
-       * pointed at the gap. Rows the probe stamped date by the knock;
-       * older rows keep the seal, the only time their record holds.
-       */
-      const observedAt = entry.observed_at ?? snapshot.taken_at;
-      firstObserved ??= observedAt;
+      // A seal dates the archive, never an undated request. Keep the
+      // first/latest row unknown even when another row has a date.
+      const observedAt = entry.observed_at ?? null;
+      if (probed === 1) firstObserved = observedAt;
       lastObserved = observedAt;
       if (previousVerdict !== null && previousVerdict !== entry.verdict) {
         changes.push({
@@ -458,6 +457,9 @@ export async function subjectHistory(
         probed: true,
         coverage_suspect: false,
         url: entry.url,
+        ...(entry.probe_method ? { probe_method: entry.probe_method } : {}),
+        ...(entry.evidence || entry.evidence_digest
+          ? { evidence_url: evidenceUrl(base, snapshot.sequence, host) } : {}),
         ...(entry.observed_at ? { observed_at: entry.observed_at } : {}),
         verdict: entry.verdict,
         failed: entry.failed,
@@ -483,8 +485,8 @@ export async function subjectHistory(
         ...(entry.source ? { source: entry.source } : {}),
         note:
           entry.verdict === "ready"
-            ? "One GET at this moment passed every check in the published battery. It says nothing about the minute before or after."
-            : `One GET at this moment: ${entry.verdict}${entry.failed.length > 0 ? ` (${entry.failed.join(", ")})` : ""}.`,
+            ? `An unpaid request (${entry.probe_method ?? "method not recorded"}; ${observedAt ?? "request time unknown"}) passed the published challenge checks. Paid settlement and successful delivery were not tested. It says nothing about the minute before or after.`
+            : `An unpaid request (${entry.probe_method ?? "method not recorded"}; ${observedAt ?? "request time unknown"}): ${entry.verdict}${entry.failed.length > 0 ? ` (${entry.failed.join(", ")})` : ""}.`,
       });
       continue;
     }
@@ -575,6 +577,7 @@ export async function subjectHistory(
   return {
     host,
     asked_at: now.toISOString(),
+    declared_vs_observed: await declarationComparison(env, records, host, now),
     corrections: CORRECTIONS_POINTER,
     ...(hostNote ? { standing_note: hostNote } : {}),
     ...(paymentAddress ? { payment_address: paymentAddress } : {}),

@@ -61,7 +61,7 @@ for (const menu of MENU_ITEMS) for (const surface of ["store", "doors"] as const
     const item = items.find(row => row.id === menu.id)!, required = item.spec.inputs.required ?? [];
     if (!required.length) return;
     for (const field of required) {
-      const args = { ...baseline(item) };
+      const args = { ...await baseline(item) };
       if (mode === "omitted") delete args[field]; else args[field] = mode === "empty" ? "" : " \t\n ";
       const verifies = facilitator.verifyCalls, response = await get(surface, urlFor(item.id, args)), body = object(await response.json());
       expect(response.status, `${item.id}.${field}`).toBe(402);
@@ -83,7 +83,7 @@ for (const menu of MENU_ITEMS) for (const surface of ["store", "doors"] as const
     const schema = object(contract.input_schema);
     const item = items.find(row => row.id === menu.id)!;
     expect(schema.required).toEqual(item.spec.inputs.required);
-    const quote = await get(surface, urlFor(item.id, baseline(item)));
+    const quote = await get(surface, urlFor(item.id, await baseline(item)));
     expect(quote.status).toBe(402);
     expect(quote.headers.has("PAYMENT-REQUIRED")).toBe(true);
     expect(transfers).toBe(0);
@@ -103,7 +103,7 @@ const malformed = [
 for (const [id, field, value] of malformed) for (const surface of ["store", "doors"] as const) {
   it(`${id} ${surface}: a supplied malformed ${field} is not a probe and never produces payment terms`, async () => {
     const item = items.find(row => row.id === id)!;
-    const response = await get(surface, urlFor(id, { ...baseline(item), [field]: value }));
+    const response = await get(surface, urlFor(id, { ...await baseline(item), [field]: value }));
     expect(response.status).toBe(400);
     expect(response.headers.has("PAYMENT-REQUIRED")).toBe(false);
     expect(response.headers.has("X-PAYMENT-REQUIRED")).toBe(false);
@@ -117,7 +117,7 @@ for (const [id, field, value] of malformed) for (const surface of ["store", "doo
 
 for (const network of laborNetworks()) for (const surface of ["store", "doors"] as const) for (const header of ["PAYMENT-SIGNATURE", "X-PAYMENT"] as const) {
   it(`${surface} ${network} ${header}: signed missing inputs fail before verification on canonical and trailing-slash paths`, async () => {
-    const item = items.find(row => row.id === "context_anchor")!, args = baseline(item);
+    const item = items.find(row => row.id === "context_anchor")!, args = await baseline(item);
     const quote = await call(item, "mcp", args, shelves(item)[0]!);
     const payment = btoa(JSON.stringify(await signLabor(quote.offers.find(offer => offer.network === network)!)));
     for (const suffix of ["", "/"]) {

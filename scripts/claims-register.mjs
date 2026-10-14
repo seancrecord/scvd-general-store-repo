@@ -57,10 +57,10 @@ export const REGISTER = [
   {
     id: "limits.preflight.rate",
     file: "src/routes/developers.ts",
-    match: "One family of paths is limited and the rest are not",
+    match: "Free preflight allows ${PROBES_PER_MINUTE} probes per isolate per minute",
     resolution: "derived",
     from: "PROBES_PER_MINUTE / GLOBAL_PROBES_PER_MINUTE",
-    why: "Said the opposite for a day after 0.13 shipped a limiter. Now reads the limiter's own constants.",
+    why: "Said the opposite for a day after 0.13 shipped a limiter. Reads the limiter's own constants. September 30: the reporting review removed the false claim that every other route is unlimited; this guard follows the corrected preflight-specific sentence.",
   },
   {
     id: "limits.openapi.rate",
@@ -238,7 +238,7 @@ export const REGISTER = [
   {
     id: "bounties.refusal.spent-listing",
     file: "src/services/bounty-board.ts",
-    match: "There is no second try on a spent listing",
+    match: "One bounty pays once: read the board on the same minute you open your wallet",
     resolution: "derived",
     from: "claimBounty's `bounty.status !== \"open\"` refusal, taken against the status bountyStatusAt derives at read time",
     why: "Claim-shaped and correctly caught: it tells a stranger their money is gone. It is structural rather than dated — one bounty pays once because the claim door refuses any listing whose derived status is not open, and the row carries the door's own wording, which test/bounty-board.spec.ts drives against the live door. The day a spent listing could pay twice, the catalogue's drift test goes red before this sentence does.",

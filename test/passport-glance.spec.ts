@@ -55,6 +55,7 @@ async function seedRound(sequence: number, week: string, takenAt: string, previo
         host: h.host,
         url: `https://${h.host}/api/x`,
         verdict: h.verdict,
+        observed_at: takenAt,
         failed: h.failed ?? [],
         advisories: [],
         offer: { networks: ["eip155:8453"], schemes: ["exact"], min_usdc: 0.001, max_usdc: 0.001 },

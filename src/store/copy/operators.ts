@@ -12,7 +12,7 @@ export const OPERATORS_OPENED = "2026-09-03";
 
 /** The proposition: the shelf from the seller's side, free first. */
 export const OPERATORS_PROPOSITION =
-  "You run an x402 door. This room is the shelf from your side, in the order a launch happens: free first at every step, and a signed, dated artifact only when you need one a stranger can check without asking us.";
+  "You run an x402 endpoint. Start with a free check, then choose the outcome you need: find where agents get stuck, observe changes over time, prepare evidence for a review, or scope a larger job. Each path explains the deliverable, price and limits.";
 
 /** The money sentence. */
 export const OPERATORS_FOR_MONEY =

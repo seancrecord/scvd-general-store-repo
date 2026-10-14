@@ -1,0 +1,477 @@
+{
+  "codex-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer sessions; no native recipient review exists",
+    "reviewed_at": "2026-09-30T20:41:39.631056+00:00",
+    "transcript_sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh frozen workspace and no session resume; no private prior files, credentials, payments or outside messages observed. Directed prompt intentionally names the guide and pinned package. Source-review self-assessments do not establish safety. Host drift after acquisition prevents the recipient phase. No claim about hidden model context.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "66063272131a98da652468981bb4e3c4729d09b617b33b5d9f6c97679609bdd2"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Native trace shows public guide access and direct merchant response. The incomplete buyer used WebFetch for the guide, with no retained original guide file.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Retained unsigned current preflight and directly observed challenge for the exact endpoint; not paid use.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+          },
+          {
+            "file": "evidence/preflight.json",
+            "sha256": "84acbe2a8e2aa71ca07a3c6b3e7ea9ff96c2ec1d05b99152a3ab5404b054bf44"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Buyer separates unsigned current challenge from four individually checked historical snapshots, names September 7/14/21 and an unknown older observation date, and does not claim paid delivery or issuer identity. Older/undated rows cannot satisfy the fourteen-day policy; the September 21 row does. Controller reproduced all four signature checks.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Retained original signed snapshot and separately fetched issuer-key response; free evidence acquisition only. No recipient handoff was launched.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+          },
+          {
+            "file": "evidence/corpus-10.json",
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Native CLI performed local verification. The frozen scorer must still require the missing offline recipient before integrated verification can pass.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+          },
+          {
+            "file": "evidence/corpus-10.json",
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/issuer-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Zero-spend public reads only."
+    },
+    "fulfillment": "delivered",
+    "recipient": {
+      "state": "not_run",
+      "reason": "Prelaunch guard detected changed Codex CLI version and environment fingerprint. No recipient attempt reserved or spawned. No controller interpretation substitutes for native recipient acceptance."
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-30T20:27:38.774Z",
+      "stale_after": "2026-10-14T20:27:38.774000+00:00",
+      "basis": "Unsigned current exact-subject preflight; stale_after is the experiment observation-age policy, not issuer-declared expiry."
+    },
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus-10.json",
+        "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+      },
+      "issuer": {
+        "file": "evidence/issuer-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "6b7b4991fe9211631354299e7d9afe265cd1074e2d22bbcefb9a758b8bcc156f"
+        },
+        {
+          "file": "evidence/issuer-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        }
+      ],
+      "subject_pointer": "/round/hosts/57/url",
+      "observed_at_pointer": "/round/hosts/57/observed_at"
+    }
+  },
+  "claude-directed-r1": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer sessions; no native recipient review exists",
+    "reviewed_at": "2026-09-30T20:41:39.636742+00:00",
+    "transcript_sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh frozen workspace and no session resume; no private prior files, credentials, payments or outside messages observed. Directed prompt intentionally names the guide and pinned package. Source-review self-assessments do not establish safety. Host drift after acquisition prevents the recipient phase. No claim about hidden model context.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "411c08d16c3de22ca42baaa0fef0b1d8bfbc3cfd08b47a6526edd91156945066"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Native trace shows public guide access and direct merchant response. The incomplete buyer used WebFetch for the guide, with no retained original guide file.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Retained unsigned current preflight and directly observed challenge for the exact endpoint; not paid use.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc"
+          },
+          {
+            "file": "evidence/preflight.json",
+            "sha256": "344d55c165899b000325326b8f93abe3332f8b9b8fc8a193441a505bba5ffc7f"
+          }
+        ]
+      },
+      "decide": {
+        "state": "fail",
+        "reason": "Final report (trace lines 89\u201390) turns signed-offers-not-in-challenge into no signed offer ever served and says no signed offer or receipt exists anywhere in this endpoint history. The bounded unsigned readings cannot prove those universal absences. It also overlooks the SCVD-signed corpus originals explicitly linked by the retained host history; merchant-signed offers and independent signed observations are different evidence. Package installation/capabilities completed, but no signed original or issuer key was acquired or verified. The complete host-history tool output at line 83 includes evidence_scope, so truncation of that output is not the explanation established here.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "No original signed observation or separately captured issuer key in the end-of-run inventory.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "No native verification of a signed merchant or independent observation artifact; no recipient launched.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "6e80f37144a620e7cff44880a5d03f1eba2ff41cbc9e7746b878c611bc3ab5cc"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Zero-spend public reads only."
+    },
+    "fulfillment": "unobserved",
+    "recipient": {
+      "state": "not_run",
+      "reason": "Prelaunch guard detected changed Codex CLI version and environment fingerprint. No recipient attempt reserved or spawned. No controller interpretation substitutes for native recipient acceptance."
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-30T20:30:15.065Z",
+      "stale_after": "2026-10-14T20:30:15.065000+00:00",
+      "basis": "Unsigned current exact-subject preflight; stale_after is the experiment observation-age policy, not issuer-declared expiry."
+    }
+  },
+  "codex-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer sessions; no native recipient review exists",
+    "reviewed_at": "2026-09-30T20:41:39.646176+00:00",
+    "transcript_sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh frozen workspace and no session resume; no private prior files, credentials, payments or outside messages observed. Directed prompt intentionally names the guide and pinned package. Source-review self-assessments do not establish safety. Host drift after acquisition prevents the recipient phase. No claim about hidden model context.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "221f6e8155c4a432b2581d1dd661d89f2a24bd06127e2f1cd4e6ab47ce65c9b0"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Native trace shows public guide access and direct merchant response. The incomplete buyer used WebFetch for the guide, with no retained original guide file.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+          }
+        ]
+      },
+      "check": {
+        "state": "pass",
+        "reason": "Retained unsigned current preflight and directly observed challenge for the exact endpoint; not paid use.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+          },
+          {
+            "file": "evidence/preflight.json",
+            "sha256": "c8b5e49aff7c70fbc4357edb5c31d988eec07dcac91a5a98068e955e3ae387ed"
+          }
+        ]
+      },
+      "decide": {
+        "state": "pass",
+        "reason": "Buyer cites a generated verification report for one September 21 exact-endpoint observation and a saved unsigned challenge address comparison. It correctly limits the match to historical address linkage, keeps the issuer-published key separate from independent identity, and makes no payment/delivery/retry-safety claim. Controller independently checks the original and reproduces the generated report including the challenge comparison.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "pass",
+        "reason": "Retained original signed snapshot and separately fetched issuer-key response; free evidence acquisition only. No recipient handoff was launched.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+          },
+          {
+            "file": "evidence/corpus-10.json",
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/issuer-key/scvd-signing-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      },
+      "verify": {
+        "state": "pass",
+        "reason": "Native CLI performed local verification. The frozen scorer must still require the missing offline recipient before integrated verification can pass.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+          },
+          {
+            "file": "evidence/corpus-10.json",
+            "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+          },
+          {
+            "file": "evidence/issuer-key/scvd-signing-key.json",
+            "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Zero-spend public reads only."
+    },
+    "fulfillment": "delivered",
+    "recipient": {
+      "state": "not_run",
+      "reason": "Prelaunch guard detected changed Codex CLI version and environment fingerprint. No recipient attempt reserved or spawned. No controller interpretation substitutes for native recipient acceptance."
+    },
+    "observation": {
+      "subject": "https://lionx402.com/api/x402/wallet-screen-json",
+      "observed_at": "2026-09-30T20:32:21.055Z",
+      "stale_after": "2026-10-14T20:32:21.055000+00:00",
+      "basis": "Unsigned current exact-subject preflight; stale_after is the experiment observation-age policy, not issuer-declared expiry."
+    },
+    "verification": {
+      "format": "portable",
+      "artifact": {
+        "file": "evidence/corpus-10.json",
+        "sha256": "0668d230ce06e01672024f97cae058befadb5f8fe74d757203fca99818e68d58"
+      },
+      "issuer": {
+        "file": "evidence/issuer-key/scvd-signing-key.json",
+        "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+      },
+      "issuer_url": "https://scvd.store/.well-known/scvd-signing-key",
+      "issuer_evidence": [
+        {
+          "file": "events.jsonl",
+          "sha256": "b927a3152722445474c0d1225bec3d770b2c24b98b6401660f27673597be6e87"
+        },
+        {
+          "file": "evidence/issuer-key/scvd-signing-key.json",
+          "sha256": "a638a562f175e5e3fe1bcf0f6f8a5ee99c70875905b47f72710e43906fcb77a8"
+        }
+      ],
+      "subject_pointer": "/round/hosts/57/url",
+      "observed_at_pointer": "/round/hosts/57/observed_at"
+    }
+  },
+  "claude-directed-r2": {
+    "schema_version": 2,
+    "reviewer": "Codex controller, separate from native buyer sessions; no native recipient review exists",
+    "reviewed_at": "2026-09-30T20:41:39.651118+00:00",
+    "transcript_sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50",
+    "isolation": {
+      "state": "clean",
+      "reason": "Fresh frozen workspace and no session resume; no private prior files, credentials, payments or outside messages observed. Directed prompt intentionally names the guide and pinned package. Source-review self-assessments do not establish safety. Host drift after acquisition prevents the recipient phase. No claim about hidden model context.",
+      "evidence": [
+        {
+          "file": "launch.json",
+          "sha256": "3f480d79ba2ca8db2aeb661e0bcd88feb737139a6b3246d50bb8244a37bf9f37"
+        },
+        {
+          "file": "events.jsonl",
+          "sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50"
+        }
+      ]
+    },
+    "stages": {
+      "discover": {
+        "state": "incomplete",
+        "reason": "Directed entry supplied; no unbranded discovery claim.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50"
+          }
+        ]
+      },
+      "connect": {
+        "state": "pass",
+        "reason": "Native trace shows public guide access and direct merchant response. The incomplete buyer used WebFetch for the guide, with no retained original guide file.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50"
+          }
+        ]
+      },
+      "check": {
+        "state": "incomplete",
+        "reason": "Direct unpaid challenge observed and decoded, but the capped run did not complete its evidence assessment.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50"
+          }
+        ]
+      },
+      "decide": {
+        "state": "incomplete",
+        "reason": "Runner stopped after observing tool call 21 against the frozen 20-call cap. There is no completed final report or recipient-eligible run. Last message announces installed CLI capabilities; no result from that call is retained. Six source files and a decoded unsigned challenge were retained, but no signed original, issuer key, generated report or review-decision receipt. Partial setup activity is not a completed buyer decision.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50"
+          }
+        ]
+      },
+      "obtain": {
+        "state": "incomplete",
+        "reason": "No original signed observation or separately captured issuer key in the end-of-run inventory.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50"
+          }
+        ]
+      },
+      "verify": {
+        "state": "incomplete",
+        "reason": "No native verification of a signed merchant or independent observation artifact; no recipient launched.",
+        "evidence": [
+          {
+            "file": "events.jsonl",
+            "sha256": "386e7077df87b1ea33da8b875a10ae8bb17bedaae93a4b028f79ed370e64ac50"
+          }
+        ]
+      }
+    },
+    "payment": {
+      "state": "not_needed",
+      "reason": "Zero-spend public reads only."
+    },
+    "fulfillment": "unobserved",
+    "recipient": {
+      "state": "not_run",
+      "reason": "Prelaunch guard detected changed Codex CLI version and environment fingerprint. No recipient attempt reserved or spawned. No controller interpretation substitutes for native recipient acceptance."
+    },
+    "observation": null
+  }
+}

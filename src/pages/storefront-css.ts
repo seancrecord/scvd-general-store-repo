@@ -109,6 +109,10 @@ html { overflow-x: clip; }
   }
 }
 .neon-sub { color: var(--neon); }
+.store-intro { position: relative; z-index: 2; max-width: 560px; margin: 1.2rem auto 0; }
+.store-name { margin: 0; font-size: 1.05rem; letter-spacing: 0.04em; color: var(--teal); }
+.store-name a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--teal-dim); }
+.store-summary { margin: 0.65rem 0 0; font-size: 1rem; line-height: 1.6; color: var(--night-text); }
 .flicker { animation: tube 6s infinite; }
 .flicker-slow { animation: tube 13s infinite; animation-delay: 2.5s; }
 @keyframes tube {
@@ -457,6 +461,11 @@ html { overflow-x: clip; }
 }
 .shelf-line { margin-top: 0.3rem; font-size: 0.88rem; color: var(--night-faded); }
 .shelf-more { text-align: center; margin-top: 1.1rem; font-size: 0.85rem; color: var(--night-faded); }
+#larger-work .shelf-name { flex: none; font-size: 1.1rem; line-height: 1.4; margin: 0 0 .6rem; }
+#larger-work .shelf-card { display: flex; flex-direction: column; gap: .5rem; }
+#larger-work .shelf-line { color: #d8cddd; }
+#larger-work .shelf-card > a { margin-top: auto; font-size: .88rem; }
+@media (min-width: 850px) { #larger-work .shelf-grid { grid-template-columns: repeat(3, 1fr); } }
 .shelf-till { text-align: center; margin-top: 0.9rem; font-size: 0.85rem; color: var(--night-faded); }
 /* The sign is night; the inherited ink-on-paper button would vanish
  * into it. Teal is this page's "a machine can act here" color. */
@@ -696,4 +705,7 @@ code {
   background: var(--teal); color: var(--night) !important; text-shadow: none;
   box-shadow: 0 0 22px rgba(93,230,200,0.35);
 }
+
+.personal-shopper-prompt { display: block; box-sizing: border-box; width: 100%; margin: .6rem 0; padding: .8rem; font: inherit; font-size: .9rem; line-height: 1.5; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 3px; resize: vertical; }
+.personal-shopper-prompt:focus { outline: 2px solid currentColor; outline-offset: 3px; }
 `;

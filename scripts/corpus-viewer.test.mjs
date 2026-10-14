@@ -23,7 +23,8 @@ test('viewer keeps observations distinct, links exact signed rows and leaves ori
   assert.equal(rows[0].url, '');
   assert.equal(rows[1].snapshot_digest, b.digest);
   assert.equal(rows[1].row_pointer, '/round/hosts/0');
-  assert.equal(rows[1].observed_at, b.snapshot.round.at);
+  assert.equal(rows[1].observed_at, '');
+  assert.equal(rows[1].round_observed_at, b.snapshot.round.at);
   assert.equal(rows[1].captured_at, b.snapshot.taken_at);
   assert.equal(JSON.stringify([a,b]), before);
   const tampered = structuredClone(b); tampered.snapshot.round.hosts[0].verdict = 'broken';
@@ -43,8 +44,27 @@ test('explicit viewer files exclude signed raw JSON and preserve the live card p
   assert.ok(updated.includes('name="observations"'));
   assert.ok(updated.includes('load_dataset("keeper-scvd/test"'));
   assert.ok(updated.includes('unsigned projections'));
+  assert.ok(updated.includes('examples/corpus-recompute.ipynb'));
+  assert.ok(updated.includes('round_observed_at'));
+  assert.ok(updated.includes('Older readings can be carried forward'));
   assert.equal(configureCorpusCard(updated, "keeper-scvd/test"), updated);
+  const legacy = 'One probe per host per round, at indexer cadence: a door that was down for the minute of the probe reads as unreachable for the week.';
+  const corrected = configureCorpusCard(card + legacy, 'keeper-scvd/test');
+  assert.ok(!corrected.includes(legacy));
+  assert.ok(corrected.includes('A snapshot can carry earlier host readings forward.'));
   assert.throws(()=>configureCorpusCard('---\nconfigs:\n- config_name: custom\n---\nProse', 'keeper-scvd/test'), /existing/);
+});
+test('viewer dates each host observation independently of the newer snapshot round', async () => {
+  const observed = '2026-09-21T01:00:00Z';
+  const doc = round(1, null, [{ host: 'dated.test', observed_at: observed, probe_method: 'POST', battery: 'preflight-v2' }, { host: 'undated.test' }]);
+  const views = await buildCorpusViewer([doc], { base: 'https://scvd.store', publicKey: key });
+  const [dated, undated] = views.observations.trim().split('\n').map(JSON.parse);
+  assert.equal(dated.observed_at, observed);
+  assert.equal(dated.round_observed_at, doc.snapshot.round.at);
+  assert.equal(dated.probe_method, 'POST');
+  assert.equal(dated.battery, 'preflight-v2');
+  assert.equal(undated.observed_at, '');
+  assert.equal(undated.probe_method, '');
 });
 
 test('publisher repairs an up-to-date HF mirror without uploading old signed rounds or contacting Zenodo', async () => {

@@ -1,3 +1,4 @@
+import { COMMISSION_DESCRIPTION_CAP, COMMISSION_CONTACT_CAP } from "@/store/commission-desk";
 import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
@@ -33,10 +34,10 @@ export async function recordCommission(
 ): Promise<CommissionRequest | null> {
   const suggestListing = sanitizeText(input.suggestListing, 300);
   const description =
-    sanitizeText(input.description, 1000) ||
+    sanitizeText(input.description, COMMISSION_DESCRIPTION_CAP) ||
     (suggestListing ? "Directory listing suggestion" : "");
   const contact =
-    sanitizeText(input.contact, 200) ||
+    sanitizeText(input.contact, COMMISSION_CONTACT_CAP) ||
     (suggestListing ? "none given" : "");
   const offer =
     typeof input.offer === "number" &&
@@ -72,6 +73,11 @@ export async function recordCommission(
 }
 
 export async function listCommissions(env: Env): Promise<CommissionRequest[]> {
+  return (await readCommissions(env)).requests;
+}
+
+/** The counter needs coverage beside the rows before it can call the desk clear. */
+export async function readCommissions(env: Env): Promise<{ requests: CommissionRequest[]; incomplete: boolean }> {
   const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.requestPrefix, cap: REQUEST_CAP });
   const values = await bulkGetJson<CommissionRequest>(
     env.ORDERS,
@@ -84,7 +90,7 @@ export async function listCommissions(env: Env): Promise<CommissionRequest[]> {
     }
   }
   requests.sort((a, b) => b.date.localeCompare(a.date));
-  return requests;
+  return { requests, incomplete: listed.truncated || requests.length !== listed.names.length };
 }
 
 export async function joinWaitlist(

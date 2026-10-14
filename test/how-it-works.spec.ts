@@ -215,9 +215,9 @@ describe("the mechanism it describes is a walkable one (rule 55)", () => {
     }
   });
 
-  it("states the order of operations that makes refunds unnecessary", async () => {
+  it("states both the preparation order and the paid delivery gap", async () => {
     const body = await doc();
-    expect(String(body.how_money_works.order_of_operations)).toContain("delivers first");
+    expect(String(body.how_money_works.order_of_operations)).toContain("failure after settlement");
     expect(String(body.how_money_works.what_money_never_buys)).toContain("verdict");
   });
 });

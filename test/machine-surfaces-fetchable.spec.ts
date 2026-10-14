@@ -36,6 +36,10 @@ describe("machine surfaces stay inside the reader's limit", () => {
   it("measures every surface #25 still owed a ceiling", () => {
     const paths = SURFACES.map((surface) => surface.path);
     expect(paths).toEqual([
+      "/.well-known/agent-skills/scvd-personal-shopper/SKILL.md",
+      "/.well-known/agent-skills/scvd-personal-shopper/references/hosts.md",
+      "/.well-known/agent-skills/scvd-personal-shopper/references/wallet.md",
+      "/api/seller-declaration",
       "/calling-card/calling-card.mjs",
       "/bot-auth",
       "/corpus/index.json",

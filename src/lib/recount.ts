@@ -8,24 +8,13 @@ import { DEFAULT_SCAN_CAP } from "@/lib/scan-cap";
 /**
  * THE RECOUNT: the books, audited against themselves.
  *
- * Every counter in the store is a read-modify-write against KV, which
- * loses increments under concurrent traffic and can read stale. The
- * raw event rows have no such problem: one row per event, unique key,
- * no contention. So the rows are the appeal court, and this is the
- * appeal.
+ * Retained event rows and counters are separate observations. Current
+ * deployments can serialize counter writes; historical KV increments could
+ * be lost. Event retention and scan limits also affect the comparison, so a
+ * difference alone cannot identify a failed write or prove payment.
  *
- * Two questions it answers, both of which the aggregates cannot:
- *
- *   1. HOW DIRTY IS THE ORGANIC COLUMN? Each row carries the
- *      user-agent and referrer it arrived with, so the CURRENT
- *      crawler table can be applied to OLD rows. Channel inference is
- *      baked in at write time and never revisited; here it is
- *      revisited. A row stored as organic that today's table calls
- *      infrastructure is a row the headline number got wrong.
- *   2. DOES THE ROW COUNT MATCH THE COUNTER? Rows above counter means
- *      lost increments (the expected direction). Counter above rows
- *      means something wrote a counter without a row, which would be
- *      a bug worth finding.
+ * Reapplies today's crawler classification to recorded challenge rows and
+ * returns counts over the retained scan window for the admin comparison.
  *
  * Bounded by design: KV listing and bulk reads cost subrequests, so
  * the scan stops at a cap and reports how far back it actually got.
@@ -61,7 +50,7 @@ export interface RecountResult {
   reclassified_organic_to_infrastructure: number;
   /** The user-agents behind that correction, commonest first. */
   movers: { user_agent: string; rows: number }[];
-  /** Settle rows, which are the ground truth money moved. */
+  /** Stored settlement-event counts; no chain verification is performed here. */
   settles: RecountBucket;
 }
 

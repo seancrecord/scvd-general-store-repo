@@ -31,14 +31,11 @@ import type { HonoEnv } from "@/types";
  * challenge would hand a client a stale nonce, which is the one
  * failure this whole idea could cause.
  *
- * WHAT IT DOES NOT REACH, said here rather than left to be
- * rediscovered: a browser-based agent that sets If-None-Match from
- * JavaScript triggers a CORS preflight, because If-None-Match is not
- * a safelisted request header, and this store answers preflights only
- * on the discovery paths. A browser's OWN cache revalidates without
- * one, so the common case works; explicit conditional GET from
- * cross-origin script does not. Server-side agents — which is nearly
- * all of them — have no CORS layer at all and get the whole benefit.
+ * Browser scripts setting If-None-Match trigger a CORS preflight.
+ * Since 2026-10-01, lib/cors.ts permits conditional GET/HEAD outside
+ * the original discovery list too. The actual document response must
+ * still pass its published-document boundary; HTML and credentials
+ * gain no cross-origin allowance from a cache check.
  */
 
 /**

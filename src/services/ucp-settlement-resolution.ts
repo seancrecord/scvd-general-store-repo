@@ -1,3 +1,4 @@
+import { ARC_NETWORK } from "@/lib/payment-networks";
 import {
   atomicToUsdc,
   tipFromPaid,
@@ -134,6 +135,8 @@ function checkedReceipt(
   if (typeof tx !== "string" || tx.length === 0) {
     return { ok: false, reason: "no transaction in the receipt" };
   }
+  if (terms.network === ARC_NETWORK) return /^gateway:[0-9a-f]{64}$/.test(tx)
+    ? { ok: true, transaction: tx } : { ok: false, reason: "Gateway purchase reference missing" };
   if (terms.network === SOLANA_NETWORK) {
     if (tx.length < 64 || tx.length > 88 || decodeBase58(tx)?.length !== 64) {
       return { ok: false, reason: "transaction is not a 64-byte Solana signature" };
@@ -315,7 +318,9 @@ export async function settleClaimedSubmission(
       } else {
         const item = getMenuItem(checkout.lines[0]?.item_id ?? "");
         const paidUsdc = atomicToUsdc(terms.amount_atomic);
+        if (terms.network === ARC_NETWORK && (receipt.transaction !== `gateway:${purchase.id}` || !purchase.authorization)) throw new Error("Gateway purchase reference mismatch");
         const payment: SettledPayment = {
+          ...(terms.network === ARC_NETWORK ? { gateway: { reference: receipt.transaction, nonce: purchase.authorization!.nonce, state: "accepted" as const } } : {}),
           paidUsdc,
           tipUsdc: tipFromPaid(paidUsdc, item?.price_usdc ?? paidUsdc),
           payer: purchase.payer,

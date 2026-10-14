@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-07",
+  "release_state": "local source and evidence; not deployed or published",
+  "regression_before_fix": {
+    "tests_failed": 1,
+    "tests_passed": 23,
+    "failure": "Served OpenAPI description still contained Every artifact is signed, expires",
+    "guide_baseline": "Both original digests passed before the one-sentence position.ts change"
+  },
+  "focused_worker_tests": {
+    "files": 6,
+    "passed": 68,
+    "method": "Four unchanged focused files passed in the first repaired run; first-screen and guide files passed together after reviewing and updating the two changed guide fingerprints."
+  },
+  "listing_tests_passed": 38,
+  "defects_package_tests_passed": 8,
+  "checks": {
+    "typecheck": "passed",
+    "build_check": "passed (store, doors, MPP SDK)",
+    "claims": "passed; 55 resolved, zero unbound",
+    "docs_check": "passed with existing age reminders",
+    "diff_check": "passed"
+  },
+  "public_listing_command": "exit 1: reported version/count drift and unreachable roster regressions; unsigned observation, not failing unit tests",
+  "full_ci": "required before merge; not run for this branch yet",
+  "initial_test_start": "Sandbox could not open the local Worker server; reran with authorized local server access. This was not the regression witness."
+}

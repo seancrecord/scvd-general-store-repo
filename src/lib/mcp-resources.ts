@@ -3,7 +3,7 @@ import { storeGuideText } from "@/routes/llms";
 import { renderMenuMarkdown } from "@/services/menu-markdown";
 import { buildFreshSet } from "@/services/fresh-set";
 import { MENU_ITEMS } from "@/store";
-import { PREFLIGHT_VERSION, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
+import { PREFLIGHT_VERSION, PREFLIGHT_VERSIONS, PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 import { whenToBuyMarkdown } from "@/lib/when-to-buy";
 import { AUDIT_CRITERIA_VERSION } from "@/services/service-audit";
 import type { Env } from "@/types";
@@ -86,7 +86,7 @@ function definitions(): ResourceDefinition[] {
       name: "preflight_criteria",
       title: "The published conformance criteria",
       description:
-        `The named battery the paid Once-Over and the weekly census cite against an x402 endpoint, version ${AUDIT_CRITERIA_VERSION} — each check, what it means, and what a failure does and does not prove. The free door still serves both /api/preflight/${PREFLIGHT_VERSION} and /api/preflight/${PREFLIGHT_VERSION_NEXT}. Published so a verdict can be re-derived by anyone rather than taken on trust.`,
+        `The named battery the paid Once-Over and the weekly census cite against an x402 endpoint, version ${AUDIT_CRITERIA_VERSION} — each check, what it means, and what a failure does and does not prove. The free door still serves ${PREFLIGHT_VERSIONS.map((version) => `/api/preflight/${version}`).join(", ")}. Published so a verdict can be re-derived by anyone rather than taken on trust.`,
       mimeType: "text/markdown",
       read: (_env, base) => criteriaMarkdown(base),
     },
@@ -181,7 +181,7 @@ function criteriaMarkdown(base: string): string {
 Version \`${AUDIT_CRITERIA_VERSION}\`.
 
 The paid Once-Over and the weekly census cite this battery and no
-other. The free door still serves the frozen v1 series beside it.
+other. The free door still serves the frozen v1 and v2 series beside it.
 It is published so that a verdict this store signs can be re-derived
 by anyone who disagrees with it.
 

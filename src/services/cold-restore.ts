@@ -4,6 +4,7 @@ import { sha256Hex } from "@/services/anchor-log";
 import type { ColdExportReport } from "@/services/cold-export";
 import type { Env } from "@/types";
 import { withKvRetry } from "@/lib/kv-retry";
+import { r2ReadText } from "@/lib/r2-read";
 
 /**
  * THE RESTORE DRILL — the half of roadmap 0.11 that was missing, and
@@ -88,9 +89,8 @@ async function readJson<T>(
   bucket: R2Bucket,
   key: string,
 ): Promise<{ text: string; value: T } | null> {
-  const object = await bucket.get(key);
-  if (!object) return null;
-  const text = await object.text();
+  const text = await r2ReadText(bucket, key);
+  if (text === null) return null;
   try {
     return { text, value: JSON.parse(text) as T };
   } catch {

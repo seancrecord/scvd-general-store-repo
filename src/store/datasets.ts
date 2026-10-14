@@ -183,7 +183,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     description:
       "One derived reading per calendar month of signed rounds: doors named, probed, payable and not at the month's closing week; every round's counts summed as door-weeks, labelled apart; defects by registered name in door-weeks; the month before beside it. A stable address per month at /corpus/month/{YYYY-MM}.",
     caution:
-      "Two kinds of number, never divided into a share: the closing week is the state at month end, door-weeks count a door once per round it was probed in. No host is named and nothing is ranked; the month before is a reading beside this one, and the direction is the reader's.",
+      "Two kinds of number, never divided into a share: the closing week is the latest available signed week in the month and can change before month end, door-weeks count a door once per round it was probed in. No host is named and nothing is ranked; the month before is a reading beside this one, and the direction is the reader's.",
     cadence: "weekly, as the Sunday round appends a week to the month",
     representativeQueries: [
       "compare monthly readings of the x402 ecosystem",

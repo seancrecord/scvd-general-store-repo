@@ -66,6 +66,16 @@ class TheAnswer(unittest.TestCase):
         self.assertIn("HTTP 503", verifier.call_tool("verify_scvd_artifact", {"id": "cert_x"}, transport)["error"])
 
 
+class TheZeroGpuDeclaration(unittest.TestCase):
+    def test_app_declares_one_gpu_function_and_wires_it_to_nothing(self):
+        import os
+        source = open(os.path.join(os.path.dirname(__file__), "app.py"), encoding="utf-8").read()
+        self.assertIn("@spaces.GPU", source, "ZeroGPU refuses a Space with no decorated function")
+        decorators = [line for line in source.splitlines() if line.startswith("@spaces.GPU")]
+        self.assertEqual(len(decorators), 1, "one declaration; the tools do no GPU work")
+        self.assertNotIn("fn=_zerogpu_declaration", source, "the declaration is not a tool")
+
+
 class TheFiveFunctions(unittest.TestCase):
     def test_each_public_function_names_the_tool_it_calls(self):
         for name in verifier.TOOL_NAMES:

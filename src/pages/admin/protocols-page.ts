@@ -41,17 +41,17 @@ const DOOR_WORDS: Record<string, string> = {
 };
 
 export function renderProtocolsPage(data: ProtocolReading): string {
-  const arrivals = table(
+  const arrivals = data.arrivals_total === null ? '<p class="empty">Arrival reading unavailable.</p>' : table(
     ["channel", "organic calls", "share of arrivals"],
     data.arrivals.map((row) => [
       `<code>${escapeHtml(row.channel)}</code>`,
       String(row.organic),
-      share(row.organic, data.arrivals_total),
+      share(row.organic, data.arrivals_total ?? 0),
     ]),
     "No organic arrivals recorded this month.",
   );
 
-  const till = table(
+  const till = data.till_total === null ? '<p class="empty">Sales by door unavailable.</p>' : table(
     ["door", "organic settles", "by network"],
     data.till.map((row) => [
       `<code>${escapeHtml(row.door)}</code><br><small>${escapeHtml(DOOR_WORDS[row.door] ?? row.door)}</small>`,
@@ -78,7 +78,7 @@ export function renderProtocolsPage(data: ProtocolReading): string {
     : '<p class="empty">The payment gate\'s counters did not load.</p>';
 
   const census = data.market?.census;
-  const market = census
+  const market = data.market_available === false ? '<p class="empty">Market reading unavailable.</p>' : census
     ? table(
         ["reading", "doors", "of those measured"],
         [
@@ -105,6 +105,13 @@ export function renderProtocolsPage(data: ProtocolReading): string {
 
   const body = `
   ${unreadable}
+  <section>
+    <h2>Available here</h2>
+    <p>Support and current checkout configuration. Usage is measured separately below.</p>
+    ${table(["protocol", "capability", "checkout"], (data.capabilities ?? []).map(row => [
+      `<a href="${escapeHtml(row.path)}">${escapeHtml(row.label)}</a>`, escapeHtml(row.scope), escapeHtml(row.checkout)
+    ]), "Capability configuration was not read.")}
+  </section>
 
   <section>
     <h2>Who arrived, by channel</h2>
@@ -117,11 +124,10 @@ export function renderProtocolsPage(data: ProtocolReading): string {
 
   <section>
     <h2>Who paid, by door</h2>
-    <p><small>Organic settles the till observed, house skipped. A door showing none is a door that took no money this month —
-    not a door that is missing from the instrument. Settles recorded before ${escapeHtml(DOOR_SEAM_DATE)} were written with
+    <p><small>Organic settles the till observed, house skipped. A door showing none has no sale recorded by this instrument this month. Settles recorded before ${escapeHtml(DOOR_SEAM_DATE)} were written with
     the door already collapsed to <code>http</code>, so earlier UCP sales sit inside the HTTP count and cannot be taken back out.</small></p>
     ${till}
-    <p><small>Total across doors: ${data.till_total}.</small></p>
+    ${data.till_total === null ? "" : `<p><small>Total across doors: ${data.till_total}.</small></p>`}
   </section>
 
   <section>
@@ -157,7 +163,7 @@ export function renderProtocolsPage(data: ProtocolReading): string {
     the public <a href="/rails">/rails</a> page prints.</p>
   </section>`;
 
-  return renderAdminShell("protocols", body, data.unreadable, {
+  return renderAdminShell("protocols", body, [], {
     at: data.read_at,
     window: data.month,
   });

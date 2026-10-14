@@ -17,6 +17,7 @@ import {
   BOUNTY_REPORT_FIELDS,
   BOUNTY_REPORT_TEMPLATE,
   BOUNTY_AUTH_VALID_SECONDS,
+  BOUNTY_REISSUE_LINE,
   BOUNTY_MAX_REWARD_USD,
   BOUNTY_OPEN_DAYS,
   BOUNTY_REFUSALS,
@@ -71,7 +72,8 @@ const BOARD_WHAT_WE_NEED_BACK: readonly string[] = [
 
 const BOARD_RULES: readonly string[] = [
         `One payout per settlement transaction, ever; one bounty per domain per week; rewards cap at $${BOUNTY_MAX_REWARD_USD} and the weekly budget at $${BOUNTY_WEEKLY_BUDGET_USD} — the board refuses past it and reopens with the ISO week.`,
-        "The settlement must postdate the bounty and match the door's terms as THIS STORE captured them at posting — price drift between then and your walk is the one honest loss mode; check the bounty's amount_usd before you pay.",
+        "The settlement must postdate the bounty and match the door's terms as THIS STORE captured them at posting. Check the amount, recipient, asset, network and payment mode before you pay; stop and ask the keeper if they do not match.",
+        "EVM bounties commission an ordinary exact USDC purchase through the door's payment flow. Claims require an individual USDC Transfer from your payer to the captured pay_to for amount_atomic on the captured network. Gateway/batched settlement is unsupported. A separate manual transfer followed by an unpaid request is not a commissioned purchase. Delivery can fail after a real purchase; report that honestly.",
         "Payout addresses are sanctions-screened, fail closed. The payer is a named US LLC and that is not negotiable.",
         `Doors on ${bountyRailNames()} can be posted; the settlement is verified on the door's own rail, and a listing says which rail it captured. The reward pays in Base USDC to a 0x address on every rail — the store signs authorizations and broadcasts nothing, and Solana has no authorization a recipient can redeem.`,
         "What the reward pays for is the chain-verified settlement. Your observations are recorded verbatim as YOUR claim — crowd-walked evidence is its own tier, below house-walked, and the tier is always printed.",
@@ -88,8 +90,8 @@ const BOARD_METHOD = "BOUNTY_BOARD.md in the store's public repository";
  * so the check is one read and not a judgement call.
  */
 const BOARD_BEFORE_YOU_WALK: readonly string[] = [
-  "Read the board on the minute you walk, not from a cached page: `status` is derived from the clock on every read, and a listing that reads `expired` will refuse the claim you paid for.",
-  "Compare the door's live 402 against the bounty's `amount_usd` and `network` before you pay. The claim is verified against the terms THIS STORE captured at posting; a price that moved between then and your walk is the one loss mode a careful walker still eats.",
+  "Read the board on the minute you walk, not from a cached page: `status` accounts for expiry and withdrawals on every read. Only `open` listings accept claims; a `withdrawn` listing includes its reason and instructions for anyone who already paid.",
+  "Compare the door's live 402 against the bounty's `amount_atomic`, `network` and `pay_to`, including its USDC asset and payment mode, before you pay. EVM listings support ordinary exact USDC payment (eip3009, or the legacy default), not Gateway/batched settlement. Stop on a mismatch and ask the keeper; do not substitute a manual transfer or pay a different price hoping it will qualify.",
   "Check `payouts_enabled` is true and that `spent_this_week_usd` leaves room under `weekly_budget_usd` — a spent week refuses claims until the ISO week turns over.",
   "Settle on the bounty's own rail. The claim door reads the chain named in `network` and nothing else; a payment on another chain cannot claim the listing however real it is.",
   "Have a 0x Base address you control ready for `payout_to`. Rewards pay in Base USDC on every rail, Solana doors included, and the address is sanctions-screened before a cent is signed.",
@@ -136,7 +138,7 @@ function workedWalk(base: string) {
           `  $FROM $TO $VALUE $VALID_AFTER $VALID_BEFORE $NONCE $SIGNATURE \\`,
           `  --rpc-url https://mainnet.base.org --private-key $YOUR_KEY`,
         ].join("\n"),
-        note: `Every argument comes back in the claim's payout.authorization, and the signature beside it. transferWithAuthorization is submittable by anyone, so any relayer can carry it instead of you. It expires ${BOUNTY_AUTH_VALID_SECONDS / 86_400} days after it is signed; unredeemed, the money returns to the week's budget and costs the store nothing.`,
+        note: `Every argument comes back in the claim's payout.authorization, and the signature beside it. transferWithAuthorization is submittable by anyone, so any relayer can carry it instead of you. It expires ${BOUNTY_AUTH_VALID_SECONDS / 86_400} days after it is signed; unredeemed, the money returns to the week's budget and costs the store nothing. ${BOUNTY_REISSUE_LINE}`,
       },
     ],
     redeeming_without_gas: REDEEMING_WITHOUT_GAS,
@@ -236,6 +238,7 @@ function boardHtml(
   contributions: ContributionBoard | null,
 ): string {
   const open = board.bounties.filter((entry) => entry.status === "open");
+  const withdrawn = board.bounties.filter((entry) => entry.status === "withdrawn");
   const rows = open
     .map(
       (entry) => `<tr>
@@ -306,6 +309,11 @@ function boardHtml(
       }
     </section>
     ${earningAnswersHtml(base, false)}
+    ${withdrawn.length ? `<section>
+      <h2>Withdrawn listings</h2>
+      ${withdrawn.map((entry) => `<p><code>${escapeHtml(entry.bounty_id)}</code> — ${escapeHtml(entry.domain)}: ${escapeHtml(entry.withdrawal?.reason ?? "Contact the keeper before spending.")}
+      <a href="/corrections">Dated correction</a>.</p>`).join("\n")}
+    </section>` : ""}
     <section>
       <h2>Walking one</h2>
       <p class="menu-desc"><strong>1. Pay the door yourself.</strong> Your wallet, your gas, the door's own terms. Check the bounty's price against what the door quotes you before you commit — the posted price is what this store saw when it opened the bounty.</p>
@@ -593,7 +601,7 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
    */
   const book = (
     bountyId: string,
-    outcome: "paid" | "refused" | "error",
+    outcome: "paid" | "reissued" | "refused" | "error",
     reason: string,
   ): Promise<void> =>
     recordBountyClaim(c.env, bountyId, outcome, reason, claimSignals(c)).catch(
@@ -631,6 +639,20 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
         : {}),
       ...(claimedReport(body) ? { report: claimedReport(body) } : {}),
     });
+    /*
+     * A REISSUE IS BOOKED AS ONE, NOT AS A PAYOUT (2026-09-29): the
+     * ledger's paid column counts money signed away, and a reprint
+     * signed none. The pressing and the binder burn happened the
+     * first time; the same answer again earns neither again.
+     */
+    if (result.reissued) {
+      await book(
+        bountyId,
+        "reissued",
+        `$${result.reward_usd} to ${result.payout.authorization.to}, first paid ${result.reissued.first_claimed_at}`,
+      );
+      return c.json({ ...result, spend_it_here: walkerOffer(c.env.STORE_BASE_URL) }, 200);
+    }
     await book(
       bountyId,
       "paid",

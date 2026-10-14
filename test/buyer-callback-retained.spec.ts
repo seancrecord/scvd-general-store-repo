@@ -9,7 +9,7 @@ afterEach(() => vi.restoreAllMocks());
 for (const door of ["http", "mcp", "mcp-standard"] as const) for (const network of laborNetworks()) for (const olderInput of ["callback", "target"] as const) {
   it(`${door} ${network} ${olderInput}: a retained purchase predating destination policy still retrieves its original work`, async () => {
     const item = items.find(i => i.id === (olderInput === "callback" ? "the_collab" : "aura_walk"))!;
-    const valid = { ...baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
+    const valid = { ...await baseline(item), detail: `SCVD-E2E-${crypto.randomUUID()}` };
     const args = { ...valid, ...(olderInput === "callback" ? { callback_url: "http://buyer.example/old-hook" } : { url: "https://SCVD.STORE./old-target" }) };
     const quote = await call(item, "mcp", valid, shelves(item)[0]!);
     const payment = await signLabor(quote.offers.find(o => o.network === network)!);

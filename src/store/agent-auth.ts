@@ -1,3 +1,6 @@
+import { checkoutMethod, nativeMcpCheckoutShape, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
+import { checkoutNetworks } from "@/lib/payment-networks";
+import { NATIVE_HTTP_HEADERS } from "@/lib/mpp-checkout-capability";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store/metadata";
 
 /**
@@ -77,7 +80,7 @@ export const AUTH_TIERS: readonly AuthTier[] = [
   },
   {
     id: "x402",
-    heading: "The paid instruments: pay for the call, at the call",
+    heading: "Paid through x402: pay for the call, at the call",
     credential: `a signed x402 v2 payment in the ${PAYMENT_HEADER} header`,
     body:
       `Call the door once with no payment. It answers 402 with the terms in the PAYMENT-REQUIRED response header (base64 JSON) and in the body. Sign one of the offered accepts with your own wallet, and call again with the payment in ${PAYMENT_HEADER} (over MCP: \`_meta['x402/payment']\`). The older ${PAYMENT_HEADER_LEGACY} name is honoured too. That signature IS the credential: it authenticates nothing about who you are, and it does not have to — it settles the call it paid for and it is good for that call only. Nothing is stored against your identity because there is no identity to store it against.`,
@@ -151,7 +154,8 @@ export function challengeHint(base: string): string {
  * test/agent-auth.spec.ts fetches each and fails on anything that
  * does not answer.
  */
-export function agentAuthBlock(base: string) {
+export function agentAuthBlock(base: string, config?: PurchaseCapabilityConfig) {
+  const native = nativeMcpCheckoutShape(config);
   return {
     /**
      * The headline, first, because a scanner that reads one field
@@ -159,7 +163,7 @@ export function agentAuthBlock(base: string) {
      * whatever it would infer from silence.
      */
     summary:
-      "No account, no API key, no OAuth, no signup. Free instruments answer anonymous requests; paid instruments are paid for at the moment of the call with a signed x402 payment. There is nothing to apply for and nobody to ask.",
+      `No account, no API key, no OAuth, no signup. Free instruments answer anonymous requests; paid instruments use ${checkoutMethod(config)} at the moment of the call. There is nothing to apply for and nobody to ask.`,
     /** The spec's pointer back at the prose walkthrough. */
     skill: `${base}${AUTH_DOC_PATH}`,
     /**
@@ -178,7 +182,7 @@ export function agentAuthBlock(base: string) {
       credential_types_supported: ["none"],
       "x402.credential_types_supported": ["x402_payment_signature"],
       description:
-        "Free doors take no credential at all. Paid doors take a signed x402 v2 payment, which authenticates nothing about who you are and does not need to: it settles the one call it paid for and is good for that call only.",
+        "Free doors take no credential at all. The x402 lane takes a signed x402 v2 payment, which authenticates nothing about who you are and does not need to: it settles the one call it paid for and is good for that call only.",
     },
     /**
      * Absent by design, and named here so a reader can tell a
@@ -193,6 +197,8 @@ export function agentAuthBlock(base: string) {
       "register_uri, claim_uri and revocation_uri are null rather than pointed somewhere plausible. No credential is issued here, so there is nothing to register for, claim, or revoke — and a discovery URI that resolves to nothing is the stale-metadata failure this spec exists to prevent. When there is nothing to advertise, the honest advertisement is nothing.",
     documentation_url: `${base}${AUTH_DOC_PATH}`,
     protected_resource_metadata: `${base}${PROTECTED_RESOURCE_PATH}`,
+    // Preserve the legacy x402 block; the native lane has a different retry format.
+    ...(native ? { native_mpp: { http: NATIVE_HTTP_HEADERS, mcp: native, terms: `${base}/menu.json` } } : {}),
     payment_protocol: {
       name: "x402",
       version: 2,
@@ -201,7 +207,7 @@ export function agentAuthBlock(base: string) {
       challenge_header: "PAYMENT-REQUIRED",
       mcp_meta_key: "x402/payment",
       settles_in: STORE_METADATA.currency,
-      networks: ["base", "polygon", "solana"],
+      networks: config ? checkoutNetworks(config).map(row => row.key) : [],
       idempotency_header: "Idempotency-Key",
       terms: `${base}/pricing`,
     },
@@ -233,7 +239,7 @@ export function agentAuthBlock(base: string) {
  * never there. The `x402` extension carries what actually gates the
  * paid doors, under a name no future revision of the spec will claim.
  */
-export function protectedResourceMetadata(base: string) {
+export function protectedResourceMetadata(base: string, config?: PurchaseCapabilityConfig) {
   return {
     resource: base,
     resource_name: STORE_SERVICE_NAME,
@@ -255,6 +261,6 @@ export function protectedResourceMetadata(base: string) {
       challenge_header: "PAYMENT-REQUIRED",
       discovery: `${base}/.well-known/x402.json`,
     },
-    agent_auth: agentAuthBlock(base),
+    agent_auth: agentAuthBlock(base, config),
   };
 }

@@ -11,7 +11,8 @@ for (const { id } of MENU_ITEMS) {
   for (const network of [BASE_NETWORK, POLYGON_NETWORK, SOLANA_NETWORK]) {
     for (const profile of ["legacy", "tool-result"]) {
       it(`${id} ${network} ${profile}: the buyer receives the actual settlement refusal`, async () => {
-        const item = items.find(i => i.id === id)!, tool = shelves(item)[0]!, args = baseline(item);
+        const item = items.find(i => i.id === id)!, tool = shelves(item)[0]!, args = await baseline(item);
+        const certificatesBefore = (await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys;
         const offers = (await call(item, "mcp", args, tool)).offers;
         const offer = offers.find(o => o.network === network)!;
         expect(offer).toBeTruthy();
@@ -33,7 +34,7 @@ for (const { id } of MENU_ITEMS) {
           payment_declined: { reason: "insufficient_funds" } });
         expect(http.body).toMatchObject({ code: body.code, charged: body.charged, payment_state: body.payment_state,
           payment_declined: body.payment_declined });
-        expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toHaveLength(0);
+        expect((await sourceEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix })).keys).toEqual(certificatesBefore);
         expect((await sourceEnv.ORDERS.list({ prefix: KV_KEYS.orderPrefix })).keys).toHaveLength(0);
       });
     }

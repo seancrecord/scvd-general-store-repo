@@ -78,7 +78,7 @@ describe("a rationale is findable from where somebody stands", () => {
   it("points at the grouping rationale from the file people open", async () => {
     // Third instance in one day of "the answer exists, one file over."
     const source = (await import("../src/routes/mcp.ts?raw")).default;
-    expect(source).toContain("mcp-tools.ts");
+    expect(source).toContain("src/store/mcp-shelves.ts");
     expect(source).toContain("SHELF_CLUSTERS");
   });
 });

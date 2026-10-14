@@ -1,5 +1,6 @@
+import { DELIVERY_ORDER } from "@/store/copy/position";
 import { MENU_ITEMS, getMenuItem } from "@/store";
-import { SHELF_CLUSTERS } from "@/lib/mcp-tools";
+import { SHELF_CLUSTERS } from "@/store/mcp-shelves";
 import { PREFLIGHT_VERSION_NEXT } from "@/services/preflight";
 
 /**
@@ -136,6 +137,8 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
  * No ranking of demand or value is implied.
  */
 export const ROUTES: readonly Route[] = [
+  { job: "Compare a retained Spot Check with what the books hold now", free: "/corpus/host/{host}.json?view=stable", items: ["change_check"] },
+  { job: "Assemble signed recorded evidence about several hosts in one purchase", free: "/corpus/host/{host}.json for each host", items: ["batch_spot_check"] },
   { job: "Compare paid research endpoints before my agent buys financial data or other research", free: `Use /api/look/v1 and /api/preflight/${PREFLIGHT_VERSION_NEXT} separately for each endpoint, and /corpus/host/{host}.json for dated host history.`, items: ["research_comparison"] },
   { job: "Find and repair failures in my A2A agent", free: "/a2a-desk", items: ["a2a_repair_kit"] },
   {
@@ -372,9 +375,7 @@ ${DECLINED.map((line) => `- ${line}`).join("\n")}
 
 Every paid instrument is an x402 tool call: call once, read the 402
 terms in \`error.data\`, sign one of the \`accepts\`, call again with the
-payment in \`_meta['x402/payment']\`. Goods are produced first and the
-payment is presented at the last moment before signing, so a delivery
-that fails takes no money at all.
+payment in \`_meta['x402/payment']\`. ${DELIVERY_ORDER}
 
 Prices and names above are read from the live shelf at render. If this
 document and \`${base}/menu.json\` ever disagree, the menu is right and

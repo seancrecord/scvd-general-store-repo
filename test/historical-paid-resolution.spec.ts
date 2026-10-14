@@ -92,7 +92,7 @@ async function seed(rail: number, shelf: string, retained = false) {
     url = String((index.pages as Record<string, unknown>[])[0]!.buy_url);
   } else {
     const item = items.find(i => i.id === shelf)!;
-    url = `/api/buy/${shelf}?${new URLSearchParams(baseline(item) as Record<string, string>)}`;
+    url = `/api/buy/${shelf}?${new URLSearchParams(await baseline(item) as Record<string, string>)}`;
   }
   const response = await request(url); expect(response.status).toBe(402);
   const network = laborNetworks()[rail]!, offer = decodePaymentRequired(response).accepts.find(a => a.network === network)!;
