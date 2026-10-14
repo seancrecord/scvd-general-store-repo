@@ -71,6 +71,8 @@ export interface Env {
   /** A2A results need read-after-write consistency; unavailable storage refuses new tasks. */
   A2A_KITS?: DurableObjectNamespace<import("@/services/a2a-kit").A2AKitStore>;
   A2A_TASKS?: DurableObjectNamespace<import("@/services/a2a-tasks").A2ATaskStore>;
+  /** Per-brief reservations and private evidence; missing storage refuses contribution work. */
+  CONTRIBUTION_TASKS?: DurableObjectNamespace<import("@/services/contribution-task").ContributionTask>;
   /**
    * One claim at a time per bounty (2026-09-09). Optional like the
    * rest: a deployment without it keeps the guarantees the board had

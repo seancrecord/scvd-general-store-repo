@@ -635,7 +635,6 @@
   },
   {
     "pointers": [
-      "/paths/~1bounties/get/responses/200/content/application~1json/schema",
       "/paths/~1api~1bounties/get/responses/200/content/application~1json/schema"
     ],
     "schema": {
@@ -690,6 +689,23 @@
         "the_room": {
           "type": "string",
           "format": "uri"
+        },
+        "earning_answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "question": {
+                "type": "string"
+              },
+              "answer": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }
@@ -803,6 +819,188 @@
           "type": "string",
           "format": "uri",
           "description": "An https URL on a public host. Private, loopback, link-local and reserved-internal targets are refused, and so is this store's own hostname (a Worker cannot fetch itself)."
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1bounties/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "what_this_is",
+            "bounties",
+            "the_rules"
+          ],
+          "properties": {
+            "what_this_is": {
+              "type": "string"
+            },
+            "board": {
+              "type": "string"
+            },
+            "bounties": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "the_rules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "how_to_claim": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "week": {
+              "type": "string"
+            },
+            "weekly_budget_usd": {
+              "type": "number"
+            },
+            "spent_this_week_usd": {
+              "type": "number"
+            },
+            "payouts_enabled": {
+              "type": "boolean",
+              "description": "Whether the board can actually pay right now. Published rather than implied, so a claimant learns it before doing the work."
+            },
+            "the_board": {
+              "type": "string",
+              "format": "uri"
+            },
+            "the_room": {
+              "type": "string",
+              "format": "uri"
+            },
+            "earning_answers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "question": {
+                    "type": "string"
+                  },
+                  "answer": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "contribution_list": {
+          "type": "object",
+          "properties": {
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "reward_usd",
+                  "available_slots",
+                  "purchase_required"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  },
+                  "brief": {
+                    "type": "string"
+                  },
+                  "acceptance": {
+                    "type": "string"
+                  },
+                  "expires_at": {
+                    "type": "string"
+                  },
+                  "published_at": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "payment_method": {
+                    "type": "string"
+                  },
+                  "availability_reason": {
+                    "type": "string"
+                  },
+                  "task_url": {
+                    "type": "string"
+                  },
+                  "slots": {
+                    "type": "integer"
+                  },
+                  "review_days": {
+                    "type": "integer"
+                  },
+                  "payment_days": {
+                    "type": "integer"
+                  },
+                  "available_slots": {
+                    "type": "integer"
+                  },
+                  "pending_review": {
+                    "type": "integer"
+                  },
+                  "reward_usd": {
+                    "type": "number"
+                  },
+                  "maximum_reward_usd": {
+                    "type": "number"
+                  },
+                  "purchase_required": {
+                    "type": "boolean",
+                    "const": false
+                  }
+                }
+              }
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "cursor": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "indexing_note": {
+              "type": "string"
+            },
+            "unavailable": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": "string"
+            }
+          }
         }
       }
     }

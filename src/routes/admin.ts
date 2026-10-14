@@ -1,3 +1,4 @@
+import { adminContributionRoutes } from "@/routes/contribution-tasks";
 import { adminEvidencePilotRoutes } from "@/routes/admin-evidence-pilot";
 import { inflowAuthorizationText } from "@/lib/inflow-authorization";
 import { readCommerceMonthLedger } from "@/services/commerce-month";
@@ -321,6 +322,7 @@ for (const path of ["/admin/gateway", "/admin/purchases", "/admin/purchases/*", 
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 adminRoutes.route("/admin/purchases", adminPurchaseRoutes);
+adminRoutes.route("/admin/bounties/contributions", adminContributionRoutes);
 adminRoutes.route("/admin/evidence-pilot", adminEvidencePilotRoutes);
 
 /**

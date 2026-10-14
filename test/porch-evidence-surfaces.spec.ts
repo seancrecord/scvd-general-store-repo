@@ -115,6 +115,20 @@ describe("the porch watches the evidence layer, not just the shop", () => {
     expect(chipSurfaces.size).toBe(1);
   });
 
+  it("counts contribution discovery in fixed buckets, excluding private continuation", () => {
+    expect(porchSurface("/api/bounties/contributions", "GET")).toBe("bounties:contributions");
+    for (const id of ["x", "first-task", "another-task"]) {
+      const path = `/api/bounties/contributions/${id}`;
+      expect(porchSurface(path, "GET")).toBe("bounties:contribution-brief");
+      expect(porchSurface(path, "POST")).toBeUndefined();
+      for (const action of ["reserve", "release", "status", "submit"]) {
+        expect(porchSurface(`${path}/${action}`, "POST")).toBeUndefined();
+        expect(porchSurface(`${path}/${action}`, "GET")).toBeUndefined();
+      }
+    }
+    expect(porchSurface("/api/bounties/contributions", "POST")).toBeUndefined();
+  });
+
   it("still knows the storefront it started with", () => {
     // The extraction moved this logic out of the Worker entry; the
     // shop's own surfaces have to survive the move untouched.
