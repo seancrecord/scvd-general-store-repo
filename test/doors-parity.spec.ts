@@ -1,3 +1,4 @@
+import { stableChallengeHeader } from "./helpers/mpp-challenge-parity";
 import { env } from "cloudflare:test";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { app } from "@/index";
@@ -26,7 +27,8 @@ import { installFacilitatorMock } from "./helpers/facilitator-mock";
  *      an unknown slug, a retired one, a required argument missing, a
  *      CORS preflight, a POST with no payment, plain http — is knocked
  *      on in both Workers under one frozen clock, and the status, the
- *      body and every header but the isolate's own clock must match.
+ *      body and every header must match, except the isolate clock and
+ *      authenticated per-issuance nonce/HMAC. All payment terms match.
  *   2. HAND-OVER. A knock with a payment on it never meets the doors'
  *      checks: it reaches the store's binding exactly as it came,
  *      method, URL, headers and body, and the store's answer comes
@@ -47,9 +49,9 @@ const testEnv = env as unknown as Env;
  * native door now, and a native 402 carries a challenge whose id is an
  * HMAC under the challenge key. The doors mint their own from the SDK's
  * core (lib/mpp-challenge-mint.ts), the store from the SDK's server;
- * under one clock and one key the two headers must be the same bytes,
- * which is the only proof that a credential a buyer signs against the
- * doors' challenge is one the store will accept.
+ * under one clock and one key both headers must authenticate the same
+ * terms, with fresh issuance nonces. Adapter tests also sign the doors'
+ * challenge with the stock client and validate it at the store.
  */
 /** The SDK refuses a key under 32 bytes; a short one 500s every native door. */
 const PARITY_KEY = "parity-challenge-key-0123456789abcdef";
@@ -193,7 +195,10 @@ async function bothAnswerAlike(path: string, init: RequestInit = {}, allow: { ha
   }
   const fromDoors = { status: raw.status, body, headers };
   expect(fromDoors.status, `${path}: status`).toBe(fromStore.status);
-  expect(fromDoors.headers, `${path}: headers`).toEqual(fromStore.headers);
+  const stableHeaders = (headers: Record<string, string>) => ({ ...headers,
+    ...(headers["www-authenticate"] ? { "www-authenticate": stableChallengeHeader(headers["www-authenticate"], PARITY_KEY) } : {}),
+  });
+  expect(stableHeaders(fromDoors.headers), `${path}: authenticated headers`).toEqual(stableHeaders(fromStore.headers));
   expect(fromDoors.body, `${path}: body`).toBe(fromStore.body);
   if (allow.handOver) {
     expect(handedAs, `${path}: handed to the store as`).toBe(allow.handOver);
