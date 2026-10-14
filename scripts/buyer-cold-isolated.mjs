@@ -118,7 +118,7 @@ export async function scoreCohort(root) {
   return {...cohortSummary(rows),...(capability?{capability}:{}),scorer_sha256:hash(fs.readFileSync(new URL('lib/buyer-cold.mjs',import.meta.url))),plan_sha256:hash(fs.readFileSync(path.join(root,'plan.json'))),runs:rows};
 }
 // The exact collector bytes, frozen beside every acquisition and probe.
-const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','buyer-recipient-handoff.mjs','lib/buyer-cold.mjs','lib/buyer-package-access.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','lib/recipient-verifier.mjs','lib/buyer-evidence-workflow.mjs','lib/buyer-report-tool.mjs','lib/recipient-series.mjs',...RECIPIENT_VERIFIER_FILES.map(file=>'../verifier/'+file)];
+const INSTRUMENT_FILES=['buyer-cold-isolated.mjs','buyer-recipient-handoff.mjs','lib/buyer-cold.mjs','lib/buyer-package-access.mjs','lib/buyer-run-evidence.mjs','lib/buyer-retention.mjs','lib/buyer-host-context.mjs','lib/recipient-verifier.mjs','lib/buyer-evidence-workflow.mjs','lib/buyer-report-tool.mjs','lib/recipient-series.mjs','lib/recipient-inspect.mjs',...RECIPIENT_VERIFIER_FILES.map(file=>'../verifier/'+file)];
 export function freezeInstrument(root) {
   const files = {};
   for (const name of INSTRUMENT_FILES) {

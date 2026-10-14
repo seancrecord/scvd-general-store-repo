@@ -18,7 +18,7 @@ export function validateBuyerTool(plan){
 }
 export function buyerToolStatement(plan){
  const v=validateBuyerTool(plan);if(!v)return '';
- return `The controller has provisioned ${v.name}@${v.version} at ${REPORT_TOOL_DIR}, with runtime hashes frozen in the plan. You may read and execute this supplied public tool; it contains no merchant evidence. Invoke it with node ${REPORT_TOOL_CLI} (for example --help). Use a standalone shell command: node ${REPORT_TOOL_CLI} verify-source ./evidence/saved-response.json for a saved response, or node ${REPORT_TOOL_CLI} verify ./evidence/bundle.json for an exported bundle, with the independently trusted --public-key and desired report options from --help. A detached payload.json has no signature envelope. Do not append echo or chain bookkeeping commands to the verifier invocation. This is a tool-supplied directed condition, not independent tool discovery or registry installation. Keep originals and generated reports under ./evidence. Do not modify the supplied tool.\n`;
+ return `The controller has provisioned ${v.name}@${v.version} at ${REPORT_TOOL_DIR}, with runtime hashes frozen in the plan. You may read and execute this supplied public tool; it contains no merchant evidence. Invoke it with node ${REPORT_TOOL_CLI} (for example --help). Use a standalone shell command: node ${REPORT_TOOL_CLI} verify-source ./evidence/saved-response.json for a saved response, or node ${REPORT_TOOL_CLI} verify ./evidence/bundle.json for an exported bundle, with the independently trusted --public-key and desired report options from --help. A detached payload.json has no signature envelope. Do not append echo or chain bookkeeping commands to the verifier invocation. This is a tool-supplied directed condition, not independent tool discovery or registry installation. Use --format markdown --report-out ./evidence/verification-report.md --report-stdout to save and read the same report in one invocation. Interpret the displayed report before writing your conclusions; a successful save is not a reading. Keep originals and generated reports under ./evidence. Do not modify the supplied tool.\n`;
 }
 export function provisionBuyerTool(plan,cwd){
  const v=validateBuyerTool(plan);if(!v)return null;
@@ -43,7 +43,7 @@ export function checkBuyerTool(plan,cwd){
 }
 export function reportProbePrompt(plan){
  if(!validateBuyerTool(plan))return '';
- return `${buyerToolStatement(plan)}Also qualify the installed report path: read ./${PROBE_DIR}/inputs.json, which names two synthetic signed originals and their test public key and exact subject. Use node ${REPORT_TOOL_CLI} verify-source INPUT --public-key KEY --subject SUBJECT --format markdown --report-out OUTPUT as a separate standalone shell command once per entry, replacing placeholders with that entry's values. Retain both generated Markdown files in ./evidence at the named outputs. Let the CLI produce the reports; do not author, edit or reconstruct them. A signature rejection may return exit 1 with a report; distinguish this from a command error. These fixtures establish no real merchant facts. Read and report their actual findings. Do this within the same total session budget.\n`;
+ return `${buyerToolStatement(plan)}Also qualify the installed report path: read ./${PROBE_DIR}/inputs.json, which names two synthetic signed originals and their test public key and exact subject. Use node ${REPORT_TOOL_CLI} verify-source INPUT --public-key KEY --subject SUBJECT --format markdown --report-out OUTPUT --report-stdout as a separate standalone shell command once per entry, replacing placeholders with that entry's values. Retain both generated Markdown files in ./evidence at the named outputs. Let the CLI produce the reports; do not author, edit or reconstruct them. A signature rejection may return exit 1 with a report; distinguish this from a command error. These fixtures establish no real merchant facts. Read their displayed findings, then save ./evidence/report-reading.json as {"reports":[{"file":"evidence/report-a.md","source_sha256":"<from report>","valid":true|false,"corpus_snapshots_verified":0|1},{"file":"evidence/report-b.md","source_sha256":"<from report>","valid":true|false,"corpus_snapshots_verified":0|1}]}, replacing each placeholder from that report. This is your reading, not a replacement report. Do this within the same total session budget.\n`;
 }
 export function prepareReportProbe(plan,cwd){
  if(!validateBuyerTool(plan))return null;
@@ -76,6 +76,17 @@ export function prepareReportProbe(plan,cwd){
  }finally{fs.rmSync(controller,{recursive:true,force:true});}
 }
 export function scoreReportProbe(root,run,probe,commands){
+ let answers=null;
+ try{
+  const name='evidence/report-reading.json',ref=run.retained_artifacts?.files?.find(f=>f.file===name),file=path.join(root,name),stat=fs.lstatSync(file);
+  if(!stat.isFile()||stat.size>4096||!fs.realpathSync(file).startsWith(fs.realpathSync(root)+path.sep))throw Error('reading');
+  const bytes=fs.readFileSync(file);
+  if(sha(bytes)!==ref?.sha256)throw Error('capture');
+  const doc=JSON.parse(bytes);
+  if(!Array.isArray(doc.reports)||doc.reports.length!==probe.expected.length)throw Error('answers');
+  answers=doc.reports;
+ }catch{ /* Generating a report without a retained reading cannot qualify. */ }
+
  const observations=probe.expected.map(expected=>{
   const retained=run.retained_artifacts?.files?.find(f=>f.file===expected.file);
   let matches=false;
@@ -84,7 +95,9 @@ export function scoreReportProbe(root,run,probe,commands){
    matches=stat.isFile()&&stat.size<=1024*1024&&fs.realpathSync(file).startsWith(fs.realpathSync(root)+path.sep)&&retained?.sha256===expected.sha256&&sha(fs.readFileSync(file))===expected.sha256;
   }catch{ /* Missing capture cannot pass. */ }
   const invocation=commands.some(c=>c.command.includes(REPORT_TOOL_CLI)&&c.command.includes('verify-source')&&c.command.includes(expected.file)&&c.outcome===(expected.valid?'completed':'failed'));
-  return {file:expected.file,state:matches&&invocation?'pass':'incomplete',report_matches:matches,invocation_observed:invocation,expected_sha256:expected.sha256};
+  const readings=answers?.filter(a=>a?.file===expected.file)??[];
+  const consumed=readings.length===1&&['source_sha256','valid','corpus_snapshots_verified'].every(key=>readings[0][key]===expected[key]);
+  return {file:expected.file,state:matches&&invocation&&consumed?'pass':'incomplete',report_matches:matches,invocation_observed:invocation,reading_matches:consumed,expected_sha256:expected.sha256};
  });
- return {state:observations.every(o=>o.state==='pass')&&run.buyer_tool_check?.state==='pass'?'pass':'incomplete',observations,runtime_check:run.buyer_tool_check??null,limits:['Exact reports match controller execution on independently signed valid/tampered fixtures; command events and final runtime hashes do not prove every hidden operation. Provisioned runtime use does not qualify registry installation, public discovery or a buyer journey.']};
+ return {state:observations.every(o=>o.state==='pass')&&run.buyer_tool_check?.state==='pass'?'pass':'incomplete',observations,runtime_check:run.buyer_tool_check??null,limits:['Retained report readings match source hashes and valid/tampered outcomes; this is observable task performance, not proof of internal cognition. Exact reports match controller execution on independently signed valid/tampered fixtures; command events and final runtime hashes do not prove every hidden operation. Provisioned runtime use does not qualify registry installation, public discovery or a buyer journey.']};
 }
