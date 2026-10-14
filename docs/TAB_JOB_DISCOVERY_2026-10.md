@@ -41,6 +41,12 @@ fixed clock. It runs in a disposable ledger with no consent enabled. A tarball
 check verifies that the example is shipped; installation and example execution
 from that tarball qualify package contents separately from the source tree.
 
+The first full CI run caught stale 0.11.2 install pins. The existing pin
+guards reproduced six failures locally before correction; all 49 focused
+plugin, pin, skill and OASF checks pass after synchronizing the plugin config,
+canonical skill, generated bundle and OASF snapshot. Typecheck and production
+bundle checks also pass. Full CI remains the merge gate.
+
 Registry baseline on October 14 was `scvd-tab@0.11.2`. This source change
 prepares patch `0.11.3`; a merged README is not evidence of npm publication.
 Use the existing npm publication workflow with the version read from the
