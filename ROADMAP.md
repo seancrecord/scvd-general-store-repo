@@ -1,5 +1,16 @@
 # ROADMAP — September 2026
 
+## October 14 — Tab jobs on existing discovery surfaces
+
+The next additive earning-path increment makes trial-reminder and
+before-signup jobs explicit alongside expense tracking. Shared answers appear
+on the existing FAQ, its machine/structured-data twins and the full agent
+guide. The Tab README gains a runnable synthetic example and corrects its
+reminder-delivery promise; a package patch carries the same example.
+[Scope, validation and release distinctions](docs/TAB_JOB_DISCOVERY_2026-10.md).
+The next AEO comparison retains the existing J05–J07 prompts; no ranking,
+real-user savings or delivered reminder is claimed.
+
 ## October 13 — traffic counter handover and public-reader audit
 
 The unpaid doors now reference the store's shared counter ledger in the release

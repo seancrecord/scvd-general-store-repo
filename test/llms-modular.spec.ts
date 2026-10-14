@@ -1222,8 +1222,11 @@ const BASE = "https://scvd.store";
 // Restoring only llms.ts to main 2e7a52fa reproduces both old pins (14/14).
 // 2026-10-14: integrated earning answers and contribution guide. Restoring
 // only llms.ts to main cbf68660 reproduced both main fingerprints (14/14).
+// 2026-10-14: add the shared Tab trial-reminder and before-signup answers.
+// The unchanged parent guide reproduced both previous pins (14/14) before
+// editing agent-jobs.ts; the new answer-parity check failed on that baseline.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "cd5761a14d808affb6f85878a5a07df243834ff721381b61916658d1459525af";
+  "e3de0fddf5302dca9d260c38522b42511f513e9818d329818361115cab27b0f1";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1326,7 +1329,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "b55b113a9551d359beb6672d6a83742768066f2d063a23f278d7f9d4fdd98365",
+      "a136c93c12d91ce9aa3c02556f286da4814f4f275658fa7bed05d19b5b9240de",
     );
   });
 

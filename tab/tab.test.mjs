@@ -2794,3 +2794,31 @@ test("every parameter is described and every tool shows a worked call that fits 
     }
   }
 });
+
+
+test("the packaged software-cost example keeps trial prices separate and delivery unacknowledged", async () => {
+  const {softwareCostExample} = await import("./examples/software-cost-check.mjs");
+  const RealDate = Date;
+  const fixed = RealDate.parse("2026-10-14T12:00:00Z");
+  // Both event writes and due checks see the same clock; no midnight verdicts.
+  globalThis.Date = class extends RealDate {
+    constructor(...args) { super(...(args.length ? args : [fixed])); }
+    static now() { return fixed; }
+  };
+  try {
+    const report = softwareCostExample();
+    assert.equal(report.burn.monthly, 30);
+    assert.equal(report.burn.annualized, 360);
+    assert.equal(report.burn.paid_count, 2);
+    assert.equal(report.existing_signup.seen_before, true);
+    assert.equal(report.possible_overlap.seen_before, false);
+    assert.ok(report.possible_overlap.current_coverage.some(t => t.tool_name === "synthetic-analytics"));
+    assert.equal(report.trials.converting[0].trial_ends, "2026-10-16");
+    assert.equal(report.trials.converting[0].converts_to.amount, 15);
+    assert.equal(report.reminders.say_now[0].kind, "trial_converting");
+    assert.equal(report.reminders.coverage.pages_acknowledged, 0);
+    assert.equal(report.reminders.coverage.pages_open, 1);
+    assert.equal(readEvents(report.ledger_path).events.length, 3);
+    assert.equal(derive(readEvents(report.ledger_path).events).consent, false);
+  } finally { globalThis.Date = RealDate; }
+});

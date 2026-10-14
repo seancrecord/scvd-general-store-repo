@@ -1,5 +1,21 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-14 — Tab job discovery and reminder scope
+
+Re-read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features):
+visible useful text, internal discovery and matching structured data remain
+relevant; inclusion and indexing are not guaranteed and no special AI schema
+is required. Applied to the existing FAQ and agent guide, not a new landing-page
+family. No new answer-engine wave was run for this change.
+
+Read the npm registry's current `scvd-tab` version (0.11.2), the local package
+handlers, pager delivery accounting and README. The prior published-package
+synthetic qualification establishes recorded costs/history and queued reminders;
+it does not establish real reminder delivery or expense completeness. The next
+patch includes a disposable example and tighter reminder wording. Registry
+publication and source changes are tracked separately in
+[TAB_JOB_DISCOVERY_2026-10.md](TAB_JOB_DISCOVERY_2026-10.md).
+
 ## 2026-10-13 — additive earning path
 
 Read the public [bounty contract](https://scvd.store/api/bounties),
