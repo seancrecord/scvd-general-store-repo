@@ -304,3 +304,17 @@ review voluntary reports and record useful fixes, costs and keeper time; run
 the earning/broader-job AEO panels; qualify Tab installation and its next
 job-specific answers. Sponsored testing, provisioned tasks, portable work
 history and outside-opportunity discovery remain later bounded experiments.
+
+Full-CI follow-up: the route inventory caught six unclassified public
+contribution paths, and checkout parity caught two contribution middleware
+handlers leaking into unrelated routes. Public board/brief reads now use two
+fixed porch buckets; private reservation/report continuations are explicitly
+uncounted as discovery. The public middleware is scoped to its own path. The
+new counter regression was observed red before the fix, and both pre-existing
+CI regressions were red on the release head. Ninety focused tests across eight
+files, typecheck and all three bundle checks pass after repair.
+
+Cloudflare's branch preview log confirms its upload cannot apply the pending
+Durable Object migration. This is a deployment-method limitation: the migration
+must run through the normal main `wrangler deploy` after the merge gate passes;
+no preview upload or production deployment was forced to work around it.

@@ -44,9 +44,10 @@ function contract(base: string) {
     },
   };
 }
-for (const routes of [contributionRoutes, adminContributionRoutes]) {
-  routes.use("*", bodyLimit({maxSize: CONTRIBUTION_REQUEST_BYTES, onError: c => c.json({code: "body_too_large", error: `The contribution request limit is ${CONTRIBUTION_REQUEST_BYTES} bytes. Nothing was stored.`}, 413)}));
-  routes.use("*", async (c, next) => {
+for (const [routes, scope] of [[contributionRoutes, `${CONTRIBUTION_API}/*`], [adminContributionRoutes, "*"]] as const) {
+  // Public routes mount at /; a wildcard here would wrap unrelated doors.
+  routes.use(scope, bodyLimit({maxSize: CONTRIBUTION_REQUEST_BYTES, onError: c => c.json({code: "body_too_large", error: `The contribution request limit is ${CONTRIBUTION_REQUEST_BYTES} bytes. Nothing was stored.`}, 413)}));
+  routes.use(scope, async (c, next) => {
     c.header("Cache-Control", "no-store");
     // no-referrer makes native form POSTs send Origin: null, which our admin
     // gate correctly refuses. same-origin keeps off-site referrals private.

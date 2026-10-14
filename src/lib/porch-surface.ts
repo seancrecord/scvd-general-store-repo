@@ -443,6 +443,14 @@ function versionedInstrument(path: string): string | undefined {
 }
 
 export function porchSurface(path: string, method: string): string | undefined {
+  // Public work discovery has two fixed buckets. Private reservation and
+  // report actions continue that visit and stay in the contribution records.
+  if (path === "/api/bounties/contributions") {
+    return method === "GET" ? "bounties:contributions" : undefined;
+  }
+  if (/^\/api\/bounties\/contributions\/[^/]+$/.test(path)) {
+    return method === "GET" ? "bounties:contribution-brief" : undefined;
+  }
   // One bucket per action, never one key per private report link.
   if (path.startsWith("/api/a2a/kits/")) return method === "POST" && path.endsWith("/recheck") ? "a2a:recheck" : "a2a:report";
   if (path === "/api/a2a/check" && method === "GET") return "a2a:instructions";
