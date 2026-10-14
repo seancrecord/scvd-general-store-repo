@@ -128,6 +128,16 @@ export interface StoreStats {
   /** Settles from before the channel meter existed; counted, attributed to nobody. */
   pre_meter_settlements: number;
   /**
+   * ORGANIC x402 SETTLES THAT CAME THROUGH THE UCP CHECKOUT DOOR
+   * (2026-10-14). A subset of the x402 protocol count, never a third
+   * bucket beside it: UCP is a checkout, and its money settles over
+   * x402. Read off the till's per-channel settle counters, which the
+   * UCP booking only began stamping on 2026-10-14; earlier UCP settles
+   * filed under no channel and are not in this figure. Absent only on
+   * older saved fixtures.
+   */
+  organic_via_ucp_checkout?: number;
+  /**
    * The patron counter: every artifact ever minted, FREE SHELF
    * INCLUDED — stamps, free certs, the lot. Published as what it is.
    * This number used to masquerade as settled_purchases_total, which
@@ -361,16 +371,28 @@ export async function computeStatsDiagnosed(
    * enumerable, so the storefront-adjacent read stays cheap however
    * many months the store survives.
    */
-  const perMonth = await Promise.all(
-    monthsSinceOpening().map(async (month) => {
-      const listed = await listKeys(env.COUNTERS, {
-        prefix: `metric:${month}:paid`,
-        cap: PAID_METRIC_CAP,
-      });
-      const values = await bulkGetJson<number>(env.COUNTERS, listed.names);
-      return { month, names: listed.names, values, truncated: listed.truncated };
-    }),
-  );
+  const [perMonth, ucpByMonth] = await Promise.all([
+    Promise.all(
+      monthsSinceOpening().map(async (month) => {
+        const listed = await listKeys(env.COUNTERS, {
+          prefix: `metric:${month}:paid`,
+          cap: PAID_METRIC_CAP,
+        });
+        const values = await bulkGetJson<number>(env.COUNTERS, listed.names);
+        return { month, names: listed.names, values, truncated: listed.truncated };
+      }),
+    ),
+    // The UCP door's organic settles: one known key per month, read in
+    // the same wave. The channel is the counter's own key, so no scan.
+    bulkGetJson<number>(
+      env.COUNTERS,
+      monthsSinceOpening().map((month) => KV_KEYS.metric(month, "src", "ucp")),
+    ),
+  ]);
+  let organicViaUcp = 0;
+  for (const count of ucpByMonth.values()) {
+    if (typeof count === "number" && Number.isFinite(count)) organicViaUcp += count;
+  }
   /*
    * WHAT TRUNCATION MEANS HERE, answered rather than assumed (rule 52,
    * and the bounded-read guard that made this file say so out loud on
@@ -493,6 +515,7 @@ export async function computeStatsDiagnosed(
     house_settlements: house + reclassified,
     reclassified_house: reclassified + (mpp.reclassified_house ?? 0),
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
+    organic_via_ucp_checkout: organicViaUcp,
     artifacts_issued: artifactsIssued,
     distinct_organic_buyers: distinctOrganicBuyers,
     ...(haveRails && railTotal > 0 && !overshoot
@@ -607,9 +630,20 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
 
 /** One total on the storefront; the three detailed dimensions live on /rails. */
 export function storefrontLedgerLine(stats: StoreStats): string {
-  return purchaseHeadline(stats.payments ?? paymentRollup([{
+  const headline = purchaseHeadline(stats.payments ?? paymentRollup([{
     ...SETTLEMENT_ACCOUNTING,
     organic: stats.organic_settlements,
     house: stats.house_settlements,
   }], null));
+  /*
+   * THE UCP DOOR ON THE SAME LINE (2026-10-14, the keeper's ask). The
+   * headline groups by payment protocol, and UCP is not one — its
+   * money settles over x402 — so a UCP sale was already inside the
+   * x402 figure and invisible as UCP. Said as a subset, in words a
+   * reader cannot add to the protocol counts; the denominator is named
+   * from the accounting constant rather than typed. Zero is printed:
+   * a live door with no sale yet is a fact, not an absence.
+   */
+  if (stats.organic_via_ucp_checkout === undefined) return headline;
+  return `${headline.replace(/\.$/, "")}; ${stats.organic_via_ucp_checkout} of the ${SETTLEMENT_ACCOUNTING.protocol} purchases came through UCP checkout.`;
 }
