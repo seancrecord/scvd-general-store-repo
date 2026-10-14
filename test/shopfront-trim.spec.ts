@@ -110,6 +110,40 @@ describe("the front of the store, trimmed", () => {
     expect(storefrontLedgerLine(stats)).not.toContain("Base");
   });
 
+  it("says how many of the x402 purchases came through the UCP door, as a subset and never a third bucket", async () => {
+    /*
+     * UCP is a checkout, not a payment protocol: its money settles over
+     * x402 and was already inside that figure, invisible as UCP. The
+     * figure comes off the till's per-channel counter, so it moves on
+     * a settle stamped with the door and on nothing else.
+     */
+    const { recordSettlementForItem } = await import("@/lib/metrics");
+    const before = (await computeStats(testEnv)).organic_via_ucp_checkout ?? 0;
+    await recordSettlementForItem(testEnv, "hello", {
+      paidUsdc: 0.002, minimumUsdc: 0.002, payer: "0x9999999999999999999999999999999999999999", viaUcp: true,
+    });
+    await recordSettlementForItem(testEnv, "hello", {
+      paidUsdc: 0.002, minimumUsdc: 0.002, payer: "0x9999999999999999999999999999999999999999",
+    });
+    const stats = await computeStats(testEnv);
+    expect(stats.organic_via_ucp_checkout).toBe(before + 1);
+    expect(storefrontLedgerLine(stats)).toContain(`${before + 1} of the x402 purchases came through UCP checkout.`);
+  });
+
+  it("prints the UCP figure as a clause of the protocol line, zero included", () => {
+    const base = {
+      operating_since: "2026-07-22", settled_purchases_total: 92, organic_settlements: 6, house_settlements: 85,
+      reclassified_house: 0, pre_meter_settlements: 1, artifacts_issued: 89, distinct_organic_buyers: 4,
+      computed_at: "2026-08-06T00:00:00.000Z",
+    };
+    expect(storefrontLedgerLine({ ...base, organic_via_ucp_checkout: 2 }))
+      .toBe("6 organic purchases via x402; 2 of the x402 purchases came through UCP checkout.");
+    expect(storefrontLedgerLine({ ...base, organic_via_ucp_checkout: 0 }))
+      .toBe("6 organic purchases via x402; 0 of the x402 purchases came through UCP checkout.");
+    // An older saved fixture with no figure prints the line it always did.
+    expect(storefrontLedgerLine(base)).toBe("6 organic purchases via x402.");
+  });
+
   it("names the payment protocol on the line, leaving networks to the rollup", () => {
     const line = storefrontLedgerLine({
       operating_since: "2026-07-22",

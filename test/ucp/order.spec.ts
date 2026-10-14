@@ -360,6 +360,23 @@ describe("the order survives every crash point", () => {
     expect(await paidCount("hello")).toBe(before);
   });
 
+  it("books the sale under the UCP channel, so the home page can count the door (2026-10-14)", async () => {
+    /*
+     * The booking passes no headers, so the till inferred "unknown"
+     * for every UCP settle and the per-channel counter the storefront
+     * reads for its UCP figure never moved. The route knows its door.
+     */
+    const ucpKey = KV_KEYS.metric(metricsMonth(), "src", "ucp");
+    const before = Number((await testEnv.COUNTERS.get(ucpKey)) ?? "0");
+    const { checkout, cred, identity } = await admitted();
+    const outcome = await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id, produce: producer(cred) });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    const done = await finalizeUcpOrder(testEnv, { checkoutId: checkout.id, identity, goods: outcome.order!.fulfillment.goods });
+    expect(done.ok).toBe(true);
+    expect(Number((await testEnv.COUNTERS.get(ucpKey)) ?? "0")).toBe(before + 1);
+  });
+
   it("the purchase desk's alarm recovers a settled UCP purchase through the order, never the HTTP parser", async () => {
     const { checkout, cred, identity } = await admitted();
     const walked = await walkToSettlementBoundary(testEnv, { checkoutId: checkout.id });

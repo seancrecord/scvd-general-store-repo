@@ -319,6 +319,16 @@ export const PUBLISHED_COUNTS: readonly PublishedCount[] = [
     },
     { path: "organic_settlements", ...STATS_ORGANIC },
     {
+      path: "organic_via_ucp_checkout",
+      kind: "count",
+      unit: "settled organic x402 purchases whose checkout was the UCP door",
+      instrument: "the till's per-channel settle counters (lib/metrics.ts, src:<channel>), summed by month",
+      population: "the x402 row of payments.by_protocol; a subset of it, never added to it",
+      window: "since 2026-10-14, when the UCP booking began stamping its door; earlier UCP settles filed under no channel",
+      exclusions: [HOUSE, "UCP settles booked before 2026-10-14"],
+      floor: KV_FLOOR,
+    },
+    {
       path: "house_settlements",
       kind: "count",
       unit: "settled purchases by the house",
