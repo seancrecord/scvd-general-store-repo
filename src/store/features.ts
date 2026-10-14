@@ -1,3 +1,5 @@
+import { CONTRIBUTION_PATHS } from "@/lib/contribution-task-schema";
+import { CONTRIBUTION_PROPOSITION, CONTRIBUTION_MONEY, CONTRIBUTION_FREE } from "@/store/contribution-tasks";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
 import {
   FIELD_STUDY_PROPOSITION,
@@ -104,6 +106,7 @@ export interface Feature {
 }
 
 export const FEATURES: readonly Feature[] = [
+  {id: "contribution_work", name: "Contribution work", room: "/bounties", proposition: CONTRIBUTION_PROPOSITION, for_money: CONTRIBUTION_MONEY, free_first: CONTRIBUTION_FREE, doors: CONTRIBUTION_PATHS, named_on: ["/field-study"], opened: "2026-10-13"},
   {
     /**
      * THE FIELD STUDY (2026-09-19). The bounty board turned around:

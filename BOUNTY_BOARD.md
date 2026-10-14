@@ -546,3 +546,22 @@ the one thing this must never be.
 The blocked row is still SHOWN, with what the door said and the date it
 said it. "This door is ready in the census and gone on the wire" is
 exactly the kind of thing this store exists to notice.
+
+## Optional completion context — October 13, 2026
+
+Successful responses also carry unsigned optional `completion` context: the
+existing verification scope, reward authorization state, an explanation for
+the operator and two free checks. It excludes payout signatures and study
+tokens; the original payout remains in its existing field. Sharing and further
+purchases are never conditions. The public room and JSON carry shared earning
+answers, including upfront costs and redemption limits.
+
+## Contribution work without a purchase — October 13, 2026
+
+The existing board now links a separate [contribution workflow](CONTRIBUTION_WORK.md):
+posted AURA, census, package, documentation and discovery briefs with explicit
+rewards and reserved slots. Private evidence receives a keeper decision and
+disposition; accepted work is paid separately by the keeper. It uses neither
+the shopping board's automatic payout mechanism nor its weekly budget.
+The admin desk is `/admin/bounties/contributions`. Local implementation only;
+no live briefs or budget commitments were posted by this build.

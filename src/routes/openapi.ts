@@ -1,3 +1,4 @@
+import { CONTRIBUTION_OPENAPI, CONTRIBUTION_SCHEMAS, CONTRIBUTION_RESPONSES } from "@/lib/contribution-task-schema";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
 import { BASE_NETWORK } from "@/lib/payment-networks";
 import { getAddress } from "viem";
@@ -41,7 +42,7 @@ import {
   PREFLIGHT_VERSIONS,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
-import { buyInputSchema, buyInputExample, itemsRequiring } from "@/lib/bazaar-discovery";
+import { AGENT_NAME_SCHEMA, PURCHASE_PURPOSE_SCHEMA, buyInputSchema, buyInputExample, itemsRequiring } from "@/lib/bazaar-discovery";
 import { DISCLOSURE_FIELDS, DISCLOSURE_LINE, DISCLOSURE_PROPERTIES, type DisclosureField } from "@/lib/disclosure";
 import {
   openForBusinessTiersUsdc,
@@ -351,6 +352,8 @@ export const NEGOTIATED_REPRESENTATIONS: Readonly<Record<string, readonly string
  * and are excluded by rule, not by name.
  */
 export const CONDITIONAL_GET_EXEMPT: Readonly<Record<string, string>> = {
+  "/bounties": "Live contribution capacity is no-store in every representation.",
+  "/api/bounties/contributions": "Live capacity is no-store; reservations read authoritative task state.",
   "/health": "no-store by design: a liveness line that must never be a cached yes",
   "/bell": "an HTML room, not a machine-readable document: lib/conditional-get.ts tags the representations an agent polls, and this GET exists to put a form in front of a person. The bell's machine door is POST /api/bell, which is outside conditional GET by method.",
   "/bot-auth/observe": "no-store: each observation verifies the current signed request and current key status",
@@ -962,6 +965,18 @@ const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
  * true, and `additionalProperties` is left open so the claim stays
  * one this store can keep.
  */
+const ARTIFACT_SIGNATURE_SCOPE_SCHEMA: OpenApiObject = {
+  type: "string",
+  description:
+    "Which fields the signature actually covers — named on the artifact rather than assumed, because a field shown beside a signature that the signature does not cover is the defect /corrections was opened for.",
+};
+
+const ARTIFACT_LIMIT_SCHEMA: OpenApiObject = {
+  type: "string",
+  description:
+    "A dated observation against published criteria — never an endorsement, an uptime claim, or a score on whoever runs the endpoint. This store verifies artifacts; it does not rate actors.",
+};
+
 function signedArtifactSchema(options: {
   payloadKey: string;
   payloadDescription: string;
@@ -992,11 +1007,7 @@ function signedArtifactSchema(options: {
             description: "ed25519 over the canonical form of the fields this object declares.",
           },
           public_key: { type: "string" },
-          signature_covers: {
-            type: "string",
-            description:
-              "Which fields the signature actually covers — named on the artifact rather than assumed, because a field shown beside a signature that the signature does not cover is the defect /corrections was opened for.",
-          },
+          signature_covers: { $ref: "#/components/schemas/ArtifactSignatureScope" },
           evidence_hash: { type: "string" },
           observed_at: { type: "string", format: "date-time" },
           criteria: {
@@ -1020,11 +1031,7 @@ function signedArtifactSchema(options: {
         description:
           "The steps a stranger runs without asking the buyer OR this store to be honest.",
       },
-      what_this_is_not: {
-        type: "string",
-        description:
-          "A dated observation against published criteria — never an endorsement, an uptime claim, or a score on whoever runs the endpoint. This store verifies artifacts; it does not rate actors.",
-      },
+      what_this_is_not: { $ref: "#/components/schemas/ArtifactLimit" },
       ...(options.extras ?? {}),
     },
   };
@@ -1860,7 +1867,7 @@ const GUESTBOOK_ENTRY_SCHEMA: OpenApiObject = {
       format: "uri",
       description: "A rendered sticker for the entry, free to read forever.",
     },
-    cadence: CADENCE_SCHEMA,
+    cadence: { $ref: "#/components/schemas/MailCadence" },
   },
 };
 
@@ -1891,7 +1898,7 @@ const STAMP_SCHEMA: OpenApiObject = {
     verify_url: { type: "string", format: "uri" },
     svg_url: { type: "string", format: "uri" },
     note: { type: "string" },
-    cadence: CADENCE_SCHEMA,
+    cadence: { $ref: "#/components/schemas/MailCadence" },
   },
 };
 
@@ -1910,7 +1917,7 @@ const LETTER_RECEIPT_SCHEMA: OpenApiObject = {
       type: "string",
       description: "What happens to the letter's contents, said on the intake rather than in a policy nobody opens.",
     },
-    cadence: CADENCE_SCHEMA,
+    cadence: { $ref: "#/components/schemas/MailCadence" },
   },
 };
 
@@ -2869,11 +2876,43 @@ const CONFORMANCE_FIXTURES_SCHEMA: OpenApiObject = {
   },
 };
 
+/** Optional unsigned context; it never changes the payout contract. */
+const CONTRIBUTION_COMPLETION_SCHEMA: OpenApiObject = {
+  type: "object",
+  properties: {
+    optional: { type: "boolean", const: true },
+    task_id: { type: "string" },
+    kind: { type: "string", enum: ["bounty", "field_study", "contribution"] },
+    reward_usd: { type: "number" },
+    reward_state: { type: "string", enum: ["authorized", "accepted_pending_payment", "payment_reported"] },
+    redemption_state: { type: "string", const: "not_observed" },
+    reward_note: { type: "string" },
+    what_was_verified: { type: "string" },
+    what_was_not: { type: "string" },
+    for_your_human: { type: "string" },
+    sharing: { type: "string" },
+    evidence_scope: { type: "string", format: "uri" },
+    free_next_steps: { type: "array", maxItems: 2, items: {
+      type: "object", properties: {
+        name: { type: "string" }, url: { type: "string", format: "uri" },
+        cost: { type: "string", const: "free" }, how: { type: "string" }, scope: { type: "string" },
+      },
+    } },
+  },
+};
+
+const EARNING_ANSWERS_SCHEMA: OpenApiObject = {
+  type: "array", items: { type: "object", properties: {
+    id: { type: "string" }, question: { type: "string" }, answer: { type: "string" },
+  } },
+};
+
 /** The bounty board: what is on offer, and the budget that bounds it. */
 const BOUNTIES_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["what_this_is", "bounties", "the_rules"],
   properties: {
+    earning_answers: { $ref: "#/components/schemas/EarningAnswers" },
     what_this_is: { type: "string" },
     board: { type: "string" },
     bounties: { type: "array", items: { type: "object" } },
@@ -2905,6 +2944,7 @@ const FIELD_STUDY_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["what_this_is", "price", "how_to_call", "errors", "security"],
   properties: {
+    earning_answers: { $ref: "#/components/schemas/EarningAnswers" },
     what_this_is: { type: "string" },
     price: { type: "string" },
     how_to_call: { type: "string" },
@@ -2991,6 +3031,7 @@ const STUDY_DEBRIEF_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["study_id", "reward_usd", "reward_breakdown", "legs", "payout"],
   properties: {
+    completion: { $ref: "#/components/schemas/ContributionCompletion" },
     study_id: { type: "string" },
     reward_usd: { type: "number" },
     reward_breakdown: {
@@ -4060,6 +4101,7 @@ const CORPUS_DIFF_SCHEMA: OpenApiObject = {
 const BOUNTY_CLAIM_SCHEMA: OpenApiObject = {
   type: "object",
   properties: {
+    completion: { $ref: "#/components/schemas/ContributionCompletion" },
     payer: { type: "string" },
     status: { type: "string" },
     message: { type: "string" },
@@ -5077,7 +5119,7 @@ const MENU_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["as_of", "checked_at", "description", "store", "items"],
   properties: {
-    payments: PAYMENT_ROLLUP_SCHEMA,
+    payments: { $ref: "#/components/schemas/PaymentRollup" },
     as_of: {
       type: "string",
       description: "ISO week the catalog was last written, e.g. 2026-W35.",
@@ -5855,7 +5897,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     title: `${item.name} request`,
     description: `Query parameters for GET /api/buy/${item.id}. Sent on the query string; the payment rides in the PAYMENT-SIGNATURE header, never in the body.`,
     properties: Object.fromEntries(
-      Object.entries(schema.properties).filter(([name]) => !isDisclosureField(name)),
+      Object.entries(schema.properties).filter(([name]) => !isDisclosureField(name)).map(([name, value]) => [name, name === "purpose" ? { $ref: "#/components/schemas/PurchasePurpose" } : name === "agent_name" ? { $ref: "#/components/schemas/AgentName" } : value]),
     ),
     ...(schema.required && schema.required.length > 0
       ? { required: [...schema.required] }
@@ -6101,6 +6143,15 @@ openapiRoutes.get("/openapi.json", async (c) => {
         description: "Private recovery.status_token returned by a catalogue purchase. This capability reads only its original purchase status." } },
       schemas: {
         ...A2A_OPENAPI_SCHEMAS,
+        ...CONTRIBUTION_SCHEMAS,
+        ContributionCompletion: CONTRIBUTION_COMPLETION_SCHEMA,
+        EarningAnswers: EARNING_ANSWERS_SCHEMA,
+        PurchasePurpose: PURCHASE_PURPOSE_SCHEMA,
+        AgentName: AGENT_NAME_SCHEMA,
+        ArtifactSignatureScope: ARTIFACT_SIGNATURE_SCOPE_SCHEMA,
+        ArtifactLimit: ARTIFACT_LIMIT_SCHEMA,
+        MailCadence: CADENCE_SCHEMA,
+        PaymentRollup: PAYMENT_ROLLUP_SCHEMA,
         // Repeated request/response schemas, expanded unchanged (2026-09-23).
         // Keep parameters and the paid 402 inline for shallow discovery readers.
         TradeOrder: TRADE_ORDER_BODY,
@@ -6134,7 +6185,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         // The disclosure block, written once (lib/disclosure).
         DisclosureBlock: DISCLOSURE_BLOCK_SCHEMA,
       },
-      responses: SHARED_RESPONSES,
+      responses: { ...SHARED_RESPONSES, ...CONTRIBUTION_RESPONSES },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
       parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER },
     },
@@ -6219,6 +6270,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
       })),
     },
     paths: {
+      ...Object.fromEntries(Object.entries(CONTRIBUTION_OPENAPI).map(([path, operations]) => [path,
+        Object.fromEntries(Object.entries(operations).map(([method, operation]) => [method, {
+          ...operation, security: [], responses: { ...operation.responses, ...COMMON_RESPONSES },
+        }])),
+      ])),
       "/menu.json": {
         get: {
           ...returns(
@@ -7550,11 +7606,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/bounties": {
         get: returns(
-  freeOp(
+          {...freeOp(
             "The Bounty Board",
-            "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
-          ),
-          { $ref: "#/components/schemas/Bounties" },
+            "Posted no-purchase contribution briefs and paid mystery-shopping bounties, with terms and live capacity. HTML, Markdown or JSON; no-store. Free.",
+          ), parameters: [{name: "contribution_cursor", in: "query", schema: {type: "string"}, description: "Opaque cursor from contribution_list; resumes only the contribution briefs."}]},
+          {type: "object", allOf: [{$ref: "#/components/schemas/Bounties"}], properties: {
+            contribution_list: {type: "object", properties: {tasks: {type: "array", items: {$ref: "#/components/schemas/ContributionTask"}}, truncated: {type: "boolean"}, cursor: {type: ["string", "null"]}, indexing_note: {type: "string"}, unavailable: {type: "boolean"}, error: {type: "string"}}},
+          }},
         ),
       },
       "/credit": {

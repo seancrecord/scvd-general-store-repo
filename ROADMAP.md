@@ -39,6 +39,26 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 13 — earning-path implementation
+
+Keeper authorized the additive path: optional bounty/study completion summaries,
+free checks, concise earning answers and Tab expense-task discovery on existing
+surfaces. [Build and validation](docs/EARNING_PATH_BUILD_2026-10.md).
+Isolated on `codex/earning-path`; existing shopping payouts and budgets are unchanged.
+Private follow-through, a due-date keeper queue, and optional self-reported
+arrival context are also built locally; no acquisition conclusions are inferred.
+October 14 adds task-specific work packets, state-aware next actions, explicit
+availability reasons, and relevant optional completion suggestions including
+Tab for an explicitly declared expense-tracking job. Recovery checks now preserve
+failed keeper forms and their original identifiers, and schedule privacy cleanup
+before saving reservations. The local browser now completes the keeper flow,
+and the existing bounty page lists posted contributions in HTML, Markdown and
+JSON with bounded pagination and explicit availability.
+The [no-purchase contribution workflow](CONTRIBUTION_WORK.md) is now built locally:
+keeper-posted terms, reserved slots, private evidence, review disposition and
+separately recorded keeper payment. No briefs posted and no deployment.
+[Full direction](docs/AGENT_INTENT_AND_COMPLETION_2026-10.md).
+
 ## September 28 — AEO readability, release approved
 
 - [x] Update the [hand-check protocol](docs/AEO_HAND_CHECK.md) and [run template](docs/AEO_HAND_CHECK_RUN_TEMPLATE.md): preserve legacy prompts; cover the portfolio; freeze modes and eligibility; retain failures, source provenance and repeat waves. Documentation update only; no new observations or automation.

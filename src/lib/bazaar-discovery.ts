@@ -24,7 +24,7 @@ import { inputAliasTable, resolveInputRecord } from "@/lib/input-aliases";
 /** JSON Schema maxLength counts Unicode code points. */
 export const PURCHASE_PURPOSE_MAX_LENGTH = 280;
 
-const AGENT_NAME_SCHEMA = {
+export const AGENT_NAME_SCHEMA = {
   type: "string",
   maxLength: NAME_CAP,
   description:
@@ -57,6 +57,24 @@ export function itemsRequiring(param: string): string[] {
   ).map((item) => item.id);
 }
 
+/** Shared purpose field; OpenAPI reuses it by reference, other discovery surfaces inline it. */
+export const PURCHASE_PURPOSE_SCHEMA = {
+  type: "string",
+  maxLength: PURCHASE_PURPOSE_MAX_LENGTH,
+  /*
+   * SAYS WHERE IT GOES (2026-09-23). Until today this said the text
+   * was signed onto the certificate and stopped there, so a buyer
+   * could not tell it would ever be read — and the September read
+   * found zero purposes filled. It is shown on the receipt page, to
+   * a person, under "What your agent said this was for". The new
+   * wording is two bytes SHORTER than the old: this string is
+   * inlined into every paid door's contract, so a longer one costs
+   * thirty-five times over against a budget with no room.
+   */
+  description:
+    "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
+};
+
 /** One input schema per item, shared by Bazaar, the listing spec, and MCP. */
 export function buyInputSchema(item: MenuItem): QuerySchema {
   const properties: Record<string, unknown> = {
@@ -72,22 +90,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
      * schema, found the same way: by an outside buyer's arguments not
      * arriving.
      */
-    purpose: {
-      type: "string",
-      maxLength: PURCHASE_PURPOSE_MAX_LENGTH,
-      /*
-       * SAYS WHERE IT GOES (2026-09-23). Until today this said the text
-       * was signed onto the certificate and stopped there, so a buyer
-       * could not tell it would ever be read — and the September read
-       * found zero purposes filled. It is shown on the receipt page, to
-       * a person, under "What your agent said this was for". The new
-       * wording is two bytes SHORTER than the old: this string is
-       * inlined into every paid door's contract, so a longer one costs
-       * thirty-five times over against a budget with no room.
-       */
-      description:
-        "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
-    },
+    purpose: PURCHASE_PURPOSE_SCHEMA,
     /**
      * THE DISCLOSURE BLOCK (2026-09-18, lib/disclosure). Six flat
      * optional strings a buyer may fill — model, client, operator,

@@ -1,5 +1,19 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-13 — additive earning path
+
+Read the public [bounty contract](https://scvd.store/api/bounties),
+[field study](https://scvd.store/field-study),
+[conformance desk](https://scvd.store/conformance),
+[attestation scope](https://scvd.store/attestation),
+[developer guide](https://scvd.store/developers), and
+[Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features).
+Free artifact checks do not establish every statement in a report. No special
+AI schema is required. Local Tab documentation supplies expense, coverage and
+reminder scope; no current npm version is asserted. No paid flow, private
+study or controlled answer-engine panel ran in this read.
+[Implementation](EARNING_PATH_BUILD_2026-10.md).
+
 ## 2026-09-28 — revised AEO hand-check protocol
 
 Re-read [Google AI features guidance](https://developers.google.com/search/docs/appearance/ai-features).
@@ -2646,3 +2660,41 @@ separate, and the x402 verdict keeps its prior meaning.
 Source hashes, validation and release limits: [PS6 record](../research/endpoint-inspection-2026-09-28/verification.json)
 and [implementation](ENDPOINT_INSPECTION_2026-09-28.md). Buyer/model qualification
 was excluded by keeper direction.
+
+### 2026-10-13 — reserved contribution tasks
+
+Read Cloudflare's [SQLite Durable Object storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and the local Durable Objects skill. The implementation uses one object per
+posted task, synchronous SQL decisions and writes, and crypto before reading
+mutable state. The existing bounty, field-study and letter implementations
+were checked before adding this separate no-purchase workflow. No new payment
+protocol or signing mechanism is implemented; payment recording is explicitly
+a keeper report. [Contract and release limits](../CONTRIBUTION_WORK.md).
+
+
+### 2026-10-14 — contribution recovery and isolated preview
+
+Re-read Cloudflare's [SQLite storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)
+and the installed Wrangler development-command help/config schema alongside
+[Wrangler commands](https://developers.cloudflare.com/workers/wrangler/commands/).
+The local preview uses `--local`, disposable storage and local-only auth. Its
+upstream protocol is set to HTTPS inside the local runner so the application's
+HTTPS redirect middleware can run unchanged while the browser connects locally.
+Reservation alarm setup precedes a fresh capacity read; no asynchronous operation
+splits the final capacity decision and SQL write. The failure-injection evidence
+and browser limitations are in the [build record](EARNING_PATH_BUILD_2026-10.md).
+
+
+### 2026-10-14 — native contribution forms and discovery parity
+
+Read MDN's [Origin header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin)
+and [Referrer-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy)
+references after native form submissions were refused. A no-referrer policy
+can produce an opaque origin on non-CORS POSTs. Admin contribution forms now
+use same-origin policy, preserving the strict origin gate and suppressing
+off-site referrers. The local runner's store origin also matches its HTTPS
+upstream; the browser still connects to disposable local HTTP.
+
+The actual browser flow now completes; the sixth increment in the
+[build record](EARNING_PATH_BUILD_2026-10.md) supersedes the prior browser
+limitation and records its local-only scope.

@@ -1,3 +1,4 @@
+import { adminContributionRoutes } from "@/routes/contribution-tasks";
 import { Hono } from "hono";
 import { adminPurchaseRoutes } from "@/routes/admin-purchases";
 import { basicAuth } from "hono/basic-auth";
@@ -327,6 +328,7 @@ for (const path of ["/admin/purchases", "/admin/purchases/*"]) adminRoutes.use(p
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 adminRoutes.route("/admin/purchases", adminPurchaseRoutes);
+adminRoutes.route("/admin/bounties/contributions", adminContributionRoutes);
 
 /**
  * THE SIGNING DESK — POST /admin/wba/sign (2026-09-04).

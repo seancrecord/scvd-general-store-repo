@@ -67,6 +67,7 @@ export default defineConfig({
          * production; the pool needs it named here too.
          */
         durableObjects: {
+          CONTRIBUTION_TASKS: { className: "ContributionTask", scriptName: undefined, useSQLite: true },
           BOUNTY_CLAIM_LOCKS: { className: "BountyClaimLocks", scriptName: undefined },
           // The counters run the real serialized ledger in the suite too.
           COUNTER_LEDGER: { className: "CounterLedger", scriptName: undefined, useSQLite: true },

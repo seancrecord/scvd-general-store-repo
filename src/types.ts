@@ -77,6 +77,7 @@ export interface Env {
    * before — the KV replay guard and the chain — rather than refusing
    * every walker because a lock is missing.
    */
+  CONTRIBUTION_TASKS?: DurableObjectNamespace<import("@/services/contribution-task").ContributionTask>;
   BOUNTY_CLAIM_LOCKS?: DurableObjectNamespace<
     import("@/services/bounty-claim-locks").BountyClaimLocks
   >;

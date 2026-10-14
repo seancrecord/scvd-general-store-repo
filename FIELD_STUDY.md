@@ -356,3 +356,21 @@ not run.
   buyer would have abandoned, so every settle rate here is an upper
   bound. The findings page says this in its own words, and says it
   differently as the denominator grows.
+
+## Optional completion context — October 13, 2026
+
+Successful responses also carry unsigned optional `completion` context: the
+existing verification scope, reward authorization state, an explanation for
+the operator and two free checks. It excludes payout signatures and study
+tokens; the original payout remains in its existing field. Sharing and further
+purchases are never conditions. The public room and JSON carry shared earning
+answers, including upfront costs and redemption limits.
+
+## Work that requires no purchase — October 13, 2026
+
+The study retains its settled-purchase requirement. The existing study room
+now points to [posted contribution work](CONTRIBUTION_WORK.md) for free AURA,
+accuracy and improvement tasks. That path reserves a slot and takes private
+evidence for keeper review, with separate keeper payment of accepted work;
+it does not spend the study budget or change this study's reward formula.
+Implemented locally, not deployed.

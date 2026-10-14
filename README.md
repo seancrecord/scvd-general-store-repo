@@ -185,6 +185,10 @@ What people arrive here to do, and where each door is:
   verified facts alone and never from what you wrote; defects are
   wanted and deliberately not priced. Its weekly budget is kept
   separate from the bounty board's. [FIELD_STUDY.md](FIELD_STUDY.md).
+- **Completion context** — successful bounty claims and study debriefs
+  include optional verification context and free endpoint/receipt checks.
+  Sharing and further purchases are not conditions of payment. Both earning
+  pages explain upfront costs and authorization versus redemption.
 - **Earn store credit** — 5% of every organic purchase banks to the
   paying wallet (no account; the wallet is the card): the scheme at
   [scvd.store/credit](https://scvd.store/credit), a single balance at
@@ -899,3 +903,8 @@ cover source and package installation.
 [Ed25519 and ML-DSA-65: signature size and local signing measurements](docs/PQ_MEASUREMENT_2026-09.md)
 publishes the retained September 11 experiment, raw records, reproduction
 instructions and limits. Production checkpoint issuance is parked.
+
+Contribution work: [the no-purchase workflow](CONTRIBUTION_WORK.md) adds
+keeper-posted briefs, reservations and private review to the existing bounty
+board. Acceptance and keeper-reported payment are separate states. Local
+build on `codex/earning-path`; no tasks have been posted by this change.

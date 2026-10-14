@@ -375,6 +375,7 @@ function attemptsHtml(attempts: MetricEvent[]): string {
 export function renderBountiesPage(data: BountiesPageData): string {
   const outstanding = outstandingPayouts(data.board, data.now, data.redemptions);
   const body = `
+  <p><a href="/admin/bounties/contributions">Contribution briefs and private review queue</a> — posted terms, reserved work and payment obligations.</p>
   <section>
     <h2>The paying wallet</h2>
     <p><small>Every payout this store makes — bounty rewards, credit

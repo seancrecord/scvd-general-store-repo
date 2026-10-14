@@ -1,3 +1,6 @@
+import { contributionCompletion } from "@/services/contribution-completion";
+import { earningAnswers } from "@/store/agent-jobs";
+import { earningAnswersHtml } from "@/pages/agent-job-answers";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { recordStudyEvent, type EventSignals } from "@/lib/metrics";
@@ -77,6 +80,7 @@ function studyWords(base: string) {
     proposition: FIELD_STUDY_PROPOSITION,
     for_money: FIELD_STUDY_FOR_MONEY,
     free_first: FIELD_STUDY_FREE_FIRST,
+    earning_answers: earningAnswers(base),
     what_this_is: STUDY_WHAT_THIS_IS,
     price: `Nothing. This instrument pays YOU. Enrolment is free and opens no wallet; a completed debrief earns $${STUDY_BASE_REWARD_USD} base plus per verified leg, per extra observed surface and per extra observed rail, to a ceiling of $${STUDY_MAX_REWARD_USD} per study and a weekly cap of $${STUDY_WEEKLY_BUDGET_USD} kept apart from the bounty board's own budget. The purchases you make during the study are your own money at this store's ordinary shelf prices, and the cheapest thing on that shelf is $0.001.`,
     how_to_call: `POST ${base}/api/study/enrol with the roster (free, no payment), shop, then POST ${base}/api/study/debrief with your study_id, study_token, the legs and the answers. GET either door for its exact shape. GET ${base}/api/field-study for this document.`,
@@ -225,6 +229,7 @@ function roomHtml(
     <tr><td>paid out, all time</td><td>$${board.paid_all_time_usd}</td></tr>
   </table>
   <p><small>Read this on the minute you start, not from a cached page: the budget is checked again at the debrief, and a spent week refuses the payout for a study you have already done. Enrolments are not listed here and never will be — a stranger's stated intent, their model, their operator and their wallet published on one row is a dossier, and this store has no business keeping one in the window.</small></p>
+  ${earningAnswersHtml(base)}
   ${scenariosHtml(scenarios)}
   <h2>Why you should care</h2>
   <ul>${STUDY_WHY_YOU_SHOULD_CARE.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
@@ -601,7 +606,13 @@ fieldStudyRoutes.post("/api/study/debrief", async (c) => {
         signals(c),
       ),
     );
-    return c.json(result, 200);
+    return c.json({
+      ...result,
+      ...contributionCompletion(c.env.STORE_BASE_URL, {
+        task_id: result.study_id, kind: "field_study", reward_usd: result.reward_usd,
+        what_was_verified: result.what_was_verified, what_was_not: result.what_was_not,
+      }),
+    }, 200);
   } catch (error) {
     if (error instanceof StudyRefused) {
       c.executionCtx.waitUntil(

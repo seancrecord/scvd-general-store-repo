@@ -49,7 +49,7 @@
               },
               "why": {
                 "type": "string",
-                "description": "What this answer buys the store — published so an agent can judge the ask rather than take it on trust."
+                "description": "What this answer buys the store \u2014 published so an agent can judge the ask rather than take it on trust."
               },
               "choices": {
                 "type": "array",
@@ -94,7 +94,7 @@
         },
         "every_problem_at_once": {
           "type": "string",
-          "description": "A refused body comes back with `problems`: EVERY field that needs fixing, each with what was expected and what the answer buys. One more call is always enough — you never discover the roster one refusal at a time."
+          "description": "A refused body comes back with `problems`: EVERY field that needs fixing, each with what was expected and what the answer buys. One more call is always enough \u2014 you never discover the roster one refusal at a time."
         },
         "then": {
           "type": "string",
@@ -128,7 +128,7 @@
         },
         "what_this_is_not": {
           "type": "string",
-          "description": "Never a ranking of the doors, and no verdict on whoever runs one — a dated observation of what each answered."
+          "description": "Never a ranking of the doors, and no verdict on whoever runs one \u2014 a dated observation of what each answered."
         },
         "what_you_can_use_it_for": {
           "type": "string"
@@ -425,7 +425,7 @@
           "items": {
             "type": "string"
           },
-          "description": "The methods that never cost anything — tools/list among them, so a client can look before it pays."
+          "description": "The methods that never cost anything \u2014 tools/list among them, so a client can look before it pays."
         },
         "capabilities": {
           "type": "object"
@@ -488,7 +488,7 @@
         },
         "rate_limit": {
           "type": "string",
-          "description": "What is metered and what is not, in words — the RateLimit headers say it again on every answer."
+          "description": "What is metered and what is not, in words \u2014 the RateLimit headers say it again on every answer."
         },
         "what_it_checks": {
           "type": "array",
@@ -635,7 +635,6 @@
   },
   {
     "pointers": [
-      "/paths/~1bounties/get/responses/200/content/application~1json/schema",
       "/paths/~1api~1bounties/get/responses/200/content/application~1json/schema"
     ],
     "schema": {
@@ -690,6 +689,23 @@
         "the_room": {
           "type": "string",
           "format": "uri"
+        },
+        "earning_answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "question": {
+                "type": "string"
+              },
+              "answer": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }
@@ -755,6 +771,188 @@
         },
         "no_spend_controls": {
           "type": "boolean"
+        }
+      }
+    }
+  },
+  {
+    "pointers": [
+      "/paths/~1bounties/get/responses/200/content/application~1json/schema"
+    ],
+    "schema": {
+      "type": "object",
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "what_this_is",
+            "bounties",
+            "the_rules"
+          ],
+          "properties": {
+            "what_this_is": {
+              "type": "string"
+            },
+            "board": {
+              "type": "string"
+            },
+            "bounties": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "the_rules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "how_to_claim": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "week": {
+              "type": "string"
+            },
+            "weekly_budget_usd": {
+              "type": "number"
+            },
+            "spent_this_week_usd": {
+              "type": "number"
+            },
+            "payouts_enabled": {
+              "type": "boolean",
+              "description": "Whether the board can actually pay right now. Published rather than implied, so a claimant learns it before doing the work."
+            },
+            "the_board": {
+              "type": "string",
+              "format": "uri"
+            },
+            "the_room": {
+              "type": "string",
+              "format": "uri"
+            },
+            "earning_answers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "question": {
+                    "type": "string"
+                  },
+                  "answer": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "contribution_list": {
+          "type": "object",
+          "properties": {
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "reward_usd",
+                  "available_slots",
+                  "purchase_required"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  },
+                  "brief": {
+                    "type": "string"
+                  },
+                  "acceptance": {
+                    "type": "string"
+                  },
+                  "expires_at": {
+                    "type": "string"
+                  },
+                  "published_at": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "payment_method": {
+                    "type": "string"
+                  },
+                  "availability_reason": {
+                    "type": "string"
+                  },
+                  "task_url": {
+                    "type": "string"
+                  },
+                  "slots": {
+                    "type": "integer"
+                  },
+                  "review_days": {
+                    "type": "integer"
+                  },
+                  "payment_days": {
+                    "type": "integer"
+                  },
+                  "available_slots": {
+                    "type": "integer"
+                  },
+                  "pending_review": {
+                    "type": "integer"
+                  },
+                  "reward_usd": {
+                    "type": "number"
+                  },
+                  "maximum_reward_usd": {
+                    "type": "number"
+                  },
+                  "purchase_required": {
+                    "type": "boolean",
+                    "const": false
+                  }
+                }
+              }
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "cursor": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "indexing_note": {
+              "type": "string"
+            },
+            "unavailable": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": "string"
+            }
+          }
         }
       }
     }

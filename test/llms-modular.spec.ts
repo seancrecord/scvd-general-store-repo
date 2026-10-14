@@ -1157,8 +1157,15 @@ const BASE = "https://scvd.store";
 // Integrated with the AEO SDK/protocol corrections on 2026-09-28. Restoring
 // only declined.ts to origin/main reproduced both main pins (14/14 passed);
 // these pins preserve both that correction and main's purchase-template clause.
+// 2026-10-13: six shared job answers in the detailed menu-area guide, with
+// a short index pointer; the full answers would exceed the index budget.
+// Restoring only llms.ts to HEAD reproduced both preceding pins (14/14).
+// The second increment adds posted contribution terms and the board pointer.
+// 2026-10-14: the earning answer now names contribution work first and separates
+// manual contribution payment from shopping authorizations. Restoring only those
+// two answers reproduced both October 13 pins (14/14); no other guide text moved.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "f4cd06837967f5bc7d8c69c97fdc575be9bb0484dff5660a26d68b51572ce241";
+  "a231bc78f285835074342996961b2c02327018673be8b1358a23ae6265a08d31";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1255,7 +1262,7 @@ describe("nothing was rewritten", () => {
       // buy_url_template with the slots filled, never at the bare door.
       // Verified the way this file asks: with that clause alone reverted,
       // 1ac33b17 reproduced, and this copy reproduces the new one.
-      "bb11e5d52d458e2389190a3bd3553c6267588c3190726ab7f56a5baa9d8e3177",
+      "890507edc82f3ed54e5670608e497efe6619a64605d3e491d9a95edfac401230",
     );
   });
 
