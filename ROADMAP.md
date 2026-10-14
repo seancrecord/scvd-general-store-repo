@@ -1072,3 +1072,13 @@ document exists are a 404 on purpose.
   NOW is re-ordered whenever a ruling or the market
   changes the order; the top row is always the next
   branch.
+
+## October 14 — contribution launch without a rehearsal
+
+Keeper clarified that skipping meant the manual testing step, not launching
+work, and asked for easy posting or posting with merge. The existing desk now
+has one press for the prepared four-brief round: $10 maximum, the same field
+wallet, fixed identities and deadlines, and recovery after partial saves.
+[Terms and operation](CONTRIBUTION_WORK.md). This chooses the single-press option;
+there is no deployment side effect or recurring budget increase. Required code
+checks remain part of release; no keeper localhost test is required.
