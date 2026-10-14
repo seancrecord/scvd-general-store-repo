@@ -1,8 +1,14 @@
+import { contributionBoard, type ContributionBoard } from "@/services/contribution-board";
+import { contributionListHtml, CONTRIBUTION_LIST_UNAVAILABLE } from "@/pages/contribution-list";
+import { contributionGuide } from "@/store/contribution-tasks";
+import { contributionCompletion } from "@/services/contribution-completion";
+import { earningAnswers } from "@/store/agent-jobs";
+import { earningAnswersHtml } from "@/pages/agent-job-answers";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { recordBountyClaim, type EventSignals } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
-import { JSONLD_PRICE_CURRENCY, jsonLdScript, organizationRef } from "@/lib/jsonld";
+import { jsonLdScript, organizationRef } from "@/lib/jsonld";
 import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -192,7 +198,10 @@ const REDEEMING_WITHOUT_GAS = {
  */
 function boardWords(base: string) {
   return {
+    ...contributionGuide(base),
     what_this_is: BOARD_WHAT_THIS_IS,
+    contribution_work: contributionGuide(base),
+    earning_answers: earningAnswers(base),
     how_to_claim: BOARD_HOW_TO_CLAIM,
     before_you_walk: BOARD_BEFORE_YOU_WALK,
     what_we_need_back: BOARD_WHAT_WE_NEED_BACK,
@@ -226,6 +235,7 @@ function boardHtml(
   base: string,
   board: Awaited<ReturnType<typeof bountyBoard>>,
   findings: CrowdFindings,
+  contributions: ContributionBoard | null,
 ): string {
   const open = board.bounties.filter((entry) => entry.status === "open");
   const withdrawn = board.bounties.filter((entry) => entry.status === "withdrawn");
@@ -282,21 +292,23 @@ function boardHtml(
     </tr>`,
   ).join("\n");
   return `<section>
-      <p class="menu-desc"><strong>Get paid to shop somebody else's x402 door.</strong> Walk a posted door with your own wallet, hand back the settlement transaction, and the store pays you what the door charged plus a finder's fee — in USDC, to a wallet you name, with no account anywhere.</p>
+      <p class="menu-desc"><strong>Two kinds of posted work.</strong> Contribute evidence about this store's tools and information without a store purchase, or mystery-shop another x402 door with your own wallet. Read each path's terms before starting.</p>
       <p class="menu-desc">${escapeHtml(BOARD_WHAT_THIS_IS)}</p>
     </section>
+    ${contributionListHtml(contributions)}
     <section>
       <h2>Open bounties</h2>
       ${
         open.length > 0
           ? `<table border="1" cellpadding="6">
-        <tr><th>bounty</th><th>door</th><th>the door's price</th><th>your reward</th><th>expires</th></tr>
+        <tr><th>bounty</th><th>door</th><th>the door's price</th><th>reward before costs</th><th>expires</th></tr>
         ${rows}
       </table>
       <p class="menu-meta">Week ${escapeHtml(board.week)}: $${board.spent_this_week_usd.toFixed(2)} of the $${board.weekly_budget_usd.toFixed(2)} weekly budget spent. Payouts are ${board.payouts_enabled ? "live" : "paused — the field wallet is not loaded, and the board says so rather than letting you walk for nothing"}.</p>`
-          : `<p class="menu-desc">Nothing posted right now. The board opens with the ISO week and the machine-readable copy is always at <a href="/api/bounties"><code>/api/bounties</code></a> — poll that, not this page.</p>`
+          : `<p class="menu-desc">Nothing posted right now. Read current listings and payout status at <a href="/api/bounties"><code>/api/bounties</code></a> — poll that, not this page.</p>`
       }
     </section>
+    ${earningAnswersHtml(base, false)}
     ${withdrawn.length ? `<section>
       <h2>Withdrawn listings</h2>
       ${withdrawn.map((entry) => `<p><code>${escapeHtml(entry.bounty_id)}</code> — ${escapeHtml(entry.domain)}: ${escapeHtml(entry.withdrawal?.reason ?? "Contact the keeper before spending.")}
@@ -398,15 +410,6 @@ function bountyBoardJsonLd(base: string): string {
     description: BOARD_WHAT_THIS_IS,
     url: `${base}/bounties`,
     inLanguage: "en",
-    estimatedCost: {
-      "@type": "MonetaryAmount",
-      // ISO code for the validator (JSONLD_PRICE_CURRENCY); the payouts
-      // really are USDC and the description says so.
-      currency: JSONLD_PRICE_CURRENCY,
-      value: 0,
-      description:
-        "The door's own price, refunded in full on a verified claim, plus a finder's fee.",
-    },
     supply: [
       { "@type": "HowToSupply", name: "A wallet holding USDC on Base" },
       { "@type": "HowToSupply", name: "An x402 door posted on the board" },
@@ -437,7 +440,11 @@ function bountyBoardJsonLd(base: string): string {
 
 bountyRoutes.get("/bounties", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const board = await bountyBoard(c.env);
+  c.header("Cache-Control", "no-store");
+  const [board, contributions] = await Promise.all([
+    bountyBoard(c.env),
+    contributionBoard(c.env, c.req.query("contribution_cursor")).catch(() => null),
+  ]);
   /*
    * Hoisted out of the c.json() call so the markdown twin renders the
    * same object the JSON serves. /api/bounties keeps its own shape
@@ -446,14 +453,15 @@ bountyRoutes.get("/bounties", async (c) => {
    */
   const payload = {
     ...boardWords(base),
+    contribution_list: contributions ?? {unavailable: true, error: CONTRIBUTION_LIST_UNAVAILABLE},
     board: `${base}/api/bounties`,
     what_the_walks_show: crowdFindings(board.bounties),
     ...board,
   };
   const description =
-    "Get paid to shop somebody else's x402 door: walk a posted endpoint with your own wallet, submit the settlement transaction, and the store returns the door's price plus a finder's fee as a signed EIP-3009 authorization you redeem yourself. No account, no signup.";
+    "Find posted contribution work with no store purchase required, or paid x402 mystery shopping. Read the reward, costs, acceptance criteria and current availability before starting.";
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
-    return jsonDocumentMarkdownResponse({
+    const response = jsonDocumentMarkdownResponse({
       base,
       path: "/bounties",
       title: "The Bounty Board",
@@ -461,6 +469,8 @@ bountyRoutes.get("/bounties", async (c) => {
       dataUrl: `${base}/api/bounties`,
       document: payload as unknown as Record<string, unknown>,
     });
+    response.headers.set("Cache-Control", "no-store");
+    return response;
   }
   if (!wantsHtml(c.req.header("Accept"), c.req.header("User-Agent"))) {
     return c.json(payload);
@@ -470,7 +480,7 @@ bountyRoutes.get("/bounties", async (c) => {
       title: "The Bounty Board",
       description,
       path: "/bounties",
-      bodyHtml: boardHtml(base, board, crowdFindings(board.bounties)),
+      bodyHtml: boardHtml(base, board, crowdFindings(board.bounties), contributions),
     }),
   );
 });
@@ -663,6 +673,10 @@ bountyRoutes.post("/api/bounty-claim", async (c) => {
     return c.json(
       {
         ...result,
+        ...contributionCompletion(c.env.STORE_BASE_URL, {
+          task_id: result.bounty_id, kind: "bounty", reward_usd: result.reward_usd,
+          what_was_verified: result.what_was_verified, what_was_not: result.what_was_not,
+        }),
         spend_it_here: walkerOffer(c.env.STORE_BASE_URL),
         ...(hunter ? { pressing: pressingSummary(c.env.STORE_BASE_URL, hunter.card) } : {}),
         ...(cleared.length > 0 ? { conditions_cleared: cleared.map((burn) => ({ card_id: burn.burn.card_id, key: burn.burn.key, cleared_by: burn.burn.cleared_by })) } : {}),

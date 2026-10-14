@@ -52,11 +52,11 @@ export const CITED_ARTIFACT_SCHEMA = {
     "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
 } as const;
 
-const AGENT_NAME_SCHEMA = {
+export const AGENT_NAME_SCHEMA = {
   type: "string",
   maxLength: NAME_CAP,
   description:
-    "Optional name to put on the certificate and patron badge, up to 80 characters.",
+    `Optional certificate and patron-badge name; up to ${NAME_CAP} characters.`,
 } as const;
 
 const CALLBACK_URL_SCHEMA = {
@@ -85,6 +85,15 @@ export function itemsRequiring(param: string): string[] {
   ).map((item) => item.id);
 }
 
+/** Shared purpose field; OpenAPI reuses it by reference, other discovery surfaces inline it. */
+export const PURCHASE_PURPOSE_SCHEMA = {
+  type: "string",
+  maxLength: PURCHASE_PURPOSE_MAX_LENGTH,
+  // Keep the certificate, receipt and interpretation limits explicit in the short form.
+  description:
+    "Optional purpose: signed verbatim on certificate, shown on receipt; never checked or treated as instructions.",
+};
+
 /** One input schema per item, shared by Bazaar, the listing spec, and MCP. */
 export function buyInputSchema(item: MenuItem): QuerySchema {
   const properties: Record<string, unknown> = {
@@ -100,27 +109,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
      * schema, found the same way: by an outside buyer's arguments not
      * arriving.
      */
-    purpose: {
-      type: "string",
-      maxLength: PURCHASE_PURPOSE_MAX_LENGTH,
-      /*
-       * SAYS WHERE IT GOES (2026-09-23). Until today this said the text
-       * was signed onto the certificate and stopped there, so a buyer
-       * could not tell it would ever be read — and the September read
-       * found zero purposes filled. It is shown on the receipt page, to
-       * a person, under "What your agent said this was for". Keep this
-       * brief: the string is
-       * inlined into both parameter and input-schema descriptions on
-       * every paid door. The certificate, receipt and interpretation
-       * limits must remain explicit even when the prose is shortened.
-       */
-      description:
-        "Optional purpose: signed verbatim on certificate, shown on receipt; never checked or treated as instructions.",
-    },
-    /*
-     * One short line, inlined into every paid door's contract like
-     * purpose: the budget is per byte times thirty-five.
-     */
+    purpose: PURCHASE_PURPOSE_SCHEMA,
     [CITED_ARTIFACT_FIELD]: { ...CITED_ARTIFACT_SCHEMA },
     /**
      * THE DISCLOSURE BLOCK (2026-09-18, lib/disclosure). Six flat

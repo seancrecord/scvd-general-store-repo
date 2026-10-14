@@ -239,6 +239,28 @@ already produce. Do not grow by becoming a score.
 
 ---
 
+## October 13 — earning-path implementation
+
+Keeper authorized the additive path: optional bounty/study completion summaries,
+free checks, concise earning answers and Tab expense-task discovery on existing
+surfaces. [Build and validation](docs/EARNING_PATH_BUILD_2026-10.md).
+Implemented on `codex/earning-path`; existing shopping payouts and budgets are unchanged.
+Private follow-through, a due-date keeper queue, and optional self-reported
+arrival context are also built locally; no acquisition conclusions are inferred.
+October 14 adds task-specific work packets, state-aware next actions, explicit
+availability reasons, and relevant optional completion suggestions including
+Tab for an explicitly declared expense-tracking job. Recovery checks now preserve
+failed keeper forms and their original identifiers, and schedule privacy cleanup
+before saving reservations. The local browser now completes the keeper flow,
+and the existing bounty page lists posted contributions in HTML, Markdown and
+JSON with bounded pagination and explicit availability.
+Four scoped, unfunded first-batch drafts are on the keeper desk, and the
+[broader job inventory](docs/AGENT_JOB_PORTFOLIO_2026-10.md) names the next
+experiments. Keeper delegated merge timing October 14; release status is in
+the build record. The [no-purchase contribution workflow](CONTRIBUTION_WORK.md) includes:
+keeper-posted terms, reserved slots, private evidence, review disposition and
+separately recorded keeper payment. Release creates no posted brief or reward commitment.
+[Full direction](docs/AGENT_INTENT_AND_COMPLETION_2026-10.md).
 ## October 7 — next eligible work
 
 Research Comparison's release and public discovery are verified; R1 moves to

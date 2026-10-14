@@ -136,7 +136,8 @@
       // The buyer-signals maps' one writer (2026-09-21): no cap on a map
       // the store itself bounds, and the one cap that stays is returned
       // with the reading. services/signal-store.ts.
-      { "name": "SIGNALS", "class_name": "SignalStore" }
+      { "name": "SIGNALS", "class_name": "SignalStore" },
+      { "name": "CONTRIBUTION_TASKS", "class_name": "ContributionTask" }
     ]
   },
   "migrations": [
@@ -152,7 +153,8 @@
     // One writer per counter; the tally that lost counts under a burst.
     { "tag": "v6-counter-ledger", "new_sqlite_classes": ["CounterLedger"] },
     // The signal maps' one writer; the capped KV maps stay as the fail-open path.
-    { "tag": "v7-signal-store", "new_sqlite_classes": ["SignalStore"] }
+    { "tag": "v7-signal-store", "new_sqlite_classes": ["SignalStore"] },
+    { "tag": "v8-contribution-tasks", "new_sqlite_classes": ["ContributionTask"] }
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",

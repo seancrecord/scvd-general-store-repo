@@ -1220,8 +1220,10 @@ const BASE = "https://scvd.store";
 // Restoring llms.ts from the parent reproduces both prior pins (14/14).
 // 2026-10-12: one Arc clause distinguishes signed acceptance from settlement.
 // Restoring only llms.ts to main 2e7a52fa reproduces both old pins (14/14).
+// 2026-10-14: integrated earning answers and contribution guide. Restoring
+// only llms.ts to main cbf68660 reproduced both main fingerprints (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "bf9cde19a1c9766aa61a5612e44caa3c529a8511ad90e51aa8e85208f1c476da";
+  "cd5761a14d808affb6f85878a5a07df243834ff721381b61916658d1459525af";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1324,7 +1326,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "8b56b071a8a50b9edf874518509269efe204142466b0f5c264a8dac86a540e53",
+      "b55b113a9551d359beb6672d6a83742768066f2d063a23f278d7f9d4fdd98365",
     );
   });
 

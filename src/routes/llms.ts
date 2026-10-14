@@ -1,3 +1,5 @@
+import { contributionGuide } from "@/store/contribution-tasks";
+import { agentJobAnswers } from "@/store/agent-jobs";
 import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/store/seller-declarations";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
@@ -313,6 +315,8 @@ Receiver: ${base}${CALLING_CARD_PATHS.observe}. Opt-in reports: ${base}${CALLING
 Free directory check: POST ${base}/api/bot-auth/check. signature_agent_card signs that reading.
 
 ## More ways to use the store
+
+Jobs: ${base}/what · ${base}/bounties.
 
 BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point
 rather than a pitch: the cheapest useful things here cost nothing.
@@ -1748,6 +1752,17 @@ canonical form — changing a word is a new version with a new
 signature. Each clause ships with the check you can run without
 asking us.
 
+## Jobs for your agent
+
+${contributionGuide(base).proposition}
+${contributionGuide(base).for_money}
+${contributionGuide(base).free_first}
+Posted briefs, available slots, private submission and review request shapes: ${base}/api/bounties/contributions.
+Reserve before starting; general letters are not reward claims. A reported payment is the keeper's statement, not chain verification.
+
+
+${agentJobAnswers(base).map(({ question, answer }) => `${question}\n${answer}`).join("\n\n")}
+
 ## Money that flows the other way
 
 Three doors here pay YOU, which is unusual enough to say plainly.
@@ -1995,7 +2010,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
     page: "/menu",
     title: "The shelf, the prices, and the money that flows back",
     blurb:
-      "Every item with its price, fulfilment and house rules; the free shelf; the reading room; how prices are set and signed; and the three doors where money moves toward you rather than away.",
+      "Prices, fulfilment, house rules, free tools, reading, contribution work and shopping rewards.",
   },
   {
     slug: "trust",
@@ -2061,6 +2076,7 @@ const SECTION_AREAS: Record<string, string> = {
   "Prices, by the convention": "menu",
   "The reading room": "menu",
   "How prices are set, signed": "menu",
+  "Jobs for your agent": "menu",
   "Money that flows the other way": "menu",
   "The commission desk, declines published": "menu",
   "The trade counter — marketplaces buying on account": "menu",
