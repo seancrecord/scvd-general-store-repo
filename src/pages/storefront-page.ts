@@ -1,3 +1,4 @@
+import { guestbookChannelHtml } from "@/store/guestbook-copy";
 import { largerWorkHtml } from "@/pages/offer-paths";
 import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
 import { PERSONAL_SHOPPER, personalShopperPrompt } from "@/store/personal-shopper";
@@ -1273,6 +1274,7 @@ ${webmcpOriginTrialTags()}
 
     <section class="wall">
       <h2 class="night-head">${COPY.wallHead}</h2>
+      <p class="menu-meta">${guestbookChannelHtml()}</p>
       ${guestbookHtml(data.guestbook)}
       <p class="menu-meta"><a href="/visitors">The whole register's in the doorway.</a> <a href="/train">The train's out back.</a></p>
     </section>

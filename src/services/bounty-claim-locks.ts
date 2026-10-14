@@ -46,6 +46,12 @@ import type { Env } from "@/types";
  * both. Two questions, two guards.
  */
 export class BountyClaimLocks extends DurableObject<Env> {
+  /** Read-only early eligibility check; taking the allowance still happens at debrief. */
+  async isHeld(key: string): Promise<boolean> {
+    const row = await this.ctx.storage.get<{ until: number }>(key);
+    return !!row && row.until > Date.now();
+  }
+
   /**
    * Take the lock for this bounty, or say who holds it. Atomic: a
    * Durable Object handles one call at a time, which is the entire

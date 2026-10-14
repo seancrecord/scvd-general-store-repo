@@ -26,6 +26,13 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Field Study eligibility — approved October 14.** One paid study per
+  operator per week across their agents, sessions, scenarios and payout
+  wallets; Monday 00:00 UTC reset. The wall directs questions to the mailbox.
+  Local implementation preserves existing enrolment terms, checks declared
+  operator labels and names its identity limits. No new wording decision
+  remains. [Rule and transition](FIELD_STUDY.md#participation-allowance--keeper-approved-2026-10-14).
+
 - **CLOSED FOR NOW October 13 — agent-entry qualifications.** Keeper skipped
   native-host tests, paid purchase/receipt verification, wallet onboarding and
   the authenticated dashboard visual check. No further press is waiting on

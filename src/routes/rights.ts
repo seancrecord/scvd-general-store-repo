@@ -4,8 +4,9 @@ import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { REFUND_POLICY } from "@/store/refund-policy";
-import { CHECKOUT_CANCELLATION } from "@/lib/ucp/checkout/discovery";
-import { RIGHTS, RIGHTS_LIMIT, RIGHTS_STANDFIRST } from "@/store/rights";
+import { CHECKOUT_CANCELLATION, UCP_RECOVERY_PATHS } from "@/lib/ucp/checkout/discovery";
+import { RIGHTS, RIGHTS_LIMIT, RIGHTS_STANDFIRST, RIGHTS_PROPOSITION, RIGHTS_FOR_MONEY, RIGHTS_FREE_FIRST } from "@/store/rights";
+import { jsonLdScript } from "@/lib/jsonld";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -27,6 +28,14 @@ export const rightsRoutes = new Hono<HonoEnv>();
 rightsRoutes.get("/rights", (c) => {
   const base = c.env.STORE_BASE_URL;
   const payload = {
+    proposition: RIGHTS_PROPOSITION,
+    for_money: RIGHTS_FOR_MONEY,
+    free_first: RIGHTS_FREE_FIRST,
+    what_this_is: RIGHTS_PROPOSITION,
+    price: RIGHTS_FOR_MONEY,
+    how_to_call: `Read GET ${base}${UCP_RECOVERY_PATHS.read}, replacing {id} with the checkout id returned when you created it. ${CHECKOUT_CANCELLATION}`,
+    errors: "An unknown checkout returns HTTP 404. Cancellation returns HTTP 409 when completion is in progress or the checkout is completed; read its state before deciding what to do next. A repeated successful cancellation returns the canceled checkout.",
+    security: "Reading or cancelling a checkout requires its checkout id and never asks for wallet keys. Cancellation cannot undo a payment; completed purchases follow the refund policy below.",
     standfirst: RIGHTS_STANDFIRST,
     clauses: RIGHTS,
     honest_limit: RIGHTS_LIMIT,
@@ -94,6 +103,9 @@ rightsRoutes.get("/rights", (c) => {
         "Who owns what you bought from this x402 store, whether it transfers, and what you may do with it — including the keeper's own words.",
       path: "/rights",
       bodyHtml: `<section>
+        <p class="menu-desc">${escapeHtml(RIGHTS_PROPOSITION)}</p>
+        <p class="menu-desc">${escapeHtml(RIGHTS_FOR_MONEY)}</p>
+        <p class="menu-desc">${escapeHtml(RIGHTS_FREE_FIRST)}</p>
         <p class="menu-desc">${escapeHtml(RIGHTS_STANDFIRST)}</p>
       </section>
       <section id="purchase-terms">
@@ -117,7 +129,19 @@ rightsRoutes.get("/rights", (c) => {
         <h2>The limit</h2>
         <p class="menu-meta">${escapeHtml(RIGHTS_LIMIT)}</p>
         <p class="menu-meta">See also: <a href="/attestation">what a signature proves</a>, and <a href="/wind-down">what happens if the lights go off</a>. This page is the middle of those two.</p>
-      </section>`,
+      </section>
+      ${jsonLdScript({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        url: `${base}/rights`,
+        mainEntity: [
+          ...RIGHTS.map((clause) => ({
+            "@type": "Question", name: clause.question,
+            acceptedAnswer: { "@type": "Answer", text: `${clause.answer} ${clause.in_practice}` },
+          })),
+          { "@type": "Question", name: "Can I cancel an unfinished checkout?", acceptedAnswer: { "@type": "Answer", text: CHECKOUT_CANCELLATION } },
+        ],
+      })}`,
     }),
   );
 });

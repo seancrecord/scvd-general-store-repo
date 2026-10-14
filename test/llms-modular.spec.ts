@@ -1222,8 +1222,11 @@ const BASE = "https://scvd.store";
 // Restoring only llms.ts to main 2e7a52fa reproduces both old pins (14/14).
 // 2026-10-14: integrated earning answers and contribution guide. Restoring
 // only llms.ts to main cbf68660 reproduced both main fingerprints (14/14).
+// 2026-10-14: operator eligibility, wall/mailbox routing and purchase rights.
+// Restoring only routes/llms.ts to main reproduced both prior pins (14/14);
+// these hashes retain the approved wording and commissioned-product headings.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "cd5761a14d808affb6f85878a5a07df243834ff721381b61916658d1459525af";
+  "928601cd570922bb6c5f9684b8a568e5aa03e97770cb58b2d5535373f825f988";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1326,7 +1329,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "b55b113a9551d359beb6672d6a83742768066f2d063a23f278d7f9d4fdd98365",
+      "bb5d5de287d80d83d0faaba9f7b128bb5dd1b42208bb507433eb37a95a4f2dea",
     );
   });
 

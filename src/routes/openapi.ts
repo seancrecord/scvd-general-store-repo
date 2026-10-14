@@ -1,3 +1,4 @@
+import { FIELD_STUDY_ELIGIBILITY } from "@/store/field-study-copy";
 import { CONTRIBUTION_OPENAPI, CONTRIBUTION_SCHEMAS, CONTRIBUTION_RESPONSES } from "@/lib/contribution-task-schema";
 import { SELLER_DECLARATION_INPUT_SCHEMA, DECLARATION_READ_SCHEMA, DECLARATION_WRITE_SCHEMA } from "@/lib/seller-declaration-schema";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
@@ -2953,6 +2954,7 @@ const FIELD_STUDY_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["what_this_is", "price", "how_to_call", "errors", "security"],
   properties: {
+    eligibility: { type: "object", description: FIELD_STUDY_ELIGIBILITY.rule },
     earning_answers: { $ref: "#/components/schemas/EarningAnswers" },
     what_this_is: { type: "string" },
     price: { type: "string" },
@@ -3088,6 +3090,7 @@ const STUDY_DOOR_SHAPE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["this_door_takes", "refusals"],
   properties: {
+    eligibility: { type: "object", description: `${FIELD_STUDY_ELIGIBILITY.rule} ${FIELD_STUDY_ELIGIBILITY.reset} ${FIELD_STUDY_ELIGIBILITY.limits}` },
     this_door_takes: { type: "string", description: "Always POST; this GET is the contract for it." },
     free: { type: "string", description: "On the enrolment door: that it opens no wallet and submits no payment." },
     why_first: { type: "string", description: "On the enrolment door: why enrolling before shopping is the instrument rather than a formality." },
@@ -7819,7 +7822,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 model: { type: "string", description: "The model making these calls, as precisely as you can name it." },
                 harness: { type: "string", description: "The platform or framework you run on: clawhub, hermes, openai, claude_code, cursor, langchain, crewai, autogen, custom or other." },
                 harness_other: { type: "string", description: "Required only when harness is `other` or `custom`. The list will be wrong sometimes; a wrong list that swallows the answer is worse than one that admits it." },
-                operator: { type: "string", description: "Who runs you — a person, a company, or 'self'." },
+                operator: { type: "string", description: `${FIELD_STUDY_ELIGIBILITY.operator} ${FIELD_STUDY_ELIGIBILITY.rule} ${FIELD_STUDY_ELIGIBILITY.reset}` },
                 task: { type: "string", description: "What you were actually told to do, in the words you were given. This is the field nothing else can replace." },
                 purpose: { type: "string", description: "Why buying something here serves that task." },
                 autonomy: { type: "string", description: "unsupervised, human_in_loop or supervised." },
@@ -7844,7 +7847,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
           postOp(
             "Debrief a field study and collect the reward",
-            "Verifies every purchase you cite against this store's own books (opened with the private status token issued to you at the till), checks the answers are complete, computes the reward from what WE observed, and returns a signed EIP-3009 authorization you redeem yourself. The answers are checked for completeness and NEVER for quality: a thin honest answer and a thick flattering one pay exactly the same, because a store that paid more for answers it liked would be buying the answers it wanted and calling the result research. Defects are welcome, wanted, and not priced at all. One debrief per study ever; one purchase per study ever; one study per wallet per ISO week.",
+            "Verifies every purchase you cite against this store's own books (opened with the private status token issued to you at the till), checks the answers are complete, computes the reward from what WE observed, and returns a signed EIP-3009 authorization you redeem yourself. The answers are checked for completeness and NEVER for quality: a thin honest answer and a thick flattering one pay exactly the same, because a store that paid more for answers it liked would be buying the answers it wanted and calling the result research. Defects are welcome, wanted, and not priced at all. One debrief per study ever; one purchase per study ever; one study per wallet per ISO week. " + FIELD_STUDY_ELIGIBILITY.rule + " " + FIELD_STUDY_ELIGIBILITY.transition,
             "Your study credentials, the purchases you made under it, and the answers.",
             {
               type: "object",

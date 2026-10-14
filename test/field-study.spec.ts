@@ -1,5 +1,5 @@
 import { SELF, env } from "cloudflare:test";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { recoverTypedDataAddress } from "viem";
 import {
   STUDY_BASE_REWARD_USD,
@@ -71,6 +71,9 @@ const ROSTER = {
   found_via: "the bounty board",
   prior_x402: false,
 };
+
+// Each test is a different operator; studies within a test still share one.
+beforeEach(({ task }) => { ROSTER.operator = `test operator: ${task.name}`; });
 
 /**
  * A SETTLED PURCHASE IN OUR OWN BOOKS. Seeded through the same Durable
@@ -397,7 +400,7 @@ describe("the debrief verifies against our own books, never the researcher's wor
     );
     const second = await enrolStudy(
       testEnv,
-      { ...ROSTER, payout_to: "0xaaa2222222222222222222222222222222222222" },
+      { ...ROSTER, operator: `${ROSTER.operator} other`, payout_to: "0xaaa2222222222222222222222222222222222222" },
       await options(now),
     );
     await expect(
@@ -507,7 +510,7 @@ describe("the debrief verifies against our own books, never the researcher's wor
       { study_id: first.study_id, study_token: first.study_token, legs: [{ ...legA, surface: "x402_http" }], answers: ANSWERS },
       await options(now),
     );
-    const second = await enrolStudy(testEnv, { ...ROSTER, payout_to: wallet }, await options(now));
+    const second = await enrolStudy(testEnv, { ...ROSTER, operator: `${ROSTER.operator} other`, payout_to: wallet }, await options(now));
     const legB = await seedPurchase({
       id: hex("ab"), token: hex("bb"), door: "http", network: "eip155:8453",
       createdAt: new Date(now.getTime() + 1000).toISOString(),
