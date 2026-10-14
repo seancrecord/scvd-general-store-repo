@@ -3117,3 +3117,21 @@ shopper's RFC entry, generated from the same canonical text. Keep the readable
 SKILL.md, references and Hermes files-based index at their existing URLs. The
 actual Skills CLI then installed all three files from the local HTTPS Worker,
 with byte parity. No payment mechanism or instruction bytes changed.
+
+
+## 2026-10-14 — mppx 0.13.4 issuance nonce compatibility
+
+Read upstream [nonce implementation and regression tests](https://github.com/wevm/mppx/commit/bbbec697d7f85bc1f4fe1c1894e43afb12f2878f)
+through GitHub's commit API and the installed 0.13.4 package. Each issuance adds
+32 random bytes in `_mppx_nonce`; the HMAC covers it, while route comparison
+excludes only that field. Authenticated legacy challenges without it remain
+accepted. The SDK does not require a hex representation in its verifier.
+
+The store re-encodes those same bytes as unpadded base64url and re-signs the
+opaque metadata; its lightweight issuer generates fresh 32-byte nonces in the
+same format. This preserves randomness while keeping the existing 800-byte
+challenge budget. Parity checks authenticate both challenges before comparing
+stable terms. Stock-client tests exercise both issuers, tampering and legacy
+challenges with mocked settlement. No funded or live settlement was attempted.
+The web renderer could not fetch the commit page; the primary API source and
+installed implementation were available.

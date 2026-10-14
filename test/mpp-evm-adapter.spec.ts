@@ -1,6 +1,9 @@
+import { compactSdkChallengeNonce } from "@/lib/mpp-challenge-nonce";
+import { mintNativeChallenge } from "@/lib/mpp-challenge-mint";
+import { stableChallengeHeader } from "./helpers/mpp-challenge-parity";
 import { env } from "cloudflare:test";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { Challenge, Credential, Receipt } from "mppx";
+import { Challenge, Credential, PaymentRequest, Receipt } from "mppx";
 import { Fetch } from "mppx/client";
 import { charge } from "mppx/evm/client";
 import { keccak256, stringToBytes } from "viem";
@@ -60,7 +63,7 @@ it("stock client signs a Worker-issued challenge; validation does not submit", a
   expect(Receipt.deserialize(paid.header!)).toMatchObject({ method: "evm", status: "success", reference: f.success.transaction });
 });
 
-for (const field of ["amount", "currency", "recipient", "scope", "request_digest", "purchase_key", "expires", "realm"] as const) {
+for (const field of ["amount", "currency", "recipient", "scope", "request_digest", "purchase_key", "_mppx_nonce", "expires", "realm"] as const) {
   it(`rejects a client-signed challenge with tampered ${field} before the facilitator`, async () => {
     const f = await fixture();
     const challenge = structuredClone(f.challenge);
@@ -241,4 +244,44 @@ it("a stock payment-aware fetch completes the HTTP challenge/credential/receipt 
   expect(submit).toHaveBeenCalledTimes(1);
   expect(await response.json()).toEqual({ fixture: "delivered" });
   expect(Receipt.fromResponse(response).reference).toBe(f.success.transaction);
+});
+
+it("both issuers mint fresh authenticated 32-byte nonces with identical frozen terms", async () => {
+  const f = await fixture();
+  const environment = { ...bindings, MPP_CHECKOUT_ENABLED: "true", MPP_CHALLENGE_KEY: f.config.secretKey };
+  const url = `https://scvd.store${f.config.scope}?${f.request}`;
+  const headers = [f.challengeHeader, (await f.adapter.challenge()).header,
+    (await mintNativeChallenge(environment, url, f.config.purchaseKey))!,
+    (await mintNativeChallenge(environment, url, f.config.purchaseKey))!];
+  const canonical = headers.map(header => stableChallengeHeader(header, f.config.secretKey));
+  expect(new Set(canonical).size).toBe(1);
+  const challenges = headers.map(header => Challenge.deserialize(header));
+  expect(new Set(challenges.map(challenge => challenge.id)).size).toBe(headers.length);
+  expect(new Set(challenges.map(challenge => (PaymentRequest.deserialize(challenge.opaque!) as Record<string, unknown>)._mppx_nonce)).size).toBe(headers.length);
+  // Interoperability is proved by the real client and SDK validator, not just two serializers.
+  const header = await f.client.createCredential({ challenge: challenges[2]! as ClientChallenge, context: {} });
+  await expect(f.adapter.validate(header)).resolves.toMatchObject({ payload: { accepted: f.terms } });
+  const submit = vi.fn(async () => f.success);
+  await expect(f.adapter.broadcast(header, submit)).resolves.toMatchObject({ result: f.success });
+  expect(submit).toHaveBeenCalledTimes(1);
+});
+
+it("accepts an authenticated in-flight challenge issued before nonces were added", async () => {
+  const f = await fixture();
+  const { _mppx_nonce: _nonce, ...meta } = f.challenge.meta!;
+  const legacy = Challenge.from({ ...f.challenge, id: undefined, opaque: undefined, meta, secretKey: f.config.secretKey });
+  const header = await f.client.createCredential({ challenge: legacy as ClientChallenge, context: {} });
+  await expect(f.adapter.validate(header)).resolves.toMatchObject({ payload: { accepted: f.terms } });
+});
+
+it("nonce compaction retains every byte and refuses unexpected SDK formats", () => {
+  const bytes = Uint8Array.from({ length: 32 }, (_, index) => (index * 17) % 256);
+  const hex = `0x${Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("")}`;
+  const compact = compactSdkChallengeNonce(hex);
+  expect(compact).toHaveLength(43);
+  const decoded = Uint8Array.from(atob(compact.replace(/-/g, "+").replace(/_/g, "/") + "="), char => char.charCodeAt(0));
+  expect(decoded).toEqual(bytes);
+  for (const invalid of [undefined, null, "", hex.slice(2), hex.slice(0, -2), `${hex}00`, hex.replace("00", "zz")]) {
+    expect(() => compactSdkChallengeNonce(invalid)).toThrow("Unsupported MPP challenge nonce");
+  }
 });

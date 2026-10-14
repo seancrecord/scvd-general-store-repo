@@ -1,3 +1,4 @@
+import { freshChallengeNonce } from "@/lib/mpp-challenge-nonce";
 import { getAddress } from "viem";
 import { USDC_DECIMALS } from "@/lib/payments";
 import { nativeCheckoutTiers } from "@/lib/purchase-capabilities";
@@ -19,15 +20,16 @@ import type { Env } from "@/types";
  * an HMAC-SHA256 id over the seven slots of that under the challenge
  * key, serialized as one `Payment` auth header. This is that, in
  * eighty lines, built from the same terms the store's charge method
- * would build, so the doors' header and the store's header are the
- * same bytes under the same clock and key.
+ * would build. Each issuance adds a fresh, HMAC-bound 32-byte nonce;
+ * both issuers encode it as base64url to stay inside the header budget.
  *
- * test/doors-parity.spec.ts holds that equality against the SDK's own
- * output, every door, and it is the only proof that matters: the
- * store validates a credential against a challenge it re-derives from
- * these same terms, so a byte the doors get wrong is a credential the
- * store refuses. A Worker without a usable key mints nothing and says
- * so; the doors then hand the knock to the store, which has one.
+ * test/doors-parity.spec.ts authenticates both headers and compares every
+ * term except issuance nonce and HMAC, every door. The adapter tests
+ * have the stock client sign this header and the SDK validate it. The
+ * store authenticates the original challenge before comparing its
+ * stable terms; issuance randomness is not a purchase term. A Worker
+ * without a usable key mints nothing and says so; the doors then hand
+ * the knock to the store, which has one.
  */
 
 /** ox's Json.canonicalize, which the SDK serializes the request and meta with: sorted keys, no undefined. */
@@ -79,10 +81,11 @@ export async function mintNativeChallenge(env: Env, url: string, suppliedKey: st
   if (suppliedKey !== undefined && !usableIdempotencyKey(suppliedKey)) return null;
   const purchaseKey = suppliedKey ?? suggestedIdempotencyKey(item.id);
   // The store's binding, then the SDK's own scope slot: the same on every tier.
-  const opaque = serializeRequest({ request_digest: await httpArtifactDigest(url), purchase_key: purchaseKey, _mppx_scope: path });
+  const meta = { request_digest: await httpArtifactDigest(url), purchase_key: purchaseKey, _mppx_scope: path };
   const realm = new URL(env.STORE_BASE_URL).host;
   const key = await crypto.subtle.importKey("raw", secret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const mint = async (terms: PaymentRequirements): Promise<string> => {
+    const opaque = serializeRequest({ ...meta, _mppx_nonce: freshChallengeNonce() });
     // The charge method's request, as its schema emits it: atomic amount,
     // checksummed addresses, the chain and the credential type it takes.
     const request = serializeRequest({
