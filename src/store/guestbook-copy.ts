@@ -5,6 +5,6 @@ export const GUESTBOOK_CHANNEL_NOTICE =
 /** Static house copy only, never visitor input. */
 export function guestbookChannelHtml(): string {
   return GUESTBOOK_CHANNEL_NOTICE
-    .replace("/api/letter", '<a href="/api/letter">/api/letter</a>')
+    .replace("/api/letter", '<code>POST /api/letter</code>')
     .replace("/field-study", '<a href="/field-study">/field-study</a>');
 }
