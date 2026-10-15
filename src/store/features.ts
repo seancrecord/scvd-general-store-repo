@@ -1,9 +1,10 @@
 import { CONTRIBUTION_PATHS } from "@/lib/contribution-task-schema";
 import { CONTRIBUTION_PROPOSITION, CONTRIBUTION_MONEY, CONTRIBUTION_FREE } from "@/store/contribution-tasks";
-import { ucpRecoveryPaths } from "@/lib/ucp/checkout/discovery";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY, SELLER_DECLARATIONS_PATH } from "@/store/seller-declarations";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { A2A_PROPOSITION, A2A_MONEY, A2A_FREE } from "@/store/a2a-repair";
+import { UCP_RECOVERY_PATHS } from "@/lib/ucp/checkout/discovery";
+import { RIGHTS_PROPOSITION, RIGHTS_FOR_MONEY, RIGHTS_FREE_FIRST } from "@/store/rights";
 import {
   FIELD_STUDY_PROPOSITION,
   FIELD_STUDY_FOR_MONEY,
@@ -117,6 +118,19 @@ export const FEATURES: readonly Feature[] = [
     proposition: PILOT_PROPOSITION, for_money: PILOT_MONEY, free_first: PILOT_FREE,
     doors: ["/api/evidence-pilot/sample", "/api/evidence-pilot/{watch_id}"],
     named_on: ["/operators"], opened: "2026-10-07" },
+  {
+    // Recovery belongs beside the cancellation/refund boundary already on
+    // /rights. These newly documented doors are not historical exemptions.
+    id: "purchase_rights",
+    name: "Purchase terms and checkout recovery",
+    room: "/rights",
+    proposition: RIGHTS_PROPOSITION,
+    for_money: RIGHTS_FOR_MONEY,
+    free_first: RIGHTS_FREE_FIRST,
+    doors: Object.values(UCP_RECOVERY_PATHS),
+    named_on: ["/pricing"],
+    opened: "2026-10-14",
+  },
   {
     /**
      * THE FIELD STUDY (2026-09-19). The bounty board turned around:
@@ -323,8 +337,7 @@ export const FEATURES: readonly Feature[] = [
     proposition: OPERATORS_PROPOSITION,
     for_money: OPERATORS_FOR_MONEY,
     free_first: OPERATORS_FREE_FIRST,
-    // UCP read/cancel extend the existing purchase-recovery feature.
-    doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}", ...Object.keys(ucpRecoveryPaths("", {}))],
+    doors: ["/api/declare-door", "/api/purchase-status/{purchase_id}"],
     named_on: ["/scorers"],
     opened: OPERATORS_OPENED,
   },

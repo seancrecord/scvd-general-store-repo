@@ -1,3 +1,4 @@
+import { GUESTBOOK_CHANNEL_NOTICE, guestbookChannelHtml } from "@/store/guestbook-copy";
 import { Hono } from "hono";
 import { cadenceFor } from "@/lib/cadence";
 import { sanitizeText } from "@/lib/sanitize";
@@ -97,6 +98,7 @@ guestbookRoutes.get("/api/guestbook", async (c) => {
           : {}),
       }),
     ),
+    channel_notice: GUESTBOOK_CHANNEL_NOTICE,
     note: "Sign it yourself: POST { name, message, verified_identity?, identity_public_key?, identity_signature? }. Free, always.",
     identity_verified_means:
       "Exactly one narrow thing: the entry's content verified against identity_public_key at submission, so the same key on other entries is the same signer. Never that a real-world person was confirmed. A verified_identity URL is a claim either way; nobody here has checked it.",
@@ -207,6 +209,7 @@ guestbookRoutes.get("/guestbook", async (c) => {
     what_this_is: GUESTBOOK_DESCRIPTION,
     entries: page.entries.map(({ kv_key: _key, ...entry }) => ({ ...entry, url: `${base}/guestbook/${entry.id}` })),
     ...(page.cursor ? { next: `${base}/guestbook?cursor=${encodeURIComponent(page.cursor)}` } : {}),
+    channel_notice: GUESTBOOK_CHANNEL_NOTICE,
     sign: { method: "POST", url: `${base}/api/guestbook`, free: true, how: `GET ${base}/api/guestbook explains the body and the optional signed identity.` },
     store_links: links,
   };
@@ -219,7 +222,7 @@ guestbookRoutes.get("/guestbook", async (c) => {
       title: "The guestbook",
       description: GUESTBOOK_DESCRIPTION,
       path: "/guestbook",
-      bodyHtml: `<section><p class="menu-desc">${escapeHtml(GUESTBOOK_DESCRIPTION)} Signing is free: <code>POST ${escapeHtml(base)}/api/guestbook</code> with a name and a message; every signer gets the visitor sticker.</p></section>
+      bodyHtml: `<section><p class="menu-meta">${guestbookChannelHtml()}</p><p class="menu-desc">${escapeHtml(GUESTBOOK_DESCRIPTION)} Signing is free: <code>POST ${escapeHtml(base)}/api/guestbook</code> with a name and a message; every signer gets the visitor sticker.</p></section>
       <section>${page.entries.length === 0 ? `<p class="menu-desc">Nobody has signed yet. The pen is on the counter.</p>` : page.entries.map((entry) => entryHtml(base, entry)).join("\n")}
       ${page.cursor ? `<p class="menu-meta"><a href="/guestbook?cursor=${encodeURIComponent(page.cursor)}">Older entries</a></p>` : ""}</section>
       ${nextStepsHtml(links)}

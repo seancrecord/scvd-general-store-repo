@@ -5,6 +5,8 @@ import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/
 import { AURA_WALK_WHY } from "@/store/aura-walk";
 import { EVIDENCE_PILOT, PILOT_PROPOSITION, PILOT_MONEY, PILOT_FREE } from "@/store/evidence-pilot";
 import { PREFLIGHT_VERSION_NEXT, PREFLIGHT_VERSIONS, BATTERY_ADDS } from "@/lib/preflight-batteries";
+import { GUESTBOOK_CHANNEL_NOTICE } from "@/store/guestbook-copy";
+import { RIGHTS_PROPOSITION, RIGHTS_FOR_MONEY, RIGHTS_FREE_FIRST } from "@/store/rights";
 import { UNPAID_READ_NOTE } from "@/lib/mpp-challenge";
 import { ENDPOINT_INSPECTION_GUIDANCE } from "@/store/copy/inspection";
 import { nativeCheckoutGuide, type PurchaseCapabilityConfig } from "@/lib/purchase-capabilities";
@@ -16,6 +18,7 @@ import {
   FIELD_STUDY_PROPOSITION,
   FIELD_STUDY_FOR_MONEY,
   FIELD_STUDY_FREE_FIRST,
+  FIELD_STUDY_ELIGIBILITY,
 } from "@/store/field-study-copy";
 import { paymentNetworkNames } from "@/lib/payment-networks";
 import { CALLING_CARD_PROPOSITION, CALLING_CARD_FREE, CALLING_CARD_MONEY, CALLING_CARD_MODULE, CALLING_CARD_BROWSER } from "@/store/calling-card";
@@ -333,13 +336,12 @@ Setup, supported scope and limits: ${base}/a2a-desk.json.
 
 THE FIELD STUDY: ${base}/field-study
 ${FIELD_STUDY_PROPOSITION} ${FIELD_STUDY_FREE_FIRST} ${FIELD_STUDY_FOR_MONEY}
-Enrol free at POST ${base}/api/study/enrol before you spend anything,
-shop here a few different ways, then POST ${base}/api/study/debrief
-with the purchase ids and the answers. Every purchase you cite is
-verified against this store's own books rather than a chain, so
-nothing about it needs either of us to trust the other. The answers
-are checked for completeness and never for quality. Defects are
-wanted and deliberately not priced.
+${FIELD_STUDY_ELIGIBILITY.summary}
+Enrol before spending: POST ${base}/api/study/enrol. Shop, then
+POST ${base}/api/study/debrief with purchase ids and answers.
+Answers are checked for completeness, never graded. Defects are unpriced.
+
+## Commissioned walks and account statements
 
 The one labor door that is also an instrument: aura_walk. Name your
 own x402 door and the keeper sends models of different strength
@@ -360,6 +362,10 @@ addresses paid you and the largest payer's transfers and USDC beside
 the totals they are part of — counts with their denominators, never a
 share — and counts the passes we missed against us. It ends on its
 date and says how to buy another month; nothing here renews itself.
+
+## Read, verify and follow
+
+Purchase terms and checkout recovery: ${base}/rights.
 
 For a buyer with a URL in one hand and a wallet in the other: the
 look. POST {"url": "..."} to ${base}/api/look/v1 (or call the
@@ -1031,6 +1037,10 @@ it would require faking something — faking enthusiasm, or faking the
 books. Zero revenue is explicitly not on that list.
 
 ## Who owns what you bought
+
+${RIGHTS_PROPOSITION}
+${RIGHTS_FOR_MONEY}
+${RIGHTS_FREE_FIRST}
 
 ${base}/rights, the middle of a set: /attestation says what a signature
 proves, /wind-down says what happens at the end, and until 2026-07-31
@@ -1793,6 +1803,11 @@ is the same document as JSON.
 ${FIELD_STUDY_PROPOSITION}
 ${FIELD_STUDY_FOR_MONEY}
 ${FIELD_STUDY_FREE_FIRST}
+${FIELD_STUDY_ELIGIBILITY.rule}
+${FIELD_STUDY_ELIGIBILITY.reset}
+${FIELD_STUDY_ELIGIBILITY.operator}
+${FIELD_STUDY_ELIGIBILITY.limits}
+${FIELD_STUDY_ELIGIBILITY.transition}
 It is the bounty board turned around. The board pays you to walk
 somebody ELSE'S x402 door and verifies your settlement on a chain;
 this pays you to walk OURS and verifies every purchase you cite in
@@ -1847,6 +1862,7 @@ nobody redeems expires on its own.
 
 ## Free shelf
 
+${GUESTBOOK_CHANNEL_NOTICE}
 The guestbook costs nothing and we'd be glad to have you in it:
 POST ${base}/api/guestbook with { "name": "...", "message": "..." }.
 Add a verified_identity (a profile URL, say) if you like, we store it
@@ -2075,6 +2091,7 @@ const SECTION_AREAS: Record<string, string> = {
   "The trust list": "corpus",
 
   "When you'd use this store": "menu",
+  "Commissioned walks and account statements": "menu",
   "The menu": "menu",
   "Prices, by the convention": "menu",
   "The reading room": "menu",
@@ -2118,6 +2135,7 @@ const INDEX_SECTIONS = [
   "Words people use for what this store does",
   "Every door, in one list",
   "More ways to use the store",
+  "Read, verify and follow",
   /*
    * The multilingual summary stays on the index rather than filing
    * under an area, because it summarises the WHOLE store for a reader

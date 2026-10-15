@@ -51,6 +51,13 @@ export interface RightsClause {
 export const RIGHTS_STANDFIRST =
   "Who owns the thing you bought, what you may do with it, and what this store keeps. A signature proves when a thing was signed and what it says; it is silent on whose it is, and that silence was doing work nobody had noticed. This page is the other half. It was written because an outside reader pointed out the gap, which is how two of the better things here got written.";
 
+export const RIGHTS_PROPOSITION =
+  "Read the purchase terms, check an existing checkout and cancel it while it is unfinished.";
+export const RIGHTS_FOR_MONEY =
+  "Reading terms, checking a checkout and cancelling an unfinished checkout are free; cancellation does not reverse a payment, and paid refunds follow the published refund policy.";
+export const RIGHTS_FREE_FIRST =
+  "Read the ownership and refund terms before buying, and check the state of an existing checkout before attempting payment again.";
+
 export const RIGHTS: readonly RightsClause[] = [
   {
     question: "Who owns what I bought?",

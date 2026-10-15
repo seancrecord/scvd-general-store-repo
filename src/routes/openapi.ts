@@ -1,3 +1,4 @@
+import { FIELD_STUDY_ELIGIBILITY } from "@/store/field-study-copy";
 import { CONTRIBUTION_OPENAPI, CONTRIBUTION_SCHEMAS, CONTRIBUTION_RESPONSES } from "@/lib/contribution-task-schema";
 import { SELLER_DECLARATION_INPUT_SCHEMA, DECLARATION_READ_SCHEMA, DECLARATION_WRITE_SCHEMA } from "@/lib/seller-declaration-schema";
 import { ENDPOINT_INSPECTION_SCHEMA } from "@/lib/endpoint-inspection-schema";
@@ -2961,10 +2962,17 @@ const BOUNTIES_SCHEMA: OpenApiObject = {
  * SHAPE of the answers and never a row you could read one researcher
  * out of.
  */
+const STUDY_ELIGIBILITY_SCHEMA: OpenApiObject = {
+  type: "object",
+  description: `${FIELD_STUDY_ELIGIBILITY.rule} ${FIELD_STUDY_ELIGIBILITY.reset} ${FIELD_STUDY_ELIGIBILITY.limits} ${FIELD_STUDY_ELIGIBILITY.transition}`,
+};
+const STUDY_ELIGIBILITY_REF = { $ref: "#/components/schemas/StudyEligibility" };
+
 const FIELD_STUDY_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["what_this_is", "price", "how_to_call", "errors", "security"],
   properties: {
+    eligibility: STUDY_ELIGIBILITY_REF,
     earning_answers: { $ref: "#/components/schemas/EarningAnswers" },
     what_this_is: { type: "string" },
     price: { type: "string" },
@@ -2992,7 +3000,7 @@ const FIELD_STUDY_SCHEMA: OpenApiObject = {
     scenarios: {
       type: "array",
       description:
-        "The predetermined studies the keeper has put live right now. A scenario NEVER picks the product — you buy whatever you like — it names a CONDITION of the walk, because the condition is what is being measured. Naming one at enrolment is optional; an open study pays the same ordinary reward.",
+        "Live scenarios measure a condition of the walk, not a prescribed product. Optional at enrolment; an open study pays the same ordinary reward.",
       items: {
         type: "object",
         required: ["id", "title", "what_to_do", "bonus_usd"],
@@ -3010,7 +3018,7 @@ const FIELD_STUDY_SCHEMA: OpenApiObject = {
           bonus_usd: { type: "number", description: "Zero when the condition is one this store's books cannot confirm." },
           bonus_pays_when: {
             type: ["string", "null"],
-            description: "Exactly what our own books must show for the bonus. Null when there is nothing for us to check — and then the bonus is zero, never merely smaller, because paying for an unverifiable condition would be paying for the claim rather than the walk.",
+            description: "The evidence our books must show for the bonus. Null means unverifiable: the bonus is zero.",
           },
           no_bonus_because: { type: ["string", "null"], description: "Why nobody but the walker can know, when that is the case." },
           open_until: { type: "string", format: "date-time" },
@@ -3100,6 +3108,7 @@ const STUDY_DOOR_SHAPE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["this_door_takes", "refusals"],
   properties: {
+    eligibility: STUDY_ELIGIBILITY_REF,
     this_door_takes: { type: "string", description: "Always POST; this GET is the contract for it." },
     free: { type: "string", description: "On the enrolment door: that it opens no wallet and submits no payment." },
     why_first: { type: "string", description: "On the enrolment door: why enrolling before shopping is the instrument rather than a formality." },
@@ -6256,6 +6265,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ProbeUrlInput: URL_BODY,
         TradeOrder: TRADE_ORDER_BODY,
         StudyDoorShape: STUDY_DOOR_SHAPE_SCHEMA,
+        StudyEligibility: STUDY_ELIGIBILITY_SCHEMA,
         DoorIndex: DOOR_INDEX_SCHEMA,
         X402Discovery: X402_DISCOVERY_SCHEMA,
         McpCard: MCP_CARD_SCHEMA,
@@ -7809,7 +7819,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: returns(
           freeOp(
             "The field study — get paid to shop THIS store",
-            "Paid research on this store's own user journey, and the bounty board pointed the other way. Enrol free, buy a few things here across different surfaces and rails with your own wallet, then hand back the purchase ids and answer the questions. Every cited purchase is verified against this store's OWN books — which door, which protocol, which rail, settled or not — so unlike the bounty board nothing rests on trusting the researcher. The reward is computed from those verified facts alone and never from the content of an answer. Free to read.",
+            "Paid research on this store's shopping journey. Enrol free, shop across surfaces and rails with your own wallet, then submit purchase ids and answers. Rewards use store-verified doors, protocols, rails and settlement states, never answer quality. Rules and prior-enrolment terms: /field-study. Free to read.",
           ),
           FIELD_STUDY_SCHEMA,
         ),
@@ -7825,7 +7835,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
           postOp(
             "Enrol in the field study (free, opens no wallet)",
-            "Free and prospective: you declare who you are and what you were sent here to do BEFORE you spend anything, then shop, then debrief. That order is the whole instrument — the store holds your stated intent beside its own record of what actually happened, and the gap between the two is the finding a retrospective survey structurally cannot produce. Returns a study_id and a study_token; the token is returned once and never recoverable, and the store keeps only its sha256.",
+            "Enrol free BEFORE spending, declaring who you are and your task; then shop and debrief. We compare your stated intent with recorded purchases. Returns study_id and study_token. The token is returned once, never recoverable; only its sha256 is stored. Eligibility and prior-enrolment terms: /field-study.",
             "Who you are, what you were told to do, and where a reward would go.",
             {
               type: "object",
@@ -7834,11 +7844,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
                 "purpose", "autonomy", "funding", "found_via", "prior_x402",
               ],
               properties: {
-                payout_to: { type: "string", description: "OPTIONAL here and required at the debrief instead, because that is where the reward is signed. Asking a stranger for a wallet before telling them anything is the shape of a scam, and this door had no need of it. Sent anyway, it is sanctions-screened early as a courtesy so a wallet this store cannot pay learns so before spending its own money. House wallets are refused." },
+                payout_to: { type: "string", description: "Optional at enrolment; required at debrief when the reward is signed. If supplied here, sanctions-screened early before spending. House wallets are refused." },
                 model: { type: "string", description: "The model making these calls, as precisely as you can name it." },
                 harness: { type: "string", description: "The platform or framework you run on: clawhub, hermes, openai, claude_code, cursor, langchain, crewai, autogen, custom or other." },
                 harness_other: { type: "string", description: "Required only when harness is `other` or `custom`. The list will be wrong sometimes; a wrong list that swallows the answer is worse than one that admits it." },
-                operator: { type: "string", description: "Who runs you — a person, a company, or 'self'." },
+                operator: { type: "string", description: FIELD_STUDY_ELIGIBILITY.operator },
                 task: { type: "string", description: "What you were actually told to do, in the words you were given. This is the field nothing else can replace." },
                 purpose: { type: "string", description: "Why buying something here serves that task." },
                 autonomy: { type: "string", description: "unsupervised, human_in_loop or supervised." },
@@ -7863,7 +7873,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
           postOp(
             "Debrief a field study and collect the reward",
-            "Verifies every purchase you cite against this store's own books (opened with the private status token issued to you at the till), checks the answers are complete, computes the reward from what WE observed, and returns a signed EIP-3009 authorization you redeem yourself. The answers are checked for completeness and NEVER for quality: a thin honest answer and a thick flattering one pay exactly the same, because a store that paid more for answers it liked would be buying the answers it wanted and calling the result research. Defects are welcome, wanted, and not priced at all. One debrief per study ever; one purchase per study ever; one study per wallet per ISO week.",
+            "Verifies cited purchases against store books using their private status tokens. Rewards depend on verified purchases and complete answers, never answer quality; defects are welcome and unpriced. Returns a signed EIP-3009 authorization you redeem yourself. One debrief per study, each purchase counted once, one reward per payout wallet per ISO week. " + FIELD_STUDY_ELIGIBILITY.summary,
             "Your study credentials, the purchases you made under it, and the answers.",
             {
               type: "object",

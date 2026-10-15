@@ -1,3 +1,4 @@
+import { FIELD_STUDY_ELIGIBILITY } from "@/store/field-study-copy";
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { openapiRoutes, PAYMENT_CHALLENGE_HEADERS } from "@/routes/openapi";
@@ -71,7 +72,19 @@ describe("OpenAPI headroom with all checkout rails enabled", () => {
       for (const part of pointer.slice(1).split("/")) {
         value = (value as Record<string, unknown>)[part.replace(/~1/g, "/").replace(/~0/g, "~")];
       }
-      expect(expand(value, document), pointer).toEqual(schema);
+      const expanded = expand(value, document) as { properties: Record<string, unknown> };
+      if (pointer.startsWith("/paths/~1api~1study~1")) {
+        // The October 14 eligibility field is additive. Keep every prior field
+        // pinned to the independent fixture, and check the new policy separately.
+        const { eligibility, ...previous } = expanded.properties;
+        expect(eligibility).toEqual({
+          type: "object",
+          description: `${FIELD_STUDY_ELIGIBILITY.rule} ${FIELD_STUDY_ELIGIBILITY.reset} ${FIELD_STUDY_ELIGIBILITY.limits} ${FIELD_STUDY_ELIGIBILITY.transition}`,
+        });
+        expect({ ...expanded, properties: previous }, pointer).toEqual(schema);
+      } else {
+        expect(expanded, pointer).toEqual(schema);
+      }
     }
   });
 
