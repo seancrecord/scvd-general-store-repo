@@ -141,3 +141,9 @@ refusal. Availability guidance is now limited to A2A; other non-input refusals
 retain their existing fields. The existing refusal regression fails before this
 correction. All 71 focused checks across budgets, parameter resolution, HTTP/MCP
 refusals and buyer entrypoints pass, as do typecheck and production bundles.
+
+A legacy buyer-guidance test read `next_step.required` directly after the
+schema moved to a shared reference. The test now verifies that reference,
+reads its target and still requires concrete GET/URL/unpaid fields for free-read
+repairs. Application behavior is unchanged. All 127 related error-contract and
+guidance checks pass, followed by typecheck.

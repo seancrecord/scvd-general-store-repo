@@ -60,13 +60,22 @@ for (const path of ['/almanac/missing-guidance-fixture', '/gazette/issue-999999'
 }
 it('publication and catalog repairs meet the required fields in the published error contract', async () => {
   const document = await (await SELF.fetch(base + '/openapi.json')).json() as {
-    components: { schemas: { Problem: { properties: { next_step: { required: string[] } } } } };
+    components: { schemas: {
+      Problem: { properties: { next_step: { $ref: string } } };
+      PurchaseNextStep: { required: string[] };
+    } };
   };
-  const required = document.components.schemas.Problem.properties.next_step.required;
+  const reference = document.components.schemas.Problem.properties.next_step;
+  expect(reference).toEqual({ $ref: '#/components/schemas/PurchaseNextStep' });
+  const required = document.components.schemas.PurchaseNextStep.required;
+  expect(required).toContain('payment_required');
   for (const path of ['/almanac/missing-guidance-fixture', '/gazette/issue-999999', '/zodiac/archive/missing/week-9999', '/api/buy/missing-guidance-fixture']) {
     const response = await SELF.fetch(base + path);
     expect(response.status).toBe(404);
     const body = await response.json() as { next_step: Record<string, unknown> };
     for (const field of required) expect(body.next_step, `${path}: required ${field}`).toHaveProperty(field);
+    // These free-read repairs retain their concrete HTTP fields even though
+    // the shared schema also covers MCP argument repair and signed recovery.
+    expect(body.next_step).toMatchObject({ method: 'GET', url: expect.any(String), payment_required: false });
   }
 });
