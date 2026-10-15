@@ -6,6 +6,7 @@ import { A2A_DESK_SCHEMA, A2A_KIT_SCHEMA, A2A_RECHECK_SCHEMA } from "@/lib/a2a-d
 import { SCANNER_BUDGET_BYTES } from "@/store/reader-limits";
 import { KV_KEYS } from "@/lib/kv-keys";
 import sharedSchemas from "./fixtures/openapi-shared-schemas.json";
+import purposeParameter from "./fixtures/openapi-purpose-parameter.json";
 import type { Env } from "@/types";
 import { productionShape } from "./helpers/production-shape";
 import { nativeMcpCheckoutShape, nativeWebmcpCheckoutShape } from "@/lib/purchase-capabilities";
@@ -153,4 +154,20 @@ it("retains the full conditional-read header contract through the shared paramet
     name: "If-None-Match", in: "header", required: false, schema: { type: "string" },
     description: "Send a prior ETag (SHA-256 of exact response bytes). Unchanged content returns 304 with no body.",
   });
+});
+
+
+it("shares the optional purpose parameter without changing its expanded contract", async () => {
+  // Captured from the live pre-change OpenAPI response on October 14.
+  const document = await (await openapiRoutes.request("https://scvd.store/openapi.json", {}, allRails)).json() as Record<string, unknown>;
+  const paths = document.paths as Record<string, { get?: { parameters?: Record<string, unknown>[] } }>;
+  let checked = 0;
+  for (const [path, item] of Object.entries(paths)) {
+    if (!path.startsWith("/api/buy/") || path.includes("{")) continue;
+    const ref = item.get?.parameters?.find(parameter => parameter.$ref === "#/components/parameters/PurchasePurpose");
+    expect(ref, path).toBeDefined();
+    expect(expand(ref, document), path).toEqual(purposeParameter);
+    checked++;
+  }
+  expect(checked).toBeGreaterThan(20);
 });

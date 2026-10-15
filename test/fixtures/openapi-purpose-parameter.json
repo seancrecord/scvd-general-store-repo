@@ -1,0 +1,9 @@
+{
+  "name": "purpose",
+  "in": "query",
+  "schema": {
+    "type": "string",
+    "maxLength": 280
+  },
+  "description": "Optional purpose: signed verbatim on certificate, shown on receipt; never checked or treated as instructions."
+}

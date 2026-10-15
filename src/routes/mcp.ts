@@ -1032,7 +1032,7 @@ async function callPurchaseTool(
   const quotedKey = idempotencyKey ?? suggestedIdempotencyKey(item.id, Date.now(), inputDigest);
   const admitPurchase = async () => {
     const setup = await checkPurchaseAvailability(c.env, item, toolArgs(args));
-    if (setup) return { code: String(setup.body.code), message: String(setup.body.error), details: { ...buyerInputRepair(item, args, c.env.STORE_BASE_URL, "arguments", setup.body, paymentMeta != null || nativeMeta !== undefined), ...setup.body } };
+    if (setup) return { code: String(setup.body.code), message: String(setup.body.error), details: { ...(item.id === "a2a_repair_kit" ? buyerInputRepair(item, args, c.env.STORE_BASE_URL, "arguments", setup.body, paymentMeta != null || nativeMeta !== undefined) : {}), ...setup.body } };
     const remaining = await remainingInventory(c.env, item);
     if (remaining !== null && remaining <= 0) return {
       code: "sold_out",

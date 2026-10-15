@@ -128,3 +128,16 @@ limit. Shortened the shared checkout prose while retaining the probe URL,
 optional-contract guidance and unsigned validation instruction; no reader limit
 was raised. The 91 focused payment, entrypoint, guide and discovery-budget
 checks pass, followed by typecheck. The full CI rerun gates the final head.
+
+The full suite then exercised the OpenAPI growth fixture (one additional paid
+route plus 31 saved publication slugs): 703,512 bytes exceeded the unchanged
+700,000-byte budget. The optional `purpose` query parameter now uses one shared
+OpenAPI component. A captured pre-change fixture pins its expanded contract on
+every concrete buy operation; the new check and the growth check fail before
+this reduction and pass afterward. Required inputs remain explicitly declared.
+
+The same run caught setup repair metadata on a Trust Profile eligibility
+refusal. Availability guidance is now limited to A2A; other non-input refusals
+retain their existing fields. The existing refusal regression fails before this
+correction. All 71 focused checks across budgets, parameter resolution, HTTP/MCP
+refusals and buyer entrypoints pass, as do typecheck and production bundles.

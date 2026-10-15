@@ -5950,6 +5950,14 @@ function pathParam(
  * spec cannot drift from the behaviour — which is the bug we have
  * been finding all week, in four different costumes.
  */
+// The optional purpose parameter is identical on every shelf door. Sharing
+// the full parameter preserves its expanded contract and the scanner's growth budget.
+const PURCHASE_PURPOSE_PARAMETER: OpenApiObject = (() => {
+  const { description, ...schema } = PURCHASE_PURPOSE_SCHEMA;
+  return { name: "purpose", in: "query", schema, description };
+})();
+const PURCHASE_PURPOSE_PARAMETER_REF = { $ref: "#/components/parameters/PurchasePurpose" };
+
 function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
   const schema = buyInputSchema(item);
   const example = buyInputExample(item);
@@ -5965,6 +5973,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
       // block, is not repeated as a parameter: the two copies per door
       // were the bytes the headroom spec could not spare.
       if (name === CITED_ARTIFACT_FIELD) return null;
+      if (name === "purpose") return PURCHASE_PURPOSE_PARAMETER_REF;
       const property =
         typeof definition === "object" && definition !== null
           ? (definition as Record<string, unknown>)
@@ -6301,7 +6310,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       responses: { ...SHARED_RESPONSES, ...CONTRIBUTION_RESPONSES, ...PAID_DOOR_RESPONSES, PaymentRequired: PAYMENT_REQUIRED_RESPONSE },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
-      parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
+      parameters: { PurchasePurpose: PURCHASE_PURPOSE_PARAMETER, IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
     },
     /**
      * THE VERSIONING PROMISE, STATED (2026-08-21). The store already
