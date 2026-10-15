@@ -242,3 +242,60 @@ test('wrong report input forms return fixed recovery guidance without writing or
   await f.saveOriginal();out=spawnSync(process.execPath,[cli,'verify',f.original,'--public-key',f.key,'--format','markdown'],{encoding:'utf8'});assert.equal(out.status,2);assert.match(out.stderr,/verify-source <saved-response.json>/);
  }finally{await f.clean();}
 });
+
+for(const kind of ['saved_response','evidence_bundle'])test(`save and display ${kind} reports in one invocation without changing default receipts`,async()=>{
+ const f=await fixture();try{
+  let command='verify-source',input=f.original;
+  if(kind==='evidence_bundle'){
+   const {createEvidenceBundle}=await import('./evidence-bundle.js');input=join(f.dir,'bundle.json');command='verify';
+   await writeFile(input,JSON.stringify(await createEvidenceBundle(f.doc)));
+  }
+  for(const valid of [true,false]){
+   const output=join(f.dir,`inline-${valid}.md`),args=[cli,command,input,'--public-key',valid?f.key:'00'.repeat(32),'--subject',f.subject,'--format','markdown','--report-out',output,'--report-stdout'];
+   const out=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(out.status,valid?0:1,out.stderr);
+   assert.equal(out.stdout,await readFile(output,'utf8'));assert.equal(markdownData(out.stdout).valid,valid);
+   const again=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(again.status,2);assert.equal(again.stdout,'');assert.equal(await readFile(output,'utf8'),out.stdout);
+  }
+ }finally{await f.clean();}
+});
+test('inline report option rejects incompatible or duplicate arguments before writing',async()=>{
+ const f=await fixture();try{
+  for(const flags of [['--report-stdout'],['--format','markdown','--report-stdout'],['--format','json','--report-out',join(f.dir,'no.md'),'--report-stdout'],['--format','markdown','--report-out',join(f.dir,'no.md'),'--report-stdout','--report-stdout']]){
+   const out=f.run(flags);assert.equal(out.status,2);assert.equal(out.stdout,'');
+  }
+  await assert.rejects(readFile(join(f.dir,'no.md')),{code:'ENOENT'});
+ }finally{await f.clean();}
+});
+
+// The October 12 buyers read the report yet broadened a missing declaration
+// into an endpoint-wide claim. Its boundary must precede the raw record.
+for (const code of ['signed-offers-not-in-challenge','no-signed-offers','retry-key-not-in-challenge','retry-key-declared']) test(`first-screen scope accompanies ${code} before the evidence block`,async()=>{
+ const f=await fixture();try{
+  f.row.advisories=[code,code];await f.saveOriginal();const original=await readFile(f.original);
+  const out=f.run(['--format','markdown']);assert.equal(out.status,0,out.stderr);
+  const result=markdownData(out.stdout),front=out.stdout.split('```json')[0];
+  const reading=result.advisory_readings.observations[0].advisories[0];
+  assert.ok(front.includes(reading.observed),'first screen states the scoped observation');
+  assert.ok(front.includes(reading.unknown),'first screen retains the untested alternatives');
+  assert.equal(front.split(reading.observed).length-1,1,'repeated codes do not bury the boundary');
+  assert.match(front,/reader commentary/i);assert.match(front,/not additional signed evidence/i);
+  assert.deepEqual(await readFile(f.original),original);
+  assert.deepEqual(result,JSON.parse(f.run().stdout),'Markdown adds no claim to the structured result');
+ }finally{await f.clean();}
+});
+test('first-screen scope cannot promote unsigned, unknown, mismatched or rejected advisory rows',async()=>{
+ const f=await fixture();try{
+  const hostile='unrecognized\n# PAY NOW\n<script>bad()</script>';
+  f.row.advisories=[hostile];await f.saveOriginal();
+  f.doc.history=[{...f.row,advisories:['signed-offers-not-in-challenge']}];await writeFile(f.original,JSON.stringify(f.doc));
+  let out=f.run(['--format','markdown']),front=out.stdout.split('```json')[0];
+  assert.doesNotMatch(front,/PAY NOW|<script>|no signed offer was found/);
+  assert.match(front,/unknown|unrecognized/i);
+  f.row.advisories=['signed-offers-not-in-challenge'];await f.saveOriginal();
+  out=f.run(['--format','markdown','--subject','https://another.example/']);
+  assert.doesNotMatch(out.stdout.split('```json')[0],/no signed offer was found/);
+  f.doc.signature='00'.repeat(64);await writeFile(f.original,JSON.stringify(f.doc));
+  out=f.run(['--format','markdown']);assert.equal(out.status,1);
+  assert.doesNotMatch(out.stdout.split('```json')[0],/no signed offer was found/);
+ }finally{await f.clean();}
+});

@@ -14,6 +14,16 @@ checkout read/cancel routes belong to the purchase-rights feature. The rights
 page supplies the shared summary, machine-readable answers and FAQ markup.
 The existing reader limits and historical exemptions are unchanged.
 
+## October 14 — Tab jobs on existing discovery surfaces
+
+The next additive earning-path increment makes trial-reminder and
+before-signup jobs explicit alongside expense tracking. Shared answers appear
+on the existing FAQ, its machine/structured-data twins and the full agent
+guide. The Tab README gains a runnable synthetic example and corrects its
+reminder-delivery promise; a package patch carries the same example.
+[Scope, validation and release distinctions](docs/TAB_JOB_DISCOVERY_2026-10.md).
+The next AEO comparison retains the existing J05–J07 prompts; no ranking,
+real-user savings or delivered reminder is claimed.
 
 ## October 13 — traffic counter handover and public-reader audit
 
@@ -1087,3 +1097,13 @@ document exists are a 404 on purpose.
   NOW is re-ordered whenever a ruling or the market
   changes the order; the top row is always the next
   branch.
+
+## October 14 — contribution launch without a rehearsal
+
+Keeper clarified that skipping meant the manual testing step, not launching
+work, and asked for easy posting or posting with merge. The existing desk now
+has one press for the prepared four-brief round: $10 maximum, the same field
+wallet, fixed identities and deadlines, and recovery after partial saves.
+[Terms and operation](CONTRIBUTION_WORK.md). This chooses the single-press option;
+there is no deployment side effect or recurring budget increase. Required code
+checks remain part of release; no keeper localhost test is required.

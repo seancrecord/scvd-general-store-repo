@@ -1,3 +1,4 @@
+import {launchFirstContributionRound} from "@/services/contribution-launch";
 import { contributionBoard } from "@/services/contribution-board";
 import { CONTRIBUTION_INDEX_PREFIX, CONTRIBUTION_PAGE_CAP } from "@/store/contribution-tasks";
 import { Hono, type Context } from "hono";
@@ -10,7 +11,7 @@ import { contributionCompletion } from "@/services/contribution-completion";
 import { ContributionInputError, contributionTerms, CONTRIBUTION_FIELD_CAP } from "@/services/contribution-task";
 import { contributionGuide, CONTRIBUTION_API, CONTRIBUTION_REPORT_FIELDS, CONTRIBUTION_RESERVATION_HOURS, CONTRIBUTION_TEMPLATES, CONTRIBUTION_REPORT_BYTES, CONTRIBUTION_REQUEST_BYTES } from "@/store/contribution-tasks";
 import { CONTRIBUTION_ARRIVAL_DESCRIPTION, CONTRIBUTION_ARRIVAL_GOALS, CONTRIBUTION_ARRIVAL_CAP, CONTRIBUTION_ARRIVAL_BYTES } from "@/store/contribution-tasks";
-import { renderContributionDesk, renderContributionRetry, type ContributionAdminAction } from "@/pages/admin/contribution-tasks";
+import { renderContributionDesk, renderContributionRetry, renderContributionLaunchFailure, renderContributionLaunchSuccess, type ContributionAdminAction } from "@/pages/admin/contribution-tasks";
 import { isRecord, type Env, type HonoEnv } from "@/types";
 
 export const contributionRoutes = new Hono<HonoEnv>({strict: false});
@@ -117,6 +118,16 @@ async function adminFormAction(c: Context<HonoEnv>, action: ContributionAdminAct
     return c.html(renderContributionRetry(action, id, body, invalid ? error.message : "Contribution records could not be read or saved. No success is being claimed.", !invalid), invalid ? 400 : 503);
   }
 }
+adminContributionRoutes.post("/launch-first-round", async c => {
+  try {
+    if ((await c.req.arrayBuffer()).byteLength) throw new ContributionInputError("This button posts the fixed first-round terms; additional fields are refused.");
+    await launchFirstContributionRound(c.env, Date.now());
+    return c.html(renderContributionLaunchSuccess());
+  } catch (error) {
+    const invalid = error instanceof ContributionInputError;
+    return c.html(renderContributionLaunchFailure(invalid ? error.message : "Posting could not be confirmed. Retry the same round to recover any interrupted save."), invalid ? 400 : 503);
+  }
+});
 adminContributionRoutes.post("/", c => adminFormAction(c, "post", null, async (body, form) => {
   if (form) for (const field of ["reward_usd", "slots", "review_days", "payment_days"]) body[field] = Number(body[field]);
   // The form labels its date picker UTC; JSON callers supply their own timezone.

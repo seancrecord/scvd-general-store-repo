@@ -1,3 +1,4 @@
+import { compactSdkChallengeNonce } from "@/lib/mpp-challenge-nonce";
 import type { PaymentPayload, PaymentRequirements, SettleResponse } from "@x402/core/types";
 import { Challenge, Credential, Receipt } from "mppx";
 import { Mppx } from "mppx/server/core";
@@ -75,8 +76,13 @@ export function createMppEvmAdapter(config: MppEvmTerms) {
 
   return {
     async challenge() {
-      const challenge = await reader.challenge.evm.charge({ ...request, scope, meta: binding.meta,
+      const issued = await reader.challenge.evm.charge({ ...request, scope, meta: binding.meta,
         expires: new Date(Date.now() + terms.maxTimeoutSeconds * 1000).toISOString() });
+      // Preserve the SDK's issuance randomness, but encode its 32 bytes more
+      // compactly so tiered challenges still fit stock clients' header limits.
+      // Re-sign the changed opaque; the validator still authenticates every byte.
+      const challenge = Challenge.from({ ...issued, id: undefined, opaque: undefined,
+        meta: { ...issued.meta, _mppx_nonce: compactSdkChallengeNonce(issued.meta?._mppx_nonce) }, secretKey });
       return { challenge, header: Challenge.serialize(challenge) };
     },
     async validate(header: string) {

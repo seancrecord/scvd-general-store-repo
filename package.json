@@ -17,7 +17,7 @@
     "indexnow": "node scripts/indexnow-ping.mjs",
     "test": "vitest run",
     "calling-card:test": "node --test calling-card/*.test.mjs",
-    "buyer:test": "node --test scripts/buyer-wave-one.test.mjs scripts/buyer-run-evidence.test.mjs scripts/buyer-deployment-score.test.mjs scripts/buyer-cold.test.mjs scripts/buyer-cold-retention.test.mjs scripts/buyer-host-capability.test.mjs scripts/buyer-handoff.test.mjs scripts/buyer-recipient-integration.test.mjs scripts/journey-evidence-index.test.mjs",
+    "buyer:test": "node --test scripts/buyer-wave-one.test.mjs scripts/buyer-run-evidence.test.mjs scripts/buyer-deployment-score.test.mjs scripts/buyer-cold.test.mjs scripts/buyer-cold-retention.test.mjs scripts/buyer-host-capability.test.mjs scripts/buyer-handoff.test.mjs scripts/buyer-recipient-integration.test.mjs scripts/recipient-inspect.test.mjs scripts/journey-evidence-index.test.mjs",
     "gates": "npm run typecheck && npm run self-row && npm test && npm run calling-card:test && npm run tab:test && npm run evidence:test && npm run till:test && npm run cli:test && npm run examples:test && npm run packages:test && npm run preflight:py:test && npm run preflight:go:test && npm run doors:test && npm run ownership:test && npm run specs:test && npm run listings:test && npm run seo:test && npm run space:test && npm run cold:test && npm run doors:test && npm run corpus:publish:test && npm run citations:test && npm run corrections:test && npm run outreach:test && npm run walkabout:test && npm run buyer:test && npm run paid-doors:test && npm run floor-check:test && npm run chains:test && npm run audit && npm run claims && npm run others:check && npm run blindness && npm run docs:check && npm run ucp:conformance && npm run build:check",
     "self-row": "vitest run test/self-row-blocker.spec.ts",
     "typecheck": "tsc --noEmit",
@@ -125,21 +125,21 @@
     "@x402/extensions": "^2.28.0",
     "@x402/hono": "^2.28.0",
     "@x402/svm": "~2.28.0",
-    "hono": "^4.13.7",
-    "mppx": "0.13.1",
+    "hono": "^4.13.13",
+    "mppx": "0.13.4",
     "viem": "^2.56.9"
   },
   "devDependencies": {
     "@a2a-js/sdk": "1.1.0",
-    "@cloudflare/vitest-pool-workers": "^0.22.0",
-    "@cloudflare/workers-types": "^5.20261003.1",
-    "@types/node": "^26.6.4",
+    "@cloudflare/vitest-pool-workers": "^0.23.0",
+    "@cloudflare/workers-types": "^5.20261011.1",
+    "@types/node": "^26.6.5",
     "@x402/fetch": "^2.28.0",
     "ajv": "^8.20.0",
-    "dotenv": "^18.0.4",
+    "dotenv": "^18.0.7",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",
-    "wrangler": "^4.147.0"
+    "wrangler": "^4.149.0"
   },
   "overrides": {
     "axios": "^1.19.0",

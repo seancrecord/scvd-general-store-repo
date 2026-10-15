@@ -1,3 +1,4 @@
+import { stableChallengeHeader } from "./helpers/mpp-challenge-parity";
 import { runInDurableObject } from "cloudflare:test";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { Challenge, Credential, PaymentRequest, Receipt } from "mppx";
@@ -33,7 +34,7 @@ import type { PaymentRequirements } from "@x402/core/types";
  * paid; a buyer who signs a higher tier's challenge tips, and the store
  * books the excess the way it books an x402 tip. The MCP door carries
  * the same list in its challenges array; the doors Worker mints the
- * same bytes. A credential naming an amount no tier offers is refused
+ * same authenticated terms. A credential naming an amount no tier offers is refused
  * before settlement even when its challenge id is genuine, because the
  * tier list, not the HMAC alone, is what the store agreed to sell at.
  */
@@ -90,8 +91,9 @@ it("a pay-what-it-deserves door offers one challenge per tier, minimum first, al
     expect(meta(challenge)).toMatchObject({ purchase_key: key, request_digest: digest });
   }
   expect(quote.headers.get("PAYMENT-REQUIRED"), "x402's own tiers stay beside it").toBeTruthy();
-  // The doors Worker mints the same list, byte for byte, under the same clock and key.
-  expect(await mintNativeChallenge(testEnv, `${BASE}/api/buy/${PWID}`, key)).toBe(quote.headers.get("WWW-Authenticate"));
+  // Fresh nonces differ; every authenticated purchase term and tier must match.
+  expect(stableChallengeHeader(await mintNativeChallenge(testEnv, `${BASE}/api/buy/${PWID}`, key), testEnv.MPP_CHALLENGE_KEY!))
+    .toBe(stableChallengeHeader(quote.headers.get("WWW-Authenticate"), testEnv.MPP_CHALLENGE_KEY!));
   // A fixed-price door still offers exactly one.
   const fixed = await request(`/api/buy/${FIXED}`);
   expect(Challenge.fromResponseList(fixed)).toHaveLength(1);

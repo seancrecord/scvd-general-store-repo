@@ -101,13 +101,31 @@ export async function readPaymentChallenge(bytes, subject) {
   return result;
 }
 
+function firstScreenAdvisories(result) {
+  // Only our fixed vocabulary reaches Markdown prose. Never interpolate a
+  // merchant's code or the text of a supplied interpretation into this block.
+  // Deduplicate meanings (including historical aliases), not signed rows.
+  const meanings = new Set();
+  if (result.valid === true && result.subject_evidence?.status === "present") {
+    for (const observation of result.subject_evidence.observations) {
+      if (!Array.isArray(observation.value?.advisories)) continue;
+      for (const code of observation.value.advisories) {
+        const meaning = advisoryMeanings.get(code);
+        if (meaning) meanings.add(meaning);
+      }
+    }
+  }
+  return "## Observation scope\n\nReader commentary, not additional signed evidence. These readings cover only retained, verified rows for the exact subject. Unknown or omitted advisories remain unresolved.\n\n"
+    + [...meanings].map(meaning => `Observed: ${meaning.observed}\n\nStill unknown: ${meaning.unknown}\n\n`).join("");
+}
+
 export function renderEvidenceReport(result, maxBytes = EVIDENCE_REPORT_MAX_BYTES) {
   // Every untrusted string stays inside one JSON line. JSON escapes line
   // breaks; escape JS line separators too, so neither fences nor HTML from
   // issuer claims can become Markdown structure. Never interpolate them into
   // the surrounding prose. The compact record preserves the bounded rows.
   const data = JSON.stringify(result).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
-  const report = `# Evidence verification report\n\nCorpus snapshots verified in this command: ${result.corpus_snapshots_verified}. This is not a count of weekly history or proof of current delivery. Unsigned history is not authenticated by this check.\n\nInput-file SHA-256 and signed-message SHA-256 identify different bytes. ${result.input_kind === "evidence_bundle" ? "The input hash identifies bundle bytes, not the original HTTP response. Bundle context is unsigned and not authenticated." : "The input hash identifies the saved response bytes."} The exact computed fields are below; retain and cite this report without retyping identifiers. Keep the input file (saved response or exported bundle), source URL and independently established key: this report cannot be verified alone.\n\n\`\`\`json\n${data}\n\`\`\`\n\nSignature validity does not establish issuer identity, truthful observations, current payment terms, settlement, delivery, Bitcoin anchoring or permission to spend. Observation dates remain separate from snapshot publication and any caller freshness policy.\n`;
+  const report = `# Evidence verification report\n\nCorpus snapshots verified in this command: ${result.corpus_snapshots_verified}. This is not a count of weekly history or proof of current delivery. Unsigned history is not authenticated by this check.\n\n${firstScreenAdvisories(result)}Input-file SHA-256 and signed-message SHA-256 identify different bytes. ${result.input_kind === "evidence_bundle" ? "The input hash identifies bundle bytes, not the original HTTP response. Bundle context is unsigned and not authenticated." : "The input hash identifies the saved response bytes."} The exact computed fields are below; retain and cite this report without retyping identifiers. Keep the input file (saved response or exported bundle), source URL and independently established key: this report cannot be verified alone.\n\n\`\`\`json\n${data}\n\`\`\`\n\nSignature validity does not establish issuer identity, truthful observations, current payment terms, settlement, delivery, Bitcoin anchoring or permission to spend. Observation dates remain separate from snapshot publication and any caller freshness policy.\n`;
   if (new TextEncoder().encode(report).length > Math.min(maxBytes, EVIDENCE_REPORT_MAX_BYTES)) throw new Error("report_too_large");
   return report;
 }

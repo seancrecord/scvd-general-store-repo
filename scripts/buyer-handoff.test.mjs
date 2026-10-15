@@ -104,7 +104,11 @@ test('full capture handoff uses the exact frozen inventory prompt and unchanged 
   assert.equal(m.protocol_sha256,frozen.protocol.protocol_sha256);
   assert.equal(m.plan_content_sha256,hash(JSON.stringify(fullPlan)));
   assert.equal(m.files.filter(x=>x.supplied).length,f.run.retained_artifacts.files.length);
-  assert.match(frozen.prompt,/Read input-manifest.json first/);assert.match(frozen.prompt,/12 tool calls/);assert.match(frozen.prompt,/180 seconds/);
+  assert.match(frozen.prompt,/node recipient-inspect.mjs/);
+  const aid=m.machinery.find(x=>x.file==='recipient-inspect.mjs');assert.ok(aid);
+  assert.equal(hash(fs.readFileSync(path.join(f.out,aid.file))),aid.sha256);
+  const inspected=spawnSync(process.execPath,[path.join(f.out,aid.file)],{cwd:f.out,encoding:'utf8'});
+  assert.equal(inspected.status,0,inspected.stderr);assert.equal(JSON.parse(inspected.stdout).files.length,m.files.length);assert.match(frozen.prompt,/12 tool calls/);assert.match(frozen.prompt,/180 seconds/);
   assert.doesNotMatch(frozen.prompt,/supplied subset is original-response/);
  }finally{f.clean();}
 });

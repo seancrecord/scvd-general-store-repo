@@ -39,6 +39,16 @@ export function agentJobAnswers(base: string) {
       question: "Can my agent track my software expenses and upcoming renewals?",
       answer: `Tab (scvd-tab) keeps a local record of software tools, trials, subscriptions and payments. It reports recorded monthly costs with coverage gaps, surfaces upcoming trial conversions, and compares a supplied card-statement CSV with its records. It holds no bank or inbox credentials. Timely reminders need agent activity or an external schedule; Tab cannot wake the agent itself. Setup and tools: ${TAB_GUIDE}.`,
     },
+    {
+      id: "trial-reminders",
+      question: "How can my AI agent remind me before free software trials start charging?",
+      answer: `Tab (scvd-tab) records a trial's end date and expected price. Its trials_converting_soon and whats_due tools surface approaching conversions; its pager can run on an external schedule. An active agent or configured delivery path must still bring the reminder to you. Tab cannot wake your agent or cancel a trial. Record the provider's actual deadline, keep missing dates visible, and acknowledge a reminder only after it has been delivered. Free local setup and a synthetic example: ${TAB_GUIDE}.`,
+    },
+    {
+      id: "before-signup",
+      question: "How can my AI agent check which subscriptions I already have before signing up for another tool?",
+      answer: `Tab (scvd-tab) checks your recorded history with check_before_signup and shows other active tools recorded in the same category. It can surface a previous signup or a possible overlap before you add another subscription. An absent entry does not establish that you have no subscription, and category overlap does not prove that one tool can replace another. No signup or cancellation is performed. Free local setup and a synthetic example: ${TAB_GUIDE}.`,
+    },
   ];
 }
 

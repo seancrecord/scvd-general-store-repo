@@ -149,3 +149,26 @@ test('a changed or missing provisioned runtime prevents otherwise complete buyer
   for(const check of [undefined,{state:'fail'}]){b.run.buyer_tool_check=check;assert.notEqual((await scoreColdRun(b.run,b.review,b.root)).usable,'pass');}
  }finally{b.cleanup();}
 });
+
+
+test('opt-in completion reserve preserves the hard budget and gives no merchant answer',()=>{
+ const p={...plan,completion:{reserve_tool_calls:2}},before=structuredClone(p);
+ validatePlan(p);const prompt=buildPrompt(p,p.cells[0]);
+ assert.match(prompt,/After 14 tool calls, stop optional exploration/);
+ assert.match(prompt,/remaining 2 calls.*retain.*verify/s);
+ assert.match(prompt,/Stop within 16 tool calls/);
+ assert.match(prompt,/missing evidence.*unknown/i);
+ assert.doesNotMatch(prompt,/scvd|signed.offers.not.in.challenge|lionx402/i);
+ assert.deepEqual(p,before);
+ assert.doesNotMatch(buildPrompt(plan,plan.cells[0]),/stop optional exploration/);
+});
+test('completion reserve follows the declared cap instead of granting extra calls',()=>{
+ const p={...plan,budgets:{...plan.budgets,tool_calls:9},completion:{reserve_tool_calls:3}};
+ assert.match(buildPrompt(validatePlan(p),p.cells[0]),/After 6 tool calls/);
+ assert.match(buildPrompt(p,p.cells[0]),/Stop within 9 tool calls/);
+});
+test('completion reserve refuses invalid or unbounded declarations',()=>{
+ for(const completion of [null,{},[],{reserve_tool_calls:0},{reserve_tool_calls:16},{reserve_tool_calls:17},{reserve_tool_calls:1.5},{reserve_tool_calls:2,extra_calls:1}]){
+  assert.throws(()=>validatePlan({...plan,completion}),/completion reserve/i);
+ }
+});

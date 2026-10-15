@@ -191,3 +191,49 @@ review. Missing timing evidence cannot establish an uninterrupted completion.
 The changed instrument and verifier need fresh qualification. Keep the host
 awake throughout the new study; sleep prevention alone does not prove this.
 Historical plans, scores, model evidence and attempts remain unchanged.
+
+## October 12 follow-through: report consumption and bounded handoff inspection
+
+The source candidate adds `--report-stdout` alongside `--format markdown
+--report-out NEW_FILE`. The generated file and displayed report have identical
+bytes. Default JSON receipts remain unchanged. Provisioned-tool qualification
+now also requires captured `evidence/report-reading.json` with the input hash,
+signature outcome and verified snapshot count from both randomized reports.
+File generation alone no longer qualifies a host. This checks observable
+reading performance, not internal cognition or buyer acceptance.
+
+Whole-inventory recipients receive `recipient-inspect.mjs`, hash-bound in the
+instrument and handoff machinery inventory. One offline invocation checks all
+supplied file hashes and the buyer report, displays bounded previews, and exposes
+the existing observation-age policy. Original files remain unchanged and fully
+available. Previews are unverified, with omissions explicit; no key or verdict
+is selected. The recipient must still run the supplied verifier and interpret
+its findings. The fixed recipient budget and stop-on-failure rule are unchanged.
+
+These changes need a new frozen qualification and cohort. The October 12
+released-runtime cohort remains 0/4 complete journeys; no stopped recipient
+is resumed and no old result is rescored by this instrument.
+
+The first consumption qualification exposed an instrument defect: Claude's
+explicit `Exit code 1` result was classified as a host denial because the
+verifier report contained “permission to spend.” Explicit native exit wrappers
+now take precedence over denial keywords in process output. Genuine refusal
+messages remain distinct. Retain the initial score with its correction note;
+qualify the changed instrument afresh instead of rewriting that acquisition.
+
+
+## Opt-in completion reserve — October 14 source candidate
+
+A new plan may declare `"completion": {"reserve_tool_calls": 2}`. With a
+20-call cap, its buyer prompt asks the agent to stop optional exploration after
+18 calls and use the remaining two only for necessary retention/verification
+and its final report. The reserve must be a positive integer smaller than the
+existing cap. It adds no calls or time and changes no scoring, recipient budget
+or hard-stop behavior. Missing evidence stays unknown; early finalization alone
+cannot pass acceptance. This is advisory planning guidance, not a guarantee
+that a model will follow it.
+
+Plans without this field retain identical buyer prompt bytes. Treat this as a
+separate declared experimental condition, qualify its exact runtime before
+acquisition, and never repin or overwrite a historical plan to use it. No new
+native completion rate has been measured for the condition.

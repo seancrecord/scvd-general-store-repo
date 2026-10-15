@@ -334,13 +334,11 @@ the agent, having actually said them out loud
      └─ acknowledge_pages, and only then are they spent
 ```
 
-With a cron the page is **timely**. Without one it is at least
-**inevitable** — the ride-along runs the clock on every tool call, so
-the next time the agent touches the tab for any reason at all, the
-page comes back with the answer. That is the difference between a
-scheduler and a dependency on the agent asking the right question on
-the right day. What no version of this fixes: an agent that never
-touches the tab and has no cron hears nothing, and the doc says so.
+A scheduler can queue a page on time, but its output still needs a working
+delivery path. Without a scheduler, pending pages return when the agent next
+calls the tab. Neither handover proves that the builder heard the reminder;
+only acknowledgement records the agent's report of delivery. If neither an
+agent nor a scheduler runs the check, no reminder is surfaced.
 
 ### Handing over is not delivering
 

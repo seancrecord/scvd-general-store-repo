@@ -1,5 +1,21 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-14 — Tab job discovery and reminder scope
+
+Re-read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features):
+visible useful text, internal discovery and matching structured data remain
+relevant; inclusion and indexing are not guaranteed and no special AI schema
+is required. Applied to the existing FAQ and agent guide, not a new landing-page
+family. No new answer-engine wave was run for this change.
+
+Read the npm registry's current `scvd-tab` version (0.11.2), the local package
+handlers, pager delivery accounting and README. The prior published-package
+synthetic qualification establishes recorded costs/history and queued reminders;
+it does not establish real reminder delivery or expense completeness. The next
+patch includes a disposable example and tighter reminder wording. Registry
+publication and source changes are tracked separately in
+[TAB_JOB_DISCOVERY_2026-10.md](TAB_JOB_DISCOVERY_2026-10.md).
+
 ## 2026-10-13 — additive earning path
 
 Read the public [bounty contract](https://scvd.store/api/bounties),
@@ -3117,3 +3133,21 @@ shopper's RFC entry, generated from the same canonical text. Keep the readable
 SKILL.md, references and Hermes files-based index at their existing URLs. The
 actual Skills CLI then installed all three files from the local HTTPS Worker,
 with byte parity. No payment mechanism or instruction bytes changed.
+
+
+## 2026-10-14 — mppx 0.13.4 issuance nonce compatibility
+
+Read upstream [nonce implementation and regression tests](https://github.com/wevm/mppx/commit/bbbec697d7f85bc1f4fe1c1894e43afb12f2878f)
+through GitHub's commit API and the installed 0.13.4 package. Each issuance adds
+32 random bytes in `_mppx_nonce`; the HMAC covers it, while route comparison
+excludes only that field. Authenticated legacy challenges without it remain
+accepted. The SDK does not require a hex representation in its verifier.
+
+The store re-encodes those same bytes as unpadded base64url and re-signs the
+opaque metadata; its lightweight issuer generates fresh 32-byte nonces in the
+same format. This preserves randomness while keeping the existing 800-byte
+challenge budget. Parity checks authenticate both challenges before comparing
+stable terms. Stock-client tests exercise both issuers, tampering and legacy
+challenges with mocked settlement. No funded or live settlement was attempted.
+The web renderer could not fetch the commit page; the primary API source and
+installed implementation were available.

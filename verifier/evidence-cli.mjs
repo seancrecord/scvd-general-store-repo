@@ -18,7 +18,7 @@ const HELP = `scvd-evidence — free export and offline verification
   verify-source <saved-response.json> --public-key <independently-trusted-public-key-hex>
     [--evidence <local-file> ...]
   Both verification commands support: [--subject <exact-endpoint-url>]
-    [--format json|markdown] [--report-out <new-report.md>]
+    [--format json|markdown] [--report-out <new-report.md> [--report-stdout]]
     [--challenge-headers <saved-HTTP-headers.txt>] [--check-identifiers <saved-draft.md>]
   capabilities
   All commands but capabilities: [--max-bytes <integer>]
@@ -48,7 +48,9 @@ report option shown above, verify also prints compact findings; without report o
 it keeps the full signed_claims output. A bundle report hashes the bundle bytes,
 not an original HTTP response. Unsigned bundle context is never authenticated.
 With --format markdown --report-out, save a new report without overwriting any
-file and print a compact JSON receipt; otherwise neither verification command writes files.
+file and print a compact JSON receipt. Add --report-stdout to print the exact saved
+Markdown instead, so a separate file read is unnecessary. Without --report-out neither
+verification command writes files. --report-stdout requires --report-out and markdown.
 With --check-identifiers, scan a saved UTF-8 draft offline against identifiers
 from this verification. Long hex tokens (48+ digits) are compared, not prose or
 identifier roles. No text is changed; a later final answer is outside this check.
@@ -206,16 +208,23 @@ async function main(args) {
     return;
   }
   const flags = {}; const evidence = [];
-  for (let i = 0; i < rest.length; i += 2) {
+  for (let i = 0; i < rest.length;) {
+    if (rest[i] === "--report-stdout") {
+      if (flags[rest[i]]) throw new Error("duplicate_report_stdout");
+      flags[rest[i++]] = true;
+      continue;
+    }
     const [key, value] = [rest[i], rest[i + 1]];
     if (!["--out", "--public-key", "--evidence", "--max-bytes", "--subject", "--format", "--challenge-headers", "--report-out", "--check-identifiers"].includes(key) || !value || (key !== "--evidence" && flags[key])) throw new Error("invalid_arguments");
     if (key === "--evidence") evidence.push(value); else flags[key] = value;
+    i += 2;
   }
   if (flags["--max-bytes"] && !/^\d+$/.test(flags["--max-bytes"])) throw new Error("invalid_byte_limit");
   const maxBytes = evidenceByteLimit(flags["--max-bytes"] === undefined ? undefined : Number(flags["--max-bytes"]));
   if (!input) throw new Error("missing_input");
   const verifying = command === "verify-source" || command === "verify";
   if (flags["--format"] && (!verifying || !["json", "markdown"].includes(flags["--format"]))) throw new Error("invalid_format");
+  if (flags["--report-stdout"] && !flags["--report-out"]) throw new Error("report_stdout_requires_output");
   if (flags["--report-out"] && (!verifying || flags["--format"] !== "markdown")) throw new Error("report_requires_markdown");
   if (flags["--challenge-headers"] && (!verifying || !flags["--subject"])) throw new Error("challenge_requires_subject");
   if (flags["--check-identifiers"] && (!verifying || flags["--report-out"])) throw new Error("invalid_identifier_check");
@@ -272,8 +281,10 @@ async function main(args) {
       reading.identifier_check = await checkDraftIdentifiers(await localBytes(flags["--check-identifiers"], Math.min(maxBytes, EVIDENCE_REPORT_MAX_BYTES)), references, result.valid);
     }
     if (flags["--report-out"]) {
-      await writeFile(flags["--report-out"], renderEvidenceReport(reading, maxBytes), { flag: "wx", mode: 0o600 });
-      console.log(JSON.stringify({ report_file: flags["--report-out"], source_sha256: reading.source_sha256, valid: reading.valid, evidence_complete: reading.evidence_complete }));
+      const report = renderEvidenceReport(reading, maxBytes);
+      await writeFile(flags["--report-out"], report, { flag: "wx", mode: 0o600 });
+      if (flags["--report-stdout"]) process.stdout.write(report);
+      else console.log(JSON.stringify({ report_file: flags["--report-out"], source_sha256: reading.source_sha256, valid: reading.valid, evidence_complete: reading.evidence_complete }));
     } else console.log(flags["--format"] === "markdown" ? renderEvidenceReport(reading, maxBytes) : JSON.stringify(reading, null, flags["--subject"] ? undefined : 2));
     process.exitCode = !result.valid ? 1 : !result.evidence_complete ? 3 : reading.identifier_check && reading.identifier_check.status !== "all_candidates_recognized" ? 4 : 0;
     return;

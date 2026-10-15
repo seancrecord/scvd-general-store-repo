@@ -2,8 +2,8 @@
 
 
 mcp-name: store.scvd/tab
-Your agent remembers every tool you sign up for and warns you before
-a trial converts — so you never pay for software you forgot about.
+Track recorded software expenses, check for an existing subscription before
+another signup, and surface trial deadlines for your agent to bring to you.
 
 An MCP server from [scvd.store](https://scvd.store). Local JSONL,
 append-only, zero dependencies. The full specification is
@@ -20,16 +20,15 @@ one surprise at a time. And now agents sign you up for tools too,
 which makes the ledger longer and the forgetting faster.
 
 The Tab is that ledger, kept where you already work: inside the
-agent. Log a trial and the pager warns you before it converts. Ask
+agent. Log a trial and the pager can queue its approaching conversion. Ask
 `whats_due` at the start of a session and the dearest thing is the
 first line. Ask `burn_rollup` and get the monthly number with what
 it is made of — and what it cannot see.
 
 ## What makes it different
 
-**It never asks for a credential.** Every subscription tracker
-before it wants your bank login or your inbox OAuth. The Tab inverts
-the architecture: your agent reads mail through a connector it
+**It never asks for a credential.** If you choose to import mail,
+your agent reads it through a connector it
 *already* holds ([SWEEP_ROUTINE.md](./SWEEP_ROUTINE.md)), you export
 the card CSV yourself (`reconcile_card_statement`), and the tab holds
 a credential to exactly nothing. There is no account to breach
@@ -77,7 +76,7 @@ One config block, any MCP client:
   "mcpServers": {
     "scvd-tab": {
       "command": "npx",
-      "args": ["-y", "scvd-tab@0.11.2"]
+      "args": ["-y", "scvd-tab@0.11.3"]
     }
   }
 }
@@ -101,6 +100,50 @@ The tab lives at `~/.scvd/tab.jsonl` (override with `TAB_PATH` or
 `export_tab` hands it back in full any time — a product that holds
 your history hostage is the disease; this is the cure's own hygiene.
 
+## Three jobs to give your agent
+
+| Your task | Tab's tools | What the answer covers |
+|---|---|---|
+| Track my software expenses | `log_tool_event`, `burn_rollup`, `reconcile_card_statement` | Recorded or imported software costs, with unknowns and coverage gaps. It is not a bank feed or a complete household expense tracker. |
+| Remind me before a free trial charges | `trials_converting_soon`, `whats_due`, `acknowledge_pages` | The recorded deadline and expected price. An active agent or a scheduled check with delivery is still needed; Tab does not cancel the trial. |
+| Check before I sign up for another tool | `check_before_signup`, `whats_current` | Previous signups and active tools in the same category. Missing history is not proof of no subscription; an overlap is not proof that one tool replaces another. |
+
+### Try it with synthetic subscriptions
+
+From a repository checkout:
+
+```sh
+node tab/examples/software-cost-check.mjs
+```
+
+Or in a disposable directory after installing `scvd-tab`, run the same
+packaged example:
+
+```sh
+node node_modules/scvd-tab/examples/software-cost-check.mjs
+```
+
+The example creates a fresh temporary ledger and prints its path. It records
+a $20/month analytics subscription, $120/year hosting subscription and a
+$15/month trial ending two days from the run. It calls the same handlers the
+MCP tools use; the example itself is not an MCP host test. No network request,
+real subscription, inbox, wallet or existing ledger is used, and no reminder
+is acknowledged or schedule installed.
+
+Read these results:
+
+- `burn.monthly` is **30 USD**, from the two paid subscriptions; the trial's
+  expected conversion price is separate. Read `burn`'s coverage alongside it.
+- `existing_signup.seen_before` is true. `possible_overlap` has no history
+  for the proposed new name but lists the recorded analytics tools.
+- `trials.converting` includes the approaching trial; `reminders.say_now`
+  contains its pending page. `reminders.coverage.pages_acknowledged` remains
+  **0** because generating a reminder is not delivery.
+
+For your own records, supply only the data you choose to log or import.
+Record the provider's actual deadline; keep unknown dates and prices visible.
+After your agent delivers a real reminder, it can acknowledge that page.
+
 ## Running the clock
 
 An MCP server speaks when spoken to; it cannot wake anybody. So the
@@ -108,17 +151,16 @@ pager runs from outside:
 
 ```
 # every morning at 9 — prints nothing when nothing is due
-0 9 * * *  npx -y -p scvd-tab@0.11.2 scvd-tab-pager
+0 9 * * *  npx -y -p scvd-tab@0.11.3 scvd-tab-pager
 ```
 
 Or from a clone: `cd /path/to/repo && npm run --silent tab:pager`.
 
-Without a cron the clock still runs, on any tool call: the next time
-the agent touches the tab for any reason, the open pages ride back
-with the answer. With a cron the warning is **timely**; without one it
-is at least **inevitable**. With neither a cron nor an agent that has
-rounds, nothing arrives — that case is not fixed and is not pretended
-away.
+Without a scheduler, pending reminders return on the next agent call.
+The agent must still deliver them; a tool result alone does not establish
+that you were reminded. A scheduler can run the due check on time, but its
+output still needs a working delivery path. If neither an agent nor a
+scheduler runs the check, no reminder is surfaced.
 
 A page handed to an agent is not a page the builder heard. Only
 `acknowledge_pages` records that somebody said it out loud, and pages

@@ -1,3 +1,4 @@
+import {FIRST_CONTRIBUTION_ROUND, FIRST_CONTRIBUTION_MAXIMUM} from "@/services/contribution-launch";
 import { firstContributionBatch } from "@/store/contribution-first-batch";
 import { contributionWork } from "@/services/contribution-follow-through";
 import { CONTRIBUTION_UPDATE_CAP, CONTRIBUTION_UPDATE_NOTE_CAP, CONTRIBUTION_UPDATE_BYTES, CONTRIBUTION_REVIEW_BYTES, CONTRIBUTION_ARRIVAL_GOALS } from "@/store/contribution-tasks";
@@ -30,10 +31,26 @@ function workQueue(index: Index) {
     <h2>Self-reported arrival</h2><p>${provided} of ${submissions} retained submissions on this page include an optional arrival answer; ${submissions - provided} did not. Counts include accepted, rejected and unreviewed submissions, across all retained dates. They count submissions, not people, and do not measure traffic, acquisition or verified demand.</p>
     <table><tr><th>Reported job</th><th>Submissions on this page</th></tr>${goals.map(([label, count]) => `<tr><td>${esc(label)}</td><td>${count}</td></tr>`).join("")}<tr><td>Not provided</td><td>${submissions - provided}</td></tr></table>`;
 }
+export function contributionLaunchPanel(error?: string) {
+  return `<section id="contribution-launch"><h2>Post the first round</h2>
+    ${error ? `<p role="alert">${esc(error)} Some briefs may already be posted. Retrying uses the same ids and terms; it cannot add another round or reopen closed work.</p>` : ""}
+    <p>${FIRST_CONTRIBUTION_ROUND.length} briefs · maximum $${FIRST_CONTRIBUTION_MAXIMUM} Base USDC for this round, paid from the existing field wallet after acceptance. No purchase is required. This is a separate commitment; shopping and study caps stay unchanged.</p>
+    ${FIRST_CONTRIBUTION_ROUND.map(t => `<details><summary>${esc(t.title)} · $${t.reward_usd} × ${t.slots} slot</summary><p><a href="${esc(t.target)}">Task entry point</a></p><p>${esc(t.brief)}</p><p><strong>Acceptance:</strong> ${esc(t.acceptance)}</p><p>Closes ${esc(t.expires_at)}. Review within ${t.review_days} days of submission; pay within ${t.payment_days} days of acceptance.</p><p><a href="${CONTRIBUTION_API}/${esc(t.id)}">Read this brief if already posted</a></p></details>`).join("")}
+    <p>One press posts these exact terms. Repeating it recovers this same round. It sends no payment and does not check the wallet balance; accepted rewards are paid separately by the keeper.</p>
+    <form method="post" action="${CONTRIBUTION_ADMIN}/launch-first-round"><button>Post first round — $${FIRST_CONTRIBUTION_MAXIMUM} maximum</button></form></section>`;
+}
+export function renderContributionLaunchSuccess() {
+  return renderAdminShell("bounties", `<h2>First round saved</h2><p>The ${FIRST_CONTRIBUTION_ROUND.length} briefs in this round are posted, with a combined maximum of $${FIRST_CONTRIBUTION_MAXIMUM}. Existing closed or expired work stays closed or expired. No payment was sent.</p><p>These direct links are available even while the board listing catches up.</p><ul>${FIRST_CONTRIBUTION_ROUND.map(t => `<li><a href="${CONTRIBUTION_ADMIN}/${esc(t.id)}">${esc(t.title)} — review desk</a> · <a href="${CONTRIBUTION_API}/${esc(t.id)}">Public terms and current availability</a></li>`).join("")}</ul><p><a href="${CONTRIBUTION_ADMIN}">All contribution work</a></p>`);
+}
+export function renderContributionLaunchFailure(error: string) {
+  return renderAdminShell("bounties", `<h2>First-round posting needs attention</h2><p><a href="${CONTRIBUTION_ADMIN}">Contribution desk</a></p>${contributionLaunchPanel(error)}`);
+}
+
 export function renderContributionDesk(index: Index | null, state: ContributionTaskState | null, now: number, base: string) {
   let body = `<h2>Contribution work</h2><p><a href="/admin/bounties">Money-out desk</a> · <a href="${CONTRIBUTION_ADMIN}">Contribution briefs</a> · <a href="${CONTRIBUTION_API}">Public task list</a></p>
   <p>Posted rewards are a separate commitment for the maximum shown on each brief. Posting does not draw from the automatic shopping or study budgets. This desk never signs or sends money.</p>`;
   if (index) {
+    body += contributionLaunchPanel();
     body += `<p>${esc(index.indexing_note)}</p><table><tr><th>Brief</th><th>Status</th><th>Available slots</th><th>Reward / maximum</th><th>Awaiting review</th></tr>${index.tasks.map(t => `<tr><td><a href="${CONTRIBUTION_ADMIN}/${esc(t.id)}">${esc(t.title)}</a></td><td>${esc(t.status)}</td><td>${t.available_slots}</td><td>$${t.reward_usd} / $${t.maximum_reward_usd}</td><td>${t.pending_review}</td></tr>`).join("")}</table>`;
     body += workQueue(index);
     if (index.truncated) body += `<p>This is a partial list.${index.cursor ? ` <a href="${CONTRIBUTION_ADMIN}?cursor=${encodeURIComponent(index.cursor)}">Next page</a>` : ""}</p>`;

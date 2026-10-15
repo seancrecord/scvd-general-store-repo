@@ -4,6 +4,24 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
+## Unreleased — first-screen observation scope (October 14)
+
+Markdown reports now put known advisory observations and their unknowns before
+the structured evidence block. Readings derive only from verified exact-subject
+rows and the reader's fixed vocabulary; repeated meanings are shown once.
+Unknown codes, unsigned history and failed signatures cannot supply a finding.
+Signed bytes and JSON output are unchanged. This addresses the retained October
+12 interpretation failures; improved native buyer completion is not yet measured.
+
+## Unreleased — report consumption
+
+`--format markdown --report-out NEW_FILE --report-stdout` saves and displays
+identical bounded report bytes in one invocation for either verification
+command. Existing receipt output, failure exits and exclusive file creation
+remain unchanged. This removes a separate local file read for restricted hosts;
+it does not establish that an agent interpreted the report correctly. Source
+candidate only; no registry publication or new buyer acceptance claim.
+
 ## Unreleased — advisory scope and exported-bundle reports
 
 `verify-source --subject` adds bounded reader commentary beside signed advisory
