@@ -101,8 +101,8 @@ export function checkoutContract(base: string) {
     mcp_payment_key: "x402/payment",
     mcp_idempotency_key: "x402/idempotency-key",
     steps: [
-      "Use the inputs already supplied by discovery or next_step in a quote/refusal. The input contract is optional reference; mcp_url names the single buy tool.",
-      "GET buy_url_template, replacing every <slot> with your value; it is buy_url with this door's required inputs already in place. The free 402 quote names required_params; PAYMENT-REQUIRED is base64 JSON. A bare GET of buy_url also quotes, but a door with required inputs refuses the PAID request without them, so buy the template URL, not the bare one.",
+      "Use discovery or next_step for inputs; the input contract is optional. mcp_url names the buy tool.",
+      "GET buy_url_template with every <slot> filled. The free 402 quote names required_params; PAYMENT-REQUIRED is base64 JSON. Bare buy_url also quotes, but required inputs must be supplied and validated on an unsigned request before signing.",
       "Select an offered network and amount within budget; copy atomic amounts unchanged. Without a supported wallet/client, stop before signing.",
       "Retry identical inputs with the signed v2 payload in PAYMENT-SIGNATURE and Idempotency-Key from quote.idempotency.suggested_key. X-PAYMENT also accepts v2, never v1.",
       "MCP: tools/list at mcp_url. Unpaid: isError:true and structuredContent quote. Retry with params._meta['x402/payment']; copy result._meta['x402/idempotency-key'] to the same key in params._meta.",

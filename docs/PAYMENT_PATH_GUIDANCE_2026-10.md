@@ -117,3 +117,14 @@ The existing bulk validator refused the current unbounded `/open-for-business/{w
 OpenAPI path. This bounded release read uses only the same 39 concrete paths as
 Forge; three templated GET paths are excluded and no blanket coverage is claimed.
 [Local preflight results](../research/payment-path-guidance-2026-10-15/release-preflight.json).
+
+CI caught the guide's two content fingerprints, which intentionally change with
+the authorized payment instructions. Restoring only the guide to main c12f09a8
+reproduced both old pins (14/14); the candidate failed both. The new fingerprints
+record that reviewed three-sentence addition, preserving the byte-level guard.
+
+CI also caught a compact item contract 61 bytes above its existing 18,000-byte
+limit. Shortened the shared checkout prose while retaining the probe URL,
+optional-contract guidance and unsigned validation instruction; no reader limit
+was raised. The 91 focused payment, entrypoint, guide and discovery-budget
+checks pass, followed by typecheck. The full CI rerun gates the final head.
