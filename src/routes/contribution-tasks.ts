@@ -34,7 +34,7 @@ function contract(base: string) {
   return {...contributionGuide(base), templates: CONTRIBUTION_TEMPLATES, templates_are: "Examples for the keeper to post with explicit terms; templates are not open work.", report_fields: CONTRIBUTION_REPORT_FIELDS, field_max_characters: CONTRIBUTION_FIELD_CAP, request_max_bytes: CONTRIBUTION_REQUEST_BYTES, report_max_bytes: CONTRIBUTION_REPORT_BYTES, reservation_hours: CONTRIBUTION_RESERVATION_HOURS,
     optional_arrival: {description: CONTRIBUTION_ARRIVAL_DESCRIPTION, goals: CONTRIBUTION_ARRIVAL_GOALS, found_via_max_characters: CONTRIBUTION_ARRIVAL_CAP, max_bytes: CONTRIBUTION_ARRIVAL_BYTES},
     progress: "Private status includes dated keeper follow-through entries after review. They do not replace the acceptance decision, reset its payment deadline or verify a fix independently.",
-    payment: "The keeper pays accepted work separately in Base USDC within the posted payment period. This API never signs or sends money. A reported transaction is the keeper's statement; its settlement is not verified by this instrument.",
+    payment: "Read the brief payment_method before reserving. signed_authorization briefs issue Base USDC authorizations after acceptance and a separate keeper approval, within the payment period. Retrieve them through private status; arrange your own redemption and gas. SCVD sponsors no gas and broadcasts nothing. Legacy keeper_paid_base_usdc briefs retain their original separate-payment terms. Neither a signature nor a keeper payment report verifies settlement.",
     eligibility: "No purchase or positive finding required. Acceptance uses the posted brief and evidence, not praise. A daily visitor digest limits simultaneous reservations; shared networks can share that limit. Reservations expire. This is not a per-person limit or proof of identity.",
     privacy: "Reports and review references stay private. No email, bank credentials or wallet secrets are requested. Do not upload other people's private data. A daily visitor digest limits reservations and is cleared by the next daily retention alarm. No contribution is automatically published. Submitted evidence and review records are retained privately; they do not expire with the reservation.",
     requests: {
@@ -76,7 +76,7 @@ for (const action of ["reserve", "submit", "status", "release"] as const) {
     const state = result.data.status;
     const completion = result.status === 200 && (state === "accepted" || state === "payment_reported") ? contributionCompletion(c.env.STORE_BASE_URL, {
       kind: "contribution", contribution_kind: result.data.task_kind, arrival_goal: result.data.arrival_goal, task_id: id, reward_usd: Number(result.data.reward_usd),
-      reward_state: state === "accepted" ? "accepted_pending_payment" : "payment_reported",
+      reward_state: result.data.payout && result.data.payout.state !== "issuance_pending" ? "authorization_issued" : state === "accepted" ? "accepted_pending_payment" : "payment_reported",
       what_was_verified: "The keeper recorded acceptance against the posted brief. This is a review decision, not an independently verified observation.",
       what_was_not: "The report's claims, payout transaction and completion of any wider task have not been independently verified by this instrument.",
     }) : {};
@@ -139,11 +139,11 @@ adminContributionRoutes.post("/", c => adminFormAction(c, "post", null, async (b
   await kvPut(c.env.COUNTERS, INDEX + terms.id, "1");
   return form ? c.redirect(`/admin/bounties/contributions/${terms.id}`, 303) : c.json(result.data, 201);
 }));
-for (const action of ["close", "review", "payment", "progress"] as const) {
+for (const action of ["close", "review", "payment", "progress", "authorize"] as const) {
   adminContributionRoutes.post(`/:id/${action}`, c => {
     const id = c.req.param("id"); if (!validId(id)) return c.json({code: "task_missing", error: "No posted task with that id."}, 404);
     return adminFormAction(c, action, id, async (body, form) => {
-      const result = await task(c.env, id).act(action, body);
+      const result = action === "authorize" ? await task(c.env, id).issueReward(body) : await task(c.env, id).act(action, body);
       return form && result.status === 200 ? c.redirect(`/admin/bounties/contributions/${id}`, 303) : c.json(result.data, result.status);
     });
   });

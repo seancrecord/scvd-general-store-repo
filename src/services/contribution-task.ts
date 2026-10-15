@@ -1,3 +1,4 @@
+import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
 import { DurableObject } from "cloudflare:workers";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { sha256Hex } from "@/lib/idempotency";
@@ -8,6 +9,7 @@ import { CONTRIBUTION_UPDATE_CAP, CONTRIBUTION_UPDATE_NOTE_CAP, CONTRIBUTION_UPD
 
 export interface ContributionTaskTerms {
   id: string; kind: string; title: string; target: string; brief: string; acceptance: string;
+  payment_method?: "signed_authorization";
   reward_usd: number; slots: number; expires_at: string; review_days: number; payment_days: number;
 }
 export type ContributionReport = Record<keyof typeof CONTRIBUTION_REPORT_FIELDS, string>;
@@ -19,11 +21,12 @@ export interface ContributionReservation {
   arrival?: ContributionArrival; updates?: ContributionUpdate[];
   report?: ContributionReport; payout_to?: string; submission_digest?: string; submitted_at?: string;
   review?: {decision: string; reason: string; outcome: string; reference: string; at: string};
+  payout?: ContributionPayout;
   payment?: {tx_hash: string; at: string; verification: "not_checked"};
 }
 export interface ContributionTaskState {terms: ContributionTaskTerms; published_at: string; closed: boolean; reservations: ContributionReservation[]}
 type ResultData = Partial<Omit<ReturnType<typeof publicContribution>, "status"> & Omit<ReturnType<typeof ownReservation>, "status">> & {status?: string; code?: string; error?: string};
-interface Result {status: 200 | 201 | 400 | 404 | 409; data: ResultData}
+interface Result {status: 200 | 201 | 400 | 404 | 409 | 503; data: ResultData}
 const DAY = 86400000;
 // A small, keeper-posted task has bounded capacity and bounded retained attempts.
 export const CONTRIBUTION_MAX_SLOTS = 10;
@@ -64,7 +67,8 @@ function url(value: unknown, field: string): string {
   return read;
 }
 export function contributionTerms(body: Record<string, unknown>, now: number): ContributionTaskTerms {
-  onlyFields(body, ["id", "kind", "title", "target", "brief", "acceptance", "reward_usd", "slots", "expires_at", "review_days", "payment_days"]);
+  onlyFields(body, ["id", "kind", "title", "target", "brief", "acceptance", "reward_usd", "slots", "expires_at", "review_days", "payment_days", "payment_method"]);
+  if (body.payment_method !== undefined && body.payment_method !== "signed_authorization") fail("payment_method must be signed_authorization when provided.");
   const id = text(body.id, "id", 64);
   if (!/^[a-z0-9][a-z0-9-]{2,63}$/.test(id)) fail("id needs 3–64 lowercase letters, digits or hyphens.");
   const kind = text(body.kind, "kind", 20);
@@ -77,15 +81,15 @@ export function contributionTerms(body: Record<string, unknown>, now: number): C
   if (typeof reward !== "number" || !Number.isFinite(reward) || reward <= 0 || !Number.isSafeInteger(Math.round(reward * 100)) || Math.abs(reward * 100 - Math.round(reward * 100)) > 1e-8) fail("reward_usd needs a positive amount in whole cents.");
   const slots = number(body.slots, "slots", CONTRIBUTION_MAX_SLOTS);
   if (!Number.isSafeInteger(Math.round(reward * 100) * slots)) fail("The maximum reward across all slots must fit within whole safe cents.");
-  return {id, kind, title: text(body.title, "title", 160), target: url(body.target, "target"), brief: text(body.brief, "brief"), acceptance: text(body.acceptance, "acceptance"), reward_usd: reward, slots, expires_at: new Date(time).toISOString(), review_days: number(body.review_days, "review_days", CONTRIBUTION_MAX_REVIEW_DAYS), payment_days: number(body.payment_days, "payment_days", CONTRIBUTION_MAX_PAYMENT_DAYS)};
+  return {...(body.payment_method === "signed_authorization" ? {payment_method: "signed_authorization" as const} : {}), id, kind, title: text(body.title, "title", 160), target: url(body.target, "target"), brief: text(body.brief, "brief"), acceptance: text(body.acceptance, "acceptance"), reward_usd: reward, slots, expires_at: new Date(time).toISOString(), review_days: number(body.review_days, "review_days", CONTRIBUTION_MAX_REVIEW_DAYS), payment_days: number(body.payment_days, "payment_days", CONTRIBUTION_MAX_PAYMENT_DAYS)};
 }
 export function publicContribution(state: ContributionTaskState, now: number) {
   const active = state.reservations.filter(r => r.status === "submitted" || r.status === "accepted" || r.status === "payment_reported" || (r.status === "reserved" && Date.parse(r.submit_by) > now));
   const availabilityReason = state.closed ? "closed" : Date.parse(state.terms.expires_at) <= now ? "expired" : state.reservations.length >= CONTRIBUTION_ATTEMPT_CAP ? "attempt_limit" : active.length >= state.terms.slots ? "slots_full" : "available";
-  return {...state.terms, availability_reason: availabilityReason, published_at: state.published_at, purchase_required: false, payment_method: "keeper_paid_base_usdc", maximum_reward_usd: Math.round(state.terms.reward_usd * 100) * state.terms.slots / 100, status: state.closed ? "closed" : Date.parse(state.terms.expires_at) <= now ? "expired" : "open", available_slots: availabilityReason === "available" ? state.terms.slots - active.length : 0, pending_review: state.reservations.filter(r => r.status === "submitted").length};
+  return {...state.terms, availability_reason: availabilityReason, published_at: state.published_at, purchase_required: false, payment_method: state.terms.payment_method ?? "keeper_paid_base_usdc", redemption: state.terms.payment_method ? CONTRIBUTION_REDEMPTION : null, maximum_reward_usd: Math.round(state.terms.reward_usd * 100) * state.terms.slots / 100, status: state.closed ? "closed" : Date.parse(state.terms.expires_at) <= now ? "expired" : "open", available_slots: availabilityReason === "available" ? state.terms.slots - active.length : 0, pending_review: state.reservations.filter(r => r.status === "submitted").length};
 }
 function ownReservation(task: ContributionTaskState, row: ContributionReservation, now: number) {
-  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
+  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
 }
 
 /** The alarm and its tests use the same clock for both expiry and the next due time. */
@@ -129,6 +133,38 @@ export class ContributionTask extends DurableObject<Env> {
     const state: ContributionTaskState = {terms, published_at: new Date(now).toISOString(), closed: false, reservations: []};
     this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY CHECK(id=1), data TEXT NOT NULL)");
     this.save(state); return {status: 201, data: publicContribution(state, now)};
+  }
+  /** An immutable intent precedes external I/O. Concurrent presses sign the same
+   * nonce; the fresh read after signing preserves intervening notes and alarms. */
+  async issueReward(body: Record<string, unknown>, now = Date.now()): Promise<Result> {
+    try {onlyFields(body, ["submission_id"]);} catch {return {status: 400, data: {code: "invalid_input", error: "Send only submission_id."}};}
+    try {
+      const refuse = (code: string, error: string): Result => ({status: 409, data: {code, error}});
+      let state = this.read();
+      let row = state?.reservations.find(r => r.id === body.submission_id);
+      if (!state || !row || row.status !== "accepted" || state.terms.payment_method !== "signed_authorization" || row.payment) return refuse("not_authorizable", "An accepted submission under signed-authorization terms is required. Existing terms are unchanged.");
+      if (row.payout?.signature) return {status: 200, data: ownReservation(state, row, now)};
+      const signer = await contributionSigner(this.env);
+      state = this.read()!; row = state.reservations.find(r => r.id === body.submission_id)!;
+      if (row.payout?.signature) return {status: 200, data: ownReservation(state, row, now)};
+      if (!row.payout) {
+        row.payout = {created_at: new Date(now).toISOString(), authorization: {from: signer.address, to: row.payout_to!,
+          value: contributionRewardUnits(state.terms.reward_usd), validAfter: "0",
+          validBefore: String(Math.floor(now / 1000) + CONTRIBUTION_AUTH_SECONDS),
+          nonce: `0x${[...crypto.getRandomValues(new Uint8Array(32))].map(b => b.toString(16).padStart(2, "0")).join("")}`}};
+        this.save(state);
+      }
+      const intent = row.payout;
+      if (intent.authorization.from.toLowerCase() !== signer.address.toLowerCase()) return refuse("payout_wallet_changed", "The original signing wallet is required. No replacement authorization was made.");
+      if (Number(intent.authorization.validBefore) * 1000 <= now) return refuse("authorization_expired", "The saved authorization window expired. No new nonce was created; review the retained record before resolving this obligation.");
+      const signature = await signContributionReward(this.env, signer, intent.authorization);
+      state = this.read()!; row = state.reservations.find(r => r.id === body.submission_id)!;
+      if (!row.payout?.signature) {
+        row.payout = {...intent, signature, issued_at: new Date(now).toISOString()};
+        this.save(state);
+      }
+      return {status: 200, data: ownReservation(state, row, now)};
+    } catch {return {status: 503, data: {code: "payout_unavailable", error: "Reward authorization could not be issued or saved. The original intent is retained if saved. Retry this same submission; no second payment or new nonce should be created."}};}
   }
   async act(action: string, body: Record<string, unknown>, visitorHash = "", now = Date.now()): Promise<Result> {
     try {
@@ -213,6 +249,7 @@ export class ContributionTask extends DurableObject<Env> {
         row.updates = [...(row.updates ?? []), update];
       } else if (action === "payment") {
         onlyFields(body, ["submission_id", "tx_hash"]);
+        if (state.terms.payment_method === "signed_authorization" || row.payout) return refused(409, "authorization_terms", "This brief uses signed authorization. Do not send a second manual payment; verify the original authorization on chain.");
         if (typeof body.tx_hash !== "string" || !/^0x[a-fA-F0-9]{64}$/.test(body.tx_hash)) fail("tx_hash needs the Base transaction hash of the payment already made.");
         if (row.payment) return row.payment.tx_hash === body.tx_hash ? {status: 200, data: ownReservation(state, row, now)} : refused(409, "payment_immutable", "A different payment is already reported. No replacement was stored.");
         if (row.status !== "accepted") return refused(409, "not_accepted", "Only accepted work can have a payment recorded.");

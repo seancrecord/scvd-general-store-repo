@@ -1,5 +1,7 @@
 import { CONTRIBUTION_API, CONTRIBUTION_REPORT_FIELDS, CONTRIBUTION_FIELD_CAP, CONTRIBUTION_UPDATE_CAP, CONTRIBUTION_ARRIVAL_CAP, CONTRIBUTION_ARRIVAL_GOALS, CONTRIBUTION_ARRIVAL_DESCRIPTION } from "@/store/contribution-tasks";
 
+import {CONTRIBUTION_REDEMPTION} from "@/services/contribution-payout";
+
 const text = {type: "string"};
 const ref = (name: string) => ({$ref: `#/components/schemas/${name}`});
 const response = (schema: object) => ({description: "Current terms or private task state; no funds sent.", content: {"application/json": {schema}}});
@@ -7,25 +9,28 @@ const steps = {type: "array", items: ref("ContributionStep")};
 const reportStrings = {type: "object", properties: Object.fromEntries(Object.keys(CONTRIBUTION_REPORT_FIELDS).map(k => [k, text]))};
 const key = {type: "string", pattern: "^[a-f0-9]{64}$", description: "Local random reservation key, reused for retries. Never a wallet key."};
 export const CONTRIBUTION_SCHEMAS = {
+  ContributionRedemption: {type: ["object", "null"], properties: {store_sponsors_gas: {type: "boolean", const: false}, store_broadcasts: {type: "boolean", const: false}, authorization_is_payment_received: {type: "boolean", const: false}, network: {type: "string", const: CONTRIBUTION_REDEMPTION.network}, asset: {type: "string", const: CONTRIBUTION_REDEMPTION.asset}, validity_seconds: {type: "integer", const: CONTRIBUTION_REDEMPTION.validity_seconds}, instructions: text}},
+  ContributionPayout: {type: "object", properties: {state: {type: "string", enum: ["issuance_pending", "authorization_issued", "expired"]}, created_at: text, issued_at: text, signature: text, redemption_state: {type: "string", const: "not_observed"}, redemption: ref("ContributionRedemption"), authorization: {type: "object", properties: Object.fromEntries(["from", "to", "value", "validAfter", "validBefore", "nonce"].map(k => [k, text]))}}},
   ContributionKeyInput: {type: "object", additionalProperties: false, required: ["reservation_key"], properties: {reservation_key: key}},
   ContributionReportStrings: reportStrings,
   ContributionStep: {type: "object", required: ["action", "method", "url", "required_fields", "deadline_at", "note"], properties: {action: text, method: {type: "string", enum: ["GET", "POST"]}, url: text, required_fields: {type: "array", items: text}, deadline_at: {type: ["string", "null"]}, note: text}},
   ContributionWorkPacket: {type: "object", properties: {
     ...Object.fromEntries(["task_id", "task_url", "target", "brief", "acceptance", "guidance_is"].map(k => [k, text])),
     evidence_prompts: ref("ContributionReportStrings"), report_draft: ref("ContributionReportStrings"),
-    costs: {type: "object", properties: {required_store_spend_usd: {type: "number", const: 0}, reward_usd: {type: "number"}, net_earnings: {type: "null"}, worker_costs: text, payment: text, funding: text}},
+    costs: {type: "object", properties: {required_store_spend_usd: {type: "number", const: 0}, reward_usd: {type: "number"}, net_earnings: {type: "null"}, worker_costs: text, payment: text, payment_method: text, redemption: ref("ContributionRedemption"), funding: text}},
     deadlines: {type: "object", properties: {new_reservations_close_at: text, submission: text, review_days: {type: "integer"}, payment_days: {type: "integer"}}},
   }},
   ContributionArrival: {type: "object", additionalProperties: false, required: ["goal", "found_via"], description: CONTRIBUTION_ARRIVAL_DESCRIPTION, properties: {goal: {type: "string", enum: Object.keys(CONTRIBUTION_ARRIVAL_GOALS)}, found_via: {type: "string", minLength: 1, maxLength: CONTRIBUTION_ARRIVAL_CAP}}},
   ContributionTask: {type: "object", required: ["id", "reward_usd", "available_slots", "purchase_required"], properties: {
     ...Object.fromEntries(["id", "kind", "title", "target", "brief", "acceptance", "expires_at", "published_at", "status", "payment_method", "availability_reason", "task_url"].map(k => [k, text])),
     ...Object.fromEntries(["slots", "review_days", "payment_days", "available_slots", "pending_review"].map(k => [k, {type: "integer"}])),
-    reward_usd: {type: "number"}, maximum_reward_usd: {type: "number"}, purchase_required: {type: "boolean", const: false},
+    reward_usd: {type: "number"}, maximum_reward_usd: {type: "number"}, redemption: ref("ContributionRedemption"), purchase_required: {type: "boolean", const: false},
   }},
   ContributionState: {type: "object", required: ["task_id", "submission_id", "status", "reward_usd", "submit_by"], properties: {
     ...Object.fromEntries(["task_id", "submission_id", "status", "reserved_at", "submit_by", "task_kind", "arrival_goal"].map(k => [k, text])),
     reward_usd: {type: "number"}, review_due_at: {type: ["string", "null"]}, payment_due_at: {type: ["string", "null"]},
     review: {type: "object", properties: Object.fromEntries(["decision", "reason", "outcome", "reference", "at"].map(k => [k, text]))},
+    payout: ref("ContributionPayout"),
     payment: {type: "object", properties: {tx_hash: text, at: text, verification: {type: "string", const: "not_checked"}}},
     updates: {type: "array", maxItems: CONTRIBUTION_UPDATE_CAP, description: "Append-only keeper follow-through; original review and payment deadline remain unchanged.", items: {type: "object", properties: Object.fromEntries(["update_id", "outcome", "note", "reference", "at"].map(k => [k, text]))}},
     next_steps: steps,

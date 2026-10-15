@@ -117,7 +117,11 @@ describe("a contribution worker can follow the returned path", () => {
   it("names no-purchase contribution work in the first earning answer and separates its payment method", () => {
     const answers = agentJobAnswers(BASE);
     expect(answers.find(a => a.id === "earn")!.answer).toContain(CONTRIBUTION_API);
-    expect(answers.find(a => a.id === "upfront")!.answer).toContain("keeper pays");
+    const upfront = answers.find(a => a.id === "upfront")!.answer;
+    expect(upfront).toContain("signed-authorization rewards require your own redemption and gas");
+    expect(upfront).toContain("SCVD does not sponsor gas");
+    expect(upfront).toContain("Legacy briefs retain their separate-payment terms");
+    expect(upfront).toContain("does not redeem it or verify settlement");
   });
 });
 

@@ -3151,3 +3151,16 @@ stable terms. Stock-client tests exercise both issuers, tampering and legacy
 challenges with mocked settlement. No funded or live settlement was attempted.
 The web renderer could not fetch the commit page; the primary API source and
 installed implementation were available.
+
+
+## 2026-10-15 — contribution authorization and durable retry identity
+
+Read https://eips.ethereum.org/EIPS/eip-3009 and
+https://developers.cloudflare.com/durable-objects/api/state/ today.
+TransferWithAuthorization binds recipient/value/nonce and validity while
+allowing a separate transaction sender. That permits another submitter; it
+does not establish an available sponsor or verified redemption. The existing
+Base USDC domain and authorizationTypes are reused. DO SQLite writes do not
+yield; external signing calls do. Persist the intent before I/O and reread
+before saving the result instead of holding an external-I/O lock. No new
+relayer service, wallet claim or vendor integration was qualified.

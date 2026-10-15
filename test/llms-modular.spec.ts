@@ -1229,8 +1229,11 @@ const BASE = "https://scvd.store";
 // The unchanged parent guide reproduced both previous pins (14/14) before
 // editing agent-jobs.ts; the new answer-parity check failed on that baseline.
 // 2026-10-15: merge both approved additions; re-pin the combined guide.
+// 2026-10-15: reviewed contribution payment/free-cost wording and two earning
+// answers now disclose recipient redemption and gas. Restoring the shared
+// contribution copy first reproduced the prior guide baseline (14/14).
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "d44f76c31971588a7b3e9a07ca96bc27742976cda561bd4318e2b56bdd0b1e69";
+  "63f2b8a461cfbdc2ff1f8b2553799aaf6bd0741e5737c94afc174b086a201dec";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1333,7 +1336,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "4977386143cc6ec38bcb9df04fb10a1bbbe3080f419d966ec12c3b35f8e8dda2",
+      "900a18bcebf3d73230757b2b8b037a267ba79cabaec2f844f7882ae4c934d833",
     );
   });
 

@@ -1,5 +1,14 @@
 # ROADMAP — September 2026
 
+## October 15 — contribution redemption without store-paid gas
+
+Implemented locally: explicit signed-authorization terms, separate keeper
+issuance, immutable retry identity, private pickup, a six-USDC read-only QA
+draft and page-scoped commitment visibility. Existing terms remain intact;
+no cap was raised and no work posted. [Scope, limits and next funding-control
+work](docs/CONTRIBUTION_REDEMPTION_2026-10.md).
+
+
 ## October 14 — Field Study participation clarity
 
 Keeper approved one paid study per operator per week, shared across agents

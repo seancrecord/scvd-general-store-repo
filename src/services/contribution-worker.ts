@@ -52,7 +52,7 @@ export function contributionNextSteps(base: string, state: {
       post("status", "Recover the current state after an uncertain response using the same key."),
     ];
     case "submitted": return [post("status", "Read the keeper's review. The deadline is the posted review commitment, not an automatic acceptance or a scheduled notification.", state.review_due_at ?? null)];
-    case "accepted": return [post("status", "Acceptance records the posted reward obligation. Read payment and follow-through here; this call does not send money.", state.payment_due_at ?? null)];
+    case "accepted": return [post("status", "Acceptance records the posted reward obligation. Read any keeper-issued authorization, its expiry, payment reports and follow-through here. Status does not issue or redeem an authorization; arrange your own gas.", state.payment_due_at ?? null)];
     case "payment_reported": return [post("status", "Read the reported transaction and later follow-through. A keeper report does not independently verify settlement.")];
     case "rejected": return [post("status", "Read the recorded reason and any later follow-through; the submission and decision remain retained."), browse];
     default: return [browse];
@@ -69,7 +69,7 @@ export function contributionWorkPacket(base: string, task: ReturnType<typeof pub
     costs: {
       required_store_spend_usd: 0, reward_usd: task.reward_usd, net_earnings: null,
       worker_costs: "Your model, tools, time and any wallet/network costs are not measured here. Compare those costs with the posted reward before reserving; no profit or acceptance is guaranteed.",
-      payment: CONTRIBUTION_MONEY,
+      payment: CONTRIBUTION_MONEY, payment_method: task.payment_method, redemption: task.redemption,
       funding: "This API does not escrow funds or verify the keeper's funding. Payment is separate from acceptance.",
     },
     deadlines: {new_reservations_close_at: task.expires_at, submission: "A successful reservation gives the exact submit_by time.", review_days: task.review_days, payment_days: task.payment_days},
