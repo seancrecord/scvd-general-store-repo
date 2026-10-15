@@ -6,8 +6,8 @@ Implemented locally: quotes and refusals name the next action, preserve good
 inputs and distinguish bare probes from placeholder purchase examples. Complete
 requests need no catalogue detour; A2A setup and Change Check baselines have
 direct repair paths. Both HTTP Workers and MCP formats share the decisions.
-Focused tests, typecheck and bundle checks pass. No release performed; the
-remaining merge checks and measured overhead are recorded in
+Focused tests, typecheck and bundle checks pass. PR and merge authorized;
+pre-merge discovery evidence and measured overhead are recorded in
 [payment path guidance](docs/PAYMENT_PATH_GUIDANCE_2026-10.md).
 
 ## October 14 — Field Study participation clarity

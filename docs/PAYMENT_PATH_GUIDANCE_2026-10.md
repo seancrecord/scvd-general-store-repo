@@ -1,8 +1,8 @@
 # Payment path guidance — October 15, 2026
 
 Implemented locally on `codex/payment-path-guidance`, based on `948e8c92`.
-Not committed, published or deployed. The keeper authorized the changes after
-reviewing Forge's payment-readiness report.
+The keeper authorized implementation after reviewing Forge's report, then
+authorized the PR and merge. Release preparation is recorded below.
 
 ## Finding
 
@@ -82,5 +82,38 @@ No funded purchase, live settlement, new Forge scan, skill publication or
 deployment was performed. Before merge, the full CI suite is required. House
 rule 62.4 also requires the store's preflight against its own doors and current
 outside-witness checks (x402-list per-check history and Bazaar coverage), with
-their visible route counts recorded in the PR. Those release checks remain;
-the local tests and earlier live probe are not substitutes for them.
+their visible route counts recorded in the PR. The pre-merge discovery readings are recorded below; CI must still pass on the
+final PR head before merge.
+
+
+## Pre-merge release reading — October 15
+
+Merged `c12f09a8` from main into the branch; the roadmap conflict preserves both
+entries. Typecheck, the production bundles and 68 focused post-merge tests pass.
+
+- The store's own `runChecks` and v3 `checksForBattery` were bundled locally and
+  applied to fresh unpaid responses from all 39 concrete OpenAPI GET routes:
+  39 returned 402 and passed every executed structural/consistency check. The
+  hosted preflight correctly refused its own hostname because Workers cannot
+  self-fetch; this local run uses its actual check implementation. No Solana
+  balance read, cryptographic offer verification or funded purchase was done.
+- x402-list lists 35 endpoints. Its latest ten per-check rows, ending
+  2026-10-15 17:17:16 UTC, each report 402, `is_up: true`, and 35 endpoints found.
+  This is partial coverage of our 39-route comparison. Data: x402-list.com,
+  CC BY 4.0. [Record and per-check history](../research/payment-path-guidance-2026-10-15/release-x402-list.json).
+- The public Bazaar resources first page returns four SCVD routes among 1,000
+  rows out of a reported 38,404. That page is not a full-index absence test.
+  [Page projection](../research/payment-path-guidance-2026-10-15/release-bazaar-page.json).
+- Coinbase's free validator reports active index entries for 36 of the 39
+  routes; A2A Repair Kit, Aura Walk and the Almanac route have null index data,
+  not a proven absence. Separately, 35 simulations are accepted. Four existing
+  live routes (Luckies, Graffiti on a Train, Certificate of Patronage and The
+  Collab) are rejected for missing top-level Bazaar metadata despite their
+  active index entries and valid 402s. This is an observed discovery discrepancy
+  before this PR is deployed, not proof of a payment failure or a repair claimed
+  by this PR. [Validation/index evidence](../research/payment-path-guidance-2026-10-15/release-bazaar-validation.json).
+
+The existing bulk validator refused the current unbounded `/open-for-business/{week}`
+OpenAPI path. This bounded release read uses only the same 39 concrete paths as
+Forge; three templated GET paths are excluded and no blanket coverage is claimed.
+[Local preflight results](../research/payment-path-guidance-2026-10-15/release-preflight.json).
