@@ -1,3 +1,6 @@
+import {CONTRIBUTION_SCHEMAS} from "@/lib/contribution-task-schema";
+import {buyInputSchema, buyInputExample} from "@/lib/bazaar-discovery";
+import {MENU_ITEMS} from "@/store";
 import { FIELD_STUDY_ELIGIBILITY } from "@/store/field-study-copy";
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
@@ -82,6 +85,14 @@ describe("OpenAPI headroom with all checkout rails enabled", () => {
           description: `${FIELD_STUDY_ELIGIBILITY.rule} ${FIELD_STUDY_ELIGIBILITY.reset} ${FIELD_STUDY_ELIGIBILITY.limits} ${FIELD_STUDY_ELIGIBILITY.transition}`,
         });
         expect({ ...expanded, properties: previous }, pointer).toEqual(schema);
+      } else if (pointer.startsWith("/paths/~1bounties/")) {
+        // New payout prerequisites are additive; retain the independent prior
+        // contract after checking this new field against its published schema.
+        const before = structuredClone(expanded);
+        const tasks = (before.properties.contribution_list as {properties:{tasks:{items:{properties:Record<string,unknown>}}}}).properties.tasks.items.properties;
+        expect(tasks.redemption).toEqual(CONTRIBUTION_SCHEMAS.ContributionRedemption);
+        delete tasks.redemption;
+        expect(before, pointer).toEqual(schema);
       } else {
         expect(expanded, pointer).toEqual(schema);
       }
@@ -153,4 +164,14 @@ it("retains the full conditional-read header contract through the shared paramet
     name: "If-None-Match", in: "header", required: false, schema: { type: "string" },
     description: "Send a prior ETag (SHA-256 of exact response bytes). Unchanged content returns 304 with no body.",
   });
+});
+
+it("retains every paid door's name parameter through the shared reference", async () => {
+  const document = await (await openapiRoutes.request("https://scvd.store/openapi.json", {}, allRails)).json() as Record<string, unknown>;
+  const paths = document.paths as Record<string, {get:{parameters:unknown[]}}>;
+  for (const item of MENU_ITEMS) {
+    const {description, ...schema} = buyInputSchema(item).properties.agent_name as Record<string,unknown>;
+    const parameters = paths[`/api/buy/${item.id}`]!.get.parameters.map(p=>expand(p, document)) as Record<string,unknown>[];
+    expect(parameters.find(p=>p.name === "agent_name")).toEqual({name:"agent_name",in:"query",schema,example:buyInputExample(item).agent_name,description});
+  }
 });

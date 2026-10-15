@@ -1,4 +1,4 @@
-import {env, runInDurableObject} from 'cloudflare:test';
+import {env, SELF, runInDurableObject} from 'cloudflare:test';
 import {afterEach, expect, it, vi} from 'vitest';
 import type {Env} from '@/types';
 import {createEvidenceBundle, verifyEvidenceBundle} from '../verifier/evidence-bundle.js';
@@ -23,9 +23,12 @@ afterEach(()=>vi.restoreAllMocks());
 it('privately returns a stable verifiable acceptance receipt binding terms and evidence, never payment', async()=>{
   const {store, terms, report} = await fixture();
   const a = await store.act('status', {reservation_key:key}, '', now+1000);
-  const proof = (a.data as Record<string, unknown>).acceptance_receipt as {signed_payload:string;signature:string;public_key:string};
+  const proof = (a.data as Record<string, unknown>).acceptance_receipt as {signed_payload:string;signature:string;public_key:string;verification:string};
   expect(proof).toBeDefined();
   expect(await verifyMessageSignature(proof.signed_payload,proof.signature,proof.public_key)).toBe(true);
+  const keyPath = proof.verification.match(/\/\.well-known\/[\w.-]+/)![0];
+  const published = await (await SELF.fetch(`https://scvd.store${keyPath}`)).json() as {public_key:string};
+  expect(proof.public_key).toBe(published.public_key);
   const bundle = await createEvidenceBundle(proof);
   expect((await verifyEvidenceBundle(bundle,{publicKey:await signing.getPublicKeyHex(bindings.SIGNING_KEY)})).valid).toBe(true);
   const originals = (a.data as Record<string, unknown>).acceptance_receipt_inputs as {terms:unknown;report:unknown};

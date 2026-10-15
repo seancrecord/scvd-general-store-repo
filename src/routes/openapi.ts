@@ -5937,6 +5937,12 @@ function pathParam(
  * spec cannot drift from the behaviour — which is the bug we have
  * been finding all week, in four different costumes.
  */
+// The optional name parameter is identical on most paid doors. Keep the exact
+// expanded contract once; a future item-specific example stays inline.
+const {description: agentNameDescription, ...agentNameType} = AGENT_NAME_SCHEMA;
+const AGENT_NAME_PARAMETER = {name: "agent_name", in: "query", schema: agentNameType,
+  example: buyInputExample(MENU_ITEMS[0]!).agent_name, description: agentNameDescription};
+const AGENT_NAME_PARAMETER_REF = {$ref: "#/components/parameters/AgentName"};
 function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
   const schema = buyInputSchema(item);
   const example = buyInputExample(item);
@@ -5957,7 +5963,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
           ? (definition as Record<string, unknown>)
           : {};
       const { description, ...rest } = property;
-      return {
+      const parameter = {
         name,
         in: "query",
         ...(required.has(name) ? { required: true } : {}),
@@ -5965,6 +5971,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
         ...(Object.hasOwn(example, name) ? { example: example[name] } : {}),
         ...(description ? { description } : {}),
       };
+      return name === "agent_name" && JSON.stringify(parameter) === JSON.stringify(AGENT_NAME_PARAMETER) ? AGENT_NAME_PARAMETER_REF : parameter;
     },
   ).filter((parameter): parameter is NonNullable<typeof parameter> => parameter !== null);
   /**
@@ -6286,7 +6293,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       responses: { ...SHARED_RESPONSES, ...CONTRIBUTION_RESPONSES, ...PAID_DOOR_RESPONSES, PaymentRequired: PAYMENT_REQUIRED_RESPONSE },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
-      parameters: { IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
+      parameters: { AgentName: AGENT_NAME_PARAMETER, IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
     },
     /**
      * THE VERSIONING PROMISE, STATED (2026-08-21). The store already
