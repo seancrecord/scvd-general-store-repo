@@ -3164,3 +3164,15 @@ Base USDC domain and authorizationTypes are reused. DO SQLite writes do not
 yield; external signing calls do. Persist the intent before I/O and reread
 before saving the result instead of holding an external-I/O lock. No new
 relayer service, wallet claim or vendor integration was qualified.
+
+
+### 2026-10-15 — contribution acceptance receipt
+
+Read Cloudflare Durable Object State API
+(https://developers.cloudflare.com/durable-objects/api/state/, updated September
+30): synchronous SQL does not yield; signing can. Receipt pickup rereads state
+after signing and saves only if another request has not already retained the
+receipt. It preserves intervening progress and uses no global lock. Reused the
+store's `signMessage`, `jcsCanonicalize` and existing portable evidence envelope;
+no new cryptographic format or dependency. Tests tamper with the signed reward,
+report digest and payment claim, and use the standalone evidence verifier.

@@ -11,6 +11,7 @@ const key = {type: "string", pattern: "^[a-f0-9]{64}$", description: "Local rand
 export const CONTRIBUTION_SCHEMAS = {
   ContributionRedemption: {type: ["object", "null"], properties: {store_sponsors_gas: {type: "boolean", const: false}, store_broadcasts: {type: "boolean", const: false}, authorization_is_payment_received: {type: "boolean", const: false}, network: {type: "string", const: CONTRIBUTION_REDEMPTION.network}, asset: {type: "string", const: CONTRIBUTION_REDEMPTION.asset}, validity_seconds: {type: "integer", const: CONTRIBUTION_REDEMPTION.validity_seconds}, instructions: text}},
   ContributionPayout: {type: "object", properties: {state: {type: "string", enum: ["issuance_pending", "authorization_issued", "expired"]}, created_at: text, issued_at: text, signature: text, redemption_state: {type: "string", const: "not_observed"}, redemption: ref("ContributionRedemption"), authorization: {type: "object", properties: Object.fromEntries(["from", "to", "value", "validAfter", "validBefore", "nonce"].map(k => [k, text]))}}},
+  ContributionAcceptanceReceipt: {type: "object", required: ["algorithm", "signed_payload", "signature", "public_key", "verification"], properties: {algorithm: {type: "string", const: "ed25519"}, signed_payload: text, signature: text, public_key: text, verification: text}},
   ContributionKeyInput: {type: "object", additionalProperties: false, required: ["reservation_key"], properties: {reservation_key: key}},
   ContributionReportStrings: reportStrings,
   ContributionStep: {type: "object", required: ["action", "method", "url", "required_fields", "deadline_at", "note"], properties: {action: text, method: {type: "string", enum: ["GET", "POST"]}, url: text, required_fields: {type: "array", items: text}, deadline_at: {type: ["string", "null"]}, note: text}},
@@ -30,7 +31,7 @@ export const CONTRIBUTION_SCHEMAS = {
     ...Object.fromEntries(["task_id", "submission_id", "status", "reserved_at", "submit_by", "task_kind", "arrival_goal"].map(k => [k, text])),
     reward_usd: {type: "number"}, review_due_at: {type: ["string", "null"]}, payment_due_at: {type: ["string", "null"]},
     review: {type: "object", properties: Object.fromEntries(["decision", "reason", "outcome", "reference", "at"].map(k => [k, text]))},
-    payout: ref("ContributionPayout"),
+    payout: ref("ContributionPayout"), acceptance_receipt: ref("ContributionAcceptanceReceipt"), acceptance_receipt_inputs: {type: "object", description: "Private original objects for independent digest comparison; never published on the board.", properties: {terms: {type: "object"}, report: ref("ContributionReportStrings"), review: {type: "object"}}}, acceptance_receipt_state: {type: "string", enum: ["issued", "unavailable"]},
     payment: {type: "object", properties: {tx_hash: text, at: text, verification: {type: "string", const: "not_checked"}}},
     updates: {type: "array", maxItems: CONTRIBUTION_UPDATE_CAP, description: "Append-only keeper follow-through; original review and payment deadline remain unchanged.", items: {type: "object", properties: Object.fromEntries(["update_id", "outcome", "note", "reference", "at"].map(k => [k, text]))}},
     next_steps: steps,

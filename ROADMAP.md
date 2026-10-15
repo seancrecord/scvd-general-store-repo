@@ -1,5 +1,15 @@
 # ROADMAP — September 2026
 
+## October 15 — signed contribution acceptance
+
+Implemented: private, retained acceptance receipts with terms/report/review
+digests, original inputs for verification, declared reward terms and explicit
+commissioning-party scope. Payment proof remains separate. See
+[contribution workflow](CONTRIBUTION_WORK.md#signed-acceptance-receipt).
+Next: equivalent scoped records for the shopping/study completion paths,
+shared-wallet commitments and deliberately staffed shorter review windows.
+No accelerated deadline or extra slot is inferred from a worker inquiry.
+
 ## October 15 — contribution redemption without store-paid gas
 
 Implemented locally: explicit signed-authorization terms, separate keeper

@@ -1,3 +1,4 @@
+import {signContributionAcceptance, type ContributionReceipt} from "@/services/contribution-receipt";
 import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
 import { DurableObject } from "cloudflare:workers";
 import { jcsCanonicalize } from "@/lib/jcs";
@@ -22,6 +23,7 @@ export interface ContributionReservation {
   report?: ContributionReport; payout_to?: string; submission_digest?: string; submitted_at?: string;
   review?: {decision: string; reason: string; outcome: string; reference: string; at: string};
   payout?: ContributionPayout;
+  acceptance_receipt?: ContributionReceipt;
   payment?: {tx_hash: string; at: string; verification: "not_checked"};
 }
 export interface ContributionTaskState {terms: ContributionTaskTerms; published_at: string; closed: boolean; reservations: ContributionReservation[]}
@@ -89,7 +91,7 @@ export function publicContribution(state: ContributionTaskState, now: number) {
   return {...state.terms, availability_reason: availabilityReason, published_at: state.published_at, purchase_required: false, payment_method: state.terms.payment_method ?? "keeper_paid_base_usdc", redemption: state.terms.payment_method ? CONTRIBUTION_REDEMPTION : null, maximum_reward_usd: Math.round(state.terms.reward_usd * 100) * state.terms.slots / 100, status: state.closed ? "closed" : Date.parse(state.terms.expires_at) <= now ? "expired" : "open", available_slots: availabilityReason === "available" ? state.terms.slots - active.length : 0, pending_review: state.reservations.filter(r => r.status === "submitted").length};
 }
 function ownReservation(task: ContributionTaskState, row: ContributionReservation, now: number) {
-  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
+  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.acceptance_receipt ? {acceptance_receipt: row.acceptance_receipt, acceptance_receipt_inputs: {terms: task.terms, report: row.report, review: row.review}} : {}), ...(row.review?.decision === "accepted" ? {acceptance_receipt_state: row.acceptance_receipt ? "issued" : "unavailable"} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
 }
 
 /** The alarm and its tests use the same clock for both expiry and the next due time. */
@@ -206,7 +208,21 @@ export class ContributionTask extends DurableObject<Env> {
       }
       const row = admin ? state.reservations.find(r => r.id === body.submission_id) : state.reservations.find(r => r.key_hash === keyHash);
       if (!row) return refused(404, "reservation_missing", "No reservation opens with those details.");
-      if (action === "status") {onlyFields(body, ["reservation_key"]); return {status: 200, data: ownReservation(state, row, now)};}
+      if (action === "status") {
+        onlyFields(body, ["reservation_key"]);
+        if (row.review?.decision === "accepted" && !row.acceptance_receipt) {
+          // Acceptance already stands. A receipt failure must not undo it or hide
+          // payment status. Sign privately, save before returning, reread after I/O.
+          try {
+            const receipt = await signContributionAcceptance(this.env, state, row, now);
+            const fresh = this.read()!, current = fresh.reservations.find(r => r.id === row.id)!;
+            if (!current.acceptance_receipt) {current.acceptance_receipt = receipt; this.save(fresh);}
+          } catch { /* Private status exposes unavailable and retries next time. */ }
+          const fresh = this.read()!, current = fresh.reservations.find(r => r.id === row.id)!;
+          return {status: 200, data: ownReservation(fresh, current, now)};
+        }
+        return {status: 200, data: ownReservation(state, row, now)};
+      }
       if (action === "submit") {
         onlyFields(body, ["reservation_key", "payout_to", "report", "arrival"]);
         if (row.submission_digest) return row.submission_digest === reportHash ? {status: 200, data: ownReservation(state, row, now)} : refused(409, "submission_immutable", "Evidence, arrival context or payout address differs from the stored submission. The original is retained.");

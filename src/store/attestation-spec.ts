@@ -1,3 +1,4 @@
+import {CONTRIBUTION_RECEIPT_SIGNS, CONTRIBUTION_RECEIPT_LIMITS} from "@/store/contribution-receipt";
 /**
  * WHAT THIS STORE SIGNS, WHO HOLDS THE KEY, AND WHOSE WORD YOU ARE
  * ACTUALLY TAKING.
@@ -109,6 +110,7 @@ export interface ArtifactClass {
 }
 
 export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
+  {id: "contribution_acceptance", name: "Contribution acceptance receipts", trust_model: "self_signed", signs: CONTRIBUTION_RECEIPT_SIGNS, does_not_prove: CONTRIBUTION_RECEIPT_LIMITS, verify_url: "/api/bounties/contributions"},
   ...["change_check", "batch_spot_check"].map(id => ({
     id, name: id === "change_check" ? "Recorded-evidence comparison" : "Batch of recorded host evidence", trust_model: "third_party_observation" as const,
     signs: "The complete observation.record, including its signed source readings, dates, gaps and comparison or manifest. SHA-256 of observation.signed_payload is bound into certificate.attests. observation.signature_jcs covers the RFC 8785 canonical record.",
