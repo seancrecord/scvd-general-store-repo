@@ -122,7 +122,7 @@ describe("buy_url_template: the door with its inputs already in place", () => {
     expect(body.charged).toBe(false);
     // The refusal now hands back the URL instead of only the field name.
     expect(body.buy_url_template).toBe(buyUrlTemplate(getMenuItem("spot_check") as MenuItem, BASE));
-    expect(String(body.next_action)).toContain("buy_url_template");
+    expect(body.next_step).toMatchObject({ action: "recover_payment", payment_required: false });
   });
 });
 

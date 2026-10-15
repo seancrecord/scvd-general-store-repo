@@ -129,14 +129,16 @@ describe("a rejected item lookup leads to a free, usable read", () => {
     }
   });
 
-  it("input refusals point to their contract without copying buyer input or payment", async () => {
+  it("signed input refusals prioritize recovery and unsigned repairs carry the needed schema", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation?agent_name=private-name`, { headers: { "PAYMENT-SIGNATURE": "private-payment" } });
     expect(response.status).toBe(400);
     const body = object(await response.json());
     expect(body.issues).toEqual([{ field: "tx_hash", code: "required", location: "query" }]);
     expect(JSON.stringify(body.next_step)).not.toMatch(/private-name|private-payment/);
-    await follow(body, "settlement_attestation");
+    expect(object(body.next_step)).toMatchObject({ action: "recover_payment", payment_required: false });
     const message = await rpc("/mcp", "buy_observation", { item_id: "settlement_attestation" });
-    await follow(object(object(message.error).data), "settlement_attestation");
+    const repair = object(object(object(message.error).data).next_step);
+    expect(repair).toMatchObject({ action: "repair_inputs", payment_required: false, same_tool: true });
+    expect(object(repair.fields).tx_hash).toBeDefined();
   });
 });

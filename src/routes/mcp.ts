@@ -52,7 +52,7 @@ import {
   recordPorchVisit,
   recordVerifyCall,
 } from "@/lib/metrics";
-import { buyInputSchema, missingRequiredInputs, buyerInputRepair, presentInputNames, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
+import { purchaseNextStep, buyInputSchema, missingRequiredInputs, buyerInputRepair, presentInputNames, purchaseInputDeclineReason } from "@/lib/bazaar-discovery";
 import { resolveInputRecord } from "@/lib/input-aliases";
 import { catalogRecovery, CATALOG_TOOL_NAME } from "@/lib/catalog-recovery";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
@@ -951,7 +951,7 @@ async function callPurchaseTool(
       refusalRpcCode(refusal),
       refusalCode(refusal),
       refusalMessage(refusal),
-      { ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, args, c.env.STORE_BASE_URL, "arguments", refusal.body) : {}) },
+      { ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, args, c.env.STORE_BASE_URL, "arguments", refusal.body, paying) : {}) },
     );
   }
   /**
@@ -1032,7 +1032,7 @@ async function callPurchaseTool(
   const quotedKey = idempotencyKey ?? suggestedIdempotencyKey(item.id, Date.now(), inputDigest);
   const admitPurchase = async () => {
     const setup = await checkPurchaseAvailability(c.env, item, toolArgs(args));
-    if (setup) return { code: String(setup.body.code), message: String(setup.body.error), details: setup.body };
+    if (setup) return { code: String(setup.body.code), message: String(setup.body.error), details: { ...buyerInputRepair(item, args, c.env.STORE_BASE_URL, "arguments", setup.body, paymentMeta != null || nativeMeta !== undefined), ...setup.body } };
     const remaining = await remainingInventory(c.env, item);
     if (remaining !== null && remaining <= 0) return {
       code: "sold_out",
@@ -1145,7 +1145,10 @@ async function callPurchaseTool(
     const base = c.env.STORE_BASE_URL;
     const depthQuery: Record<string, string> = {};
     for (const [key, value] of Object.entries(args)) if (typeof value === "string") depthQuery[key] = value;
-    const guidance = { buyer_guidance: buyerGuidance(item, base, depthQuery) };
+    const guidance = {
+      next_step: purchaseNextStep(item, args, base, "arguments", { paymentAttempted: paymentMeta != null || nativeMeta !== undefined }),
+      buyer_guidance: buyerGuidance(item, base, depthQuery),
+    };
     const depth = await archiveDepthDisclosure(c.env, base, item.id, depthQuery);
     // The native challenge rides beside the x402 terms in both dialects,
     // bound to these exact arguments and to the quoted key.
@@ -1154,7 +1157,7 @@ async function callPurchaseTool(
       const challenge = isRecord(outcome.challenge)
         ? outcome.challenge
         : { ...await readMcpPaymentChallenge(c.env, item.id), ...(nativeMeta !== undefined && isRecord(outcome.body) ? outcome.body : { error: "Invalid payment" }) };
-      return rpcResult(id, standardPaymentResult(c, item, { ...challenge, ...depth, ...guidance }, quotedKey, inputDigest, native));
+      return rpcResult(id, standardPaymentResult(c, item, { ...guidance, ...challenge, ...depth }, quotedKey, inputDigest, native));
     }
     return rpcError(
       id,

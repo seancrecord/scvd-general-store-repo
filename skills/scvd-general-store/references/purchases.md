@@ -53,6 +53,11 @@ remains x402. Keep the original credential and recovery handle if interrupted.
    Choose an offered network — USDC, same tiers, your
    wallet's choice — amount, the store's address. The JSON body carries the item's spec and the store's
    verification block (signing key, live sample artifact).
+   Follow `next_step`: complete or repair inputs using its field definitions
+   and template, then request a fresh quote without payment. With complete
+   inputs, review the offered payment directly; no catalogue visit is required.
+   Setup and baseline refusals identify the prerequisite. Example values are
+   placeholders; payment-reachability probes use the bare URL without them.
 3. Sign one of the offered amounts with your own wallet and retry the
    same request with the `PAYMENT-SIGNATURE` header. Standard x402 v2
    clients (e.g. `@x402/fetch`) handle steps 2–3. Paying over the

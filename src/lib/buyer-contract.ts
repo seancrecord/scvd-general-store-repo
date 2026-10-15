@@ -67,6 +67,7 @@ export function buyerLinks(item: MenuItem, base: string) {
   const related = relatedOfferPaths(item.id, base);
   return {
     ...(related.length ? { optional_next_work: related } : {}),
+    probe_url: `${base}/api/buy/${item.id}`,
     required_params: [...(buyInputSchema(item).required ?? [])],
     buy_url_template: buyUrlTemplate(item, base),
     input_contract_url: `${base}/menu/${item.id}?view=compact`,
@@ -88,6 +89,7 @@ export function checkoutContract(base: string) {
     // before terms, signed or not.
     valid_inputs_required_before_quote: false,
     bare_probe_answers_402: true,
+    examples_are_placeholders: true,
     price_discovery_url: `${base}/api/catalog/v1`,
     request_header: "PAYMENT-SIGNATURE",
     legacy_header_alias: "X-PAYMENT",
@@ -99,7 +101,7 @@ export function checkoutContract(base: string) {
     mcp_payment_key: "x402/payment",
     mcp_idempotency_key: "x402/idempotency-key",
     steps: [
-      "Use the item's input contract and mcp_url for required inputs and its single buy tool.",
+      "Use the inputs already supplied by discovery or next_step in a quote/refusal. The input contract is optional reference; mcp_url names the single buy tool.",
       "GET buy_url_template, replacing every <slot> with your value; it is buy_url with this door's required inputs already in place. The free 402 quote names required_params; PAYMENT-REQUIRED is base64 JSON. A bare GET of buy_url also quotes, but a door with required inputs refuses the PAID request without them, so buy the template URL, not the bare one.",
       "Select an offered network and amount within budget; copy atomic amounts unchanged. Without a supported wallet/client, stop before signing.",
       "Retry identical inputs with the signed v2 payload in PAYMENT-SIGNATURE and Idempotency-Key from quote.idempotency.suggested_key. X-PAYMENT also accepts v2, never v1.",

@@ -1,0 +1,3 @@
+> vitest run test/payment-next-step.spec.ts test/mpp-whole-store.spec.ts test/mpp-mcp-checkout.spec.ts test/mcp-modern-era.spec.ts test/cross-surface-tier-a.spec.ts test/payment-flow-audit.spec.ts test/discovery-budget.spec.ts test/agent-catalog-readability.spec.ts test/openapi-fetchable.spec.ts
+ Test Files  9 passed (9)
+      Tests  131 passed (131)

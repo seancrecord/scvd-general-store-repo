@@ -442,7 +442,7 @@ export const argCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
         { userAgent: c.req.header("User-Agent"), accept: c.req.header("Accept") }));
     }
     c.set("inputRefusal", refusal.body);
-    return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body) : {}) }, refusal.status);
+    return c.json({ ...refusal.body, ...(refusal.status === 400 ? buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body, isBuying(c)) : {}) }, refusal.status);
   }
   await next();
 };
@@ -468,7 +468,7 @@ export const admissionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     const target = item ? resolveInputRecord(Object.keys(buyInputSchema(item).properties), c.req.query())["url"] : undefined;
     if (item && typeof target === "string" && target.trim()) {
       const refusal = await checkPurchaseAvailability(c.env, item, queryArgs(name => c.req.query(name)));
-      if (refusal) return c.json(refusal.body, refusal.status);
+      if (refusal) return c.json({ ...buyerInputRepair(item, c.req.query(), c.env.STORE_BASE_URL, "query", refusal.body, isBuying(c)), ...refusal.body }, refusal.status);
     }
   };
   if (isBuying(c)) c.set("purchaseAdmission", check);

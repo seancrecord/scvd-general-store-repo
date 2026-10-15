@@ -135,6 +135,35 @@ const JSON_RESPONSE: OpenApiObject = {
  * so every existing client keeps working — this documents what is
  * already sent, it does not change it.
  */
+const PURCHASE_NEXT_STEP_SCHEMA: OpenApiObject = {
+  type: "object",
+  description: "Next action for this request. Fill input slots and quote unsigned, finish a prerequisite, review a complete quote within budget, or recover an earlier payment. URL templates are not executable until every slot is filled. No credentials are copied.",
+  required: ["payment_required"],
+  properties: {
+    method: { type: "string", const: "GET" },
+    url: { type: "string", format: "uri" },
+    payment_required: { type: "boolean" },
+    action: { type: "string", enum: ["complete_inputs", "repair_inputs", "complete_setup", "supply_baseline", "review_payment", "recover_payment", "retry_later"] },
+    url_template: { type: "string" },
+    same_tool: { type: "boolean" },
+    arguments: { type: "object", description: "Declared inputs preserved for the same MCP tool; replace slots and request a fresh quote without payment." },
+    missing_fields: { type: "array", items: { type: "string" } },
+    retry: { type: "object", description: "Unsigned purchase request to complete after resolving the prerequisite. Never carries a payment." },
+    fields: { type: "object", description: "Input schemas for the fields to supply or repair." },
+    reason: { type: "string" },
+    note: { type: "string" },
+    mcp: {
+      type: "object", required: ["url", "tool", "arguments"],
+      properties: {
+        url: { type: "string", format: "uri" },
+        tool: { type: "string", const: CATALOG_TOOL_NAME },
+        arguments: { type: "object", properties: { item_id: { type: "string" } }, additionalProperties: false },
+      },
+    },
+  },
+};
+const PURCHASE_NEXT_STEP_REF = { $ref: "#/components/schemas/PurchaseNextStep" };
+
 const PROBLEM_SCHEMA: OpenApiObject = {
   type: "object",
   description:
@@ -162,24 +191,7 @@ const PROBLEM_SCHEMA: OpenApiObject = {
       type: "boolean", const: false,
       description: "Present on repair responses: correct the selection or inputs before retrying.",
     },
-    next_step: {
-      type: "object",
-      description: "Optional free read after a refusal. Catalog and input repairs also include an equivalent MCP read. No payment or buyer arguments are forwarded.",
-      required: ["method", "url", "payment_required"],
-      properties: {
-        method: { type: "string", const: "GET" },
-        url: { type: "string", format: "uri" },
-        payment_required: { type: "boolean", const: false },
-        mcp: {
-          type: "object", required: ["url", "tool", "arguments"],
-          properties: {
-            url: { type: "string", format: "uri" },
-            tool: { type: "string", const: CATALOG_TOOL_NAME },
-            arguments: { type: "object", properties: { item_id: { type: "string" } }, additionalProperties: false },
-          },
-        },
-      },
-    },
+    next_step: PURCHASE_NEXT_STEP_REF,
   },
   required: ["error"],
 };
@@ -5514,6 +5526,7 @@ const PAYMENT_REQUIRED_SCHEMA: OpenApiObject = {
    */
   required: ["error", "note", "payload_template"],
   properties: {
+    next_step: PURCHASE_NEXT_STEP_REF,
     error: {
       type: "string",
       description: "The counter's own sentence about what is being asked for.",
@@ -6047,6 +6060,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
     method: "GET",
     valid_inputs_required_before_quote: false,
     bare_probe_answers_402: true,
+    probe_url: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
     price_discovery_url: `${env.STORE_BASE_URL}/menu/${item.id}?view=compact`,
     schema: requestSchema,
   };
@@ -6255,6 +6269,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         TradeDelivery: TRADE_DELIVERY_SCHEMA,
         TradeRefusal: TRADE_REFUSAL_SCHEMA,
         Problem: PROBLEM_SCHEMA,
+        PurchaseNextStep: PURCHASE_NEXT_STEP_SCHEMA,
         DeliveryEnvelope: DELIVERY_ENVELOPE_SCHEMA,
         WatchCommission: WATCH_COMMISSION_SCHEMA,
         EvidencePilotReport: EVIDENCE_PILOT_REPORT_SCHEMA,
@@ -6291,6 +6306,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
      * operator, one key. What is guaranteed is NOTICE, not permanence.
      */
     ...provenanceExtension(c.env),
+    "x-scvd-payment-probing": {
+      method: "GET", send_payment: false, use_parameter_examples: false,
+      note: "For reachability use each paid item's input.probe_url without query parameters or payment. Purchase examples contain placeholders: replace them with your inputs and satisfy the item's prerequisites before buying. A supplied-input 400 is a validation refusal, not a failed bare payment probe. Follow next_step in the response.",
+    },
     ...ucpExtension(c.env),
     ...nativeCheckoutExtension(c.env),
     "x-rate-limiting": {

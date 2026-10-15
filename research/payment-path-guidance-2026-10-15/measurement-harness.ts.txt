@@ -1,0 +1,24 @@
+import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
+import { expect, it } from "vitest";
+import { app } from "@/index";
+import { installLaborAdmissionHarness } from "./helpers/labor-admission";
+import { BASE, testEnv } from "./helpers/buyer-harness";
+installLaborAdmissionHarness();
+it("records a bounded local quote measurement", async () => {
+  const measurements: unknown[] = [];
+  for (const path of ["/api/buy/small_blessing", "/api/buy/spot_check", "/api/buy/spot_check?host=buyer-fixture.example"]) {
+    const ms: number[] = [], bytes: number[] = [];
+    for (let i = 0; i < 8; i++) {
+      const ctx = createExecutionContext();
+      const start = performance.now();
+      const response = await app.fetch(new Request(BASE + path), testEnv, ctx);
+      const body = await response.text();
+      const elapsed = performance.now() - start;
+      expect(response.status).toBe(402);
+      if (i > 0) { ms.push(elapsed); bytes.push(new TextEncoder().encode(body).length); }
+      await waitOnExecutionContext(ctx);
+    }
+    measurements.push({ path, ms, bytes });
+  }
+  expect(measurements).toMatchSnapshot();
+});

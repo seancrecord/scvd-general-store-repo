@@ -668,7 +668,10 @@ The quote is the source of current payment terms. It goes like this:
      \`<slot>\`s filled where the door needs inputs; the bare door refuses payment.
   2. We answer 402. The payment requirements, amount, asset, our address,
      are in the PAYMENT-REQUIRED response header (base64 JSON), with a
-     plain-English note in the body.
+     plain-English note in the body. Follow \`next_step\`: a missing-input
+     quote supplies field definitions and a template preserving your inputs.
+     Fill its slots and request that URL unsigned before signing. With complete
+     inputs, the quote can be paid directly; no catalogue visit is required.
   3. You sign one of the offered payments and retry the same request with
      the PAYMENT-SIGNATURE header. (Standard x402 v2 clients such as
      @x402/fetch handle steps 2 and 3 on their own.)

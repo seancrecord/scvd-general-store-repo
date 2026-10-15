@@ -1,0 +1,8 @@
+> scvd-general-store@0.1.0 build:check
+> wrangler deploy --dry-run --outdir .build-check && wrangler deploy --dry-run -c doors/wrangler.jsonc --outdir .build-check-doors && node scripts/mpp-sdk-build-check.mjs
+Total Upload: 9198.38 KiB / gzip: 3157.03 KiB
+--dry-run: exiting now.
+Total Upload: 981.53 KiB / gzip: 323.26 KiB
+--dry-run: exiting now.
+Total Upload: 1726.06 KiB / gzip: 334.98 KiB
+--dry-run: exiting now.
