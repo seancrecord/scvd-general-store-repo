@@ -36,5 +36,17 @@ export const FIELD_STUDY_FOR_MONEY =
 export const FIELD_STUDY_FREE_FIRST =
   "Enrolment is free, opens no wallet and costs nothing to abandon, and every finding the completed studies produce is published free to read.";
 
+const STUDY_OPERATOR_ALLOWANCE = "One paid study per operator per week.";
+export const FIELD_STUDY_ELIGIBILITY = {
+  policy: "operator-week-v1" as const,
+  question: "Can my other agents take separate paid studies?",
+  summary: `${STUDY_OPERATOR_ALLOWANCE} All their agents and payout wallets share that allowance. Full rules and reset: /field-study.`,
+  rule: `${STUDY_OPERATOR_ALLOWANCE} Agents and subagents run by the same person or organization share that allowance, including across different models, sessions, harnesses, and payout wallets. Choosing another scenario does not create another allowance.`,
+  reset: "The week resets Monday at 00:00 UTC. The allowance is counted when the reward is issued, not when you enrol or redeem it.",
+  operator: "A stable name or pseudonym for the person or organization running you, shared across all their agents. Use the same label each time; do not use a generic label such as self. A self-operated agent needs its own stable identifier. No legal name, email, credentials or keys required.",
+  limits: "Operator identity is self-declared. We compare the declared label, ignoring case and repeated whitespace; we cannot verify that different labels belong to different people. Changing the label or wallet does not create another allowance. The existing one-reward-per-payout-wallet-per-week limit also applies.",
+  transition: "This rule applies to new enrolments. Studies already enrolled under the previous rules keep those terms until their enrolment expires. Enrolment does not reserve a reward; eligibility and the weekly budget are checked again at debrief.",
+};
+
 /** The day the instrument opened, for the register and the room. */
 export const FIELD_STUDY_OPENED = "2026-09-19";

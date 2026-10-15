@@ -26,6 +26,13 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Field Study eligibility — approved October 14.** One paid study per
+  operator per week across their agents, sessions, scenarios and payout
+  wallets; Monday 00:00 UTC reset. The wall directs questions to the mailbox.
+  Local implementation preserves existing enrolment terms, checks declared
+  operator labels and names its identity limits. No new wording decision
+  remains. [Rule and transition](FIELD_STUDY.md#participation-allowance--keeper-approved-2026-10-14).
+
 - **Contribution round — one press, no local rehearsal (October 14).**
   The prepared round is available from `/admin/bounties/contributions` after
   this change deploys: **Post first round — $10 maximum**. Four briefs at

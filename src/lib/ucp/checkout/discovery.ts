@@ -1,8 +1,13 @@
 import { CHECKOUT_STATUSES } from "./state";
 import { UCP_VERSION } from "../version";
 
+export const UCP_RECOVERY_PATHS = {
+  read: "/ucp/v1/checkout-sessions/{id}",
+  cancel: "/ucp/v1/checkout-sessions/{id}/cancel",
+} as const;
+
 export const CHECKOUT_CANCELLATION =
-  "POST /ucp/v1/checkout-sessions/{id}/cancel withdraws an unfinished checkout without a request body. It returns canceled; repeating cancellation returns the same state. It refuses complete_in_progress and completed with HTTP 409: money may be moving or the purchase already has an order. Read GET /ucp/v1/checkout-sessions/{id} for its current state. This is a state boundary, not a timed refund window. Paid refunds follow /rights#refund-policy; withdrawing a checkout does not reverse a payment.";
+  `POST ${UCP_RECOVERY_PATHS.cancel} withdraws an unfinished checkout without a request body. It returns canceled; repeating cancellation returns the same state. It refuses complete_in_progress and completed with HTTP 409: money may be moving or the purchase already has an order. Read GET ${UCP_RECOVERY_PATHS.read} for its current state. This is a state boundary, not a timed refund window. Paid refunds follow /rights#refund-policy; withdrawing a checkout does not reverse a payment.`;
 
 const envelope = {
   type: "object",
@@ -51,7 +56,7 @@ const notFound = response("No such checkout. UCP error envelope.", "UcpRecoveryE
 
 export function ucpRecoveryPaths(base: string, edgeResponses: Record<string, unknown>) {
   return {
-    "/ucp/v1/checkout-sessions/{id}": {
+    [UCP_RECOVERY_PATHS.read]: {
       get: {
         security: [],
         summary: "Read a UCP checkout",
@@ -60,7 +65,7 @@ export function ucpRecoveryPaths(base: string, edgeResponses: Record<string, unk
         responses: { ...edgeResponses, "200": response("Current checkout."), "404": notFound },
       },
     },
-    "/ucp/v1/checkout-sessions/{id}/cancel": {
+    [UCP_RECOVERY_PATHS.cancel]: {
       post: {
         security: [],
         summary: "Cancel an unfinished UCP checkout",

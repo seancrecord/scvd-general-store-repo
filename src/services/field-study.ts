@@ -85,7 +85,7 @@ export const STUDY_WEEKLY_BUDGET_USD = 25;
  * from one place. ⚑ keeper dial (in that file).
  */
 export { STUDY_MAX_REWARD_USD } from "@/store/field-study-copy";
-import { STUDY_MAX_REWARD_USD } from "@/store/field-study-copy";
+import { STUDY_MAX_REWARD_USD, FIELD_STUDY_ELIGIBILITY } from "@/store/field-study-copy";
 /** Paid for a complete, verified debrief with at least one good leg. */
 export const STUDY_BASE_REWARD_USD = 0.5;
 /** Per verified leg, up to the count below. */
@@ -223,8 +223,8 @@ export const STUDY_ROSTER_FIELDS: ReadonlyArray<{
   },
   {
     field: "operator",
-    what: "who runs you — a person, a company, or 'self' if nobody is watching",
-    why: "so a finding can be traced back to someone who can confirm it, and so the roster is not a wall of anonymous claims.",
+    what: FIELD_STUDY_ELIGIBILITY.operator,
+    why: "so findings can be traced to their declared operator and all agents under that operator share one weekly paid-study allowance. The label is private and self-declared, not verified identity.",
   },
   {
     field: "task",
@@ -392,6 +392,8 @@ export interface StudyLeg {
 
 export interface StudyRecord {
   study_id: string;
+  /** Absent on studies already in flight when the operator rule was adopted. */
+  eligibility_policy?: typeof FIELD_STUDY_ELIGIBILITY.policy;
   /** Opened at enrolment; the window runs from here. */
   enrolled_at: string;
   expires_at: string;
@@ -595,7 +597,15 @@ export const STUDY_REFUSALS: readonly { refusal: string; why: string }[] = [
   },
   {
     refusal: "this payout address already debriefed a study this ISO week",
-    why: "one study per wallet per week. Ten studies from one wallet is one perspective bought ten times, and the coverage this instrument sells is the number of DIFFERENT agents, never the number of rows.",
+    why: "One reward per payout wallet per week remains an additional limit. A wallet is not proof of a distinct agent or operator.",
+  },
+  {
+    refusal: "this declared operator already used or is using the weekly paid-study allowance",
+    why: `${FIELD_STUDY_ELIGIBILITY.rule} ${FIELD_STUDY_ELIGIBILITY.reset} ${FIELD_STUDY_ELIGIBILITY.transition}`,
+  },
+  {
+    refusal: "the operator eligibility service is unavailable",
+    why: "New enrolments and payouts under the operator rule wait until eligibility can be checked. Nothing is signed without that check.",
   },
   {
     refusal: "the week's study budget is spent",
@@ -678,6 +688,7 @@ function isEvmAddress(value: unknown): value is string {
  */
 export function studyBrief(base: string) {
   return {
+    eligibility: FIELD_STUDY_ELIGIBILITY,
     scenarios_note:
       "The store keeps a shelf of predetermined scenarios, and whichever the keeper has put live are published on /api/field-study under `scenarios`. A scenario NEVER picks your product — you buy whatever you like — it names a CONDITION of the walk, because the condition is what is being measured. Naming one at enrolment is optional and an open study is always welcome at the same ordinary reward. Where our own books can confirm the condition, the scenario carries a bonus and states exactly what we will look for; where they cannot, it carries NO bonus and says why, because paying for a condition we cannot check would be paying for the claim rather than the walk.",
     what_we_want:
@@ -737,6 +748,24 @@ async function studyWeekSpent(env: Env, weekKey: string): Promise<number> {
   const raw = await kvGet(env.COUNTERS, KV_KEYS.studyBudget(weekKey));
   const parsed = Number.parseFloat(raw ?? "0");
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizedOperator(operator: string): string {
+  return operator.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
+}
+
+async function operatorAllowanceKey(operator: string, now: Date): Promise<string> {
+  return `study-operator:${currentWeekKey(now)}:${await sha256Hex(normalizedOperator(operator))}`;
+}
+
+function operatorWeekRefusal(): StudyRefused {
+  return new StudyRefused(
+    "This declared operator already used or is using the paid-study allowance this week. All their agents and payout wallets share it. If another debrief is in progress, read that study before retrying. Otherwise the allowance resets Monday at 00:00 UTC. Only an unexpired enrolment can debrief; a new enrolment needs new purchases made after it.",
+  );
+}
+
+function eligibilityUnavailable(): StudyRefused {
+  return new StudyRefused("The operator eligibility service is unavailable. Try again later; no reward was signed by this attempt.");
 }
 
 /**
@@ -856,6 +885,9 @@ export async function enrolStudy(
     found_via: text("found_via", STUDY_NOTE_CAP),
     prior_x402: priorX402 === true,
   };
+  if (normalizedOperator(roster.operator) === "self") {
+    found.add({ field: "operator", problem: "self does not identify a stable operator.", expected: FIELD_STUDY_ELIGIBILITY.operator, why: why("operator") });
+  }
 
   /*
    * EVERY PROBLEM, ONCE. Thrown here rather than at each check so a
@@ -865,6 +897,14 @@ export async function enrolStudy(
   found.throwIfAny(
     "This enrolment was not opened, and nothing was spent — enrolment is free and re-takeable.",
   );
+
+  // Tell an operator who already earned this week before they spend on another walk.
+  // This read reserves nothing; the atomic take is repeated at debrief.
+  const eligibility = bountyLock(env);
+  if (!eligibility) throw eligibilityUnavailable();
+  const allowanceKey = await operatorAllowanceKey(roster.operator, now);
+  const used = await eligibility.isHeld(allowanceKey).catch(() => { throw eligibilityUnavailable(); });
+  if (used) throw operatorWeekRefusal();
 
   /*
    * THE EARLY SCREEN, and it is advisory ON PURPOSE. A sanctions
@@ -925,6 +965,7 @@ export async function enrolStudy(
   const study_token = newStudyToken();
   const record: StudyRecord = {
     study_id: newStudyId(),
+    eligibility_policy: FIELD_STUDY_ELIGIBILITY.policy,
     enrolled_at: now.toISOString(),
     expires_at: new Date(now.getTime() + STUDY_WINDOW_HOURS * 3600 * 1000).toISOString(),
     roster,
@@ -1331,8 +1372,8 @@ function readDefects(raw: unknown): StudyDefect[] {
  *               oracle is touched — a malformed body should cost this
  *               store nothing and the researcher no wait.
  *   books       every leg against our own purchase records.
- *   guards      one purchase per study ever; one study per wallet per
- *               ISO week.
+ *   guards      one purchase per study ever; one study per wallet and
+ *               declared operator per ISO week (new enrolments).
  *   screen      the payout address, fail closed.
  *   reserve     the week's budget, BEFORE the signature, because the
  *               board lost every concurrent increment but one when it
@@ -1492,8 +1533,16 @@ export async function debriefStudy(
   /** Written guards, rolled back by hand if the signature never happens. */
   const takenLegs: string[] = [];
   let takenWeek: string | null = null;
+  let takenOperator: string | null = null;
+  let signingStarted = false;
   let reserved: { week: string; amount: number } | null = null;
   const rollBack = async (): Promise<void> => {
+    // Once signing was attempted, an uncertain result must not reopen an
+    // allowance for another wallet. Keep the reservation for reconciliation.
+    if (signingStarted && takenOperator) {
+      await release();
+      return;
+    }
     for (const purchaseId of takenLegs) {
       await env.COUNTERS.delete(KV_KEYS.studyLeg(purchaseId)).catch(() => undefined);
     }
@@ -1508,10 +1557,21 @@ export async function debriefStudy(
         ).catch(() => undefined);
       }
     }
+    if (takenOperator && lock) await lock.release(takenOperator, lockHolder).catch(() => undefined);
     await release();
   };
 
   try {
+    if (record.eligibility_policy === FIELD_STUDY_ELIGIBILITY.policy) {
+      if (!lock) throw eligibilityUnavailable();
+      const key = await operatorAllowanceKey(record.roster.operator, now);
+      // Retain successful takes beyond the longest possible remainder of an
+      // ISO week. Next Monday uses a different key. No KV read can undo this
+      // atomic cross-study, cross-wallet guard; failed reads fail closed.
+      const taken = await lock.take(key, lockHolder, 8 * 24 * 3600).catch(() => { throw eligibilityUnavailable(); });
+      if (taken === "held") throw operatorWeekRefusal();
+      takenOperator = key;
+    }
     // Our own books, leg by leg. No trust is extended here at all.
     const legs: StudyLeg[] = [];
     for (const leg of legInputs) legs.push(await verifyLeg(env, record, leg));
@@ -1546,14 +1606,14 @@ export async function debriefStudy(
       }
     }
 
-    // One study per wallet per ISO week: the coverage this sells is
-    // the number of DIFFERENT agents, never the number of rows.
+    // Keep the original wallet limit as an additional guard, including for
+    // legacy studies. A wallet does not establish an independent operator.
     const weekKey = currentWeekKey(now);
     const walletKey = KV_KEYS.studyWeekPayout(weekKey, payoutTo);
     const already = await kvGet(env.COUNTERS, walletKey);
     if (already && already !== record.study_id) {
       throw new StudyRefused(
-        `this payout address already debriefed a study this ISO week (${already}). One study per wallet per week — ten studies from one wallet is one perspective bought ten times. The enrolment stands; debrief it when the week turns over.`,
+        "this payout address already debriefed a study this ISO week. One reward per payout wallet per week remains an additional limit. The allowance resets Monday at 00:00 UTC. Only an unexpired enrolment can debrief; a new enrolment needs purchases made after it.",
       );
     }
     if (!already) {
@@ -1605,6 +1665,7 @@ export async function debriefStudy(
       validBefore: String(Math.floor(now.getTime() / 1000) + STUDY_AUTH_VALID_SECONDS),
       nonce: (options.randomNonce ?? defaultNonce)(),
     };
+    signingStarted = true;
     const signature = await signer.signTypedData({
       domain: {
         name: "USD Coin",

@@ -1,5 +1,19 @@
 # ROADMAP — September 2026
 
+## October 14 — Field Study participation clarity
+
+Keeper approved one paid study per operator per week, shared across agents
+and wallets, plus the wall-to-mailbox notice. Prepared for release: shared copy,
+early eligibility check and atomic operator allowance; old enrolments retain
+their terms. Publication remains pending. [Rule and limits](FIELD_STUDY.md#participation-allowance--keeper-approved-2026-10-14).
+
+The same-day follow-through fixes the two pre-existing release checks: the
+short guide files the commissioned-walk and account-statement descriptions
+under the existing shelf area without removing them from the full guide;
+checkout read/cancel routes belong to the purchase-rights feature. The rights
+page supplies the shared summary, machine-readable answers and FAQ markup.
+The existing reader limits and historical exemptions are unchanged.
+
 ## October 14 — Tab jobs on existing discovery surfaces
 
 The next additive earning-path increment makes trial-reminder and
