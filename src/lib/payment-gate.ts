@@ -1,3 +1,4 @@
+import { publicationFamilyForPath } from "@/lib/door-paths";
 import { ARC_NETWORK } from "@/lib/payment-networks";
 import { gatewayPayment, gatewayCharged } from "@/lib/arc-gateway";
 import { recordPaymentOperation } from "@/lib/payment-operations";
@@ -105,7 +106,7 @@ import {
 } from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
-import { missingRequiredInputs } from "@/lib/bazaar-discovery";
+import { purchaseNextStep, missingRequiredInputs } from "@/lib/bazaar-discovery";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import {
   GUARANTEE_BLOCK_TEXT,
@@ -349,6 +350,8 @@ async function enrich402Body(
   network?: string,
   originalKey?: string,
   bodyDigest: string | null = null,
+  requestUrl?: string,
+  paymentAttempted = false,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -366,6 +369,8 @@ async function enrich402Body(
     ? await archiveDepthDisclosure(env, base, item.id, query)
     : {};
   return {
+    ...(item || publicationFamilyForPath(path)
+      ? { next_step: purchaseNextStep(item, query, base, "query", { url: requestUrl, paymentAttempted }) } : {}),
     ...body,
     ...archiveDepth,
     ...(item ? { buyer_guidance: buyerGuidance(item, base, query) } : {}),
@@ -454,7 +459,7 @@ async function enrich402Body(
               ? {
                   payload_template: template,
                   payload_template_note:
-                    "Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL — standard base64 alphabet, one unbroken line (`base64 -w0` from a shell: GNU base64 wraps at 76 columns by default and curl sends only the first line). Everything else is already correct for THIS challenge and should not be rebuilt — `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), the chainId of the accepted entry's own network (eip155:8453 \u2192 8453, eip155:137 \u2192 137), and verifyingContract = accepted.extra.verifyingContract when present (Circle Gateway), otherwise accepted.asset — details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template covers the EVM rails (eip155:*) only.",
+                    "Follow next_step first; sign only after the inputs are complete and validated. Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL — standard base64 alphabet, one unbroken line (`base64 -w0` from a shell: GNU base64 wraps at 76 columns by default and curl sends only the first line). Everything else is already correct for THIS challenge and should not be rebuilt — `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), the chainId of the accepted entry's own network (eip155:8453 \u2192 8453, eip155:137 \u2192 137), and verifyingContract = accepted.extra.verifyingContract when present (Circle Gateway), otherwise accepted.asset — details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template covers the EVM rails (eip155:*) only.",
                 }
               : {};
           })(),
@@ -1243,6 +1248,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           paymentNetwork(paymentHeader),
           idempotencyKey ?? undefined,
           bodyDigest,
+          c.req.url,
+          Boolean(paymentHeader),
         );
         /*
          * A NO WITH A TIMESTAMP IS A YES DEFERRED — which this store

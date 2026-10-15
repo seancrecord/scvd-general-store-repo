@@ -1,0 +1,152 @@
+{
+  "source": "https://www.x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store",
+  "attribution": "x402-list.com, CC BY 4.0",
+  "projection": {
+    "base_url": "https://scvd.store",
+    "endpoint_count": 35,
+    "status": "online",
+    "last_checked_at": "2026-10-15T17:17:16.735Z",
+    "payment_ready": true,
+    "paths": [
+      "/api/buy/a2a_repair_kit",
+      "/api/buy/attestation_bundle",
+      "/api/buy/aura_walk",
+      "/api/buy/bitcoin_anchor",
+      "/api/buy/certificate_of_patronage",
+      "/api/buy/coffees_for_closers",
+      "/api/buy/conformance_watch",
+      "/api/buy/context_anchor",
+      "/api/buy/daily_fortune",
+      "/api/buy/good_buyer",
+      "/api/buy/graffiti_on_a_train",
+      "/api/buy/hello",
+      "/api/buy/launch_check",
+      "/api/buy/luckies",
+      "/api/buy/onpage_audit",
+      "/api/buy/opening_day",
+      "/api/buy/operator_statement",
+      "/api/buy/pack",
+      "/api/buy/passport_refresh",
+      "/api/buy/provenance_check",
+      "/api/buy/recurring_patronage",
+      "/api/buy/service_audit",
+      "/api/buy/settlement_attestation",
+      "/api/buy/settlement_reconciliation",
+      "/api/buy/signature_agent_card",
+      "/api/buy/small_blessing",
+      "/api/buy/spot_check",
+      "/api/buy/standing_watch",
+      "/api/buy/the_case_file",
+      "/api/buy/the_collab",
+      "/api/buy/the_confession",
+      "/api/buy/the_mandate",
+      "/api/buy/the_statement",
+      "/api/buy/trust_profile",
+      "/api/buy/window_pick"
+    ]
+  },
+  "per_check_history": {
+    "data": [
+      {
+        "id": "4cbbf77d-6e12-47a0-b639-dc5031171ef5",
+        "checked_at": "2026-10-15T17:17:16.730Z",
+        "response_time_ms": 76,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "7e89c70b-6af0-4cb8-95e7-ddb5b104fc84",
+        "checked_at": "2026-10-15T17:01:18.232Z",
+        "response_time_ms": 109,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "1c631d51-dd17-48f3-a48b-77aaa2087509",
+        "checked_at": "2026-10-15T16:45:19.440Z",
+        "response_time_ms": 153,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "f9b56b33-b0ec-4835-a17f-e7ba6e5081a0",
+        "checked_at": "2026-10-15T16:29:16.232Z",
+        "response_time_ms": 96,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "18075222-e456-4e8f-b450-d45218dfd9fc",
+        "checked_at": "2026-10-15T16:13:27.008Z",
+        "response_time_ms": 331,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "9fd30365-f462-48c9-aa85-6d4e5b73977c",
+        "checked_at": "2026-10-15T15:57:15.056Z",
+        "response_time_ms": 124,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "ef740670-4623-4465-a159-6be2a2511aeb",
+        "checked_at": "2026-10-15T15:41:13.880Z",
+        "response_time_ms": 110,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "8bb2b3cb-86c5-452a-8a2e-9f4edbe450b8",
+        "checked_at": "2026-10-15T15:24:14.440Z",
+        "response_time_ms": 102,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "3debe8c8-0325-407e-b0d3-454aa72ffe3a",
+        "checked_at": "2026-10-15T15:08:16.180Z",
+        "response_time_ms": 217,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      },
+      {
+        "id": "294b5f2a-e2f6-447a-b015-17f976ffb9ba",
+        "checked_at": "2026-10-15T14:52:17.956Z",
+        "response_time_ms": 262,
+        "status_code": 402,
+        "is_up": true,
+        "error_message": null,
+        "endpoints_found": 35
+      }
+    ],
+    "meta": {
+      "total": 2752
+    },
+    "provenance": {
+      "license": "CC-BY-4.0",
+      "attribution_required": true,
+      "attribution": "Data: x402-list.com (CC BY 4.0)",
+      "cite_as": "https://x402-list.com/api/v1/services/sean-claude-van-damme-s-general-store/checks",
+      "source": "https://x402-list.com"
+    }
+  }
+}

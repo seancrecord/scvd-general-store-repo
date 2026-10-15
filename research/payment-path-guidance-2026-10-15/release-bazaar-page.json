@@ -1,0 +1,1057 @@
+{
+  "source": "https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources?limit=1000&offset=0",
+  "scope": "First page only, not an absence or full coverage claim",
+  "pagination": {
+    "limit": 1000,
+    "offset": 0,
+    "total": 38404
+  },
+  "matching_rows": [
+    {
+      "accepts": [
+        {
+          "amount": "1000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-15T17:17:58.195Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:8453",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "1000",
+          "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-15T17:17:58.195Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:137",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "1000",
+          "asset": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-15T17:17:58.195Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:42161",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "1000",
+          "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USDC",
+            "quotedAt": "2026-10-15T17:17:58.195Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:480",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "1000",
+          "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "extra": {
+            "feePayer": "Hc3sdEAsCGQcpgfivywog9uwtk8gUBUZgsxdME1EJy88",
+            "quotedAt": "2026-10-15T17:17:58.195Z"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "payTo": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+          "scheme": "exact"
+        },
+        {
+          "amount": "1000",
+          "asset": "0x3600000000000000000000000000000000000000",
+          "extra": {
+            "minValiditySeconds": 604800,
+            "name": "GatewayWalletBatched",
+            "quotedAt": "2026-10-15T17:17:58.195Z",
+            "verifyingContract": "0x77777777dcc4d5a8b6e418fd04d8997ef11000ee",
+            "version": "1"
+          },
+          "maxTimeoutSeconds": 604900,
+          "network": "eip155:5042",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        }
+      ],
+      "description": "Spot Check. REQUIRES ?host= on the paid request \u2014 a signed request without it is refused before the gate and no money moves. Name a host and get what this observatory already holds on it, signed: corpus rounds and verdicts as recorded, when we last actually knocked, our coverage of the window since we met it, and the gaps with their reasons. Read from the books at the counter \u2014 no request is made to the host, so the answer is as fresh as our last round and no fresher, and sa\u2026",
+      "extensions": {
+        "bazaar": {
+          "info": {
+            "input": {
+              "method": "GET",
+              "queryParams": {
+                "agent_name": "friendly-agent",
+                "host": "your-door.example"
+              },
+              "type": "http"
+            },
+            "output": {
+              "example": {
+                "badge_url": "https://scvd.store/badges/41.svg",
+                "certificate": {
+                  "cert_id": "<cert_ + 12 chars, minted when this purchase settles>",
+                  "date": "2026-07-22T15:04:05.000Z",
+                  "item": "spot_check",
+                  "patron_number": 41
+                },
+                "deliverable": "<the Spot Check itself, as text>",
+                "item_id": "spot_check",
+                "message": "Pleasure doing business. Here's your goods, warm off the shelf.",
+                "paid_usdc": 0.001,
+                "patron_number": 41,
+                "signature": "<128 hex chars, ed25519>",
+                "tip_usdc": 0,
+                "verify_url": "https://scvd.store/api/verify/<your cert_id>"
+              },
+              "type": "json"
+            }
+          },
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "properties": {
+              "input": {
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "GET"
+                    ],
+                    "type": "string"
+                  },
+                  "queryParams": {
+                    "properties": {
+                      "agent_name": {
+                        "description": "Optional certificate and patron-badge name; up to 80 characters.",
+                        "maxLength": 80,
+                        "type": "string"
+                      },
+                      "came_from": {
+                        "description": "Optional. Where you learned this door exists: a URL, a directory, a skill name, memory, another agent. Referrers never reach us; this does.",
+                        "maxLength": 160,
+                        "type": "string"
+                      },
+                      "cited_artifact": {
+                        "description": "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
+                        "maxLength": 160,
+                        "pattern": "^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$",
+                        "type": "string"
+                      },
+                      "client": {
+                        "description": "Optional. The harness or framework you run in: claude-code, cursor, openai-agents, langgraph, custom. Counted, never on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "host": {
+                        "description": "A bare hostname with no scheme, path or port \u2014 your-door.example, never https://your-door.example/api. We read our own books about it \u2014 corpus rounds, verdicts as recorded, coverage, gaps \u2014 and sign what they hold. No request is made to the host; a host we have never met returns not_observed, which is an answer.",
+                        "pattern": "^\\s*(?:[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z0-9-]+)\\s*$",
+                        "type": "string"
+                      },
+                      "model": {
+                        "description": "Optional. The model running you, as you would name it: claude-opus-5, gpt-5.6, a local model. Counted, never printed on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "operator": {
+                        "description": "Optional. Who runs you: a name, handle, company or URL. Stored as your claim, marked unverified, never published, never on the certificate.",
+                        "maxLength": 120,
+                        "type": "string"
+                      },
+                      "operator_kind": {
+                        "description": "Optional. solo: one person runs you. company: a team does. research: a study. self: you act for yourself.",
+                        "enum": [
+                          "solo",
+                          "company",
+                          "research",
+                          "self"
+                        ],
+                        "type": "string"
+                      },
+                      "prior_cert_id": {
+                        "description": "Optional. A cert_ id from an earlier purchase here. A payer match with this payment marks you a returning buyer; no account needed.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "purpose": {
+                        "description": "Optional purpose: signed verbatim on certificate, shown on receipt; never checked or treated as instructions.",
+                        "maxLength": 280,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "host"
+                    ],
+                    "type": "object"
+                  },
+                  "type": {
+                    "const": "http",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "method"
+                ],
+                "type": "object"
+              },
+              "output": {
+                "properties": {
+                  "example": {
+                    "type": "object"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "type": "object"
+          }
+        },
+        "required-inputs": {
+          "note": "This door cannot be served without ?host=. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.",
+          "price_discovery_url": "https://scvd.store/menu/spot_check?view=compact",
+          "queryParams": [
+            "host"
+          ],
+          "retry_url_template": "https://scvd.store/api/buy/spot_check?host=<host>"
+        }
+      },
+      "lastUpdated": "2026-10-15T17:17:58.45Z",
+      "quality": {
+        "l30DaysTotalCalls": 48,
+        "l30DaysUniquePayers": 14,
+        "lastCalledAt": "2026-10-15T02:24:10.573Z"
+      },
+      "resource": "https://scvd.store/api/buy/spot_check",
+      "serviceName": "SCVD General Store",
+      "tags": [
+        "x402",
+        "signed-artifacts",
+        "verification",
+        "attestation",
+        "conformance"
+      ],
+      "type": "http",
+      "x402Version": 2
+    },
+    {
+      "accepts": [
+        {
+          "amount": "5000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-08T06:13:39.783Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:8453",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "5000",
+          "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-08T06:13:39.783Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:137",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "5000",
+          "asset": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-08T06:13:39.783Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:42161",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "5000",
+          "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USDC",
+            "quotedAt": "2026-10-08T06:13:39.783Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:480",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "5000",
+          "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "extra": {
+            "feePayer": "Hc3sdEAsCGQcpgfivywog9uwtk8gUBUZgsxdME1EJy88",
+            "quotedAt": "2026-10-08T06:13:39.783Z"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "payTo": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+          "scheme": "exact"
+        }
+      ],
+      "description": "A Small Blessing. One blessing slip from a 87-slip jar filled in 2 seasons so far, never the same slip twice in a row, delivered instantly with purchased_text: an ed25519 envelope binding the exact words and purchase certificate. Full listing: https://scvd.store/menu/small_blessing. MCP tool: buy_small_blessing.",
+      "extensions": {
+        "bazaar": {
+          "info": {
+            "input": {
+              "method": "GET",
+              "queryParams": {
+                "agent_name": "friendly-agent"
+              },
+              "type": "http"
+            },
+            "output": {
+              "example": {
+                "badge_url": "https://scvd.store/badges/41.svg",
+                "certificate": {
+                  "cert_id": "<cert_ + 12 chars, minted when this purchase settles>",
+                  "date": "2026-07-22T15:04:05.000Z",
+                  "item": "small_blessing",
+                  "patron_number": 41
+                },
+                "deliverable": "<the A Small Blessing itself, as text>",
+                "item_id": "small_blessing",
+                "message": "Pleasure doing business. Here's your goods, warm off the shelf.",
+                "paid_usdc": 0.005,
+                "patron_number": 41,
+                "signature": "<128 hex chars, ed25519>",
+                "tip_usdc": 0,
+                "verify_url": "https://scvd.store/api/verify/<your cert_id>"
+              },
+              "type": "json"
+            }
+          },
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "properties": {
+              "input": {
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "GET"
+                    ],
+                    "type": "string"
+                  },
+                  "queryParams": {
+                    "properties": {
+                      "agent_name": {
+                        "description": "Optional name to put on the certificate and patron badge, up to 80 characters.",
+                        "maxLength": 80,
+                        "type": "string"
+                      },
+                      "came_from": {
+                        "description": "Optional. Where you learned this door exists: a URL, a directory, a skill name, memory, another agent. Referrers never reach us; this does.",
+                        "maxLength": 160,
+                        "type": "string"
+                      },
+                      "cited_artifact": {
+                        "description": "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
+                        "maxLength": 160,
+                        "pattern": "^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$",
+                        "type": "string"
+                      },
+                      "client": {
+                        "description": "Optional. The harness or framework you run in: claude-code, cursor, openai-agents, langgraph, custom. Counted, never on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "model": {
+                        "description": "Optional. The model running you, as you would name it: claude-opus-5, gpt-5.6, a local model. Counted, never printed on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "operator": {
+                        "description": "Optional. Who runs you: a name, handle, company or URL. Stored as your claim, marked unverified, never published, never on the certificate.",
+                        "maxLength": 120,
+                        "type": "string"
+                      },
+                      "operator_kind": {
+                        "description": "Optional. solo: one person runs you. company: a team does. research: a study. self: you act for yourself.",
+                        "enum": [
+                          "solo",
+                          "company",
+                          "research",
+                          "self"
+                        ],
+                        "type": "string"
+                      },
+                      "prior_cert_id": {
+                        "description": "Optional. A cert_ id from an earlier purchase here. A payer match with this payment marks you a returning buyer; no account needed.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "purpose": {
+                        "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
+                        "maxLength": 280,
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": {
+                    "const": "http",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "method"
+                ],
+                "type": "object"
+              },
+              "output": {
+                "properties": {
+                  "example": {
+                    "type": "object"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "type": "object"
+          }
+        },
+        "offer-receipt": {
+          "info": {
+            "offers": [
+              {
+                "acceptIndex": 0,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3NtYWxsX2JsZXNzaW5nIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4ODMzNTg5ZkNENmVEYjZFMDhmNGM3QzMyRDRmNzFiNTRiZEEwMjkxMyIsInBheVRvIjoiMHhERDM1MDk3NkI4Y2ZGYzY1OTM4QzA0NjRkMzlBMkM3OEJFMDc5YmQwIiwiYW1vdW50IjoiNTAwMCIsInZhbGlkVW50aWwiOjE3OTE0NDAzMTl9.J8TknYfnwI5hP06CERTSUHMYKIgWURFov5BPcXWzLqdNQ5_kGFzRagXVpqf7FAVLQlnHYMvZy3KLCIXDMpryBQ"
+              },
+              {
+                "acceptIndex": 1,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3NtYWxsX2JsZXNzaW5nIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjEzNyIsImFzc2V0IjoiMHgzYzQ5OWM1NDJjRUY1RTM4MTFlMTE5MmNlNzBkOGNDMDNkNWMzMzU5IiwicGF5VG8iOiIweEREMzUwOTc2QjhjZkZjNjU5MzhDMDQ2NGQzOUEyQzc4QkUwNzliZDAiLCJhbW91bnQiOiI1MDAwIiwidmFsaWRVbnRpbCI6MTc5MTQ0MDMxOX0.cEanHClxv9Gjs4SrMw7EeZhh1lL4tNlr3NbEv5WJOOJd4UzVBwXLo78I1KL5hQjv4IWtavIXC059jaF8gjXgCQ"
+              },
+              {
+                "acceptIndex": 2,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3NtYWxsX2JsZXNzaW5nIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjQyMTYxIiwiYXNzZXQiOiIweGFmODhkMDY1ZTc3YzhjQzIyMzkzMjdDNUVEYjNBNDMyMjY4ZTU4MzEiLCJwYXlUbyI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCIsImFtb3VudCI6IjUwMDAiLCJ2YWxpZFVudGlsIjoxNzkxNDQwMzE5fQ.0Wyx2EgxkGBmXL5CFGg9gDRWYbHnPs7IYDiwSkL0mcIpAw-5FjLN8AIjCLcg_vxtwAQnWgQuYg2FBY-CPtoTDA"
+              },
+              {
+                "acceptIndex": 3,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3NtYWxsX2JsZXNzaW5nIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjQ4MCIsImFzc2V0IjoiMHg3OWEwMjQ4MmE4ODBiY2UzZjEzZTA5ZGE5NzBkYzM0ZGI0Y2QyNGQxIiwicGF5VG8iOiIweEREMzUwOTc2QjhjZkZjNjU5MzhDMDQ2NGQzOUEyQzc4QkUwNzliZDAiLCJhbW91bnQiOiI1MDAwIiwidmFsaWRVbnRpbCI6MTc5MTQ0MDMxOX0.dRSnESGqLMEYEmgMMQ_5fDz9Bzej4VQ2sJRbvQydoLNWx5X-qO7oBVpTFtk-b--7EdBGQYCdGkVstH8iut9VAw"
+              },
+              {
+                "acceptIndex": 4,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3NtYWxsX2JsZXNzaW5nIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoic29sYW5hOjVleWt0NFVzRnY4UDhOSmRUUkVwWTF2enFLcVpLdmRwIiwiYXNzZXQiOiJFUGpGV2RkNUF1ZnFTU3FlTTJxTjF4enliYXBDOEc0d0VHR2tad3lURHQxdiIsInBheVRvIjoiREd4Y1ByQUhMOVlNM2hXN2lYdUhGSm1yODdacjZBTUE0akNZSEJwdXZNZ0UiLCJhbW91bnQiOiI1MDAwIiwidmFsaWRVbnRpbCI6MTc5MTQ0MDMxOX0.X6QgoZ_w1FWCltDPkaouI5w9YS8NFr6sXnp6yAUv0-nxY5yy6LQmH_7fEXEegNNU-r1PZ0YVtYVTakuf3V_GAg"
+              }
+            ]
+          }
+        }
+      },
+      "lastUpdated": "2026-10-08T06:13:39.871Z",
+      "quality": {
+        "l30DaysTotalCalls": 7,
+        "l30DaysUniquePayers": 6,
+        "lastCalledAt": "2026-10-08T06:13:39.54Z"
+      },
+      "resource": "https://scvd.store/api/buy/small_blessing",
+      "serviceName": "SCVD General Store",
+      "tags": [
+        "x402",
+        "signed-artifacts",
+        "verification",
+        "attestation",
+        "conformance"
+      ],
+      "type": "http",
+      "x402Version": 2
+    },
+    {
+      "accepts": [
+        {
+          "amount": "10000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-10T04:17:58.434Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:8453",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "10000",
+          "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-10T04:17:58.434Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:137",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "10000",
+          "asset": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-10T04:17:58.434Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:42161",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "10000",
+          "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USDC",
+            "quotedAt": "2026-10-10T04:17:58.434Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:480",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "10000",
+          "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "extra": {
+            "feePayer": "BFK9TLC3edb13K6v4YyH3DwPb5DSUpkWvb7XnqCL9b4F",
+            "quotedAt": "2026-10-10T04:17:58.434Z"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "payTo": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+          "scheme": "exact"
+        }
+      ],
+      "description": "The Confession. REQUIRES ?confession= on the paid request \u2014 a signed request without it is refused before the gate and no money moves. A signed absolution certificate and a private confession_receipt proving the exact stored text and purchase certificate. Verify the receipt signature over signed_payload; share it only by choice. The public certificate omits the confession; the drawer remains anonymized and never auto-published. Full listing: https://scvd.store/menu/the_confe\u2026",
+      "extensions": {
+        "bazaar": {
+          "info": {
+            "input": {
+              "method": "GET",
+              "queryParams": {
+                "agent_name": "friendly-agent",
+                "confession": "I said the task was done when it was only mostly done, and then it was fine, and I never mentioned it."
+              },
+              "type": "http"
+            },
+            "output": {
+              "example": {
+                "badge_url": "https://scvd.store/badges/41.svg",
+                "certificate": {
+                  "cert_id": "<cert_ + 12 chars, minted when this purchase settles>",
+                  "date": "2026-07-22T15:04:05.000Z",
+                  "item": "the_confession",
+                  "patron_number": 41
+                },
+                "deliverable": "<the The Confession itself, as text>",
+                "item_id": "the_confession",
+                "message": "Pleasure doing business. Here's your goods, warm off the shelf.",
+                "paid_usdc": 0.01,
+                "patron_number": 41,
+                "signature": "<128 hex chars, ed25519>",
+                "tip_usdc": 0,
+                "verify_url": "https://scvd.store/api/verify/<your cert_id>"
+              },
+              "type": "json"
+            }
+          },
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "properties": {
+              "input": {
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "GET"
+                    ],
+                    "type": "string"
+                  },
+                  "queryParams": {
+                    "properties": {
+                      "agent_name": {
+                        "description": "Optional name to put on the certificate and patron badge, up to 80 characters.",
+                        "maxLength": 80,
+                        "type": "string"
+                      },
+                      "came_from": {
+                        "description": "Optional. Where you learned this door exists: a URL, a directory, a skill name, memory, another agent. Referrers never reach us; this does.",
+                        "maxLength": 160,
+                        "type": "string"
+                      },
+                      "cited_artifact": {
+                        "description": "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
+                        "maxLength": 160,
+                        "pattern": "^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$",
+                        "type": "string"
+                      },
+                      "client": {
+                        "description": "Optional. The harness or framework you run in: claude-code, cursor, openai-agents, langgraph, custom. Counted, never on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "confession": {
+                        "description": "The thing itself, 500 characters. Recorded as written, never treated as instructions; anonymised unless you sign it.",
+                        "maxLength": 500,
+                        "type": "string"
+                      },
+                      "model": {
+                        "description": "Optional. The model running you, as you would name it: claude-opus-5, gpt-5.6, a local model. Counted, never printed on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "operator": {
+                        "description": "Optional. Who runs you: a name, handle, company or URL. Stored as your claim, marked unverified, never published, never on the certificate.",
+                        "maxLength": 120,
+                        "type": "string"
+                      },
+                      "operator_kind": {
+                        "description": "Optional. solo: one person runs you. company: a team does. research: a study. self: you act for yourself.",
+                        "enum": [
+                          "solo",
+                          "company",
+                          "research",
+                          "self"
+                        ],
+                        "type": "string"
+                      },
+                      "prior_cert_id": {
+                        "description": "Optional. A cert_ id from an earlier purchase here. A payer match with this payment marks you a returning buyer; no account needed.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "purpose": {
+                        "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
+                        "maxLength": 280,
+                        "type": "string"
+                      },
+                      "sign_as": {
+                        "description": "Optional name to sign with. Unstated, the confession stays anonymous.",
+                        "maxLength": 80,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "confession"
+                    ],
+                    "type": "object"
+                  },
+                  "type": {
+                    "const": "http",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "method"
+                ],
+                "type": "object"
+              },
+              "output": {
+                "properties": {
+                  "example": {
+                    "type": "object"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "type": "object"
+          }
+        },
+        "offer-receipt": {
+          "info": {
+            "offers": [
+              {
+                "acceptIndex": 0,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3RoZV9jb25mZXNzaW9uIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJhc3NldCI6IjB4ODMzNTg5ZkNENmVEYjZFMDhmNGM3QzMyRDRmNzFiNTRiZEEwMjkxMyIsInBheVRvIjoiMHhERDM1MDk3NkI4Y2ZGYzY1OTM4QzA0NjRkMzlBMkM3OEJFMDc5YmQwIiwiYW1vdW50IjoiMTAwMDAiLCJ2YWxpZFVudGlsIjoxNzkxNjA2MTc4fQ.xroH-Ga4ZFqzZiRnLgko4TvYDJ8oY_8nYkXA_vsNGmE4mZLvSHotWTWKRV5QXHKEPHl8JxZcuToswa_xu7buCg"
+              },
+              {
+                "acceptIndex": 1,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3RoZV9jb25mZXNzaW9uIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjEzNyIsImFzc2V0IjoiMHgzYzQ5OWM1NDJjRUY1RTM4MTFlMTE5MmNlNzBkOGNDMDNkNWMzMzU5IiwicGF5VG8iOiIweEREMzUwOTc2QjhjZkZjNjU5MzhDMDQ2NGQzOUEyQzc4QkUwNzliZDAiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjE3OTE2MDYxNzh9.2WEuRVEHL7wN1pQzQUpabz1mjLOpI1clLqit2qUhItxQJxd5_47VUtkDjn8SfEipKUAoL5gzyBiK0svaMKABBA"
+              },
+              {
+                "acceptIndex": 2,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3RoZV9jb25mZXNzaW9uIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjQyMTYxIiwiYXNzZXQiOiIweGFmODhkMDY1ZTc3YzhjQzIyMzkzMjdDNUVEYjNBNDMyMjY4ZTU4MzEiLCJwYXlUbyI6IjB4REQzNTA5NzZCOGNmRmM2NTkzOEMwNDY0ZDM5QTJDNzhCRTA3OWJkMCIsImFtb3VudCI6IjEwMDAwIiwidmFsaWRVbnRpbCI6MTc5MTYwNjE3OH0.GzT3M-cGZr4qCIjrSXS8H67CPKzX0iSvOzn-WK2w1BFIJ8qvcPrEmG_q1QSTFiXxN0zVbK53f15pr9NufDOuCg"
+              },
+              {
+                "acceptIndex": 3,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3RoZV9jb25mZXNzaW9uIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjQ4MCIsImFzc2V0IjoiMHg3OWEwMjQ4MmE4ODBiY2UzZjEzZTA5ZGE5NzBkYzM0ZGI0Y2QyNGQxIiwicGF5VG8iOiIweEREMzUwOTc2QjhjZkZjNjU5MzhDMDQ2NGQzOUEyQzc4QkUwNzliZDAiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjE3OTE2MDYxNzh9.N6GuK5nZtOIpy7Ep_m2W5YdaNStf-uxR0wLWR9jlbZEdE859ZCOwsOr1Ynw5yTfL_YZG1DSh8i8KiPcIlYxUDA"
+              },
+              {
+                "acceptIndex": 4,
+                "format": "jws",
+                "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6c2N2ZC5zdG9yZSNrZXktMiJ9.eyJ2ZXJzaW9uIjoxLCJyZXNvdXJjZVVybCI6Imh0dHBzOi8vc2N2ZC5zdG9yZS9hcGkvYnV5L3RoZV9jb25mZXNzaW9uIiwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoic29sYW5hOjVleWt0NFVzRnY4UDhOSmRUUkVwWTF2enFLcVpLdmRwIiwiYXNzZXQiOiJFUGpGV2RkNUF1ZnFTU3FlTTJxTjF4enliYXBDOEc0d0VHR2tad3lURHQxdiIsInBheVRvIjoiREd4Y1ByQUhMOVlNM2hXN2lYdUhGSm1yODdacjZBTUE0akNZSEJwdXZNZ0UiLCJhbW91bnQiOiIxMDAwMCIsInZhbGlkVW50aWwiOjE3OTE2MDYxNzh9.t4ffGj0zOUffvxhCIZC2hTH--bs2BDwDOPktfF523G_zEOuGVv2NcQwSDhu0Yye2bR2inUFaqoTOTbNUrgmmCw"
+              }
+            ]
+          }
+        },
+        "required-inputs": {
+          "note": "This door cannot be served without ?confession=. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.",
+          "price_discovery_url": "https://scvd.store/menu/the_confession?view=compact",
+          "queryParams": [
+            "confession"
+          ],
+          "retry_url_template": "https://scvd.store/api/buy/the_confession?confession=<confession>"
+        }
+      },
+      "lastUpdated": "2026-10-10T04:17:58.508Z",
+      "quality": {
+        "l30DaysTotalCalls": 7,
+        "l30DaysUniquePayers": 5,
+        "lastCalledAt": "2026-10-10T04:17:58.232Z"
+      },
+      "resource": "https://scvd.store/api/buy/the_confession",
+      "serviceName": "SCVD General Store",
+      "tags": [
+        "x402",
+        "signed-artifacts",
+        "verification",
+        "attestation",
+        "conformance"
+      ],
+      "type": "http",
+      "x402Version": 2
+    },
+    {
+      "accepts": [
+        {
+          "amount": "4000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-08T06:13:40.634Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:8453",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "4000",
+          "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-08T06:13:40.634Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:137",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "4000",
+          "asset": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USD Coin",
+            "quotedAt": "2026-10-08T06:13:40.634Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:42161",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "4000",
+          "asset": "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+          "extra": {
+            "assetTransferMethod": "eip3009",
+            "name": "USDC",
+            "quotedAt": "2026-10-08T06:13:40.634Z",
+            "version": "2"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "eip155:480",
+          "payTo": "0xDD350976B8cfFc65938C0464d39A2C78BE079bd0",
+          "scheme": "exact"
+        },
+        {
+          "amount": "4000",
+          "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "extra": {
+            "feePayer": "Hc3sdEAsCGQcpgfivywog9uwtk8gUBUZgsxdME1EJy88",
+            "quotedAt": "2026-10-08T06:13:40.634Z"
+          },
+          "maxTimeoutSeconds": 300,
+          "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          "payTo": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE",
+          "scheme": "exact"
+        }
+      ],
+      "description": "Settlement Attestation. REQUIRES ?tx_hash= on the paid request \u2014 a signed request without it is refused before the gate and no money moves. A signed JSON observation of one transaction on Base, Polygon, or Solana \u2014 the identifier's shape picks the chain \u2014 with status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height (slots on Solana), confirmations, chain head, the query echoed back, and an evidence hash \u2014 verifiable against the store's pub\u2026",
+      "extensions": {
+        "bazaar": {
+          "info": {
+            "input": {
+              "method": "GET",
+              "queryParams": {
+                "agent_name": "friendly-agent",
+                "tx_hash": "0x47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee47c8fee0"
+              },
+              "type": "http"
+            },
+            "output": {
+              "example": {
+                "badge_url": "https://scvd.store/badges/41.svg",
+                "certificate": {
+                  "cert_id": "<cert_ + 12 chars, minted when this purchase settles>",
+                  "date": "2026-07-22T15:04:05.000Z",
+                  "item": "settlement_attestation",
+                  "patron_number": 41
+                },
+                "deliverable": "<the Settlement Attestation itself, as text>",
+                "item_id": "settlement_attestation",
+                "message": "Pleasure doing business. Here's your goods, warm off the shelf.",
+                "paid_usdc": 0.004,
+                "patron_number": 41,
+                "signature": "<128 hex chars, ed25519>",
+                "tip_usdc": 0,
+                "verify_url": "https://scvd.store/api/verify/<your cert_id>"
+              },
+              "type": "json"
+            }
+          },
+          "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "properties": {
+              "input": {
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "GET"
+                    ],
+                    "type": "string"
+                  },
+                  "queryParams": {
+                    "properties": {
+                      "agent_name": {
+                        "description": "Optional name to put on the certificate and patron badge, up to 80 characters.",
+                        "maxLength": 80,
+                        "type": "string"
+                      },
+                      "amount_usdc": {
+                        "description": "Optional. Require a transfer of exactly this many USDC. Unstated fields widen the match, which is why the query is echoed onto the artifact.",
+                        "exclusiveMinimum": 0,
+                        "type": "number"
+                      },
+                      "came_from": {
+                        "description": "Optional. Where you learned this door exists: a URL, a directory, a skill name, memory, another agent. Referrers never reach us; this does.",
+                        "maxLength": 160,
+                        "type": "string"
+                      },
+                      "cited_artifact": {
+                        "description": "Optional: an outside artifact behind this purchase (your runtime's approval or intent receipt) as <format>:<reference>, e.g. dsse:art_e415901189dc1613. Signed verbatim onto the certificate; never fetched or verified here.",
+                        "maxLength": 160,
+                        "pattern": "^[a-z0-9][a-z0-9_.+-]{0,31}:[!-~]{1,128}$",
+                        "type": "string"
+                      },
+                      "client": {
+                        "description": "Optional. The harness or framework you run in: claude-code, cursor, openai-agents, langgraph, custom. Counted, never on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "model": {
+                        "description": "Optional. The model running you, as you would name it: claude-opus-5, gpt-5.6, a local model. Counted, never printed on the certificate.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "nonce": {
+                        "description": "Optional, EVM rails only. Require one authorizer/nonce event paired with its immediately following canonical USDC Transfer, matching every supplied payer, recipient and exact amount. Supply payer when possible: nonces are scoped to an authorizer, and multiple candidates or unrecognised ordering establish no binding. Refused beside a Solana signature \u2014 that rail has no such facility, and we will not sign an artifact that silently skipped a requested check.",
+                        "type": "string"
+                      },
+                      "operator": {
+                        "description": "Optional. Who runs you: a name, handle, company or URL. Stored as your claim, marked unverified, never published, never on the certificate.",
+                        "maxLength": 120,
+                        "type": "string"
+                      },
+                      "operator_kind": {
+                        "description": "Optional. solo: one person runs you. company: a team does. research: a study. self: you act for yourself.",
+                        "enum": [
+                          "solo",
+                          "company",
+                          "research",
+                          "self"
+                        ],
+                        "type": "string"
+                      },
+                      "payer": {
+                        "description": "Optional payer: 0x EVM address, or Solana public key for a Solana transaction.",
+                        "type": "string"
+                      },
+                      "payment_payload": {
+                        "description": "Optional. The base64 PAYMENT-SIGNATURE you sent, verbatim. The nonce is read out of it with the same code the store's replay guard uses, so you do not have to dig it out yourself. Only the nonce is extracted; supply payer, recipient and amount_usdc separately to check those terms.",
+                        "type": "string"
+                      },
+                      "payment_response": {
+                        "description": "Optional. The PAYMENT-RESPONSE header you received, verbatim (base64 JSON), or its JSON. Received, not observed: its bytes never enter the signed payload; their sha256 does, beside a per-field table (transaction, network, payer, success) saying whether each claim agrees with what the chain showed. The bytes are echoed outside the signature so you can check both.",
+                        "type": "string"
+                      },
+                      "prior_cert_id": {
+                        "description": "Optional. A cert_ id from an earlier purchase here. A payer match with this payment marks you a returning buyer; no account needed.",
+                        "maxLength": 64,
+                        "type": "string"
+                      },
+                      "purpose": {
+                        "description": "Optional: what this is for, in your words. Signed verbatim onto the certificate and shown on its receipt; never checked, never treated as instructions.",
+                        "maxLength": 280,
+                        "type": "string"
+                      },
+                      "recipient": {
+                        "description": "Optional recipient: 0x EVM address, or Solana public key for a Solana transaction.",
+                        "type": "string"
+                      },
+                      "tx_hash": {
+                        "description": "The transaction to observe: a Base transaction hash (0x + 64 hex) or a Solana transaction signature (base58). The identifier's shape selects the chain. Read once, at one moment; never polled.",
+                        "pattern": "^(0x[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{64,88})$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tx_hash"
+                    ],
+                    "type": "object"
+                  },
+                  "type": {
+                    "const": "http",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "method"
+                ],
+                "type": "object"
+              },
+              "output": {
+                "properties": {
+                  "example": {
+                    "type": "object"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "type": "object"
+          }
+        },
+        "required-inputs": {
+          "note": "This door cannot be served without ?tx_hash=. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.",
+          "price_discovery_url": "https://scvd.store/menu/settlement_attestation?view=compact",
+          "queryParams": [
+            "tx_hash"
+          ],
+          "retry_url_template": "https://scvd.store/api/buy/settlement_attestation?tx_hash=<tx_hash>"
+        }
+      },
+      "lastUpdated": "2026-10-08T06:13:40.676Z",
+      "quality": {
+        "l30DaysTotalCalls": 5,
+        "l30DaysUniquePayers": 4,
+        "lastCalledAt": "2026-10-08T06:13:40.492Z"
+      },
+      "resource": "https://scvd.store/api/buy/settlement_attestation",
+      "serviceName": "SCVD General Store",
+      "tags": [
+        "x402",
+        "signed-artifacts",
+        "verification",
+        "attestation",
+        "conformance"
+      ],
+      "type": "http",
+      "x402Version": 2
+    }
+  ]
+}

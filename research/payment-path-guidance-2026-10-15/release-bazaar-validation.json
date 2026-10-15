@@ -1,0 +1,704 @@
+{
+  "observed_at": "2026-10-15T17:31:12.077Z",
+  "source": "Coinbase free validator; index field is separate from simulation eligibility",
+  "rows": [
+    {
+      "url": "https://scvd.store/api/buy/spot_check",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-15T17:18:02.364Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/settlement_attestation",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T06:13:41.543Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/small_blessing",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T06:13:40.64Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/change_check",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-01T15:25:00.738Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/settlement_reconciliation",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-10T04:17:53.704Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/daily_fortune",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-02T10:17:20.037Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_confession",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-10T04:17:59.089Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/batch_spot_check",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T06:13:52.487Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/research_comparison",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T05:32:34.508Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/attestation_bundle",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T05:32:23.274Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_mandate",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T06:13:59.859Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_case_file",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:54:53.955Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/window_pick",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:00.593Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/hello",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T16:27:41.198Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/good_buyer",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-08T16:06:23.313Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/signature_agent_card",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:12.661Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_statement",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:20.601Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/luckies",
+      "status": 200,
+      "valid": false,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:26.493Z"
+      },
+      "simulation": {
+        "outcome": "rejected",
+        "rejectionReason": "no bazaar discovery extension found"
+      },
+      "failed_checks": [
+        {
+          "check": "has_bazaar_extension",
+          "detail": "No bazaar extension in top-level extensions object",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.type",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.method",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.output",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.info.output.example",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.schema",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        }
+      ]
+    },
+    {
+      "url": "https://scvd.store/api/buy/pack",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:32.738Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/coffees_for_closers",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:43.69Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/bitcoin_anchor",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:51.412Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/context_anchor",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-08-19T20:10:52.606Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/passport_refresh",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:55:58.792Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/graffiti_on_a_train",
+      "status": 200,
+      "valid": false,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-08T16:27:29.467Z"
+      },
+      "simulation": {
+        "outcome": "rejected",
+        "rejectionReason": "no bazaar discovery extension found"
+      },
+      "failed_checks": [
+        {
+          "check": "has_bazaar_extension",
+          "detail": "No bazaar extension in top-level extensions object",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.type",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.method",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.output",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.info.output.example",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.schema",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        }
+      ]
+    },
+    {
+      "url": "https://scvd.store/api/buy/a2a_repair_kit",
+      "status": 200,
+      "valid": true,
+      "index": null,
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/standing_watch",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T14:13:29.359Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/service_audit",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:56:12.849Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/conformance_watch",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T14:13:39.055Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/onpage_audit",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T12:56:19.199Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/launch_check",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T14:13:46.233Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/opening_day",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-01T15:25:38.479Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/provenance_check",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-09-19T14:13:53.757Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/recurring_patronage",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-08-19T20:11:06.42Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/trust_profile",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-01T15:50:15.989Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/operator_statement",
+      "status": 200,
+      "valid": true,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-10-01T15:25:50.269Z"
+      },
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/certificate_of_patronage",
+      "status": 200,
+      "valid": false,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-08-19T20:11:15.191Z"
+      },
+      "simulation": {
+        "outcome": "rejected",
+        "rejectionReason": "no bazaar discovery extension found"
+      },
+      "failed_checks": [
+        {
+          "check": "has_bazaar_extension",
+          "detail": "No bazaar extension in top-level extensions object",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.type",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.method",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.output",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.info.output.example",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.schema",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        }
+      ]
+    },
+    {
+      "url": "https://scvd.store/api/buy/aura_walk",
+      "status": 200,
+      "valid": true,
+      "index": null,
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_collab",
+      "status": 200,
+      "valid": false,
+      "index": {
+        "active": true,
+        "lastCrawledAt": "2026-08-19T20:11:19.609Z"
+      },
+      "simulation": {
+        "outcome": "rejected",
+        "rejectionReason": "no bazaar discovery extension found"
+      },
+      "failed_checks": [
+        {
+          "check": "has_bazaar_extension",
+          "detail": "No bazaar extension in top-level extensions object",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.type",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.input.method",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        },
+        {
+          "check": "bazaar.info.output",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.info.output.example",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "advisory"
+        },
+        {
+          "check": "bazaar.schema",
+          "detail": "Skipped: bazaar extension is missing",
+          "passed": false,
+          "severity": "required"
+        }
+      ]
+    },
+    {
+      "url": "https://scvd.store/almanac/notes-from-a-tuesday-in-oak-city",
+      "status": 200,
+      "valid": true,
+      "index": null,
+      "simulation": {
+        "outcome": "accepted"
+      },
+      "failed_checks": []
+    }
+  ]
+}

@@ -24,6 +24,12 @@ The dated readings below retain their original scope and dates.
 
 ## Baselines and later runs — catalogued 2026-09-16
 
+**October 15, payment guidance:** the keeper's Forge report led to an unpaid
+live probe and a local implementation of direct next actions on quotes and
+input/setup refusals. The [dated record](docs/PAYMENT_PATH_GUIDANCE_2026-10.md)
+separates the live observation, placeholder-input inference, local regression
+checks and remaining release work. No new cold-agent purchase was performed.
+
 The August entries below are not the end of the record. Start with
 this catalogue when checking whether an earlier failure acquired a
 safeguard. A completed research run is not a completed repair.

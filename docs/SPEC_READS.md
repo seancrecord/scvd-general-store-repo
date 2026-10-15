@@ -3151,3 +3151,15 @@ stable terms. Stock-client tests exercise both issuers, tampering and legacy
 challenges with mocked settlement. No funded or live settlement was attempted.
 The web renderer could not fetch the commit page; the primary API source and
 installed implementation were available.
+
+## 2026-10-15 — direct payment path guidance
+
+Read the current primary [x402 v2 specification](https://raw.githubusercontent.com/coinbase/x402/main/specs/x402-specification-v2.md),
+including the request/challenge/retry flow and PaymentRequired structure. Read
+[Cloudflare Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and the published Workers type definitions (`@cloudflare/workers-types@5.20261015.1`).
+The new guidance is an additive response-body field, outside the signed payment
+requirements. Existing x402 and MPP issuers retain their challenge generation.
+No new runtime API, binding or configuration is introduced; the helper does no
+I/O. These reads support the implementation, not third-party scanner adoption
+or a funded payment claim. [Scope and checks](PAYMENT_PATH_GUIDANCE_2026-10.md).

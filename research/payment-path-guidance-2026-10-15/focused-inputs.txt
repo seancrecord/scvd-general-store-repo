@@ -1,0 +1,3 @@
+> vitest run test/payment-next-step.spec.ts test/buyer-http-validation.spec.ts test/catalog-recovery.spec.ts test/buy-url-you-can-buy-at.spec.ts test/locked-door-is-discoverable.spec.ts test/doors-parity.spec.ts test/mcp-standard-payment.spec.ts test/input-aliases.spec.ts test/skill-parity.spec.ts test/skill-bundle-freshness.spec.ts
+ Test Files  9 passed (9)
+      Tests  524 passed (524)
