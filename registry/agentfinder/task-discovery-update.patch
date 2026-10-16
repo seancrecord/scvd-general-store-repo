@@ -1,34 +1,44 @@
+diff --git a/catalog/seancrecord/scvd-general-store-mcp.json b/catalog/seancrecord/scvd-general-store-mcp.json
+deleted file mode 100644
+index d81d8ad..0000000
 --- a/catalog/seancrecord/scvd-general-store-mcp.json
-+++ b/catalog/seancrecord/scvd-general-store-mcp.json
-@@ -2,8 +2,8 @@
-   "identifier": "urn:ai:registry.modelcontextprotocol.io:store.scvd:general-store",
-   "displayName": "SCVD General Store",
-   "mediaType": "application/mcp-server+json",
++++ /dev/null
+@@ -1,25 +0,0 @@
+-{
+-  "identifier": "urn:ai:registry.modelcontextprotocol.io:store.scvd:general-store",
+-  "displayName": "SCVD General Store",
+-  "mediaType": "application/mcp-server+json",
 -  "url": "https://registry.modelcontextprotocol.io/v0/servers/store.scvd%2Fgeneral-store/versions/0.2.3",
 -  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
-+  "url": "https://registry.modelcontextprotocol.io/v0/servers/store.scvd%2Fgeneral-store/versions/0.2.4",
-+  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
-   "tags": [
-     "x402",
-     "agentic-commerce",
-@@ -13,9 +13,10 @@
-     "attestation",
-     "mcp",
-     "usdc",
+-  "tags": [
+-    "x402",
+-    "agentic-commerce",
+-    "conformance",
+-    "verification",
+-    "signed-artifacts",
+-    "attestation",
+-    "mcp",
+-    "usdc",
 -    "payments"
-+    "payments",
-+    "mpp"
-   ],
+-  ],
 -  "version": "0.2.3",
-+  "version": "0.2.4",
-   "metadata": {
-     "repository": "https://github.com/seancrecord/scvd-general-store-repo",
-     "repositorySource": "github",
+-  "metadata": {
+-    "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+-    "repositorySource": "github",
+-    "websiteUrl": "https://scvd.store",
+-    "readmeUrl": "https://github.com/seancrecord/scvd-general-store-repo#readme"
+-  }
+-}
+diff --git a/catalog/seancrecord/scvd-general-store-plugin.json b/catalog/seancrecord/scvd-general-store-plugin.json
+index 6059908..26c8bf3 100644
 --- a/catalog/seancrecord/scvd-general-store-plugin.json
 +++ b/catalog/seancrecord/scvd-general-store-plugin.json
-@@ -3,13 +3,14 @@
+@@ -1,15 +1,16 @@
+ {
+   "identifier": "urn:ai:github.com:seancrecord:scvd-general-store-repo:scvd-general-store-plugin",
    "displayName": "SCVD General Store (plugin)",
-   "mediaType": "application/vnd.github.copilot-plugin",
+-  "mediaType": "application/vnd.github.copilot-plugin",
++  "mediaType": "application/vnd.anthropic.claude-plugin+json",
    "url": "https://github.com/seancrecord/scvd-general-store-repo/blob/main/.claude-plugin/plugin.json",
 -  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations. The store's MCP door and its skill, as one installable plugin.",
 +  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations. Includes the store MCP door and skills for comparing endpoints, diagnosing payment failures and assembling checkable client reports.",
@@ -43,6 +53,8 @@
    ],
    "metadata": {
      "sourceSet": "seancrecord/scvd-general-store-repo",
+diff --git a/catalog/seancrecord/scvd-general-store.json b/catalog/seancrecord/scvd-general-store.json
+index b37f4c5..c1bdb9c 100644
 --- a/catalog/seancrecord/scvd-general-store.json
 +++ b/catalog/seancrecord/scvd-general-store.json
 @@ -3,7 +3,7 @@

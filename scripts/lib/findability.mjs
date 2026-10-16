@@ -26,7 +26,7 @@ export const SIGNALS = [
   { id: "npm-mcp-name", where: "repo", path: "package.json", readers: "the registry's npm ownership check reads the mcpName field", note: "field checked separately" },
   { id: "agent-plugins-manifest", where: "repo", path: "plugin.json", readers: "Agent Plugins Directory, Awesome Copilot, Cursor and Kiro (Agent Plugins 1.0); admission is separate" },
   { id: "agent-plugins-mcp", where: "repo", path: "mcp.json", readers: "Agent Plugins 1.0 hosts (the servers the plugin bundles)" },
-  { id: "claude-code-plugin", where: "repo", path: ".claude-plugin/plugin.json", readers: "Claude Code plugins, GitHub Agent Finder (application/vnd.github.copilot-plugin entries point at this file)" },
+  { id: "claude-code-plugin", where: "repo", path: ".claude-plugin/plugin.json", readers: "Claude Code plugins, GitHub Agent Finder (application/vnd.anthropic.claude-plugin+json entries point at this file)" },
   { id: "claude-code-marketplace", where: "repo", path: ".claude-plugin/marketplace.json", readers: "Claude Code: /plugin marketplace add <owner>/<repo>" },
   { id: "gemini-extension", where: "repo", path: "gemini-extension.json", readers: "Gemini CLI: gemini extensions install <repo url>" },
   { id: "skill-md", where: "repo", path: "skills/scvd-general-store/SKILL.md", readers: "Agent Finder skill scan, ClawHub, Codex/Claude Code/Cursor skill installers (agentskills.io format)" },

@@ -115,3 +115,13 @@ existing experimental helper alongside 1.11.0; unknown versions are still refuse
 and each plan retains its version and file hashes. This does not rewrite earlier
 plans or establish new buyer evidence. The full 348-check buyer group and 16
 guide/discovery checks pass after these fixes, with typecheck green.
+
+
+Release readback on October 16: #1036 merged at 657f12cf; all ten live task
+prompts match Markdown and HTML anchors. Preflight 0.3.3 and corpus-client 0.1.1
+are public/latest; all packed files match source, with registry signatures and
+provenance attestations verified by npm. ClawHub 3.19.5 is public/latest; its
+publication record is PR #1038. The follow-up Tab 0.11.4 release requires every
+current install pin to move together; CI caught the stale plugin pin. Source
+skill 3.19.6 carries that pin refresh and still requires its own publication.
+Agent Finder's current rules and owner-account blocker are recorded in its drawer.

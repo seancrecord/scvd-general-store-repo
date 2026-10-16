@@ -2,7 +2,7 @@
 
 Reconciled September 17, 2026. Continue
 [github/agentfinder-catalog#34](https://github.com/github/agentfinder-catalog/pull/34).
-It already contains both skills and MCP/plugin descriptors. The older instructions
+It currently contains both skills and MCP/plugin descriptors; the October 16 refresh below supersedes that proposed set. The older instructions
 to open a second PR or add missing skill entries are superseded by the
 [admission reconciliation](../../research/distribution-admission-2026-09-16/README.md).
 An open PR is not an indexed result.
@@ -11,7 +11,7 @@ An open PR is not an indexed result.
 | --- | --- |
 | `catalog/seancrecord/scvd-general-store.json` | Store skill |
 | `catalog/seancrecord/x402-before-you-pay.json` | Pre-payment skill |
-| `catalog/seancrecord/scvd-general-store-mcp.json` | Store's official MCP registry descriptor |
+| `deferred/scvd-general-store-mcp.json` | Reference only: official registry descriptor; withheld from Agent Finder |
 | `catalog/seancrecord/scvd-general-store-plugin.json` | Claude-compatible plugin descriptor |
 
 `npm run listings:test` checks descriptor shape, source URLs and metadata parity.
@@ -74,3 +74,23 @@ all four local descriptors with its head
 `9f5fff8216af4d400f623680da6ad715d2e0d0e5`; the owning account can apply it on
 `add-scvd-general-store`. No duplicate submission was opened and no external
 update or index inclusion is claimed. Local listing validation passes.
+
+## Current upstream rules and conflict resolution (October 16)
+
+The October 13 contribution guide requires Claude manifest references to use
+`application/vnd.anthropic.claude-plugin+json`. It also accepts MCP references
+through GitHub's versioned mirror, not the official registry URL used by the old
+PR. The live GitHub MCP catalog contained no SCVD entry and its exact store
+0.2.4 mirror URL returned 404 on October 16. The official MCP registry entry
+remains public elsewhere; it is retained under `deferred/` as a reference, not a
+submission candidate. Do not fabricate a mirror URL or count this as admission.
+
+The replacement `task-discovery-update.patch` updates the two skills/plugin and
+removes the unsupported MCP proposal from existing PR #34. It supersedes the
+earlier four-descriptor patch. The PR also conflicts in generated `ai-catalog.json`.
+Merge current upstream first, apply this patch, regenerate that file with the
+current generator, and run the upstream tests and generator check before pushing
+the existing branch. A local prepared merge passed 46 upstream tests and both
+generation checks; it is not pushed because the owning account is unavailable.
+The current browser has only `seancrecord` signed in, and the fork still reports
+`push: false`. No duplicate submission, account change or external message was made.

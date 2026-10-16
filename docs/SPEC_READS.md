@@ -3232,3 +3232,16 @@ Read the official MCP registry [CLI commands](https://github.com/modelcontextpro
 for the existing Tab listing's version update. The existing workflow validates
 the manifest, authenticates the same domain namespace, publishes metadata and
 reads the registry back. npm publication must precede the package listing.
+
+
+### 2026-10-16 — Agent Finder upstream refresh and npm verification
+
+Read current `github/agentfinder-catalog` CONTRIBUTING.md and generator after
+fetching upstream main: Claude manifest references require the Anthropic plugin
+media type; supported MCP enrichment uses GitHub's versioned mirror. The live
+MCP import had no SCVD match and the exact 0.2.4 mirror URL returned 404.
+Updated drafts withhold that MCP entry and preserve the official registry
+reference separately. Upstream's 46 tests and regenerated-catalog check passed.
+Also read https://docs.npmjs.com/cli/v11/commands/npm-audit/ for `audit signatures`;
+its verification covers registry signatures and provenance attestations. Both
+newly published npm packages passed that verification in an isolated install.
