@@ -101,7 +101,10 @@ describe("the spec, as a registry reads it", () => {
     expect(summary.required).toBe(true);
 
     // And an optional one stays optional.
-    const named = params.find(
+    const named = params.map(param => {
+      if (!isRecord(param) || typeof param.$ref !== "string") return param;
+      return param.$ref.slice(2).split("/").reduce<unknown>((node, key) => isRecord(node) ? node[key] : undefined, body);
+    }).find(
       (param) => isRecord(param) && param.name === "agent_name",
     );
     expect(isRecord(named)).toBe(true);

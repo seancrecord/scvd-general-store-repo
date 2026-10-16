@@ -18,6 +18,15 @@ draft and page-scoped commitment visibility. Existing terms remain intact;
 no cap was raised and no work posted. [Scope, limits and next funding-control
 work](docs/CONTRIBUTION_REDEMPTION_2026-10.md).
 
+## October 15 — direct payment guidance
+
+Implemented locally: quotes and refusals name the next action, preserve good
+inputs and distinguish bare probes from placeholder purchase examples. Complete
+requests need no catalogue detour; A2A setup and Change Check baselines have
+direct repair paths. Both HTTP Workers and MCP formats share the decisions.
+Focused tests, typecheck and bundle checks pass. PR and merge authorized;
+pre-merge discovery evidence and measured overhead are recorded in
+[payment path guidance](docs/PAYMENT_PATH_GUIDANCE_2026-10.md).
 
 ## October 14 — Field Study participation clarity
 

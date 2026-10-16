@@ -1232,8 +1232,9 @@ const BASE = "https://scvd.store";
 // 2026-10-15: reviewed contribution payment/free-cost wording and two earning
 // answers now disclose recipient redemption and gas. Restoring the shared
 // contribution copy first reproduced the prior guide baseline (14/14).
+// 2026-10-16: combine the reviewed payment-path and contribution additions.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "63f2b8a461cfbdc2ff1f8b2553799aaf6bd0741e5737c94afc174b086a201dec";
+  "60397d34ff51a9ea20a6aaa7ec0ada20bba7404e6e037bd49a344ca843c2072b";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1336,7 +1337,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "900a18bcebf3d73230757b2b8b037a267ba79cabaec2f844f7882ae4c934d833",
+      "9041c9d0cbc3b7371c656560bb48d3ccc3c78d8d1ccc2479be7b8533226b18b0",
     );
   });
 

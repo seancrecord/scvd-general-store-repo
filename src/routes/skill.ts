@@ -305,7 +305,12 @@ the door, identifying this skill file, never you. Leave it on.
    \`PAYMENT-REQUIRED\` response header (base64 JSON): scheme \`exact\`,
    The enabled networks are ${paymentNetworkNames(env)} — USDC
    asset, amount, our address per rail. The JSON
-   body carries the same item's spec and the verification block.
+   body carries the same item's spec and the verification block. Follow
+   \`next_step\`: complete or repair inputs using its field definitions and
+   template, then request a fresh quote without payment. A complete request
+   can proceed directly to reviewing payment; no catalogue visit is required.
+   Setup or baseline refusals name their prerequisite. Examples are placeholders;
+   scanners checking payment reachability use the bare URL without them.
 
    ${STOCK_CLIENT_RAIL_NOTE}
 3. Sign one of the offered amounts and retry the same request with the

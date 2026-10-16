@@ -835,7 +835,7 @@ export function requiredInputsExtension(
       queryParams: [...required],
       note: `This door cannot be served without ${required
         .map((name) => `?${name}=`)
-        .join(" and ")}. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so add them to the retry that carries your signature.`,
+        .join(" and ")}. Asking the price without them is free; PAYING without them is refused before the gate and no money moves, so supply them on an unsigned request first, then sign the resulting quote and retry that identical request.`,
       ...(base
         ? { retry_url_template: `${base}/api/buy/${item.id}?${query}`, price_discovery_url: `${base}/menu/${item.id}?view=compact` }
         : {}),
@@ -900,6 +900,78 @@ export function pennyPageDiscoveryExtensions(
   });
 }
 
+/** Pure request guidance: never fetch, validate a target, or read storage here. */
+export function purchaseNextStep(
+  item: MenuItem | undefined,
+  args: Record<string, unknown>,
+  base: string,
+  location: "query" | "arguments",
+  options: { refusal?: Record<string, unknown>; paymentAttempted?: boolean; url?: string } = {},
+): Record<string, unknown> {
+  // A refusal on this attempt says nothing about an earlier attempt. Never
+  // turn a failed signed retry into instructions to authorize another charge.
+  if (options.paymentAttempted) return {
+    action: "recover_payment", payment_required: false,
+    note: options.refusal
+      ? "This refusal describes only this attempt. Do not repeat an invalid request unchanged. Keep the original payment and key; resolve any earlier attempt through its private status handle or original payment recovery before changing inputs or signing again."
+      : "Keep the original signed payment, inputs and idempotency key. Use its private purchase-status handle or retry the original request for recovery. Do not sign another payment while an earlier outcome is unresolved.",
+  };
+  const schema = item ? buyInputSchema(item) : { properties: {}, required: [] };
+  const missing = item ? missingRequiredInputs(item, args) : [];
+  const issues = item && options.refusal ? purchaseInputIssues(item, args, location, options.refusal) : [];
+  const fields = [...new Set([...issues.map(issue => issue.field), ...missing])];
+  const supplied = resolveInputRecord(Object.keys(schema.properties), args);
+  const code = options.refusal?.code;
+  const inputFields = Object.fromEntries(fields.filter(name => Object.hasOwn(schema.properties, name))
+    .map(name => [name, schema.properties[name]]));
+
+  const repairRequest = (target: MenuItem) => {
+    // Copy only declared inputs, never arbitrary query keys or payment metadata.
+    // Aliases resolve by the same rule as validation; repair happens before a
+    // new quote, so a signed URL is never silently rewritten.
+    const values = Object.fromEntries(Object.keys(schema.properties)
+      .filter(name => fields.includes(name) || supplied[name] !== undefined)
+      .map(name => [name, fields.includes(name) ? `<${name}>` : supplied[name]]));
+    const query = Object.entries(values).map(([name, value]) =>
+      `${encodeURIComponent(name)}=${fields.includes(name) ? `<${name}>` : encodeURIComponent(String(value))}`).join("&");
+    return location === "query"
+      ? { method: "GET", url_template: `${base}/api/buy/${target.id}?${query}` }
+      : { same_tool: true, arguments: { item_id: target.id, ...values } };
+  };
+
+  if (item?.id === "a2a_repair_kit" && ["unsupported_version", "unsupported_transport", "endpoint_refused", "authorization_required", "invalid_fixture", "budget_exhausted"].includes(String(code))) return {
+    action: code === "budget_exhausted" ? "retry_later" : "complete_setup",
+    method: "GET", url: `${base}/a2a-desk.json`, payment_required: false, reason: code,
+    note: code === "budget_exhausted"
+      ? "The admission budget is unavailable. Retry the same inputs without payment later; this does not establish a setup defect."
+      : "The supplied agent must meet the supported card/transport contract and publish its same-origin audit authorization with a safe-to-repeat fixture. The setup contract is free. After correcting setup, retry the same purchase inputs without payment to obtain a fresh quote.",
+  };
+  if (item?.id === "change_check" && code === "baseline_unavailable") {
+    const host = typeof supplied.host === "string" ? supplied.host.trim().toLowerCase() : "";
+    return {
+      action: "supply_baseline", method: "GET", payment_required: false,
+      url: new RegExp(SPOT_CHECK_HOST_PATTERN).test(host)
+        ? `${base}/corpus/host/${encodeURIComponent(host)}.json` : `${base}/menu/${item.id}?view=compact`,
+      fields: inputFields, retry: repairRequest(item),
+      note: "Supply the certificate ID of a retained earlier Spot Check for this same host. The free history is not a replacement baseline. If you have no retained baseline, a new Spot Check is a separate purchase requiring your decision; it cannot reconstruct the past. Then request Change Check without payment to validate the inputs and obtain a quote.",
+    };
+  }
+  if (fields.length > 0 && item) {
+    return {
+      action: options.refusal ? "repair_inputs" : "complete_inputs", payment_required: false,
+      missing_fields: missing, fields: inputFields,
+      ...repairRequest(item),
+      note: "Replace the <slots> using these field definitions; URL-encode query values. Keep the other inputs. Send without payment first; review the resulting quote before signing. Further validation may identify another invalid field.",
+    };
+  }
+  if (options.refusal && item) return catalogRecovery(base, item.id).next_step;
+  return {
+    action: "review_payment", payment_required: true,
+    ...(location === "query" && options.url ? { method: "GET", url: options.url } : { same_tool: true }),
+    note: "Inputs are complete. Review the offered amount, network and scope within your approved budget. Sign with your wallet/client, then retry the identical request with the payment and the same idempotency key. No catalogue or validation call is required. After an uncertain attempt, recover with the original payment; do not authorize a second charge.",
+  };
+}
+
 /** A repair a small reader can follow without extracting field names from prose. */
 export function buyerInputRepair(
   item: MenuItem,
@@ -907,9 +979,11 @@ export function buyerInputRepair(
   base: string,
   location: "query" | "arguments",
   refusalBody?: Record<string, unknown>,
+  paymentAttempted = false,
 ) {
   const required = buyInputSchema(item).required ?? [];
   return {
+    next_step: purchaseNextStep(item, args, base, location, { refusal: refusalBody, paymentAttempted }),
     required_params: [...required],
     /*
      * THE REPAIR, AS A URL RATHER THAN AS A READING (2026-09-21). A
@@ -925,11 +999,12 @@ export function buyerInputRepair(
       : {}),
     input_contract_url: `${base}/menu/${item.id}?view=compact`,
     issues: purchaseInputIssues(item, args, location, refusalBody),
-    ...catalogRecovery(base, item.id),
-    next_action:
-      location === "query" && required.length > 0
-        ? "Fetch buy_url_template with every <slot> replaced by your value, then retry the payment against that exact URL. The free input contract has the prices and the full schema. No charge was taken."
-        : "Read the free input contract for prices and required fields, correct the inputs, then retry the same purchase. No charge was taken.",
+    retry_same_request: false,
+    next_action: paymentAttempted
+      ? "No charge was taken on this refused attempt. Keep the original payment and key; use next_step for recovery before considering any new payment."
+      : location === "query" && required.length > 0
+        ? "Follow next_step for the specific repair and preserved inputs. buy_url_template is the generic fallback. Validate corrected inputs without payment, then review the fresh quote before signing. No charge was taken."
+        : "Follow next_step; it names the fields or prerequisite to repair. Retry the same tool without payment, then review the fresh quote before signing. No charge was taken.",
   };
 }
 

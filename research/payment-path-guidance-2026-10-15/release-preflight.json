@@ -1,0 +1,2617 @@
+{
+  "observed_at": "2026-10-15T17:30:54.236Z",
+  "source": "src/services/preflight.ts runChecks + checksForBattery(v3), bundled locally; live unpaid responses",
+  "limits": "No external Solana balance/receivability read, offer signature verification, funded payment, settlement or delivery. Three templated GET paths are outside the concrete-route population.",
+  "rows": [
+    {
+      "url": "https://scvd.store/api/buy/spot_check",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, host), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, host) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/settlement_attestation",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, tx_hash), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, tx_hash) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/small_blessing",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/change_check",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, host, baseline_cert_id), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, host, baseline_cert_id) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/settlement_reconciliation",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, tx_hash), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, tx_hash) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/daily_fortune",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_confession",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, confession), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, confession) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/batch_spot_check",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, hosts), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, hosts) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/research_comparison",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, urls), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, urls) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/attestation_bundle",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, tx_hashes), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, tx_hashes) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_mandate",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, mandate, declared_cap_usdc), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, mandate, declared_cap_usdc) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_case_file",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, tx_hash), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, tx_hash) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/window_pick",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/hello",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/good_buyer",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/signature_agent_card",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_statement",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, wallet, hours), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, wallet, hours) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/luckies",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "conflicting-amounts",
+          "detail": "the accepts array offers the same network and asset at different amounts (eip155:8453: 990000 vs 1980000 vs 4950000; eip155:137: 990000 vs 1980000 vs 4950000; eip155:42161: 990000 vs 1980000 vs 4950000; eip155:480: 990000 vs 1980000 vs 4950000; solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: 990000 vs 1980000 vs 4950000; eip155:5042: 990000 vs 1980000 vs 4950000). A client meeting two prices for one rail has to guess which one you meant, and a guess about money is the one guess a payment client must not make. If the tiers are different products, different resources are the spec's shape for that."
+        },
+        {
+          "name": "no-bazaar-extension",
+          "detail": "no extensions.bazaar block in the PAYMENT-REQUIRED header (the placement this check reads, because it is the one discovery ingesters read). Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present."
+        },
+        {
+          "name": "no-input-contract",
+          "detail": "the challenge declares no input contract (no extensions.bazaar.info.input). If this resource needs parameters, a buyer cannot discover that before paying \u2014 they sign, get refused for a missing field, and their logs record it as your endpoint failing. In the August 2026 field run this shape was the largest single cause of refused purchases at endpoints that were otherwise working. If the resource genuinely needs nothing, this advisory costs you nothing."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/pack",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/coffees_for_closers",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, win), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, win) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/bitcoin_anchor",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, digest), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, digest) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/context_anchor",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, summary), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, summary) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/passport_refresh",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/graffiti_on_a_train",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "conflicting-amounts",
+          "detail": "the accepts array offers the same network and asset at different amounts (eip155:8453: 1000000 vs 2000000 vs 5000000; eip155:137: 1000000 vs 2000000 vs 5000000; eip155:42161: 1000000 vs 2000000 vs 5000000; eip155:480: 1000000 vs 2000000 vs 5000000; solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: 1000000 vs 2000000 vs 5000000; eip155:5042: 1000000 vs 2000000 vs 5000000). A client meeting two prices for one rail has to guess which one you meant, and a guess about money is the one guess a payment client must not make. If the tiers are different products, different resources are the spec's shape for that."
+        },
+        {
+          "name": "no-bazaar-extension",
+          "detail": "no extensions.bazaar block in the PAYMENT-REQUIRED header (the placement this check reads, because it is the one discovery ingesters read). Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present."
+        },
+        {
+          "name": "no-input-contract",
+          "detail": "the challenge declares no input contract (no extensions.bazaar.info.input). If this resource needs parameters, a buyer cannot discover that before paying \u2014 they sign, get refused for a missing field, and their logs record it as your endpoint failing. In the August 2026 field run this shape was the largest single cause of refused purchases at endpoints that were otherwise working. If the resource genuinely needs nothing, this advisory costs you nothing."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/a2a_repair_kit",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $49, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/standing_watch",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $5, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/service_audit",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $5, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/conformance_watch",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $5, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/onpage_audit",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $3, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/launch_check",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $5, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/opening_day",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $9, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/provenance_check",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $5, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, address), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, address) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/recurring_patronage",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $3, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/trust_profile",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $21, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/operator_statement",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $21, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, wallet), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, wallet) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/certificate_of_patronage",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "conflicting-amounts",
+          "detail": "the accepts array offers the same network and asset at different amounts (eip155:8453: 20000000 vs 40000000 vs 100000000; eip155:137: 20000000 vs 40000000 vs 100000000; eip155:42161: 20000000 vs 40000000 vs 100000000; eip155:480: 20000000 vs 40000000 vs 100000000; solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: 20000000 vs 40000000 vs 100000000; eip155:5042: 20000000 vs 40000000 vs 100000000). A client meeting two prices for one rail has to guess which one you meant, and a guess about money is the one guess a payment client must not make. If the tiers are different products, different resources are the spec's shape for that."
+        },
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $20, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "no-bazaar-extension",
+          "detail": "no extensions.bazaar block in the PAYMENT-REQUIRED header (the placement this check reads, because it is the one discovery ingesters read). Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present."
+        },
+        {
+          "name": "no-input-contract",
+          "detail": "the challenge declares no input contract (no extensions.bazaar.info.input). If this resource needs parameters, a buyer cannot discover that before paying \u2014 they sign, get refused for a missing field, and their logs record it as your endpoint failing. In the August 2026 field run this shape was the largest single cause of refused purchases at endpoints that were otherwise working. If the resource genuinely needs nothing, this advisory costs you nothing."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/aura_walk",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $150, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "inputs-declared",
+          "detail": "the challenge declares the inputs a buyer must send (agent_name, url, detail), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt."
+        },
+        {
+          "name": "retry-key-not-in-challenge",
+          "detail": "the challenge declares inputs (agent_name, url, detail) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase \u2014 a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/api/buy/the_collab",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "conflicting-amounts",
+          "detail": "the accepts array offers the same network and asset at different amounts (eip155:8453: 300000000 vs 600000000 vs 1500000000; eip155:137: 300000000 vs 600000000 vs 1500000000; eip155:42161: 300000000 vs 600000000 vs 1500000000; eip155:480: 300000000 vs 600000000 vs 1500000000; solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: 300000000 vs 600000000 vs 1500000000; eip155:5042: 300000000 vs 600000000 vs 1500000000). A client meeting two prices for one rail has to guess which one you meant, and a guess about money is the one guess a payment client must not make. If the tiers are different products, different resources are the spec's shape for that."
+        },
+        {
+          "name": "above-default-client-cap",
+          "detail": "the cheapest USDC ask here is $300, above the $1 that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs \u2014 it just sees no demand. Offer one tier at or under $1, or tell buyers plainly that they must raise their client's spend ceiling first."
+        },
+        {
+          "name": "no-bazaar-extension",
+          "detail": "no extensions.bazaar block in the PAYMENT-REQUIRED header (the placement this check reads, because it is the one discovery ingesters read). Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present."
+        },
+        {
+          "name": "no-input-contract",
+          "detail": "the challenge declares no input contract (no extensions.bazaar.info.input). If this resource needs parameters, a buyer cannot discover that before paying \u2014 they sign, get refused for a missing field, and their logs record it as your endpoint failing. In the August 2026 field run this shape was the largest single cause of refused purchases at endpoints that were otherwise working. If the resource genuinely needs nothing, this advisory costs you nothing."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    },
+    {
+      "url": "https://scvd.store/almanac/notes-from-a-tuesday-in-oak-city",
+      "status": 402,
+      "checks": [
+        {
+          "name": "status-402",
+          "ok": true
+        },
+        {
+          "name": "payment-required-header",
+          "ok": true
+        },
+        {
+          "name": "x402-version",
+          "ok": true
+        },
+        {
+          "name": "accepts",
+          "ok": true
+        },
+        {
+          "name": "bazaar-extension",
+          "ok": true
+        },
+        {
+          "name": "signed-offers",
+          "ok": true
+        },
+        {
+          "name": "payto-payable",
+          "ok": true
+        },
+        {
+          "name": "amount-atomic",
+          "ok": true
+        },
+        {
+          "name": "network-mainnet",
+          "ok": true
+        },
+        {
+          "name": "transfer-method-signable",
+          "ok": true
+        },
+        {
+          "name": "discovery-info-validates",
+          "ok": true
+        },
+        {
+          "name": "offer-amount-matches-accepts",
+          "ok": true
+        }
+      ],
+      "advisories": [
+        {
+          "name": "conflicting-amounts",
+          "detail": "the accepts array offers the same network and asset at different amounts (eip155:8453: 10000 vs 20000 vs 50000; eip155:137: 10000 vs 20000 vs 50000; eip155:42161: 10000 vs 20000 vs 50000; eip155:480: 10000 vs 20000 vs 50000; solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp: 10000 vs 20000 vs 50000; eip155:5042: 10000 vs 20000 vs 50000). A client meeting two prices for one rail has to guess which one you meant, and a guess about money is the one guess a payment client must not make. If the tiers are different products, different resources are the spec's shape for that."
+        }
+      ],
+      "failures": [],
+      "next_step": null
+    }
+  ]
+}

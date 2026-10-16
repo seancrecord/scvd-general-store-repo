@@ -1,0 +1,22 @@
+> vitest run test/payment-next-step.spec.ts
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/payment-next-step.spec.ts > store: every bare purchase puts the next action before the detailed quote
+ FAIL  test/payment-next-step.spec.ts > doors: every bare purchase puts the next action before the detailed quote
+ FAIL  test/payment-next-step.spec.ts > repairs only the bad field, preserving correctly encoded optional inputs without forwarding unknown fields
+ FAIL  test/payment-next-step.spec.ts > a partial quote preserves the supplied host and names only the missing baseline
+ FAIL  test/payment-next-step.spec.ts > http: a missing baseline gives a free, exact-host history read and a usable retry template
+ FAIL  test/payment-next-step.spec.ts > mcp: a missing baseline gives a free, exact-host history read and a usable retry template
+ FAIL  test/payment-next-step.spec.ts > mcp-standard: a missing baseline gives a free, exact-host history read and a usable retry template
+ FAIL  test/payment-next-step.spec.ts > http: A2A admission refusal points directly to setup with structured repair guidance
+ FAIL  test/payment-next-step.spec.ts > mcp: A2A admission refusal points directly to setup with structured repair guidance
+ FAIL  test/payment-next-step.spec.ts > mcp-standard: A2A admission refusal points directly to setup with structured repair guidance
+ FAIL  test/payment-next-step.spec.ts > http: complete inputs lead straight to reviewing the offered payment
+ FAIL  test/payment-next-step.spec.ts > mcp: complete inputs lead straight to reviewing the offered payment
+ FAIL  test/payment-next-step.spec.ts > mcp-standard: complete inputs lead straight to reviewing the offered payment
+ FAIL  test/payment-next-step.spec.ts > MCP input repair preserves the caller's good arguments and requires an unsigned quote
+ FAIL  test/payment-next-step.spec.ts > a rejected signed request does not direct the buyer to sign a replacement payment
+ FAIL  test/payment-next-step.spec.ts > OpenAPI distinguishes a runnable unpaid probe from placeholder purchase examples
+ FAIL  test/payment-next-step.spec.ts > a complete quote preserves the exact request URL, including aliases and encoding
+ FAIL  test/payment-next-step.spec.ts > publication quotes carry the same direct payment action
+ Test Files  1 failed (1)
+      Tests  18 failed (18)
