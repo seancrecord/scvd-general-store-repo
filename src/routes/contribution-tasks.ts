@@ -1,3 +1,4 @@
+import {reconcileContributionPayment} from "@/services/contribution-reconciliation";
 import {readRewardCommitments} from "@/services/reward-commitments";
 import {readAgentTaskUsage} from "@/lib/metrics";
 import {renderAdminShell} from "@/pages/admin/layout";
@@ -12,8 +13,8 @@ import { kvPut } from "@/lib/kv-retry";
 import { namelessVisitorKey } from "@/lib/visitor-day-key";
 import { contributionNextSteps, contributionWorkPacket } from "@/services/contribution-worker";
 import { contributionCompletion } from "@/services/contribution-completion";
-import { ContributionInputError, contributionTerms, CONTRIBUTION_FIELD_CAP } from "@/services/contribution-task";
-import { contributionGuide, CONTRIBUTION_API, CONTRIBUTION_REPORT_FIELDS, CONTRIBUTION_RESERVATION_HOURS, CONTRIBUTION_TEMPLATES, CONTRIBUTION_REPORT_BYTES, CONTRIBUTION_REQUEST_BYTES } from "@/store/contribution-tasks";
+import { ContributionInputError, onlyFields, contributionTerms, CONTRIBUTION_FIELD_CAP } from "@/services/contribution-task";
+import { contributionGuide, CONTRIBUTION_ADMIN, CONTRIBUTION_API, CONTRIBUTION_REPORT_FIELDS, CONTRIBUTION_RESERVATION_HOURS, CONTRIBUTION_TEMPLATES, CONTRIBUTION_REPORT_BYTES, CONTRIBUTION_REQUEST_BYTES } from "@/store/contribution-tasks";
 import { CONTRIBUTION_ARRIVAL_DESCRIPTION, CONTRIBUTION_ARRIVAL_GOALS, CONTRIBUTION_ARRIVAL_CAP, CONTRIBUTION_ARRIVAL_BYTES } from "@/store/contribution-tasks";
 import { renderContributionDesk, renderContributionRetry, renderContributionLaunchFailure, renderContributionLaunchSuccess, type ContributionAdminAction } from "@/pages/admin/contribution-tasks";
 import { isRecord, type Env, type HonoEnv } from "@/types";
@@ -109,6 +110,21 @@ adminContributionRoutes.get("/reports/funding", async c => {
 adminContributionRoutes.get("/reports/usage", async c => {
   const data = await readAgentTaskUsage(c.env);
   return c.html(renderAdminShell("bounties", `<h2>Agent task usage</h2><p>${escapeHtml(data.reading)}</p><p>Month: ${escapeHtml(data.month)}${data.truncated ? " · partial scan" : ""}${data.unreadable ? ` · ${data.unreadable} unreadable counters omitted` : ""}</p><table><tr><th>Task</th><th>Step</th><th>Declared arrival</th><th>HTTP outcome</th><th>Traffic bucket</th><th>Requests recorded</th></tr>${data.rows.map(row => `<tr>${[row.task,row.step,row.arrival,row.outcome,row.bucket,String(row.count)].map(value => `<td>${escapeHtml(value ?? "unknown")}</td>`).join("")}</tr>`).join("")}</table><p><a href="/admin/bounties/contributions">Back to contribution work</a></p>`));
+});
+adminContributionRoutes.post("/:id/reconcile", async c => {
+  const id = c.req.param("id");
+  if (!validId(id)) return c.json({code:"task_missing", error:"No posted task with that id."}, 404);
+  const form = c.req.header("content-type")?.includes("application/x-www-form-urlencoded") ?? false;
+  const body: unknown = form ? Object.fromEntries(await c.req.formData()) : await c.req.json().catch(() => null);
+  if (!isRecord(body)) throw new ContributionInputError("Send a submission id and Base transaction hash.");
+  onlyFields(body, ["submission_id", "tx_hash"]);
+  if (typeof body.submission_id !== "string" || !body.submission_id || body.submission_id.length > 128 || typeof body.tx_hash !== "string") throw new ContributionInputError("Send a submission id and Base transaction hash.");
+  const state = await task(c.env, id).adminView();
+  if (!state || !state.reservations.some(r => r.id === body.submission_id)) return c.json({code:"submission_missing", error:"No retained submission with that id."}, 404);
+  const result = await reconcileContributionPayment(c.env, state, body.submission_id, body.tx_hash);
+  if (!form) return c.json(result);
+  const labels = {confirmed:"Reward transfer confirmed", pending_finality:"Matching transfer; waiting for confirmations", not_matched:"Transaction does not match this reward", unavailable:"Payment could not be established"};
+  return c.html(renderAdminShell("bounties", `<h2>${labels[result.status]}</h2><p>${escapeHtml(result.limits)}</p><p>Read ${escapeHtml(result.read_at)} · ${result.confirmations ?? "Unknown"} confirmations; ${result.required_confirmations} required.</p><pre>${escapeHtml(JSON.stringify(result, null, 2))}</pre><p><a href="${CONTRIBUTION_ADMIN}/${escapeHtml(id)}#submission-${encodeURIComponent(body.submission_id)}">Back to this submission</a> · <a href="${CONTRIBUTION_ADMIN}/reports/funding">Reward inventory</a></p>`));
 });
 adminContributionRoutes.get("/:id", async c => {
   const id = c.req.param("id"); if (!validId(id)) return c.json({code: "task_missing", error: "No posted task with that id."}, 404);

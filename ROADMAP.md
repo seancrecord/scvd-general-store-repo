@@ -1,5 +1,17 @@
 # ROADMAP — September 2026
 
+## October 16 — exact contribution reward transaction checks
+
+The contribution desk now offers a read-only check for a supplied redemption
+transaction against an issued reward's retained authorizer, nonce, recipient and
+atomic amount. It reuses the canonical USDC paired-event reader and confirmation
+threshold. Expired authorizations can still be checked for earlier redemption;
+wallet rotation does not replace their retained authorizer. Canceled/consumed
+nonce state alone never establishes payment. Results remain private and are not
+saved or deducted from the bounded funding inventory. Remaining: retained
+reconciliation evidence, complete cross-program coverage and coordinated
+allocation before any cap increase. [Scope](docs/CONTRIBUTION_REDEMPTION_2026-10.md#transaction-checks).
+
 ## October 16 — visitor acquisition through existing tasks
 
 Keeper prioritized attracting visitors over further pilots or proof work.
