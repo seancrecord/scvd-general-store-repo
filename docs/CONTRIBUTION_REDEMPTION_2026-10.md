@@ -73,3 +73,34 @@ screening and balance failures, wallet changes, private access and legacy terms.
 Typechecking and deployment bundle checks passed. The changed guide fingerprint
 was reviewed after its original baseline passed. Full CI remains the merge gate;
 no production reward was signed and no manual browser rehearsal was required.
+
+## Transaction checks
+
+The private contribution desk offers **Check reward transaction** beside each
+issued authorization. Supply the Base transaction reported by the worker. This
+reads one transaction, chain identity and current head through the existing RPC
+reader. It matches the retained authorizer and nonce to the immediately paired
+canonical-USDC transfer, requiring the exact recipient and atomic reward, then
+applies the settlement reader's existing confirmation threshold. A canceled nonce
+or a matching transfer elsewhere in the receipt does not pass.
+
+The original authorizer is used even after a wallet-key change. Expiry does not
+prevent checking an earlier redemption. Missing receipts, insufficient
+confirmations, contradictory terms and unavailable chain reads remain explicit.
+The form and JSON response at `POST /admin/bounties/contributions/:id/reconcile`
+require admin authentication and the existing same-origin POST protection;
+fields are `submission_id` and `tx_hash`. The result contains neither the reward
+signature nor contributor reports or private access keys.
+
+This is an unsigned observation displayed for the current request. It is not
+stored, does not mark the reward paid and does not reduce the funding inventory.
+Legacy manual payments have no retained signed authorization and are outside
+this check. Retained reconciliation evidence, cross-program coverage and atomic
+shared-wallet allocations remain separate work before raising caps. No reward
+is issued, replaced or broadcast by this action, and SCVD pays no gas.
+
+Validation: the missing desk action was demonstrated by a failing regression
+before implementation. Synthetic receipt tests cover exact pairing, substituted
+payer/recipient/amount/asset/nonce, cancellation without transfer, expired
+original terms, finality, chain/transaction identity, unavailable RPC, private
+route gates and unchanged retained records. Live redemption is not exercised.
