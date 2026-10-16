@@ -70,3 +70,14 @@ it('offers copyable, bounded prompts for both everyday and evidence tasks', asyn
   expect(data.jobs.find(j=>j.id==='payment-debugging')!.prompt).toContain('Do not retry a payment');
   expect(data.jobs.find(j=>j.id==='client-report')!.prompt).toContain('unverified');
 });
+
+
+it('sends free endpoint tasks to the free preflight contract rather than the paid practice counter', async () => {
+  const data = await (await SELF.fetch(base+'/what', {headers:{Accept:'application/json'}})).json<{jobs:{id:string;next_step:{url:string};prompt:string;answer:string}[]}>();
+  for (const id of ['preflight', 'payment-debugging']) {
+    const job = data.jobs.find(j=>j.id===id)!;
+    expect(job.next_step.url).toBe(base+'/api/preflight/v1');
+    expect(job.prompt).toContain(base+'/api/preflight/v1');
+    expect(job.answer).not.toContain(base+'/try');
+  }
+});

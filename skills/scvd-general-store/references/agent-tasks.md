@@ -41,7 +41,7 @@ a category overlap does not establish that two products are interchangeable.
 ## Compare endpoints and assemble a report
 
 Use https://scvd.store/doors to find candidates, https://scvd.store/corpus
-for dated records, and https://scvd.store/try for free current checks.
+for dated records, and https://scvd.store/api/preflight/v1 for free current checks.
 [Inspection](inspection.md), [payment diagnosis](payment-debugging.md) and
 [verification](verification.md) contain the request contracts and limits.
 A comparison should show task fit, advertised price and network, observation

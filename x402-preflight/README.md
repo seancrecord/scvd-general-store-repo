@@ -19,7 +19,7 @@ npm install scvd-preflight
 > advertised payment terms with my sanitized error. Report failed and unperformed
 > checks. Do not retry a payment, purchase anything or send credentials.
 
-[Start with a free hosted check](https://scvd.store/try), or use this package's
+[Start with a free hosted check](https://scvd.store/api/preflight/v1), or use this package's
 examples below. [The task guide](https://scvd.store/what#job-payment-debugging)
 explains how to preserve existing payment evidence before considering a retry.
 Unpaid checks cannot establish settlement or delivery.

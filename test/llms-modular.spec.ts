@@ -1236,9 +1236,10 @@ const BASE = "https://scvd.store";
 // 2026-10-16: add task links and the API-discovery answer; parent pins passed
 // before this edit, and both changed fingerprints failed before this update.
 // 2026-10-16: reviewed four further task answers and shared operator eligibility
-// in the earning answer; both previous guide fingerprints witnessed red.
+// in the earning answer; then corrected free-check destinations. Both
+// previous guide fingerprints witnessed red before each reviewed update.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "c28d70fb4df4ba73be45d03299e6ac2cbd2dc7eff1fcafa7201c7612a155a018";
+  "57f13a3db0824481e38dfb789c1af11d7463f64ad832e60ccb3ac2989e891cef";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1341,7 +1342,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "26c45b75530019378f90c684973f3a7033f87822b887a7b55e496477fe2fd74c",
+      "fba613fac66f074eca7b9c4e45d6497732dbc0fad6dedacb7450255c2607b7ac",
     );
   });
 

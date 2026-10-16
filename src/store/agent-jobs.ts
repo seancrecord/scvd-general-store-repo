@@ -42,7 +42,7 @@ export function agentJobAnswers(base: string) {
     {
       id: "find-apis",
       question: "Where can my AI agent find APIs it can pay to use?",
-      answer: `Browse the free public endpoint directory at ${base}/doors or read ${base}/doors.json. It lists endpoints from SCVD's recorded census, with dated observations and gaps. Use ${base}/corpus for the underlying records and ${base}/try for a free current payment-endpoint check before deciding to spend. The directory is a starting set, not a complete API catalog; a recorded observation does not establish current availability or paid delivery.`,
+      answer: `Browse the free public endpoint directory at ${base}/doors or read ${base}/doors.json. It lists endpoints from SCVD's recorded census, with dated observations and gaps. Use ${base}/corpus for the underlying records and ${storeDoors(base).preflight} for a free current payment-endpoint check before deciding to spend. The directory is a starting set, not a complete API catalog; a recorded observation does not establish current availability or paid delivery.`,
     },
     {
       id: "expenses",
@@ -67,17 +67,17 @@ export function agentJobAnswers(base: string) {
     {
       id: "payment-debugging",
       question: "How can my agent diagnose an x402 payment integration without spending again?",
-      answer: `Start with the free endpoint checks at ${base}/try and the payment diagnosis guide at ${base}/developers. Compare the advertised method, inputs, network and payment terms with the client's request. If a payment may already have been sent, preserve the original request and retry identity and inspect existing evidence before authorizing another payment. A free preflight cannot prove settlement or delivery. Never include keys or credentials in a report.`,
+      answer: `Start with the free endpoint checks at ${storeDoors(base).preflight} and the payment diagnosis guide at ${base}/developers. Compare the advertised method, inputs, network and payment terms with the client's request. If a payment may already have been sent, preserve the original request and retry identity and inspect existing evidence before authorizing another payment. A free preflight cannot prove settlement or delivery. Never include keys or credentials in a report.`,
     },
     {
       id: "compare-endpoints",
       question: "How can my agent compare payment APIs before choosing one?",
-      answer: `Start with ${base}/doors and the dated records at ${base}/corpus. Compare candidates for the same task, using their documented inputs, advertised price and network, observed checks and missing evidence. A free current check at ${base}/try can inspect supported payment terms. Keep observation dates and gaps beside each comparison; advertised prices alone do not establish task quality or delivery, and no ranking guarantees a provider.`,
+      answer: `Start with ${base}/doors and the dated records at ${base}/corpus. Compare candidates for the same task, using their documented inputs, advertised price and network, observed checks and missing evidence. A free current check at ${storeDoors(base).preflight} can inspect supported payment terms. Keep observation dates and gaps beside each comparison; advertised prices alone do not establish task quality or delivery, and no ranking guarantees a provider.`,
     },
     {
       id: "client-report",
       question: "How can my agent assemble a client report with checkable evidence?",
-      answer: `Use public records from ${base}/corpus, free endpoint checks from ${base}/try and supported signature checks from ${base}/conformance. Cite each source, observation date, method and gap; distinguish your conclusions from the evidence. Verify existing signed artifacts against the relevant issuer key and include their scope. A signature protects signed fields, not the truth of the whole report. If a client needs a new signed observation, read its current terms at ${base}/operators and obtain spending approval first.`,
+      answer: `Use public records from ${base}/corpus, free endpoint checks from ${storeDoors(base).preflight} and supported signature checks from ${base}/conformance. Cite each source, observation date, method and gap; distinguish your conclusions from the evidence. Verify existing signed artifacts against the relevant issuer key and include their scope. A signature protects signed fields, not the truth of the whole report. If a client needs a new signed observation, read its current terms at ${base}/operators and obtain spending approval first.`,
     },
   ];
 }
@@ -93,9 +93,9 @@ const JOB_ENTRIES = [
   {id: "trial-reminders", next_step: {label: "Set up Tab reminders", url: TAB_GUIDE}, title: "Catch trials before they charge", cost: "Free local tool", summary: "Surface approaching trial deadlines. Reminders need an active agent or a configured delivery schedule."},
   {id: "before-signup", next_step: {label: "Set up Tab signup checks", url: TAB_GUIDE}, title: "Check before another subscription", cost: "Free local tool", summary: "Find recorded signups and possible overlaps before adding another tool."},
   {id: "find-apis", next_step: {label: "Browse the endpoint directory", url: "/doors"}, title: "Find APIs for my agent", cost: "Free directory", summary: "Browse observed payment endpoints and their dated records, then check a candidate before spending."},
-  {id: "preflight", next_step: {label: "Run a free endpoint check", url: "/try"}, title: "Check an endpoint before paying", cost: "Free check", summary: "Inspect advertised payment terms without making a purchase."},
+  {id: "preflight", next_step: {label: "Run a free endpoint check", url: "preflight"}, title: "Check an endpoint before paying", cost: "Free check", summary: "Inspect advertised payment terms without making a purchase."},
   {id: "overlapping-tools", featured: false, next_step: {label: "Audit your recorded tools with Tab", url: TAB_GUIDE}, title: "Find overlapping subscriptions", cost: "Free local tool", summary: "Compare recorded costs and possible overlaps before deciding what to keep."},
-  {id: "payment-debugging", featured: false, next_step: {label: "Start with a free endpoint check", url: "/try"}, title: "Diagnose a payment integration", cost: "Free first checks", summary: "Compare advertised terms and your request before considering another payment."},
+  {id: "payment-debugging", featured: false, next_step: {label: "Start with a free endpoint check", url: "preflight"}, title: "Diagnose a payment integration", cost: "Free first checks", summary: "Compare advertised terms and your request before considering another payment."},
   {id: "compare-endpoints", featured: false, next_step: {label: "Browse recorded endpoints", url: "/doors"}, title: "Compare payment APIs", cost: "Free records and checks", summary: "Compare candidates for your task with dates and missing evidence attached."},
   {id: "client-report", featured: false, next_step: {label: "Read the public evidence", url: "/corpus"}, title: "Build a checkable client report", cost: "Free public evidence", summary: "Carry source links, verification results and limits into your report."},
 ] as const;
@@ -107,11 +107,11 @@ const JOB_PROMPTS: Record<typeof JOB_ENTRIES[number]["id"], (base: string) => st
   "trial-reminders": () => `Use Tab to list my recorded trials and their conversion deadlines. Show missing dates and expected charges. Propose reminders and explain the active agent or external schedule they need; ask before configuring delivery. Do not cancel a trial. Setup: ${TAB_GUIDE}.`,
   "before-signup": () => `Before I sign up for [tool], use Tab's check_before_signup to check my recorded history and active tools in that category. Explain any possible overlap and missing history. Ask before any signup, purchase or cancellation. Setup: ${TAB_GUIDE}.`,
   "find-apis": base => `Find APIs for [task] using ${base}/doors and its dated records. Shortlist candidates whose documented inputs fit. Show advertised costs, networks, observation dates and gaps. Use free checks where useful; ask before any payment.`,
-  preflight: base => `Check [public endpoint URL] using the free instructions at ${base}/try and the endpoint's documented method and inputs. Report supported payment terms, failed or unperformed checks and what remains unknown. Make no purchase and send no credentials.`,
+  preflight: base => `Check [public endpoint URL] using the free instructions at ${storeDoors(base).preflight} and the endpoint's documented method and inputs. Report supported payment terms, failed or unperformed checks and what remains unknown. Make no purchase and send no credentials.`,
   "overlapping-tools": () => `Use Tab's stack_audit on my local records to find possible subscription overlaps, monthly costs and price drift. Show missing information and explain what I should compare before removing a tool. Do not cancel anything or upload my records. Setup: ${TAB_GUIDE}.`,
-  "payment-debugging": base => `Help diagnose [public endpoint URL] using ${base}/try and the payment guide at ${base}/developers. Compare the documented request with my sanitized error and existing evidence. Do not retry a payment or send credentials. Separate confirmed findings from unknown settlement or delivery.`,
-  "compare-endpoints": base => `Compare [public endpoint URLs] for [task] using ${base}/corpus and free checks at ${base}/try. Make a table of documented fit, advertised price and network, observation date and missing evidence. Do not purchase or equate a passing check with delivery.`,
-  "client-report": base => `Build a report about [public endpoint or task] using ${base}/corpus, free checks at ${base}/try and supported verification at ${base}/conformance. Include exact sources, dates, methods, signed artifact scope and what remains unverified. Separate observations from conclusions. Ask before buying any new signed observation.`,
+  "payment-debugging": base => `Help diagnose [public endpoint URL] using ${storeDoors(base).preflight} and the payment guide at ${base}/developers. Compare the documented request with my sanitized error and existing evidence. Do not retry a payment or send credentials. Separate confirmed findings from unknown settlement or delivery.`,
+  "compare-endpoints": base => `Compare [public endpoint URLs] for [task] using ${base}/corpus and free checks at ${storeDoors(base).preflight}. Make a table of documented fit, advertised price and network, observation date and missing evidence. Do not purchase or equate a passing check with delivery.`,
+  "client-report": base => `Build a report about [public endpoint or task] using ${base}/corpus, free checks at ${storeDoors(base).preflight} and supported verification at ${base}/conformance. Include exact sources, dates, methods, signed artifact scope and what remains unverified. Separate observations from conclusions. Ask before buying any new signed observation.`,
 };
 
 export function agentJobEntries(base: string) {
@@ -119,7 +119,7 @@ export function agentJobEntries(base: string) {
   return JOB_ENTRIES.map(entry => {
     const answer = answers.find(answer => answer.id === entry.id);
     if (!answer) throw new Error("Missing agent job answer");
-    return {featured: true, ...entry, ...answer, prompt: JOB_PROMPTS[entry.id](base), url: `${base}/what#job-${entry.id}`};
+    return {featured: true, ...entry, ...answer, next_step: {...entry.next_step, url: entry.next_step.url === "preflight" ? storeDoors(base).preflight : entry.next_step.url}, prompt: JOB_PROMPTS[entry.id](base), url: `${base}/what#job-${entry.id}`};
   });
 }
 

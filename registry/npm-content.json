@@ -4,11 +4,11 @@
   "packages": {
     "scvd-preflight": {
       "directory": "x402-preflight",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "files": {
-        "CHANGELOG.md": "8fd1f7581f0800faa3ee6234016771e426f62e2d5b5ec16dcb94a6f4f88dea72",
+        "CHANGELOG.md": "33a763bdccfc057c8ad7f63779a62dfafd8b11765ec7169cf124e0e2aea5478e",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
-        "README.md": "84afbbc40f5239f08d144cd52a512cd8a001eff44c99743469b06065085c2178",
+        "README.md": "7c275bdc8628b1cae01825b982875572b98bc8396e4fcb2abe00139b90ed8019",
         "bin.mjs": "ff92d61a65f6abcd4d0f9e950da127324e4dbfdcebd1ac22fee27b45a1eab5cd",
         "example.mjs": "997aae0b2f8104cb42257c054f6f027fb7a728d15f2b1b8f2cda4fe8291f5c47",
         "fixtures/accepts-empty.json": "aa518ae230051033c30464164ffe56f4ed53807a9911124ac0fb690254750625",
@@ -25,7 +25,7 @@
         "fixtures/unreachable.json": "88553f4d3767b897f07cc2e2ff3c08433f6c38758f8dfc588f82e6b25701c2c5",
         "inspection.d.ts": "64b3d98b1aed4ac13bd164429bbfb27bb67f2ad33f0b229138ec842c3392cb25",
         "inspection.js": "a60e84eb5fc5e9d4a591e15cab17301dcf69d9c0c8338af1c6d1a685aa8f327c",
-        "package.json": "45a29428b395b866da02dd67010df7a38f444e1f829e56e02d02c71fd37bde4f",
+        "package.json": "6af1b1d9a1af4bec8bacbb610eca90d85d18cc34b1ba48332b0802a9cffd233e",
         "x402-preflight.d.ts": "0ef997af1936a5b0217c712d05390d9732566c2bb3f8b0aeece3b35de77fa49b",
         "x402-preflight.js": "e384a13b761f35b8fe39447cd0d05722ec127e3c48a4792a88e3aa936bab215d"
       }

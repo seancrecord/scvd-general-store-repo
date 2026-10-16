@@ -55,3 +55,9 @@ The shared operator allowance is now in the earning answer; OpenAPI leads with
 that allowance and keeps the per-wallet guard as an additional limit. The skill
 explains the weekly reset and old-enrolment transition. Internal wallet-guard
 comments remain accurate and are not removed. No eligibility enforcement changed.
+
+
+Pre-release destination audit caught a wrong free-check link: /try is the paid
+practice counter. Task answers, prompts and package/skill text now use the
+actual free preflight contract. A route-level regression first failed on the
+old destination. This correction changes no payment route or price.
