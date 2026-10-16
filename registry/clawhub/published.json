@@ -1,8 +1,8 @@
 {
-  "version": "3.19.5",
+  "version": "3.19.6",
   "bundle_sha256": "7da49b89ba494f367a48170339ed34a55deb1d23acae0e7773cb756c02731266",
-  "tree_sha256": "658ee4c57a1bc96a10aa3577ed9a960f8f0818b6b1b969f674492c327ad5525b",
-  "published_at": "2026-10-16T18:37:44.329Z",
-  "commit": "657f12cf61a51356eba3397baa6fe6e802dd0f06",
-  "changelog": "Add ten bounded task prompts and existing tool routes, clarify contribution eligibility and reward pickup, and point free endpoint checks to the preflight contract."
+  "tree_sha256": "db46427089a0e4116efc325f2a04427396107067b3f17b32afbc9664619ac8d1",
+  "published_at": "2026-10-16T19:30:22.847Z",
+  "commit": "3edb6f3c87fa2d05bd6f25611d47a7fdee3673b0",
+  "changelog": "Align Tab installation and provenance examples with scvd-tab 0.11.4 while preserving the task discovery paths introduced in 3.19.5."
 }
