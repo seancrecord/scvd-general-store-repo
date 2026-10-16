@@ -1,3 +1,4 @@
+import {reconcileContributionPayment, type ContributionPaymentChecks} from "@/services/contribution-reconciliation";
 import {signContributionAcceptance, type ContributionReceipt} from "@/services/contribution-receipt";
 import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
 import { DurableObject } from "cloudflare:workers";
@@ -23,6 +24,8 @@ export interface ContributionReservation {
   report?: ContributionReport; payout_to?: string; submission_digest?: string; submitted_at?: string;
   review?: {decision: string; reason: string; outcome: string; reference: string; at: string};
   payout?: ContributionPayout;
+  payment_checks?: ContributionPaymentChecks;
+  payment_check_generation?: number;
   acceptance_receipt?: ContributionReceipt;
   payment?: {tx_hash: string; at: string; verification: "not_checked"};
 }
@@ -91,7 +94,7 @@ export function publicContribution(state: ContributionTaskState, now: number) {
   return {...state.terms, availability_reason: availabilityReason, published_at: state.published_at, purchase_required: false, payment_method: state.terms.payment_method ?? "keeper_paid_base_usdc", redemption: state.terms.payment_method ? CONTRIBUTION_REDEMPTION : null, maximum_reward_usd: Math.round(state.terms.reward_usd * 100) * state.terms.slots / 100, status: state.closed ? "closed" : Date.parse(state.terms.expires_at) <= now ? "expired" : "open", available_slots: availabilityReason === "available" ? state.terms.slots - active.length : 0, pending_review: state.reservations.filter(r => r.status === "submitted").length};
 }
 function ownReservation(task: ContributionTaskState, row: ContributionReservation, now: number) {
-  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.acceptance_receipt ? {acceptance_receipt: row.acceptance_receipt, acceptance_receipt_inputs: {terms: task.terms, report: row.report, review: row.review}} : {}), ...(row.review?.decision === "accepted" ? {acceptance_receipt_state: row.acceptance_receipt ? "issued" : "unavailable"} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
+  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.acceptance_receipt ? {acceptance_receipt: row.acceptance_receipt, acceptance_receipt_inputs: {terms: task.terms, report: row.report, review: row.review}} : {}), ...(row.review?.decision === "accepted" ? {acceptance_receipt_state: row.acceptance_receipt ? "issued" : "unavailable"} : {}), ...(row.payment_checks ? {payment_checks: row.payment_checks} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
 }
 
 /** The alarm and its tests use the same clock for both expiry and the next due time. */
@@ -135,6 +138,27 @@ export class ContributionTask extends DurableObject<Env> {
     const state: ContributionTaskState = {terms, published_at: new Date(now).toISOString(), closed: false, reservations: []};
     this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY CHECK(id=1), data TEXT NOT NULL)");
     this.save(state); return {status: 201, data: publicContribution(state, now)};
+  }
+  /** Save only the most recently started read. Re-read after I/O so progress
+   * notes and alarms cannot be overwritten by an older snapshot. */
+  async checkRewardPayment(submissionId: string, transaction: string, now = Date.now()) {
+    if (!/^0x[0-9a-f]{64}$/i.test(transaction)) throw new ContributionInputError("Enter a Base transaction hash: 0x followed by 64 hexadecimal characters.");
+    let state = this.read();
+    let row = state?.reservations.find(r => r.id === submissionId);
+    if (!state || !row) return null;
+    const generation = (row.payment_check_generation ?? 0) + 1;
+    if (!Number.isSafeInteger(generation)) throw new Error("Payment check sequence exhausted");
+    row.payment_check_generation = generation;
+    this.save(state);
+    const observation = await reconcileContributionPayment(this.env, state, submissionId, transaction, now);
+    state = this.read(); row = state?.reservations.find(r => r.id === submissionId);
+    if (!state || !row || row.payment_check_generation !== generation) return {...observation, saved:false, save_reason:"newer_check_started"};
+    const previous = row.payment_checks;
+    const withdrawal = previous?.confirmed?.transaction.toLowerCase() === transaction.toLowerCase() ? observation.read_at : previous?.confirmation_withdrawn_at;
+    row.payment_checks = observation.status === "confirmed" ? {latest:observation, confirmed:observation}
+      : {latest:observation, ...(previous?.confirmed ? {confirmed:previous.confirmed} : {}), ...(withdrawal ? {confirmation_withdrawn_at:withdrawal} : {})};
+    this.save(state);
+    return {...observation, saved:true, save_reason:"retained"};
   }
   /** An immutable intent precedes external I/O. Concurrent presses sign the same
    * nonce; the fresh read after signing preserves intervening notes and alarms. */

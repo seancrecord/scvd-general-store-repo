@@ -7,10 +7,12 @@ transaction against an issued reward's retained authorizer, nonce, recipient and
 atomic amount. It reuses the canonical USDC paired-event reader and confirmation
 threshold. Expired authorizations can still be checked for earlier redemption;
 wallet rotation does not replace their retained authorizer. Canceled/consumed
-nonce state alone never establishes payment. Results remain private and are not
-saved or deducted from the bounded funding inventory. Remaining: retained
-reconciliation evidence, complete cross-program coverage and coordinated
-allocation before any cap increase. [Scope](docs/CONTRIBUTION_REDEMPTION_2026-10.md#transaction-checks).
+nonce state alone never establishes payment. The next increment retains bounded
+private observations with concurrency protection and exposes them through private
+worker status. The funding view separates gross commitments, matching retained
+confirmations and unreconciled accepted work; failed rechecks withdraw credit
+until reconfirmed. Gross cross-program exposure remains unchanged. Remaining:
+complete cross-program coverage and coordinated allocation before any cap increase. [Scope](docs/CONTRIBUTION_REDEMPTION_2026-10.md#transaction-checks).
 
 ## October 16 — visitor acquisition through existing tasks
 

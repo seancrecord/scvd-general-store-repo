@@ -92,12 +92,28 @@ require admin authentication and the existing same-origin POST protection;
 fields are `submission_id` and `tx_hash`. The result contains neither the reward
 signature nor contributor reports or private access keys.
 
-This is an unsigned observation displayed for the current request. It is not
-stored, does not mark the reward paid and does not reduce the funding inventory.
+The desk retains two bounded, unsigned observations per submission: the latest
+check and the latest confirmed redemption, including the matched authorizer,
+recipient, nonce, atomic amount, receipt positions, block height and confirmation
+count. Private worker status returns these observations; public discovery does
+not. Only the most recently started check may save its result, and a fresh state
+read preserves intervening progress notes. An interrupted or superseded read
+cannot claim a saved observation.
+
+The funding view keeps gross accepted commitments and gross cross-program
+exposure, then separately shows confirmed contribution redemptions and accepted
+work without a retained confirmation. A confirmation must still bind the exact
+retained obligation. One authorization counts only once across indexed records.
+The dates of retained confirmations are shown; opening the funding view does not
+refresh the chain. A failed recheck of a confirmed transaction withdraws its
+accounting credit until a successful check restores it. Checking an unrelated
+candidate neither discards a confirmation nor restores a withdrawn one.
+
 Legacy manual payments have no retained signed authorization and are outside
-this check. Retained reconciliation evidence, cross-program coverage and atomic
-shared-wallet allocations remain separate work before raising caps. No reward
-is issued, replaced or broadcast by this action, and SCVD pays no gas.
+this check. Other programs remain unreconciled; complete cross-program coverage
+and atomic shared-wallet allocations are still required before raising caps.
+No available wallet balance is inferred, no reward is issued or replaced by this
+action, and SCVD pays no gas.
 
 Validation: the missing desk action was demonstrated by a failing regression
 before implementation. Synthetic receipt tests cover exact pairing, substituted
