@@ -54,3 +54,13 @@ regeneration, validator and nineteen tests pass. Applying the patch to
 existing PR #34 needs the owning `cv-scvd` account; the connected account has
 no write access to that fork. [Validated patch, replacement body and evidence](../../research/reporting-publication-2026-10-01/README.md).
 No second PR was opened and admission remains unverified.
+
+
+## October 16 task discovery draft
+
+The existing skill and plugin descriptor descriptions now name concrete tasks:
+endpoint comparisons, payment diagnosis, evidence reports and (in the broad
+store skill) contribution discovery and local Tab costs. This updates owned
+source files only. Apply these changes to existing PR #34 using its owning
+account after the task-guide release; preserve the current URLs and identifiers.
+No new submission or indexed-result claim is made here.

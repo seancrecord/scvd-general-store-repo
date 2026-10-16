@@ -53,3 +53,20 @@ it('lets an expense-tracking visitor open Tab setup directly from the answer', a
   const answer = page.split('id="job-expenses"')[1]!.split('<div class="menu-item"')[0]!;
   expect(answer).toContain(`href="${TAB_GUIDE}"`);
 });
+
+
+it('offers copyable, bounded prompts for both everyday and evidence tasks', async () => {
+  const data = await (await SELF.fetch(base+'/what', {headers:{Accept:'application/json'}})).json<{jobs:{id:string;prompt:string}[]}>();
+  const page = await html('/what');
+  const markdown = await (await SELF.fetch(base+'/what',{headers:{Accept:'text/markdown'}})).text();
+  for (const id of [...jobs, 'overlapping-tools', 'payment-debugging', 'compare-endpoints', 'client-report']) {
+    const job = data.jobs.find(j=>j.id===id)!;
+    expect(job, id).toBeDefined();
+    expect(job.prompt, id).toBeTruthy();
+    expect(page).toContain(`id="prompt-${id}"`);
+    expect(markdown).toContain(job.prompt);
+  }
+  expect(data.jobs.find(j=>j.id==='overlapping-tools')!.prompt).toContain('Do not cancel');
+  expect(data.jobs.find(j=>j.id==='payment-debugging')!.prompt).toContain('Do not retry a payment');
+  expect(data.jobs.find(j=>j.id==='client-report')!.prompt).toContain('unverified');
+});

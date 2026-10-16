@@ -5,6 +5,17 @@ against a public key you supply.
 Get a structured result that separates a failed check from unsupported
 capabilities and missing evidence. Zero runtime dependencies. MIT.
 
+## Ask your agent to prepare a checkable client report
+
+> Verify the supported signed artifacts in [local evidence files]. Include
+> issuer keys, signed scope, verification results, source links and dates in
+> my report. Keep unsupported or missing evidence visible. Do not describe
+> signature validity as proof that the entire report is true or work completed.
+
+[The client-report guide](https://scvd.store/what#job-client-report) links to
+free public observations and checks. The synthetic quickstart below lets you
+try verification without a purchase, wallet key or issuer call.
+
 ## Install and verify
 
 ```sh

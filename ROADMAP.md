@@ -8,9 +8,12 @@ JSON/Markdown answers, short agent-guide and README routes, and free next
 destinations from bounty/study pages. Expense tracking, trial reminders,
 subscription overlap, API discovery and pre-purchase inspection broaden the
 existing earning entry point. No additional paid-work capacity is implied.
-Next acquisition work: useful task examples in existing package documentation
-and distribution listings; then deepen the destinations people use. Additional
-study receipts and new pilots are deferred behind this priority.
+Added copyable prompts for ten tasks, including payment diagnosis, endpoint
+comparisons, client reports and software overlap reviews. Package README and
+store-skill examples point to these existing destinations. Owned catalog drafts
+and the ClawHub bundle are refreshed; external publication is tracked separately.
+Next: release through CI and verify the live paths, then publish the prepared
+distribution updates. Additional study receipts and new pilots remain deferred.
 [Scope and release checks](docs/AGENT_TASK_ENTRY_2026-10.md).
 
 ## October 15 — signed contribution acceptance

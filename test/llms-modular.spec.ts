@@ -1235,8 +1235,10 @@ const BASE = "https://scvd.store";
 // 2026-10-16: combine the reviewed payment-path and contribution additions.
 // 2026-10-16: add task links and the API-discovery answer; parent pins passed
 // before this edit, and both changed fingerprints failed before this update.
+// 2026-10-16: reviewed four further task answers and shared operator eligibility
+// in the earning answer; both previous guide fingerprints witnessed red.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "e24fbfe895c92b7d312356c6926df6995107c8d673620d91909de36a027206eb";
+  "c28d70fb4df4ba73be45d03299e6ac2cbd2dc7eff1fcafa7201c7612a155a018";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1339,7 +1341,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "78c94e29178133966684e63e4b0ebab8193ed5fa7303ece925c46ffe9ae89d2b",
+      "26c45b75530019378f90c684973f3a7033f87822b887a7b55e496477fe2fd74c",
     );
   });
 

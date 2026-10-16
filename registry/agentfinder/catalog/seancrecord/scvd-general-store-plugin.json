@@ -3,7 +3,7 @@
   "displayName": "SCVD General Store (plugin)",
   "mediaType": "application/vnd.github.copilot-plugin",
   "url": "https://github.com/seancrecord/scvd-general-store-repo/blob/main/.claude-plugin/plugin.json",
-  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations. The store\u2019s MCP door and its skills, as one installable plugin.",
+  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations. Includes the store MCP door and skills for comparing endpoints, diagnosing payment failures and assembling checkable client reports.",
   "tags": [
     "x402",
     "agentic-commerce",

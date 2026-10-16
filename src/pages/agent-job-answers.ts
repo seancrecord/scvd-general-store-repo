@@ -17,7 +17,7 @@ export function agentJobLinksHtml(base: string): string {
 export function agentJobCardsHtml(base: string): string {
   return `<section id="agent-jobs" aria-labelledby="agent-jobs-title">
     <h2 class="night-head" id="agent-jobs-title">What would you like your agent to do?</h2>
-    <div class="shelf-grid">${agentJobEntries(base).map(job => `<article class="shelf-card">
+    <div class="shelf-grid">${agentJobEntries(base).filter(job => job.featured).map(job => `<article class="shelf-card">
       <h3 class="shelf-name"><a href="/what#job-${job.id}">${escapeHtml(job.title)}</a></h3>
       <p class="shelf-line"><strong>${escapeHtml(job.cost)}</strong></p>
       <p class="shelf-line">${escapeHtml(job.summary)}</p>

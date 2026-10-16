@@ -34,3 +34,24 @@ local validation covers navigation, answer parity, existing homepage identity,
 reader budgets and release integration. A local browser preview encountered
 the existing HTTPS redirect loop; no visual validation is claimed. No keeper
 rehearsal is required. Production readback follows the CI-gated release.
+
+
+## Task prompts and distribution follow-through
+
+Ten tasks now carry deliberately copyable prompts in the existing /what page,
+JSON and Markdown. The homepage and short-guide shelf remain six entries;
+four deeper answers cover subscription overlap, payment diagnosis, endpoint
+comparison and client reports. Bounty visitors can reach those answers too.
+The prompt test failed before implementation. Existing CI failures also showed
+the lost registered page name and direct bounty link; both are restored.
+
+Tab, preflight, corpus-client and verifier README examples point at the relevant
+on-site answer. The source skill and generated ClawHub tree contain the same
+new task reference. Agent Finder's existing skill/plugin descriptor drafts are
+updated in place. Published package and marketplace records are not relabeled
+as new releases. External release is separate from source changes.
+
+The shared operator allowance is now in the earning answer; OpenAPI leads with
+that allowance and keeps the per-wallet guard as an additional limit. The skill
+explains the weekly reset and old-enrolment transition. Internal wallet-guard
+comments remain accurate and are not removed. No eligibility enforcement changed.

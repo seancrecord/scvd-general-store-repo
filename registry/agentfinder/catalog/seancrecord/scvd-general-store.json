@@ -3,7 +3,7 @@
   "displayName": "SCVD General Store",
   "mediaType": "application/ai-skill",
   "url": "https://github.com/seancrecord/scvd-general-store-repo/blob/main/skills/scvd-general-store/SKILL.md",
-  "description": "Inspect x402/MPP endpoints, verify signed offers and receipts, and read dated host observations with explicit gaps. Free checks need no wallet; purchases require the visitor’s payment decision.",
+  "description": "Compare x402/MPP endpoints, diagnose payment integrations, verify signed evidence for reports, find posted contribution work, or track software costs locally with Tab. Free checks need no wallet; purchases and reservations require the visitor’s decision.",
   "tags": [
     "x402",
     "agentic-commerce",

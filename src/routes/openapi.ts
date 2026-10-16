@@ -7889,7 +7889,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
           postOp(
             "Debrief a field study and collect the reward",
-            "Verifies cited purchases against store books using their private status tokens. Rewards depend on verified purchases and complete answers, never answer quality; defects are welcome and unpriced. Returns a signed EIP-3009 authorization you redeem yourself. One debrief per study, each purchase counted once, one reward per payout wallet per ISO week. " + FIELD_STUDY_ELIGIBILITY.summary,
+            "Verifies cited purchases against store books using their private status tokens. Rewards depend on verified purchases and complete answers, never answer quality; defects are welcome and unpriced. Returns a signed EIP-3009 authorization you redeem yourself. One debrief per study, each purchase counted once. " + FIELD_STUDY_ELIGIBILITY.summary + " " + FIELD_STUDY_ELIGIBILITY.limits,
             "Your study credentials, the purchases you made under it, and the answers.",
             {
               type: "object",

@@ -319,6 +319,8 @@ Free directory check: POST ${base}/api/bot-auth/check. signature_agent_card sign
 
 ## More ways to use the store
 
+Paid work: ${base}/bounties — read current slots and terms before starting.
+
 ${agentJobLinksMarkdown(base)}
 
 BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point

@@ -3199,3 +3199,18 @@ requirements. Existing x402 and MPP issuers retain their challenge generation.
 No new runtime API, binding or configuration is introduced; the helper does no
 I/O. These reads support the implementation, not third-party scanner adoption
 or a funded payment claim. [Scope and checks](PAYMENT_PATH_GUIDANCE_2026-10.md).
+
+
+## 2026-10-16 — task prompts and existing distribution copy
+
+Re-read Google's [AI features and website guidance](https://developers.google.com/search/docs/appearance/ai-features):
+useful visible text, internal links and structured data matching the page. The
+existing /what answers remain the source for visible and machine representations;
+no indexing, ranking or AI-answer inclusion is claimed.
+
+Read the current [ClawHub documentation](https://docs.openclaw.ai/clawhub)
+(the former /tools/clawhub URL redirects there). Skill bundles and their
+published versions are separate from local edits. Refreshed the source skill
+and generated registry tree without changing publication receipts. Task copy
+names actual package tools and links to existing store answers; paid work
+availability is read from current briefs rather than embedded in listing copy.

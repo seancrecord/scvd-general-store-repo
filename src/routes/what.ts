@@ -98,7 +98,7 @@ whatRoutes.get("/what", (c) => {
       return `<div class="menu-item"${job ? ` id="job-${job.id}"` : ""}>
         <h2 class="menu-name">${escapeHtml(pair.question)}</h2>
         <p class="menu-desc">${linkStoreUrls(escapeHtml(pair.answer))}</p>
-        ${job ? `<p><a href="${escapeHtml(job.next_step.url)}">${escapeHtml(job.next_step.label)} →</a></p>` : ""}
+        ${job ? `<p><a href="${escapeHtml(job.next_step.url)}">${escapeHtml(job.next_step.label)} →</a></p><label for="prompt-${job.id}">Prompt to give your agent (replace bracketed inputs)</label><textarea id="prompt-${job.id}" readonly rows="6" style="width:100%;box-sizing:border-box">${escapeHtml(job.prompt)}</textarea>` : ""}
       </div>`;
     }).join("\n");
     const longTailHtml = longTail
