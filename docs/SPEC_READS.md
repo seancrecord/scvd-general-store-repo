@@ -1,5 +1,17 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-16 — task entry points for visitor acquisition
+
+Read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features)
+(updated 2025-12-10): useful visible text and internal links remain relevant;
+structured data should match the page, and no special AI markup is required.
+Applied to the existing homepage, FAQ and agent guides. The FAQPage guidance
+URL redirected to the documentation updates index; no Google FAQ rich-result
+eligibility or ranking improvement is asserted. Existing FAQ data stays aligned
+with visible answers. No search-ranking study or traffic increase is claimed.
+The new API-discovery answer was checked against the current local directory
+contract; it describes dated observations rather than complete API coverage.
+
 ## 2026-10-14 — Tab job discovery and reminder scope
 
 Re-read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features):
@@ -3152,6 +3164,30 @@ challenges with mocked settlement. No funded or live settlement was attempted.
 The web renderer could not fetch the commit page; the primary API source and
 installed implementation were available.
 
+
+## 2026-10-15 — contribution authorization and durable retry identity
+
+Read https://eips.ethereum.org/EIPS/eip-3009 and
+https://developers.cloudflare.com/durable-objects/api/state/ today.
+TransferWithAuthorization binds recipient/value/nonce and validity while
+allowing a separate transaction sender. That permits another submitter; it
+does not establish an available sponsor or verified redemption. The existing
+Base USDC domain and authorizationTypes are reused. DO SQLite writes do not
+yield; external signing calls do. Persist the intent before I/O and reread
+before saving the result instead of holding an external-I/O lock. No new
+relayer service, wallet claim or vendor integration was qualified.
+
+
+### 2026-10-15 — contribution acceptance receipt
+
+Read Cloudflare Durable Object State API
+(https://developers.cloudflare.com/durable-objects/api/state/, updated September
+30): synchronous SQL does not yield; signing can. Receipt pickup rereads state
+after signing and saves only if another request has not already retained the
+receipt. It preserves intervening progress and uses no global lock. Reused the
+store's `signMessage`, `jcsCanonicalize` and existing portable evidence envelope;
+no new cryptographic format or dependency. Tests tamper with the signed reward,
+report digest and payment claim, and use the standalone evidence verifier.
 ## 2026-10-15 — direct payment path guidance
 
 Read the current primary [x402 v2 specification](https://raw.githubusercontent.com/coinbase/x402/main/specs/x402-specification-v2.md),
@@ -3163,3 +3199,18 @@ requirements. Existing x402 and MPP issuers retain their challenge generation.
 No new runtime API, binding or configuration is introduced; the helper does no
 I/O. These reads support the implementation, not third-party scanner adoption
 or a funded payment claim. [Scope and checks](PAYMENT_PATH_GUIDANCE_2026-10.md).
+
+
+## 2026-10-16 — task prompts and existing distribution copy
+
+Re-read Google's [AI features and website guidance](https://developers.google.com/search/docs/appearance/ai-features):
+useful visible text, internal links and structured data matching the page. The
+existing /what answers remain the source for visible and machine representations;
+no indexing, ranking or AI-answer inclusion is claimed.
+
+Read the current [ClawHub documentation](https://docs.openclaw.ai/clawhub)
+(the former /tools/clawhub URL redirects there). Skill bundles and their
+published versions are separate from local edits. Refreshed the source skill
+and generated registry tree without changing publication receipts. Task copy
+names actual package tools and links to existing store answers; paid work
+availability is read from current briefs rather than embedded in listing copy.

@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: "A live x402 practice counter from $0.001. Verify any issuer's signed receipts, including competitors; inspect endpoints, diagnose payments, retrieve host history, interpret MPP, test buyers/sellers, or use SCVD's general store. Free checks need no wallet; live purchases settle real USDC."
+description: "A live x402 practice counter from $0.001. Verify any issuer's signed receipts, including competitors; compare endpoints, diagnose payments, assemble evidence reports, find posted contribution work, or track software costs locally with Tab. Free checks need no wallet; live purchases settle real USDC."
 metadata:
   homepage: https://scvd.store
 ---
@@ -51,6 +51,7 @@ reading that quote is not a purchase or proof of settlement.
 | Diagnose a failed payment, a lost response, or an apparent duplicate | [Payment diagnosis](references/payment-debugging.md) |
 | Retrieve a host's dated observations, gaps, passport or corpus history | [History](references/history.md) |
 | Interpret an MPP-only or mixed-protocol response | [MPP](references/mpp.md) |
+| Find posted paid work, track software costs or overlaps with Tab, or assemble an evidence report | [Everyday agent tasks](references/agent-tasks.md) |
 | Buy an item, preserve retry identity, recover a purchase, or check fulfillment/refunds | [Purchases](references/purchases.md) |
 
 ## When the question needs larger work

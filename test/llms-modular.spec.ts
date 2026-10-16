@@ -1229,11 +1229,17 @@ const BASE = "https://scvd.store";
 // The unchanged parent guide reproduced both previous pins (14/14) before
 // editing agent-jobs.ts; the new answer-parity check failed on that baseline.
 // 2026-10-15: merge both approved additions; re-pin the combined guide.
-// 2026-10-15: payment next_step adds three sentences to paying step 2.
-// Restoring only llms.ts to main c12f09a8 reproduced both old pins (14/14);
-// the candidate failed both pins before these reviewed values were recorded.
+// 2026-10-15: reviewed contribution payment/free-cost wording and two earning
+// answers now disclose recipient redemption and gas. Restoring the shared
+// contribution copy first reproduced the prior guide baseline (14/14).
+// 2026-10-16: combine the reviewed payment-path and contribution additions.
+// 2026-10-16: add task links and the API-discovery answer; parent pins passed
+// before this edit, and both changed fingerprints failed before this update.
+// 2026-10-16: reviewed four further task answers and shared operator eligibility
+// in the earning answer; then corrected free-check destinations. Both
+// previous guide fingerprints witnessed red before each reviewed update.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "11361a7990e62e460ce32685a0fcf4f05addbe7e4ec70bcf046b4edf9548fd93";
+  "57f13a3db0824481e38dfb789c1af11d7463f64ad832e60ccb3ac2989e891cef";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1336,7 +1342,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "801bec3c1d380f048efdee91ce31c2b331e871f14513443ac35d10354dabc246",
+      "fba613fac66f074eca7b9c4e45d6497732dbc0fad6dedacb7450255c2607b7ac",
     );
   });
 

@@ -5,6 +5,18 @@ x402 corpus: the weekly census, the fresh set, one host's readiness
 history, the month, the feeds, the diff and the defect vocabulary, each
 as the store serves it. The `scvd` CLI's library half.
 
+## Ask your agent to compare endpoints
+
+> Compare [public endpoint URLs] for [task] using dated corpus records. Make a
+> table of documented fit, advertised price and network, observation dates and
+> missing evidence. Distinguish a recorded check from current availability.
+> Do not purchase or infer delivery from an unpaid check.
+
+[Find candidates](https://scvd.store/doors) and
+[read the comparison guide](https://scvd.store/what#job-compare-endpoints).
+Use the client examples below to retrieve records; preserve each response's
+coverage limits when you summarize it.
+
 ## Install
 
 ```sh

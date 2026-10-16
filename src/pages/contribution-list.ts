@@ -13,7 +13,7 @@ export function contributionListHtml(board: ContributionBoard | null) {
     const available = task.availability_reason === "available";
     body += `<article><h3>${esc(task.title)}</h3><p class="menu-desc"><strong>$${task.reward_usd.toFixed(2)} Base USDC</strong> per accepted submission · ${available ? `${task.available_slots} available slot${task.available_slots === 1 ? "" : "s"}` : esc(reasons[task.availability_reason] ?? "No new reservations")}</p>
       <p class="menu-desc">${esc(task.brief)}</p><p class="menu-desc"><strong>What earns the reward:</strong> ${esc(task.acceptance)}</p>
-      <p class="menu-meta">Target: <code>${esc(task.target)}</code><br>New reservations close ${esc(task.expires_at)} (UTC). Review within ${task.review_days} days; pay accepted work within ${task.payment_days} days.</p>
+      <p class="menu-desc">${task.redemption ? esc(task.redemption.instructions) : "This legacy brief retains separate keeper payment in Base USDC."}</p><p class="menu-meta">Target: <code>${esc(task.target)}</code><br>New reservations close ${esc(task.expires_at)} (UTC). Review within ${task.review_days} days; pay accepted work within ${task.payment_days} days.</p>
       <p><a href="${esc(task.task_url)}">${available ? "Read brief and reserve" : "Read the brief and its status"}</a></p></article>`;
   }
   if (board.truncated) body += `<p class="menu-desc">This is a partial list.${board.cursor ? ` <a href="/bounties?contribution_cursor=${encodeURIComponent(board.cursor)}#contribution-work">Next contribution briefs</a>` : ""}</p>`;

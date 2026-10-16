@@ -2906,7 +2906,7 @@ const CONTRIBUTION_COMPLETION_SCHEMA: OpenApiObject = {
     task_id: { type: "string" },
     kind: { type: "string", enum: ["bounty", "field_study", "contribution"] },
     reward_usd: { type: "number" },
-    reward_state: { type: "string", enum: ["authorized", "accepted_pending_payment", "payment_reported"] },
+    reward_state: { type: "string", enum: ["authorized", "accepted_pending_payment", "payment_reported", "authorization_issued"] },
     redemption_state: { type: "string", const: "not_observed" },
     reward_note: { type: "string" },
     what_was_verified: { type: "string" },
@@ -5950,6 +5950,12 @@ function pathParam(
  * spec cannot drift from the behaviour — which is the bug we have
  * been finding all week, in four different costumes.
  */
+// The optional name parameter is identical on most paid doors. Keep the exact
+// expanded contract once; a future item-specific example stays inline.
+const {description: agentNameDescription, ...agentNameType} = AGENT_NAME_SCHEMA;
+const AGENT_NAME_PARAMETER = {name: "agent_name", in: "query", schema: agentNameType,
+  example: buyInputExample(MENU_ITEMS[0]!).agent_name, description: agentNameDescription};
+const AGENT_NAME_PARAMETER_REF = {$ref: "#/components/parameters/AgentName"};
 // The optional purpose parameter is identical on every shelf door. Sharing
 // the full parameter preserves its expanded contract and the scanner's growth budget.
 const PURCHASE_PURPOSE_PARAMETER: OpenApiObject = (() => {
@@ -5979,7 +5985,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
           ? (definition as Record<string, unknown>)
           : {};
       const { description, ...rest } = property;
-      return {
+      const parameter = {
         name,
         in: "query",
         ...(required.has(name) ? { required: true } : {}),
@@ -5987,6 +5993,7 @@ function buyItemOperation(env: Env, item: MenuItem): OpenApiObject {
         ...(Object.hasOwn(example, name) ? { example: example[name] } : {}),
         ...(description ? { description } : {}),
       };
+      return name === "agent_name" && JSON.stringify(parameter) === JSON.stringify(AGENT_NAME_PARAMETER) ? AGENT_NAME_PARAMETER_REF : parameter;
     },
   ).filter((parameter): parameter is NonNullable<typeof parameter> => parameter !== null);
   /**
@@ -6310,7 +6317,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       responses: { ...SHARED_RESPONSES, ...CONTRIBUTION_RESPONSES, ...PAID_DOOR_RESPONSES, PaymentRequired: PAYMENT_REQUIRED_RESPONSE },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
-      parameters: { PurchasePurpose: PURCHASE_PURPOSE_PARAMETER, IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
+      parameters: { AgentName: AGENT_NAME_PARAMETER, PurchasePurpose: PURCHASE_PURPOSE_PARAMETER, IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
     },
     /**
      * THE VERSIONING PROMISE, STATED (2026-08-21). The store already
@@ -7882,7 +7889,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         post: returns(
           postOp(
             "Debrief a field study and collect the reward",
-            "Verifies cited purchases against store books using their private status tokens. Rewards depend on verified purchases and complete answers, never answer quality; defects are welcome and unpriced. Returns a signed EIP-3009 authorization you redeem yourself. One debrief per study, each purchase counted once, one reward per payout wallet per ISO week. " + FIELD_STUDY_ELIGIBILITY.summary,
+            "Verifies cited purchases against store books using their private status tokens. Rewards depend on verified purchases and complete answers, never answer quality; defects are welcome and unpriced. Returns a signed EIP-3009 authorization you redeem yourself. One debrief per study, each purchase counted once. " + FIELD_STUDY_ELIGIBILITY.summary + " " + FIELD_STUDY_ELIGIBILITY.limits,
             "Your study credentials, the purchases you made under it, and the answers.",
             {
               type: "object",

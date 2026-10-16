@@ -1,5 +1,39 @@
 # ROADMAP — September 2026
 
+## October 16 — visitor acquisition through existing tasks
+
+Keeper prioritized attracting visitors over further pilots or proof work.
+Implemented: homepage task entry points, direct FAQ answer links, matching
+JSON/Markdown answers, short agent-guide and README routes, and free next
+destinations from bounty/study pages. Expense tracking, trial reminders,
+subscription overlap, API discovery and pre-purchase inspection broaden the
+existing earning entry point. No additional paid-work capacity is implied.
+Added copyable prompts for ten tasks, including payment diagnosis, endpoint
+comparisons, client reports and software overlap reviews. Package README and
+store-skill examples point to these existing destinations. Owned catalog drafts
+and the ClawHub bundle are refreshed; external publication is tracked separately.
+Next: release through CI and verify the live paths, then publish the prepared
+distribution updates. Additional study receipts and new pilots remain deferred.
+[Scope and release checks](docs/AGENT_TASK_ENTRY_2026-10.md).
+
+## October 15 — signed contribution acceptance
+
+Implemented: private, retained acceptance receipts with terms/report/review
+digests, original inputs for verification, declared reward terms and explicit
+commissioning-party scope. Payment proof remains separate. See
+[contribution workflow](CONTRIBUTION_WORK.md#signed-acceptance-receipt).
+Next: equivalent scoped records for the shopping/study completion paths,
+shared-wallet commitments and deliberately staffed shorter review windows.
+No accelerated deadline or extra slot is inferred from a worker inquiry.
+
+## October 15 — contribution redemption without store-paid gas
+
+Implemented locally: explicit signed-authorization terms, separate keeper
+issuance, immutable retry identity, private pickup, a six-USDC read-only QA
+draft and page-scoped commitment visibility. Existing terms remain intact;
+no cap was raised and no work posted. [Scope, limits and next funding-control
+work](docs/CONTRIBUTION_REDEMPTION_2026-10.md).
+
 ## October 15 — direct payment guidance
 
 Implemented locally: quotes and refusals name the next action, preserve good

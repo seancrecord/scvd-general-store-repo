@@ -4,7 +4,7 @@ import { CONTRIBUTION_VALUE, TAB_GUIDE } from "@/store/agent-jobs";
 interface CompletedContribution {
   task_id: string;
   kind: "bounty" | "field_study" | "contribution";
-  reward_state?: "accepted_pending_payment" | "payment_reported";
+  reward_state?: "accepted_pending_payment" | "payment_reported" | "authorization_issued";
   contribution_kind?: string;
   arrival_goal?: string;
   reward_usd: number;
@@ -42,7 +42,7 @@ export function contributionCompletion(base: string, result: CompletedContributi
         reward_usd: result.reward_usd,
         reward_state: result.reward_state ?? "authorized",
         redemption_state: "not_observed",
-        reward_note: result.kind === "contribution" ? "Acceptance records the keeper’s obligation under the posted brief. A reported transaction is the keeper’s statement, not independently verified settlement. This response sends no money." : "The payout field contains the authorization and redemption instructions. Authorization is not confirmation of redemption or net profit.",
+        reward_note: result.reward_state === "authorization_issued" ? "The keeper issued a reward authorization. Retrieve its original bytes and expiry through private status. Arrange redemption and gas yourself; issuance does not prove receipt or net earnings." : result.kind === "contribution" ? "Acceptance records the keeper’s obligation under the posted brief. A reported transaction is the keeper’s statement, not independently verified settlement. This response sends no money." : "The payout field contains the authorization and redemption instructions. Authorization is not confirmation of redemption or net profit.",
         what_was_verified: result.what_was_verified,
         what_was_not: result.what_was_not,
         for_your_human: forHuman,

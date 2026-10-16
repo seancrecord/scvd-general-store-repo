@@ -1,6 +1,6 @@
 {
   "name": "scvd-corpus-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-dependency reader for scvd.store's signed x402 corpus: the weekly census, the fresh set, one host's readiness history, the month, the feeds and the diff, as the store serves them. The scvd CLI's library half.",
   "type": "module",
   "main": "./corpus-client.js",

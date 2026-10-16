@@ -10,6 +10,17 @@ append-only, zero dependencies. The full specification is
 [THE_TAB.md](https://github.com/seancrecord/scvd-general-store-repo/blob/main/THE_TAB.md)
 at the repo root; the schema contract is [SCHEMA.md](./SCHEMA.md).
 
+## Ask your agent
+
+> Use Tab to summarize my recorded software expenses and upcoming charges.
+> Run stack_audit to identify possible subscription overlaps and price drift.
+> Show missing prices and history. Compare any statement CSV I supply locally.
+> Do not cancel anything, upload my records or request bank credentials.
+
+A category overlap is a review lead, not proof that one tool replaces another.
+[Task prompts and next steps](https://scvd.store/what#job-overlapping-tools)
+include expense tracking, trial reminders and checks before a new signup.
+
 ## Why this exists
 
 Every builder carries a quiet ledger: the trial that converts

@@ -7,15 +7,17 @@ import type {Env} from "@/types";
 
 // A dated keeper-authorized round, frozen independently of future template edits.
 // These identities are permanent: retries must never buy another round of work.
-export const FIRST_CONTRIBUTION_ROUND = briefs;
+export const FIRST_CONTRIBUTION_ROUND = briefs.map(t => ({...t, id: `${t.id}-auth`, payment_method: "signed_authorization" as const}));
 export const FIRST_CONTRIBUTION_MAXIMUM = briefs.reduce((sum, t) => sum + Math.round(t.reward_usd * 100) * t.slots, 0) / 100;
 export async function launchFirstContributionRound(env: Env, now: number) {
   if (!env.CONTRIBUTION_TASKS) throw new Error("Contribution storage unavailable");
-  const stores = briefs.map(t => env.CONTRIBUTION_TASKS!.getByName(t.id));
+  const legacy = await Promise.all(briefs.map(t => env.CONTRIBUTION_TASKS!.getByName(t.id).adminView()));
+  if (legacy.some(Boolean)) throw new ContributionInputError("The original round already exists. Its payment terms are unchanged. Inspect those commitments before posting another round.");
+  const stores = FIRST_CONTRIBUTION_ROUND.map(t => env.CONTRIBUTION_TASKS!.getByName(t.id));
   const existing = await Promise.all(stores.map(store => store.adminView()));
   // Refuse a stale or conflicting round before creating any new obligations.
   // Existing exact terms can still repair their index after the deadline.
-  const terms = briefs.map((brief, i) => {
+  const terms = FIRST_CONTRIBUTION_ROUND.map((brief, i) => {
     const old = existing[i];
     if (old && jcsCanonicalize(old.terms) !== jcsCanonicalize(brief)) throw new ContributionInputError("A first-round id has different posted terms. Existing work was preserved; inspect the contribution desk before continuing.");
     return old ? old.terms : contributionTerms(brief, now);

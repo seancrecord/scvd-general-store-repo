@@ -1,5 +1,5 @@
 import { contributionGuide } from "@/store/contribution-tasks";
-import { agentJobAnswers } from "@/store/agent-jobs";
+import { agentJobAnswers, agentJobLinksMarkdown } from "@/store/agent-jobs";
 import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY } from "@/store/seller-declarations";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
@@ -319,7 +319,9 @@ Free directory check: POST ${base}/api/bot-auth/check. signature_agent_card sign
 
 ## More ways to use the store
 
-Jobs: ${base}/what · ${base}/bounties.
+Paid work: ${base}/bounties — read current slots and terms before starting.
+
+${agentJobLinksMarkdown(base)}
 
 BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point
 rather than a pitch: the cheapest useful things here cost nothing.

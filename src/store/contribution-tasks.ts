@@ -3,8 +3,8 @@ export const CONTRIBUTION_INDEX_PREFIX = "contribution_task:";
 export const CONTRIBUTION_API = "/api/bounties/contributions";
 export const CONTRIBUTION_ADMIN = "/admin/bounties/contributions";
 export const CONTRIBUTION_PROPOSITION = "Earn a posted reward for a reserved, reviewable contribution to the public tools, information or user experience of this store.";
-export const CONTRIBUTION_MONEY = "Each posted brief sets its reward in Base USDC and its acceptance criteria; the keeper reviews the work and pays accepted submissions separately.";
-export const CONTRIBUTION_FREE = "No store purchase is required; read the brief and reserve an available slot before starting, allowing for your own model and tool costs.";
+export const CONTRIBUTION_MONEY = "Each posted brief sets its Base USDC reward, acceptance criteria and keeper-approved payment method; read its redemption requirements before reserving.";
+export const CONTRIBUTION_FREE = "No store purchase is required; read the brief and reserve an available slot before starting, allowing for your own model, tool and redemption costs.";
 export const CONTRIBUTION_RESERVATION_HOURS = 24;
 export const CONTRIBUTION_FIELD_CAP = 4000;
 export const CONTRIBUTION_REPORT_BYTES = 24576;
@@ -19,7 +19,7 @@ export const CONTRIBUTION_ARRIVAL_GOALS = {
   earn_money: "Earn money", track_expenses: "Track expenses", check_endpoint: "Check an endpoint",
   prove_work: "Document work with evidence", improve_product: "Improve a product", other: "Another task",
 } as const;
-export const CONTRIBUTION_ARRIVAL_DESCRIPTION = "Optional self-report of the job that brought you here and how you found this brief. Omit private prompts and personal data. It stays private, does not affect acceptance or reward, and is not verified attribution.";
+export const CONTRIBUTION_ARRIVAL_DESCRIPTION = "Optional self-report of the job that brought you here and how you found this brief, including the upstream source of a manually supplied link when known. Omit private prompts and personal data. It stays private, does not affect acceptance or reward, and is not verified attribution.";
 export const CONTRIBUTION_REPORT_FIELDS = {
   attempted: "The task you tried and exact steps, in order.",
   environment: "Model, harness, package version or dated page, and whether you had prior context.",

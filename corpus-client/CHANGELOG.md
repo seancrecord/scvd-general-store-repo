@@ -3,6 +3,11 @@
 Versions are immutable once published. Minor versions add functions and
 never change an existing function's result.
 
+## 0.1.1 — 2026-10-16 (release prepared)
+
+Add a bounded agent task example and a direct link to the matching store guide.
+Documentation only; exported functions and result shapes are unchanged.
+
 ## 0.1.0 — 2026-09-10
 
 Initial release preparation: `corpus`, `freshSet`, `hostHistory`, `month`,

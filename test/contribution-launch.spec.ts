@@ -9,10 +9,10 @@ const base = 'https://scvd.store';
 const path = '/admin/bounties/contributions/launch-first-round';
 const auth = {Authorization: `Basic ${btoa(`keeper:${bindings.ADMIN_PASSWORD}`)}`};
 const clock = Date.parse('2026-10-14T19:00:00Z');
-const ids = ['aura', 'census', 'package', 'discovery'].map(kind => `pilot-2026-10-14-${kind}`);
+const ids = ['aura', 'census', 'package', 'discovery'].map(kind => `pilot-2026-10-14-${kind}-auth`);
 beforeEach(async () => {
   vi.useFakeTimers({toFake:['Date']}); vi.setSystemTime(clock);
-  for (const id of ids) {
+  for (const id of [...ids, ...ids.map(id => id.replace(/-auth$/, ""))]) {
     await runInDurableObject(bindings.CONTRIBUTION_TASKS!.getByName(id), async (_instance, state) => {await state.storage.deleteAll();});
     await bindings.COUNTERS.delete(`contribution_task:${id}`);
   }
@@ -80,4 +80,16 @@ it('preflights conflicts across the whole round before creating missing briefs',
   expect(await refused.text()).toContain('different posted terms');
   expect(await bindings.CONTRIBUTION_TASKS!.getByName(ids[0]!).adminView()).toBeNull();
   expect((await last.adminView())!.terms.reward_usd).toBe(5);
+});
+
+it('refuses to add an authorization round over legacy manual-payment commitments', async () => {
+ const originalId = ids[0]!.replace(/-auth$/, '');
+ await press();
+ const current = (await bindings.CONTRIBUTION_TASKS!.getByName(ids[0]!).adminView())!;
+ const {payment_method, ...legacyTerms} = current.terms;
+ for (const id of ids) await runInDurableObject(bindings.CONTRIBUTION_TASKS!.getByName(id),async (_instance,state)=>{await state.storage.deleteAll();});
+ await bindings.CONTRIBUTION_TASKS!.getByName(originalId).create({...legacyTerms,id:originalId},clock);
+ expect((await press()).status).toBe(400);
+ expect(await bindings.CONTRIBUTION_TASKS!.getByName(ids[0]!).adminView()).toBeNull();
+ expect((await bindings.CONTRIBUTION_TASKS!.getByName(originalId).publicView(clock))!.payment_method).toBe('keeper_paid_base_usdc');
 });

@@ -24,7 +24,7 @@ export function contributionWork(state: ContributionTaskState, now: number) {
     if (row.status === "submitted" && row.submitted_at) due(row, "review", row.submitted_at, state.terms.review_days);
     if (row.status === "accepted" && row.review) {
       unpaidCents += Math.round(state.terms.reward_usd * 100);
-      due(row, "payment", row.review.at, state.terms.payment_days);
+      if (!row.payout?.signature) due(row, "payment", row.review.at, state.terms.payment_days);
     }
     const latestOutcome = row.updates?.at(-1)?.outcome ?? row.review?.outcome;
     if (latestOutcome === "fix_planned") actions.push({submission_id: row.id, action: "follow_up", due_at: null, overdue: false});
@@ -36,6 +36,8 @@ export function contributionWork(state: ContributionTaskState, now: number) {
     payment_pending: actions.filter(a => a.action === "payment").length,
     payment_overdue: actions.filter(a => a.action === "payment" && a.overdue).length,
     accepted_unpaid_usd: unpaidCents / 100,
+    authorizations_issued: state.reservations.filter(r => r.payout?.signature).length,
+    authorization_issued_usd: state.reservations.filter(r => r.payout?.signature).length * Math.round(state.terms.reward_usd * 100) / 100,
     follow_up_pending: actions.filter(a => a.action === "follow_up").length,
     actions, learning: {submissions, provided, goals},
   };
