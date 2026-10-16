@@ -1,3 +1,4 @@
+import { agentJobLinksMarkdown } from "@/store/agent-jobs";
 import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DELIVERY_ORDER } from "@/store/copy/position";
 import { paymentMethod, paymentNetworkGuide } from "@/lib/payment-networks";
@@ -186,6 +187,10 @@ ${base}/api/bounties; the terms are on the board and further down
 this file).
 
 ${beforeYouStartSection(base, paymentConfig)}
+
+## Tasks your agent can start here
+
+${agentJobLinksMarkdown(base)}
 
 ## Personal agents: connect or rehearse first
 

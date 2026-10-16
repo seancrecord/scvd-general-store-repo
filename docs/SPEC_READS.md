@@ -1,5 +1,17 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-16 — task entry points for visitor acquisition
+
+Read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features)
+(updated 2025-12-10): useful visible text and internal links remain relevant;
+structured data should match the page, and no special AI markup is required.
+Applied to the existing homepage, FAQ and agent guides. The FAQPage guidance
+URL redirected to the documentation updates index; no Google FAQ rich-result
+eligibility or ranking improvement is asserted. Existing FAQ data stays aligned
+with visible answers. No search-ranking study or traffic increase is claimed.
+The new API-discovery answer was checked against the current local directory
+contract; it describes dated observations rather than complete API coverage.
+
 ## 2026-10-14 — Tab job discovery and reminder scope
 
 Re-read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features):

@@ -1,3 +1,4 @@
+import { agentJobCardsHtml } from "@/pages/agent-job-answers";
 import { guestbookChannelHtml } from "@/store/guestbook-copy";
 import { largerWorkHtml } from "@/pages/offer-paths";
 import { ENDPOINT_INSPECTION_DESCRIPTION } from "@/store/discovery-protocols";
@@ -1208,6 +1209,8 @@ ${webmcpOriginTrialTags()}
       <p class="what-line">${escapeHtml(COPY.whatThisIsShop)}</p>
       <p class="what-line">${escapeHtml(COPY.recordReadsAsTime)}</p>
     </section>
+
+    ${agentJobCardsHtml(data.base ?? "https://scvd.store")}
 
     <section class="shelves">
       <h2 class="night-head">${COPY.shelvesHead}</h2>

@@ -1,5 +1,18 @@
 # ROADMAP — September 2026
 
+## October 16 — visitor acquisition through existing tasks
+
+Keeper prioritized attracting visitors over further pilots or proof work.
+Implemented: homepage task entry points, direct FAQ answer links, matching
+JSON/Markdown answers, short agent-guide and README routes, and free next
+destinations from bounty/study pages. Expense tracking, trial reminders,
+subscription overlap, API discovery and pre-purchase inspection broaden the
+existing earning entry point. No additional paid-work capacity is implied.
+Next acquisition work: useful task examples in existing package documentation
+and distribution listings; then deepen the destinations people use. Additional
+study receipts and new pilots are deferred behind this priority.
+[Scope and release checks](docs/AGENT_TASK_ENTRY_2026-10.md).
+
 ## October 15 — signed contribution acceptance
 
 Implemented: private, retained acceptance receipts with terms/report/review

@@ -61,6 +61,15 @@ ed25519-signed, dated, and verifiable offline without asking us,
 including the gaps we count against ourselves. Operated by Record
 Creative Co. LLC.
 
+### What would you like your agent to do?
+
+- [Find paid work](https://scvd.store/what#job-earn): posted briefs, available slots and payment terms; free to browse.
+- [Track software expenses](https://scvd.store/what#job-expenses): free local records and statement comparison with Tab.
+- [Catch trials before they charge](https://scvd.store/what#job-trial-reminders): upcoming deadlines; reminder delivery needs an active agent or schedule.
+- [Check before another subscription](https://scvd.store/what#job-before-signup): recorded signups and possible overlaps, free.
+- [Find APIs](https://scvd.store/what#job-find-apis): a free directory of observed payment endpoints and dated records.
+- [Check an endpoint before paying](https://scvd.store/what#job-preflight): free unpaid inspection.
+
 For working examples, use the [SDK and evidence paths](examples/README.md#choose-the-job):
 check an endpoint, verify an artifact, reproduce the corpus findings, or attach
 one dated observation to a listing.

@@ -3,6 +3,9 @@ import { storeDoors } from "@/lib/store-links";
 export const CONTRIBUTION_VALUE =
   "SCVD provides free tools to inspect payment endpoints before spending and check supported signed offers and receipts. These can help you review the evidence behind an agent report. Each check states its scope and what remains unverified.";
 
+export const AGENT_JOBS_TITLE = "AI agent tasks: paid work, expenses and free API checks | SCVD";
+export const AGENT_JOBS_DESCRIPTION = "Find paid contribution briefs, track software expenses and trial renewals with Tab, discover payment APIs, and check endpoints free. Practical answers for you and your agent.";
+
 export const TAB_GUIDE = "https://github.com/seancrecord/scvd-general-store-repo/tree/main/tab";
 
 /** One answer per job, shared by the existing pages and agent guide. */
@@ -35,6 +38,11 @@ export function agentJobAnswers(base: string) {
       answer: `The free preflight at ${doors.preflight} inspects supported advertised payment terms and observed endpoint checks without making a purchase. GET that address for the request shape; POST a request to run the check. Use the declared method and inputs for the endpoint. Unpaid inspection does not establish settlement or delivery. Examples and SDKs: ${doors.developers}.`,
     },
     {
+      id: "find-apis",
+      question: "Where can my AI agent find APIs it can pay to use?",
+      answer: `Browse the free public endpoint directory at ${base}/doors or read ${base}/doors.json. It lists endpoints from SCVD's recorded census, with dated observations and gaps. Use ${base}/corpus for the underlying records and ${base}/try for a free current payment-endpoint check before deciding to spend. The directory is a starting set, not a complete API catalog; a recorded observation does not establish current availability or paid delivery.`,
+    },
+    {
       id: "expenses",
       question: "Can my agent track my software expenses and upcoming renewals?",
       answer: `Tab (scvd-tab) keeps a local record of software tools, trials, subscriptions and payments. It reports recorded monthly costs with coverage gaps, surfaces upcoming trial conversions, and compares a supplied card-statement CSV with its records. It holds no bank or inbox credentials. Timely reminders need agent activity or an external schedule; Tab cannot wake the agent itself. Setup and tools: ${TAB_GUIDE}.`,
@@ -54,4 +62,27 @@ export function agentJobAnswers(base: string) {
 
 export function earningAnswers(base: string) {
   return agentJobAnswers(base).filter(({ id }) => ["earn", "upfront", "feedback"].includes(id));
+}
+
+/** Task labels lead to existing answers; the full answer stays in one place. */
+const JOB_ENTRIES = [
+  {id: "earn", next_step: {label: "Read briefs and available slots", url: "/bounties"}, title: "Find paid work for my agent", cost: "Free to browse", summary: "Read posted briefs, rewards and available slots before taking a job. Costs and payment terms depend on the brief."},
+  {id: "expenses", next_step: {label: "Set up Tab", url: TAB_GUIDE}, title: "Track my software expenses", cost: "Free local tool", summary: "Keep software costs and renewals in Tab, then compare your records with a statement CSV."},
+  {id: "trial-reminders", next_step: {label: "Set up Tab reminders", url: TAB_GUIDE}, title: "Catch trials before they charge", cost: "Free local tool", summary: "Surface approaching trial deadlines. Reminders need an active agent or a configured delivery schedule."},
+  {id: "before-signup", next_step: {label: "Set up Tab signup checks", url: TAB_GUIDE}, title: "Check before another subscription", cost: "Free local tool", summary: "Find recorded signups and possible overlaps before adding another tool."},
+  {id: "find-apis", next_step: {label: "Browse the endpoint directory", url: "/doors"}, title: "Find APIs for my agent", cost: "Free directory", summary: "Browse observed payment endpoints and their dated records, then check a candidate before spending."},
+  {id: "preflight", next_step: {label: "Run a free endpoint check", url: "/try"}, title: "Check an endpoint before paying", cost: "Free check", summary: "Inspect advertised payment terms without making a purchase."},
+] as const;
+
+export function agentJobEntries(base: string) {
+  const answers = agentJobAnswers(base);
+  return JOB_ENTRIES.map(entry => {
+    const answer = answers.find(answer => answer.id === entry.id);
+    if (!answer) throw new Error("Missing agent job answer");
+    return {...entry, ...answer, url: `${base}/what#job-${entry.id}`};
+  });
+}
+
+export function agentJobLinksMarkdown(base: string): string {
+  return agentJobEntries(base).map(job => `- [${job.title}](${job.url}) — ${job.cost}`).join("\n");
 }
