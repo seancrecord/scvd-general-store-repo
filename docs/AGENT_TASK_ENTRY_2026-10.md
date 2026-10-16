@@ -105,3 +105,13 @@ passed. Verifier release preparation reviews the two runtime files changed since
 npm 1.11.0; 1.12.0 names the bounded report features, with install examples held
 to the package version by existing tests. Pinned historical bounty and study
 inputs are unchanged. Full CI remains required before merge.
+
+
+CI follow-through: the task redirect has a written browser-only discovery reason;
+machine answers continue to name canonical destinations. The guide's changed
+package labels were isolated by restoring only the two manifests, which reproduced
+both prior fingerprints. Reviewed verifier 1.12.0 is explicitly supported by the
+existing experimental helper alongside 1.11.0; unknown versions are still refused,
+and each plan retains its version and file hashes. This does not rewrite earlier
+plans or establish new buyer evidence. The full 348-check buyer group and 16
+guide/discovery checks pass after these fixes, with typecheck green.

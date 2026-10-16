@@ -34,6 +34,8 @@ import { app } from "@/index";
  * fails the staleness checks below.
  */
 const DELIBERATELY_QUIET: Record<string, string> = {
+  "/go/task":
+    "browser handoffs linked from the discoverable /what answers; machine answers retain direct canonical tool URLs. These fixed redirects add request accounting, not a second capability. agent-task-usage.spec.ts checks the destination and rejects arbitrary redirects",
   "/.well-known/agent-skills/skill.tar.gz":
     "multi-file skill download reached through the public RFC discovery index; agent-skills-index.spec.ts fetches, hashes and unpacks every published archive",
   [PERSONAL_SHOPPER.hostsPath]:

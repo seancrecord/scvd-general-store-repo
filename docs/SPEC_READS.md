@@ -3227,3 +3227,8 @@ scvd-tab differs only in README.md before its documentation version bump.
 Reviewed the verifier diff against published 1.11.0: the changes are bounded
 report generation and CLI options, with core verification bytes unchanged.
 Prepared 1.12.0 as a minor release and retained its runtime-change notes. A source comparison is not proof of registry publication.
+
+Read the official MCP registry [CLI commands](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/cli/commands.md)
+for the existing Tab listing's version update. The existing workflow validates
+the manifest, authenticates the same domain namespace, publishes metadata and
+reads the registry back. npm publication must precede the package listing.
