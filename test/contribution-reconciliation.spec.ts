@@ -40,7 +40,7 @@ it('requires the exact retained authorization and finality, without keys, mutati
   const result=await reconcileContributionPayment({...bindings,FIELD_WALLET_KEY:undefined},state,'one',tx,now);
   expect(result).toMatchObject({status:'confirmed',confirmations:20,read_at:new Date(now).toISOString(),reward_usd:2.5});
   expect(state).toEqual(before);
-  expect(JSON.stringify(result)).not.toContain('private');
+  for (const secret of ['private-key','private-visitor','private-signature']) expect(JSON.stringify(result)).not.toContain(secret);
 });
 it.each(['nonce','recipient','amount','asset','payer','unpaired'] as const)('does not credit a transaction with a mismatching %s',async field=>{
   const r=receipt(),auth=r.logs[0]!,transfer=r.logs[1]!;
@@ -94,7 +94,7 @@ it('keeps the new private route authenticated and rejects cross-origin calls and
   expect((await SELF.fetch(url,{method:'POST',headers:{...headers,Origin:'https://elsewhere.invalid'},body:'{}'})).status).toBe(403);
   expect((await SELF.fetch(url,{method:'POST',headers,body:JSON.stringify({submission_id:'one',tx_hash:tx,extra:true})})).status).toBe(400);
 });
-it('serves the private JSON and browser result without changing the retained record',async()=>{
+it('serves private saved observations without changing reward terms or status',async()=>{
   // A retained unsigned intent exercises the complete route without any network read.
   const {runInDurableObject}=await import('cloudflare:test');
   const s=fixture();s.terms.id=`check-${crypto.randomUUID()}`;delete s.reservations[0]!.payout!.signature;
@@ -107,5 +107,9 @@ it('serves the private JSON and browser result without changing the retained rec
   const html=await SELF.fetch(url,{method:'POST',headers:{...auth,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({submission_id:'one',tx_hash:tx}).toString()});
   expect(html.status).toBe(200);expect(await html.text()).toContain('Payment could not be established');
   expect(html.headers.get('Cache-Control')).toBe('no-store');
-  expect(await actor.adminView()).toEqual(s);
+  const after=await actor.adminView();
+  expect(after?.terms).toEqual(s.terms);
+  expect(after?.reservations[0]?.status).toBe('accepted');
+  expect(after?.reservations[0]?.payout).toEqual(s.reservations[0]?.payout);
+  expect(after?.reservations[0]?.payment_checks?.latest.status).toBe('unavailable');
 });

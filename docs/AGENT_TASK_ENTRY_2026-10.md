@@ -125,3 +125,11 @@ publication record is PR #1038. The follow-up Tab 0.11.4 release requires every
 current install pin to move together; CI caught the stale plugin pin. Source
 skill 3.19.6 carries that pin refresh and still requires its own publication.
 Agent Finder's current rules and owner-account blocker are recorded in its drawer.
+
+
+October 16 follow-through: the contribution transaction check now saves the latest
+check and latest confirmed observation privately. Funding keeps gross exposure
+and separately reports matching retained redemptions and accepted work without a
+confirmation, with observation dates. A failed recheck withdraws accounting
+credit until confirmed again. This does not refresh all chain observations or
+establish spendable balance; cross-program allocation remains outstanding.
