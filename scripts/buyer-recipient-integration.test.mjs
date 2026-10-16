@@ -201,7 +201,7 @@ function assistedPlan(f){f.plan.evidence_workflow='sources-and-draft-v1';f.plan.
 test('assisted evidence condition rejects missing runtime, old versions and unknown conditions',()=>{
  const f=fixture(currentVerifier());try{
   const plan=assistedPlan(f);assert.equal(validatePlan(plan),plan);
-  for(const mutate of [p=>{p.evidence_workflow='unknown';},p=>{delete p.recipient.verifier;},p=>{p.recipient.verifier.version='1.9.0';},p=>{delete p.package_access;}]){
+  for(const mutate of [p=>{p.evidence_workflow='unknown';},p=>{delete p.recipient.verifier;},p=>{p.recipient.verifier.version='1.9.0';},p=>{p.recipient.verifier.version='1.13.0';},p=>{delete p.package_access;}]){
    const bad=structuredClone(plan);mutate(bad);assert.throws(()=>validatePlan(bad),/workflow|verifier|package/i);
   }
  }finally{f.clean();}

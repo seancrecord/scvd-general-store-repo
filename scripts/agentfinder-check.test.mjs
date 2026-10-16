@@ -10,9 +10,9 @@ import test from "node:test";
  * community catalog behind GitHub Copilot's agent finder. Nothing here
  * publishes (rule 30); this test holds the drafts to two things:
  *
- *  1. The catalog's own validator, ported clause for clause from
+ *  1. The catalog's baseline structural rules, adapted from
  *     scripts/generate_ai_catalog.py in that repository as read on
- *     2026-09-10, so a PR is not refused on a field this repo could
+ *     2026-09-10 and refreshed for plugin/MCP rules on 2026-10-16, so a PR is not refused on a field this repo could
  *     have checked.
  *  2. AT_SCALE rule 1: a value that lives elsewhere is not hand-typed
  *     here without the tool refusing drift. The MCP entry repeats
@@ -121,9 +121,10 @@ test("a skill entry points at a SKILL.md that exists in this repository, on main
 });
 
 test("a plugin entry points at the Claude Code plugin manifest and names its capabilities", () => {
-  const plugins = entries().filter(({ entry }) => entry.mediaType === "application/vnd.github.copilot-plugin");
+  const plugins = entries().filter(({ entry }) => entry.metadata?.repoPath === ".claude-plugin/plugin.json");
   assert.equal(plugins.length, 1);
   const [{ name, entry }] = plugins;
+  assert.equal(entry.mediaType, "application/vnd.anthropic.claude-plugin+json");
   assert.equal(entry.metadata.sourceSet, REPO);
   assert.equal(entry.metadata.repoPath, ".claude-plugin/plugin.json");
   assert.ok(existsSync(join(ROOT, entry.metadata.repoPath)), "the plugin manifest must exist");
@@ -136,10 +137,11 @@ test("a plugin entry points at the Claude Code plugin manifest and names its cap
   assert.ok(entry.description.startsWith(manifest.description), `${name}: description must open with the manifest's own sentence`);
 });
 
-test("the MCP entry repeats server.json, never a hand-typed copy of it", () => {
+test("the deferred MCP reference follows server.json without entering an unsupported catalog", () => {
   const mcp = entries().filter(({ entry }) => entry.mediaType === "application/mcp-server+json");
-  assert.equal(mcp.length, 1, "one MCP entry: the store; the tab joins when its registry version catches up");
-  const [{ name, entry }] = mcp;
+  assert.equal(mcp.length, 0, "GitHub mirror availability must be established before proposing an MCP entry");
+  const name = "scvd-general-store-mcp.json";
+  const entry = JSON.parse(readFileSync(join(ROOT, "registry", "agentfinder", "deferred", name), "utf8"));
   const manifest = JSON.parse(readFileSync(join(ROOT, "server.json"), "utf8"));
   assert.equal(entry.version, manifest.version, `${name}: version differs from server.json`);
   assert.equal(entry.description, manifest.description, `${name}: description differs from server.json`);

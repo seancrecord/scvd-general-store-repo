@@ -54,7 +54,7 @@ export function renderContributionLaunchFailure(error: string) {
 }
 
 export function renderContributionDesk(index: Index | null, state: ContributionTaskState | null, now: number, base: string) {
-  let body = `<h2>Contribution work</h2><p><a href="/admin/bounties">Money-out desk</a> · <a href="${CONTRIBUTION_ADMIN}">Contribution briefs</a> · <a href="${CONTRIBUTION_API}">Public task list</a></p>
+  let body = `<h2>Contribution work</h2><p><a href="/admin/bounties/contributions/reports/usage">Task discovery and handoff counts</a> · <a href="/admin/bounties/contributions/reports/funding">Cross-program reward commitments</a></p><p><a href="/admin/bounties">Money-out desk</a> · <a href="${CONTRIBUTION_ADMIN}">Contribution briefs</a> · <a href="${CONTRIBUTION_API}">Public task list</a></p>
   <p>Posted rewards are a separate commitment for the maximum shown on each brief. Posting does not draw from the automatic shopping or study budgets. Posting sends no money. For signed-authorization briefs, a separate approval issues the reward signature; the worker arranges redemption and gas.</p>`;
   if (index) {
     body += contributionLaunchPanel();

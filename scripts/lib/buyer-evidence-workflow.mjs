@@ -9,10 +9,12 @@ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const quote=value=>"'"+value.replaceAll("'","'\"'\"'")+"'";
 export const EVIDENCE_WORKFLOW='sources-and-draft-v1';
 const DRAFT='evidence/recipient-draft.md',REQUEST='evidence/recipient-check-request.json',REPORT='evidence/recipient-check.json';
+// Explicit compatibility: plans still pin their own version and every source byte.
+// Publishing 1.12 does not rewrite or qualify earlier experimental evidence.
 export function evidenceWorkflow(plan){
  if(plan?.evidence_workflow===undefined)return false;
  const v=plan.recipient?.verifier;
- if(plan.evidence_workflow!==EVIDENCE_WORKFLOW||plan.schema_version!==6||plan.package_access!==true||plan.cells?.some(c=>c.lane!=='directed')||v?.name!=='x402-verify'||v.version!=='1.11.0'||!v.files?.['evidence-report.js'])throw Error('Evidence workflow requires a directed schema 6 package experiment pinned to verifier 1.11.0.');
+ if(plan.evidence_workflow!==EVIDENCE_WORKFLOW||plan.schema_version!==6||plan.package_access!==true||plan.cells?.some(c=>c.lane!=='directed')||v?.name!=='x402-verify'||!['1.11.0','1.12.0'].includes(v.version)||!v.files?.['evidence-report.js'])throw Error('Evidence workflow requires a directed schema 6 package experiment pinned to reviewed verifier 1.11.0 or 1.12.0.');
  return true;
 }
 export function sourceWorkflowPrompt(plan,cli,supplied=false){

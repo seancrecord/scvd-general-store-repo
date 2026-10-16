@@ -1,9 +1,11 @@
+import {agentTaskUsage} from "@/lib/agent-task-usage";
 import { VARY_ACCEPT } from "@/lib/accept";
 import { agentJourneyStep } from "@/lib/agent-journey";
 import { whereToLookNext } from "@/lib/store-links";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
 import type { EventSignals } from "@/lib/metrics";
 import {
+  recordAgentTaskUsage,
   itemKeyFromPath,
   recordPorchVisit,
   recordServerError,
@@ -258,15 +260,15 @@ export const houseHeaders: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 export const porchVisit: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const surface = porchSurface(c.req.path, c.req.method);
-  if (surface) {
-    const signals: EventSignals = {};
+  const signals: EventSignals = {};
+  if (surface || agentTaskUsage(c.req.raw, 200)) {
     /**
      * The door, off the surface the table just named — not off
      * anything the caller sent. Until this existed, every UCP checkout
      * and every A2A desk call inferred "direct" and was pooled with
      * hand-rolled curl on every reading in the office.
      */
-    const door = doorOfSurface(surface);
+    const door = doorOfSurface(surface ?? "agent-task");
     if (door === "ucp") signals.viaUcp = true;
     if (door === "a2a") signals.viaA2a = true;
     const userAgent = c.req.header("User-Agent");
@@ -295,7 +297,7 @@ export const porchVisit: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (signatureAgent) {
       signals.signatureAgent = signatureAgent;
     }
-    const logged = recordPorchVisit(c.env, surface, signals).catch(() => {
+    const logged = (surface ? recordPorchVisit(c.env, surface, signals) : Promise.resolve()).catch(() => {
       // The log is a courtesy; the door never waits on it.
     });
     try {
@@ -305,6 +307,11 @@ export const porchVisit: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
   await next();
+  const task = agentTaskUsage(c.req.raw, c.res.status);
+  if (task) {
+    const logged = recordAgentTaskUsage(c.env, task, signals).catch(() => undefined);
+    try {c.executionCtx.waitUntil(logged);} catch {await logged;}
+  }
 };
 
 /**

@@ -3214,3 +3214,34 @@ published versions are separate from local edits. Refreshed the source skill
 and generated registry tree without changing publication receipts. Task copy
 names actual package tools and links to existing store answers; paid work
 availability is read from current briefs rather than embedded in listing copy.
+
+
+## 2026-10-16 — package publication follow-through
+
+Read npm's current [provenance documentation](https://docs.npmjs.com/generating-provenance-statements/)
+and the [ClawHub publication documentation](https://docs.openclaw.ai/clawhub).
+Retained the repository's manual publishing workflows, GitHub-hosted provenance
+and immutable version checks. Compared public npm tarball bytes with prepared
+source: scvd-preflight and scvd-corpus-client differ in documentation/manifests;
+scvd-tab differs only in README.md before its documentation version bump.
+Reviewed the verifier diff against published 1.11.0: the changes are bounded
+report generation and CLI options, with core verification bytes unchanged.
+Prepared 1.12.0 as a minor release and retained its runtime-change notes. A source comparison is not proof of registry publication.
+
+Read the official MCP registry [CLI commands](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/cli/commands.md)
+for the existing Tab listing's version update. The existing workflow validates
+the manifest, authenticates the same domain namespace, publishes metadata and
+reads the registry back. npm publication must precede the package listing.
+
+
+### 2026-10-16 — Agent Finder upstream refresh and npm verification
+
+Read current `github/agentfinder-catalog` CONTRIBUTING.md and generator after
+fetching upstream main: Claude manifest references require the Anthropic plugin
+media type; supported MCP enrichment uses GitHub's versioned mirror. The live
+MCP import had no SCVD match and the exact 0.2.4 mirror URL returned 404.
+Updated drafts withhold that MCP entry and preserve the official registry
+reference separately. Upstream's 46 tests and regenerated-catalog check passed.
+Also read https://docs.npmjs.com/cli/v11/commands/npm-audit/ for `audit signatures`;
+its verification covers registry signatures and provenance attestations. Both
+newly published npm packages passed that verification in an isolated install.

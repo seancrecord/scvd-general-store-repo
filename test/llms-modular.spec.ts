@@ -1238,8 +1238,10 @@ const BASE = "https://scvd.store";
 // 2026-10-16: reviewed four further task answers and shared operator eligibility
 // in the earning answer; then corrected free-check destinations. Both
 // previous guide fingerprints witnessed red before each reviewed update.
+// 2026-10-16: Tab 0.11.4 and verifier 1.12.0 labels; restoring only their
+// manifests reproduced both prior pins before recording these digests.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "57f13a3db0824481e38dfb789c1af11d7463f64ad832e60ccb3ac2989e891cef";
+  "871f7804db203d138801457cea9f9490ff03884d29d2dec6a076d2642045f0cb";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1342,7 +1344,7 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "fba613fac66f074eca7b9c4e45d6497732dbc0fad6dedacb7450255c2607b7ac",
+      "efc507a1a1746b759fb7508f015aedaacfe6c7a93ea9f8a74b422736762fbc1c",
     );
   });
 

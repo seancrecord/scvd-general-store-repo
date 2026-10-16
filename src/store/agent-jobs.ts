@@ -1,3 +1,4 @@
+import {AGENT_TASK_IDS} from "@/store/agent-task-ids";
 import { ROOMS } from "@/store/rooms";
 import { FIELD_STUDY_ELIGIBILITY } from "@/store/field-study-copy";
 import { storeDoors } from "@/lib/store-links";
@@ -116,6 +117,7 @@ const JOB_PROMPTS: Record<typeof JOB_ENTRIES[number]["id"], (base: string) => st
 
 export function agentJobEntries(base: string) {
   const answers = agentJobAnswers(base);
+  if (AGENT_TASK_IDS.length !== JOB_ENTRIES.length || AGENT_TASK_IDS.some(id => !JOB_ENTRIES.some(entry => entry.id === id))) throw new Error("Missing task entry");
   return JOB_ENTRIES.map(entry => {
     const answer = answers.find(answer => answer.id === entry.id);
     if (!answer) throw new Error("Missing agent job answer");

@@ -1,3 +1,4 @@
+import type {AgentTaskUsage} from "@/lib/agent-task-usage";
 import { ARC_NETWORK } from "@/lib/payment-networks";
 import { EVENT_TTL_SECONDS } from "@/lib/event-range";
 import { SETTLEMENT_ACCOUNTING } from "@/lib/settlement-accounting";
@@ -2486,4 +2487,27 @@ export async function readServerErrors(
     errors[routeClass] = row;
   }
   return { errors, truncated: listed.truncated };
+}
+
+
+/** Separate counters avoid counting one request twice in the porch totals. */
+let taskBudgetMinute = "";
+let taskBudgetUsed = 0;
+export async function recordAgentTaskUsage(env: Env, task: AgentTaskUsage, signals: EventSignals = {}, now = new Date()): Promise<void> {
+  const minute = now.toISOString().slice(0, 16);
+  if (minute !== taskBudgetMinute) {taskBudgetMinute = minute; taskBudgetUsed = 0;}
+  if (taskBudgetUsed >= PORCH_WRITES_PER_MINUTE) return;
+  taskBudgetUsed++;
+  const suffix = bucketSuffix(buildEvent(env, "porch", "agent-task", signals), true);
+  await bump(env, KV_KEYS.metric(metricsMonth(now), `task${suffix}`, `${task.id}:${task.step}:${task.arrival}:${task.outcome}`));
+}
+export async function readAgentTaskUsage(env: Env, month = metricsMonth()) {
+  const prefix = `${KV_KEYS.metricMonthPrefix(month)}task`;
+  const listed = await listKeys(env.COUNTERS, {prefix, cap: 2000});
+  const values = await bulkGetText(env.COUNTERS, listed.names);
+  const rows = listed.names.map(key => {
+    const [suffix, task, step, arrival, outcome] = key.slice(prefix.length).split(":");
+    return {task, step, arrival, outcome, bucket: suffix === "h" ? "house" : suffix === "i" ? "infrastructure" : "organic", count: /^\d+$/.test(values.get(key) ?? "") ? Number(values.get(key)) : NaN};
+  }).filter(row => Number.isSafeInteger(row.count) && row.count >= 0);
+  return {month, rows, unreadable: listed.names.length - rows.length, truncated: listed.truncated, reading: "Requests, not people. Counts are sampled floors and may include retries, bots and copied links. Arrival is caller-declared; unknown is not search. A handoff is not an install, a check response is not delivery, and a reservation response is not completed work. No cross-request identity or conversion rate is inferred."};
 }

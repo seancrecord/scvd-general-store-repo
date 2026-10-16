@@ -4,7 +4,13 @@ Dates, impact, migration. Semantic versions: a minor adds, a major
 changes the meaning of an existing export; nothing published is ever
 edited in place.
 
-## Unreleased — first-screen observation scope (October 14)
+## 1.12.0 — source prepared 2026-10-16
+
+Adds bounded report options for exported bundles, advisory scope commentary and
+optional display of the exact saved report. Includes practical task-entry README
+examples. Core signature verification and signed artifact formats are unchanged.
+
+### First-screen observation scope
 
 Markdown reports now put known advisory observations and their unknowns before
 the structured evidence block. Readings derive only from verified exact-subject
@@ -13,24 +19,22 @@ Unknown codes, unsigned history and failed signatures cannot supply a finding.
 Signed bytes and JSON output are unchanged. This addresses the retained October
 12 interpretation failures; improved native buyer completion is not yet measured.
 
-## Unreleased — report consumption
+### Report consumption
 
 `--format markdown --report-out NEW_FILE --report-stdout` saves and displays
 identical bounded report bytes in one invocation for either verification
 command. Existing receipt output, failure exits and exclusive file creation
 remain unchanged. This removes a separate local file read for restricted hosts;
-it does not establish that an agent interpreted the report correctly. Source
-candidate only; no registry publication or new buyer acceptance claim.
+it does not establish that an agent interpreted the report correctly. Publication is recorded separately; no new buyer acceptance claim.
 
-## Unreleased — advisory scope and exported-bundle reports
+### Advisory scope and exported-bundle reports
 
 `verify-source --subject` adds bounded reader commentary beside signed advisory
 codes, with observed facts and unknown behavior separate. Missing retry-key or
 signed-offer declarations do not become claims of endpoint-wide absence;
 declared retry fields do not prove retry safety. Unknown codes remain
 uninterpreted. Commentary is not signed evidence; original rows, signature
-checks, exit meanings and file-overwrite protection are unchanged. This source
-change is not a published release or a native buyer acceptance result.
+checks, exit meanings and file-overwrite protection are unchanged. Registry publication and native buyer acceptance are separate outcomes.
 
 `verify <bundle.json>` now accepts the same compact report options as
 `verify-source`: subject selection, JSON/Markdown, saved challenge headers and
@@ -38,8 +42,8 @@ exclusive report output. Without report options, `verify` retains its full
 result. Reports identify the input kind and hash the exact input bytes; bundle
 context is unsigned. Wrong input forms receive fixed command guidance without
 reflecting input contents. Detached corpus payloads need their signature
-envelope. These October 12 changes passed local regression and retained-bundle
-replay checks; they have not been published or accepted by a fresh native study.
+envelope. These changes passed local regression and retained-bundle replay checks. No
+fresh native study acceptance is claimed.
 ## 1.11.0 — source prepared 2026-10-01
 
 **Added.** Optional `verify-source --check-identifiers SAVED_DRAFT` compares

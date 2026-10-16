@@ -15,6 +15,11 @@ and the ClawHub bundle are refreshed; external publication is tracked separately
 Next: release through CI and verify the live paths, then publish the prepared
 distribution updates. Additional study receipts and new pilots remain deferred.
 [Scope and release checks](docs/AGENT_TASK_ENTRY_2026-10.md).
+Follow-up prepared: private task request counts and a bounded cross-program reward
+inventory. Counts do not claim people, search discovery or completed work. Reward
+face values do not establish settlement or spendable balance. Remaining funding
+work is reconciliation and coordinated allocation across all field-wallet users
+before increasing caps; the inventory makes its exclusions explicit.
 
 ## October 15 — signed contribution acceptance
 
