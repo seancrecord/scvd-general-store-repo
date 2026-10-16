@@ -1425,3 +1425,5 @@ export { ContributionTask } from "@/services/contribution-task";
 export { BountyClaimLocks } from "@/services/bounty-claim-locks";
 export { CounterLedger } from "@/services/counter-ledger";
 export { SignalStore } from "@/services/signal-store";
+
+export { FieldWalletAllocations } from "@/services/field-wallet-allocations";

@@ -1,3 +1,4 @@
+import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
@@ -1656,7 +1657,7 @@ export async function debriefStudy(
       String(Math.round((spent + reward.total_usd) * 100) / 100),
     );
 
-    const signer = options.signer ?? (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+    const signer = options.signer ?? allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY as string), "studies");
     const authorization = {
       from: signer.address,
       to: payoutTo,

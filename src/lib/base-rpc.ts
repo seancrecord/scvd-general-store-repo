@@ -553,14 +553,16 @@ export async function usdcBalanceOf(
   env: Env,
   address: string,
   chain: EvmChain = BASE_EVM,
+  block?: number,
 ): Promise<bigint> {
+  if (block !== undefined && (!Number.isSafeInteger(block) || block < 0)) throw new Error("Invalid balance block");
   const data =
     BALANCE_OF_SELECTOR +
     address.toLowerCase().replace(/^0x/, "").padStart(64, "0");
   const result = await rpc<string>(
     env,
     "eth_call",
-    [{ to: chain.usdc, data }, "latest"],
+    [{ to: chain.usdc, data }, block === undefined ? "latest" : `0x${block.toString(16)}`],
     chain,
   );
   return BigInt(result && result !== "0x" ? result : "0x0");

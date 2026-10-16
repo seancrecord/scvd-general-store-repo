@@ -1,3 +1,4 @@
+import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
 import {
   BASE_EVM,
   BASE_USDC,
@@ -1783,7 +1784,7 @@ export async function claimBounty(
 
     const signer =
       options.signer ??
-      (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+      allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY as string), "shopping");
     const rewardAtomic = String(Math.round(bounty.reward_usd * 1e6));
     const authorization = {
       from: signer.address,
@@ -1949,7 +1950,7 @@ async function reissuePayout(
     );
   }
   const signer =
-    options.signer ?? (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+    options.signer ?? allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY as string), "shopping");
   // Money fails closed: a chain that does not answer refuses, and the
   // same claim can come back when it does.
   let used: boolean;

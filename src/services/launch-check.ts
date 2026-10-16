@@ -1,3 +1,4 @@
+import {allocatedFieldSigner, FieldAllocationUnavailable} from "@/services/field-wallet-allocations";
 import {
   advertisedVersionDetail,
   advertisedVersionUnpayable,
@@ -789,7 +790,7 @@ export async function performLaunchCheck(
   const signer =
     options.signer ??
     (env.FIELD_WALLET_KEY
-      ? await fieldSignerFromKey(env.FIELD_WALLET_KEY)
+      ? allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY), "launch_checks")
       : undefined);
   // The API key, when present, is an operator override; the keyless
   // on-chain oracle is the default, over the same Base RPC the
@@ -1189,26 +1190,35 @@ export async function performLaunchCheck(
       nonce: (options.randomNonce ?? defaultNonce)(),
     };
     authorizationOutstandingUntil = Number(authorization.validBefore);
-    const signature = await signer.signTypedData({
-      domain: {
-        name: chosen.extra?.name ?? "USD Coin",
-        version: chosen.extra?.version ?? "2",
-        chainId: 8453,
-        verifyingContract: chosen.asset as `0x${string}`,
-      },
-      types: {
-        TransferWithAuthorization: [
-          { name: "from", type: "address" },
-          { name: "to", type: "address" },
-          { name: "value", type: "uint256" },
-          { name: "validAfter", type: "uint256" },
-          { name: "validBefore", type: "uint256" },
-          { name: "nonce", type: "bytes32" },
-        ],
-      },
-      primaryType: "TransferWithAuthorization",
-      message: authorization,
-    });
+    let signature: string;
+    try {
+      signature = await signer.signTypedData({
+        domain: {
+          name: chosen.extra?.name ?? "USD Coin",
+          version: chosen.extra?.version ?? "2",
+          chainId: 8453,
+          verifyingContract: chosen.asset as `0x${string}`,
+        },
+        types: {
+          TransferWithAuthorization: [
+            { name: "from", type: "address" },
+            { name: "to", type: "address" },
+            { name: "value", type: "uint256" },
+            { name: "validAfter", type: "uint256" },
+            { name: "validBefore", type: "uint256" },
+            { name: "nonce", type: "bytes32" },
+          ],
+        },
+        primaryType: "TransferWithAuthorization",
+        message: authorization,
+      });
+    } catch (error) {
+      if (!(error instanceof FieldAllocationUnavailable)) throw error;
+      authorizationOutstandingUntil = null;
+      stages.push({stage:"payment",ok:false,detail:"The store could not allocate field-wallet funds. No payment signature was presented; this is a limit of our instrument, not a finding about the seller."});
+      verdict = "unpaid_by_rule";
+      break walk;
+    }
     const paymentHeader = btoa(
       JSON.stringify({
         x402Version: 2,

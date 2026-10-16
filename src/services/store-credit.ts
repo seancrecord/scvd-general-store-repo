@@ -1,3 +1,4 @@
+import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
 import { creditPickup } from "@/lib/credit-terms";
 import { BASE_USDC, rpcEndpoints } from "@/lib/base-rpc";
 import { canonicalAddress } from "@/lib/addresses";
@@ -405,7 +406,7 @@ export async function redeemCredit(
 
   const signer =
     options.signer ??
-    (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+    allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY as string), "credit");
   const authorization = {
     from: signer.address,
     to: record.wallet,
