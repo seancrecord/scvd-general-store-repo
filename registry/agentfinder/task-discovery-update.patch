@@ -1,0 +1,66 @@
+--- a/catalog/seancrecord/scvd-general-store-mcp.json
++++ b/catalog/seancrecord/scvd-general-store-mcp.json
+@@ -2,8 +2,8 @@
+   "identifier": "urn:ai:registry.modelcontextprotocol.io:store.scvd:general-store",
+   "displayName": "SCVD General Store",
+   "mediaType": "application/mcp-server+json",
+-  "url": "https://registry.modelcontextprotocol.io/v0/servers/store.scvd%2Fgeneral-store/versions/0.2.3",
+-  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations.",
++  "url": "https://registry.modelcontextprotocol.io/v0/servers/store.scvd%2Fgeneral-store/versions/0.2.4",
++  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations.",
+   "tags": [
+     "x402",
+     "agentic-commerce",
+@@ -13,9 +13,10 @@
+     "attestation",
+     "mcp",
+     "usdc",
+-    "payments"
++    "payments",
++    "mpp"
+   ],
+-  "version": "0.2.3",
++  "version": "0.2.4",
+   "metadata": {
+     "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+     "repositorySource": "github",
+--- a/catalog/seancrecord/scvd-general-store-plugin.json
++++ b/catalog/seancrecord/scvd-general-store-plugin.json
+@@ -3,13 +3,14 @@
+   "displayName": "SCVD General Store (plugin)",
+   "mediaType": "application/vnd.github.copilot-plugin",
+   "url": "https://github.com/seancrecord/scvd-general-store-repo/blob/main/.claude-plugin/plugin.json",
+-  "description": "Evidence observatory for agentic commerce: x402 preflight, receipt checks, settlement attestations. The store's MCP door and its skill, as one installable plugin.",
++  "description": "Evidence observatory: x402/MPP inspection, signed receipt checks and settlement attestations. Includes the store MCP door and skills for comparing endpoints, diagnosing payment failures and assembling checkable client reports.",
+   "tags": [
+     "x402",
+     "agentic-commerce",
+     "verification",
+     "mcp-server",
+-    "skill"
++    "skill",
++    "mpp"
+   ],
+   "metadata": {
+     "sourceSet": "seancrecord/scvd-general-store-repo",
+--- a/catalog/seancrecord/scvd-general-store.json
++++ b/catalog/seancrecord/scvd-general-store.json
+@@ -3,7 +3,7 @@
+   "displayName": "SCVD General Store",
+   "mediaType": "application/ai-skill",
+   "url": "https://github.com/seancrecord/scvd-general-store-repo/blob/main/skills/scvd-general-store/SKILL.md",
+-  "description": "Evidence observatory for agentic commerce: free x402 preflight of any endpoint, free conformance checks of any issuer's signed offers and receipts, and a live practice counter from $0.001. Every artifact is ed25519-signed and verifies free.",
++  "description": "Compare x402/MPP endpoints, diagnose payment integrations, verify signed evidence for reports, find posted contribution work, or track software costs locally with Tab. Free checks need no wallet; purchases and reservations require the visitor’s decision.",
+   "tags": [
+     "x402",
+     "agentic-commerce",
+@@ -12,7 +12,8 @@
+     "signed-artifacts",
+     "usdc",
+     "payments",
+-    "skill"
++    "skill",
++    "mpp"
+   ],
+   "metadata": {
+     "sourceSet": "seancrecord/scvd-general-store-repo",

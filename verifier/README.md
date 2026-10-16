@@ -26,7 +26,7 @@ Maintainers validating source before publication can run `npm pack ./verifier`
 from the repository root, put the tarball in a new directory, and install it:
 
 ```sh
-npm install ./x402-verify-1.11.0.tgz
+npm install ./x402-verify-1.12.0.tgz
 ```
 
 Structured status fields require 1.4.0 or newer; older versions may not expose
@@ -662,13 +662,13 @@ all signed claims. Read the subject, observation date and gaps from the
 original and check them separately. A valid signature is not a freshness test.
 
 An exact endpoint reading was introduced in 1.6.0. The example below installs
-the report-capable source version 1.11.0 in a separate tooling directory;
+the report-capable source version 1.12.0 in a separate tooling directory;
 check its `--help` for the options you intend to use. If this version is not
 on the registry yet, use a locally qualified source checkout or tarball.
 Older published versions retain their documented JSON verification behavior.
 
 ```sh
-npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.11.0
+npm install --prefix ./tooling --ignore-scripts --no-audit --no-fund x402-verify@1.12.0
 node tooling/node_modules/x402-verify/evidence-cli.mjs --help
 node tooling/node_modules/x402-verify/evidence-cli.mjs verify-source evidence/original.json \
   --public-key TRUSTED_PUBLIC_KEY_HEX --max-bytes 33554432 \

@@ -3214,3 +3214,16 @@ published versions are separate from local edits. Refreshed the source skill
 and generated registry tree without changing publication receipts. Task copy
 names actual package tools and links to existing store answers; paid work
 availability is read from current briefs rather than embedded in listing copy.
+
+
+## 2026-10-16 — package publication follow-through
+
+Read npm's current [provenance documentation](https://docs.npmjs.com/generating-provenance-statements/)
+and the [ClawHub publication documentation](https://docs.openclaw.ai/clawhub).
+Retained the repository's manual publishing workflows, GitHub-hosted provenance
+and immutable version checks. Compared public npm tarball bytes with prepared
+source: scvd-preflight and scvd-corpus-client differ in documentation/manifests;
+scvd-tab differs only in README.md before its documentation version bump.
+Reviewed the verifier diff against published 1.11.0: the changes are bounded
+report generation and CLI options, with core verification bytes unchanged.
+Prepared 1.12.0 as a minor release and retained its runtime-change notes. A source comparison is not proof of registry publication.

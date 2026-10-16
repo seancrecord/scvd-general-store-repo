@@ -1,3 +1,7 @@
+import {readRewardCommitments} from "@/services/reward-commitments";
+import {readAgentTaskUsage} from "@/lib/metrics";
+import {renderAdminShell} from "@/pages/admin/layout";
+import {escapeHtml} from "@/lib/sanitize";
 import {launchFirstContributionRound} from "@/services/contribution-launch";
 import { contributionBoard } from "@/services/contribution-board";
 import { CONTRIBUTION_INDEX_PREFIX, CONTRIBUTION_PAGE_CAP } from "@/store/contribution-tasks";
@@ -96,6 +100,15 @@ adminContributionRoutes.use("*", async (c, next) => {
 adminContributionRoutes.get("/", async c => {
   const index = await adminBoard(c.env, c.req.query("cursor"));
   return c.html(renderContributionDesk(index, null, Date.now(), c.env.STORE_BASE_URL));
+});
+adminContributionRoutes.get("/reports/funding", async c => {
+  const data = await readRewardCommitments(c.env);
+  const rows = data.observed;
+  return c.html(renderAdminShell("bounties", `<h2>Cross-program reward commitments</h2><p>${escapeHtml(data.limits)}</p><p>Read ${escapeHtml(data.read_at)} · ${data.scan_complete ? "Indexed scan completed within its bounds" : "Incomplete scan; a combined total is unavailable"}</p><pre>${escapeHtml(JSON.stringify(data.coverage, null, 2))}</pre>${data.gaps.length ? `<p>Gaps: ${escapeHtml(data.gaps.join(", "))}</p>` : ""}${rows ? `<table><tr><th>Record category</th><th>USDC face value</th></tr><tr><td>Accepted contribution work, unreconciled</td><td>${rows.contributions.accepted_unreconciled_usd}</td></tr><tr><td>Issued contribution authorizations (subset above)</td><td>${rows.contributions.issued_authorization_subset_usd}</td></tr><tr><td>Manual payment reports (subset above)</td><td>${rows.contributions.manual_report_subset_usd}</td></tr><tr><td>Shopping authorizations within expiry</td><td>${rows.shopping_authorization_face_value_usd}</td></tr><tr><td>Study authorizations within expiry</td><td>${rows.study_authorization_face_value_usd}</td></tr><tr><td>Combined reward exposure, without adding subsets twice</td><td>${data.reward_exposure_usd ?? "Unavailable"}</td></tr><tr><td>Conditional contribution reservations/submissions (separate)</td><td>${rows.contributions.conditional_reserved_or_submitted_usd}</td></tr><tr><td>Available contribution slots (separate maximum)</td><td>${rows.contributions.available_slot_maximum_usd}</td></tr></table><p>${rows.contributions.expired_authorizations} expired contribution authorizations need reconciliation.</p>` : "<p>Reward records could not be summarized.</p>"}<p><a href="/admin/bounties">Wallet and money-out desk</a> · <a href="/admin/bounties/contributions">Contribution work</a></p>`));
+});
+adminContributionRoutes.get("/reports/usage", async c => {
+  const data = await readAgentTaskUsage(c.env);
+  return c.html(renderAdminShell("bounties", `<h2>Agent task usage</h2><p>${escapeHtml(data.reading)}</p><p>Month: ${escapeHtml(data.month)}${data.truncated ? " · partial scan" : ""}${data.unreadable ? ` · ${data.unreadable} unreadable counters omitted` : ""}</p><table><tr><th>Task</th><th>Step</th><th>Declared arrival</th><th>HTTP outcome</th><th>Traffic bucket</th><th>Requests recorded</th></tr>${data.rows.map(row => `<tr>${[row.task,row.step,row.arrival,row.outcome,row.bucket,String(row.count)].map(value => `<td>${escapeHtml(value ?? "unknown")}</td>`).join("")}</tr>`).join("")}</table><p><a href="/admin/bounties/contributions">Back to contribution work</a></p>`));
 });
 adminContributionRoutes.get("/:id", async c => {
   const id = c.req.param("id"); if (!validId(id)) return c.json({code: "task_missing", error: "No posted task with that id."}, 404);

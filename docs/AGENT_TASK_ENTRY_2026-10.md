@@ -61,3 +61,47 @@ Pre-release destination audit caught a wrong free-check link: /try is the paid
 practice counter. Task answers, prompts and package/skill text now use the
 actual free preflight contract. A route-level regression first failed on the
 old destination. This correction changes no payment route or price.
+
+
+## Task usage and reward inventory follow-up
+
+Task links retain a bounded task label on `/what`; `/go/task/:id` redirects only
+to the existing configured next step. It accepts no caller destination. Request
+logs and separate monthly task counters distinguish guide reads, handoffs,
+preflight/conformance POST responses and reservation responses. Declared arrival
+is an allowlisted caller claim, never inferred search attribution. Existing house
+and infrastructure classification applies. No raw query, identity, cookie or
+cross-request conversion rate is added. Retries and bots can count; per-isolate
+write limits mean recorded counts are floors. Unreadable counters are disclosed.
+The private contribution desk links to `/reports/usage` and `/reports/funding` under its existing
+authentication gate.
+
+The funding view reads at most 100 indexed records per reward program. It counts
+accepted contribution work once and shows authorization/payment-report subsets
+separately, alongside unexpired shopping/study authorization face values.
+Expired contribution authorizations remain unresolved accepted work. Reservations,
+submissions and available slots are separate conditional amounts. Missing,
+truncated or invalid reads withhold the combined total. Recent KV writes can be
+absent, and the scan is not atomic. No wallet address, signature or report content
+is emitted. Redemption/transaction verification, credits, instrument purchases
+and wallet-key changes remain outside this view: it cannot establish spendable
+balance or approve a higher cap. Shared-wallet allocation and reconciliation
+remain the next funding-control work; no money-moving code changed.
+
+Regression checks first failed for missing handoffs/context/admin page and for
+turning an unavailable counter into zero. Follow-up coverage exercises counter
+persistence without another porch visit, admin access, accepted-work arithmetic,
+expired authorizations and incomplete reads. Tab's published 0.11.3 tarball differs
+from the prepared source only in README.md; 0.11.4 is a documentation release for
+these task examples. Registry publication remains a separate recorded outcome.
+
+
+Release validation: the isolated worktree previously used the main checkout's
+older installed dependency versions. The broader payment-header test failed with
+both pre-change and modified middleware. After installing this branch's lockfile
+in the isolated worktree, all 53 focused checks (including payment-door parity)
+passed, as did typecheck and the build. Tab's 102 tests and 38 listing checks
+passed. Verifier release preparation reviews the two runtime files changed since
+npm 1.11.0; 1.12.0 names the bounded report features, with install examples held
+to the package version by existing tests. Pinned historical bounty and study
+inputs are unchanged. Full CI remains required before merge.

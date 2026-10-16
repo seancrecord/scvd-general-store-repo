@@ -64,3 +64,13 @@ store skill) contribution discovery and local Tab costs. This updates owned
 source files only. Apply these changes to existing PR #34 using its owning
 account after the task-guide release; preserve the current URLs and identifiers.
 No new submission or indexed-result claim is made here.
+
+
+## October 16 task-discovery refresh
+
+The connected GitHub account still has `push: false` on the `cv-scvd` fork.
+The existing PR remains the destination. `task-discovery-update.patch` compares
+all four local descriptors with its head
+`9f5fff8216af4d400f623680da6ad715d2e0d0e5`; the owning account can apply it on
+`add-scvd-general-store`. No duplicate submission was opened and no external
+update or index inclusion is claimed. Local listing validation passes.

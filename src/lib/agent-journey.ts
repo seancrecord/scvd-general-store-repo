@@ -1,3 +1,4 @@
+import {agentTaskUsage} from "@/lib/agent-task-usage";
 import { readerClass } from "@/lib/channel";
 import { porchSurface, porchSurfaceKind } from "@/lib/porch-surface";
 
@@ -20,7 +21,9 @@ export function agentJourneyStep(request: Request, status: number) {
   const study = request.headers.get("X-SCVD-Study");
   const enrolled = request.headers.get("X-SCVD-Study-Consent") === "record"
     && study !== null && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(study);
+  const task = agentTaskUsage(request, status);
   return {
+    ...(task ? {task} : {}),
     version: 1,
     stage,
     surface: surface ?? (paid ? "paid_door" : "unclassified"),

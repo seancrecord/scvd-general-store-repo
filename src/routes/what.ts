@@ -65,6 +65,15 @@ function longTailFaq(base: string, config?: PurchaseCapabilityConfig): FaqPair[]
   });
 }
 
+whatRoutes.get("/go/task/:id", c => {
+  const job = agentJobEntries(c.env.STORE_BASE_URL).find(job => job.id === c.req.param("id"));
+  if (!job) return c.notFound();
+  const next = new URL(job.next_step.url, c.env.STORE_BASE_URL);
+  if (next.origin === new URL(c.env.STORE_BASE_URL).origin) next.searchParams.set("task", job.id);
+  c.header("Cache-Control", "no-store");
+  return c.redirect(next.toString(), 302);
+});
+
 whatRoutes.get("/what", (c) => {
   const base = c.env.STORE_BASE_URL;
   const pairs = whatFaq(base);
@@ -98,7 +107,7 @@ whatRoutes.get("/what", (c) => {
       return `<div class="menu-item"${job ? ` id="job-${job.id}"` : ""}>
         <h2 class="menu-name">${escapeHtml(pair.question)}</h2>
         <p class="menu-desc">${linkStoreUrls(escapeHtml(pair.answer))}</p>
-        ${job ? `<p><a href="${escapeHtml(job.next_step.url)}">${escapeHtml(job.next_step.label)} →</a></p><label for="prompt-${job.id}">Prompt to give your agent (replace bracketed inputs)</label><textarea id="prompt-${job.id}" readonly rows="6" style="width:100%;box-sizing:border-box">${escapeHtml(job.prompt)}</textarea>` : ""}
+        ${job ? `<p><a href="${escapeHtml(`/go/task/${job.id}`)}">${escapeHtml(job.next_step.label)} →</a></p><label for="prompt-${job.id}">Prompt to give your agent (replace bracketed inputs)</label><textarea id="prompt-${job.id}" readonly rows="6" style="width:100%;box-sizing:border-box">${escapeHtml(job.prompt)}</textarea>` : ""}
       </div>`;
     }).join("\n");
     const longTailHtml = longTail

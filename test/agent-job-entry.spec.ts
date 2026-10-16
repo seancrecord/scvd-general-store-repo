@@ -10,7 +10,7 @@ it('takes a homepage visitor directly to the relevant task answer before the pro
   const home = await html('/');
   const faq = await html('/what');
   for (const id of jobs) {
-    const link = `href="/what#job-${id}"`;
+    const link = `href="/what?task=${id}#job-${id}"`;
     expect(home).toContain(link);
     expect(home.indexOf(link)).toBeLessThan(home.indexOf('<section class="shelves">'));
     expect(faq).toContain(`id="job-${id}"`);
@@ -44,14 +44,16 @@ it('carries task routes on the short agent entry documents', async () => {
 it('offers useful free routes from a bounty visit even when work is unavailable', async () => {
   const body = await html('/bounties');
   for (const id of ['expenses','trial-reminders','find-apis','preflight']) {
-    expect(body).toContain(`href="/what#job-${id}"`);
+    expect(body).toContain(`href="/what?task=${id}#job-${id}"`);
   }
 });
 
 it('lets an expense-tracking visitor open Tab setup directly from the answer', async () => {
   const page = await html('/what');
   const answer = page.split('id="job-expenses"')[1]!.split('<div class="menu-item"')[0]!;
-  expect(answer).toContain(`href="${TAB_GUIDE}"`);
+  expect(answer).toContain('href="/go/task/expenses"');
+  const next = await SELF.fetch(base+'/go/task/expenses', {redirect:'manual'});
+  expect(next.headers.get('location')).toBe(TAB_GUIDE);
 });
 
 
