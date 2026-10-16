@@ -49,3 +49,11 @@ it('does not report a complete total when an indexed record disappears during th
   expect(result.reward_exposure_usd).toBeNull();
   expect(result.gaps).toContain('shopping_record_unavailable');
 });
+
+it('preserves sub-cent USDC authorizations in the combined inventory',()=>{
+  const valid = String(Math.floor(now/1000)+1);
+  const bounties = [0.001, 0.000001].map(reward_usd=>({status:'paid',reward_usd,claim:{authorization_valid_before:valid}})) as import('@/services/bounty-board').BountyRecord[];
+  const result=summarizeRewardCommitments([contribution()],bounties,[],now);
+  expect(result.shopping_authorization_face_value_usd).toBe(0.001001);
+  expect(result.reward_exposure_usd).toBe(2.501001);
+});

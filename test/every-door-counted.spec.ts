@@ -80,6 +80,9 @@ const EXEMPT: ReadonlyArray<{ why: string; test: (route: string) => boolean }> =
 
 /** Rooms the porch does not count, by name, each under the reason it is not counted. */
 const UNCOUNTED_TODAY: readonly string[] = [
+  // Task handoffs have their own bounded task counters. The destination
+  // keeps its porch count; the redirect must not add a second visit.
+  "GET /go/task/:id",
   // Private continuation after a public brief read, not fresh discovery.
   // Reservations, reports and outcomes are retained in the task's own record.
   "POST /api/bounties/contributions/:id/reserve",

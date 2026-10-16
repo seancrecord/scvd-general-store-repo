@@ -1,3 +1,4 @@
+import {usdcToAtomic, atomicToUsdc} from '@/lib/payments';
 import {listKeys} from '@/lib/kv-list';
 import {bulkGetJson} from '@/lib/kv-bulk';
 import {KV_KEYS} from '@/lib/kv-keys';
@@ -8,8 +9,8 @@ import type {StudyRecord} from '@/services/field-study';
 import type {Env} from '@/types';
 
 export const REWARD_COMMITMENT_SCAN_CAP = 100;
-function cents(value: number): number {
-  const result = Math.round(value * 100);
+function atomic(value: number): number {
+  const result = Number(usdcToAtomic(value));
   if (!Number.isFinite(value) || value < 0 || !Number.isSafeInteger(result)) throw new Error('Invalid reward amount');
   return result;
 }
@@ -21,7 +22,7 @@ function seconds(value: string): number {
 export function summarizeRewardCommitments(contributions: readonly ContributionTaskState[], bounties: readonly BountyRecord[], studies: readonly StudyRecord[], now: number) {
   let accepted = 0, issued = 0, reported = 0, pending = 0, available = 0, expired = 0;
   for (const task of contributions) {
-    const reward = cents(task.terms.reward_usd);
+    const reward = atomic(task.terms.reward_usd);
     available += reward * publicContribution(task, now).available_slots;
     for (const row of task.reservations) {
       if (row.status === 'accepted' || row.status === 'payment_reported') {
@@ -34,14 +35,14 @@ export function summarizeRewardCommitments(contributions: readonly ContributionT
       } else if (row.status === 'submitted' || row.status === 'reserved' && Date.parse(row.submit_by) > now) pending += reward;
     }
   }
-  const bounty = bounties.reduce((sum, row) => row.status === 'paid' && row.claim && seconds(row.claim.authorization_valid_before) * 1000 > now ? sum + cents(row.reward_usd) : sum, 0);
-  const study = studies.reduce((sum, row) => row.debrief && seconds(row.debrief.authorization_valid_before) * 1000 > now ? sum + cents(row.debrief.reward_usd) : sum, 0);
+  const bounty = bounties.reduce((sum, row) => row.status === 'paid' && row.claim && seconds(row.claim.authorization_valid_before) * 1000 > now ? sum + atomic(row.reward_usd) : sum, 0);
+  const study = studies.reduce((sum, row) => row.debrief && seconds(row.debrief.authorization_valid_before) * 1000 > now ? sum + atomic(row.debrief.reward_usd) : sum, 0);
   if (![accepted, issued, reported, pending, available, bounty, study, accepted+bounty+study].every(Number.isSafeInteger)) throw new Error('Reward total exceeds accounting range');
   return {
-    contributions: {accepted_unreconciled_usd: accepted/100, issued_authorization_subset_usd: issued/100, manual_report_subset_usd: reported/100, expired_authorizations: expired, conditional_reserved_or_submitted_usd: pending/100, available_slot_maximum_usd: available/100},
-    shopping_authorization_face_value_usd: bounty/100,
-    study_authorization_face_value_usd: study/100,
-    reward_exposure_usd: (accepted+bounty+study)/100,
+    contributions: {accepted_unreconciled_usd: atomicToUsdc(String(accepted)), issued_authorization_subset_usd: atomicToUsdc(String(issued)), manual_report_subset_usd: atomicToUsdc(String(reported)), expired_authorizations: expired, conditional_reserved_or_submitted_usd: atomicToUsdc(String(pending)), available_slot_maximum_usd: atomicToUsdc(String(available))},
+    shopping_authorization_face_value_usd: atomicToUsdc(String(bounty)),
+    study_authorization_face_value_usd: atomicToUsdc(String(study)),
+    reward_exposure_usd: atomicToUsdc(String(accepted+bounty+study)),
     spendable_usd: null,
   };
 }
