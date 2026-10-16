@@ -4,6 +4,11 @@ Versions are immutable once published. Minor versions add functions and
 never change an existing function's result shape or an exit code; a
 change to either is a major.
 
+## 0.3.2 — 2026-10-16 (release prepared)
+
+Add a bounded agent task example and a direct link to the matching store guide.
+Documentation only; exported functions and result shapes are unchanged.
+
 ## 0.3.1 — 2026-09-30 (unpublished)
 
 Correct package discovery text to include the existing x402/MPP inspection

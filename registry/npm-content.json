@@ -4,11 +4,11 @@
   "packages": {
     "scvd-preflight": {
       "directory": "x402-preflight",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "files": {
-        "CHANGELOG.md": "70512d76251b4b954ec06d95d29c8feb1d1dfb0ac13bbfc69c3573edd3dd6252",
+        "CHANGELOG.md": "8fd1f7581f0800faa3ee6234016771e426f62e2d5b5ec16dcb94a6f4f88dea72",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
-        "README.md": "50205e2a283df5382a256684cfa0444d1cc6d749c0bd88c32a05dc4f72b6d3dc",
+        "README.md": "84afbbc40f5239f08d144cd52a512cd8a001eff44c99743469b06065085c2178",
         "bin.mjs": "ff92d61a65f6abcd4d0f9e950da127324e4dbfdcebd1ac22fee27b45a1eab5cd",
         "example.mjs": "997aae0b2f8104cb42257c054f6f027fb7a728d15f2b1b8f2cda4fe8291f5c47",
         "fixtures/accepts-empty.json": "aa518ae230051033c30464164ffe56f4ed53807a9911124ac0fb690254750625",
@@ -25,22 +25,22 @@
         "fixtures/unreachable.json": "88553f4d3767b897f07cc2e2ff3c08433f6c38758f8dfc588f82e6b25701c2c5",
         "inspection.d.ts": "64b3d98b1aed4ac13bd164429bbfb27bb67f2ad33f0b229138ec842c3392cb25",
         "inspection.js": "a60e84eb5fc5e9d4a591e15cab17301dcf69d9c0c8338af1c6d1a685aa8f327c",
-        "package.json": "814692055dc3188325d9747184e792a38579c48431b76849a119c002845c2993",
+        "package.json": "45a29428b395b866da02dd67010df7a38f444e1f829e56e02d02c71fd37bde4f",
         "x402-preflight.d.ts": "0ef997af1936a5b0217c712d05390d9732566c2bb3f8b0aeece3b35de77fa49b",
         "x402-preflight.js": "e384a13b761f35b8fe39447cd0d05722ec127e3c48a4792a88e3aa936bab215d"
       }
     },
     "scvd-corpus-client": {
       "directory": "corpus-client",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "files": {
-        "CHANGELOG.md": "13932cd7f8b47eb253c334504c57baa9f8c289f3dc1fabdb33f9af3b89464084",
+        "CHANGELOG.md": "47e9affcc46adc639d26ec0e391bfa18302795793ff19bfd0aa1f9bce94c770e",
         "LICENSE": "21df951c2344fe8a744c433c213caa1e0da451ce50f695716416da2f20428d14",
-        "README.md": "fcc83b665845d578df9fdf96a9f22e3787734a7a4008809f17a484ca764fbb8b",
+        "README.md": "cb2d43607cd4fd51908267a481980e2b14c3d3ce811489c65fa8d5233a9e1e3a",
         "corpus-client.d.ts": "a5934d19acd357ef7470bc029a4099a4f57f4c37468a4bf81ce3bc3cde428bc6",
         "corpus-client.js": "ac1d611d9cb8402eab8b5844628155ffc943ab6e790bfe66c13e14cf89175850",
         "example.mjs": "7c63ee77be161417db325c6f6b7a2a621302df9bc43541b2b390eb7edb560d40",
-        "package.json": "2357c8c1ca16deb3954329d2738146de6a3efc04b52f11cde0856fa3cd3b250f"
+        "package.json": "a43e5064433e298c70641607a94f466e3c66da1e2bb57f740654ed0d5005ecbf"
       }
     },
     "scvd-defects": {
