@@ -1,8 +1,8 @@
 {
-  "version": "3.19.4",
-  "bundle_sha256": "b96158c8f734c680db746a439b72a7bac215d5441ae19ae1f2a1b3c32d4b7faa",
-  "tree_sha256": "768f24a51666f82b17c2f360761b9909c158dc565fb62036d7570dd0fce04397",
-  "published_at": "2026-10-10T23:34:56.926Z",
-  "commit": "6c46246578524ad430a4aef62fa32caddf20c2de",
-  "changelog": "Clearer offers and payment recovery  Adds discovery paths for shopping audits, endpoint watches, evidence reports and custom reviews, with clear outcomes, scope and next steps.  Points buyers to the compact catalogue for current prices, required inputs and availability.  Clarifies native MPP purchasing alongside x402.  Explains where to find recovery handles and how to recover the original purchase without paying again.  Corrects delivery guidance: failures before settlement take no money; failures afterward can leave delivery incomplete."
+  "version": "3.19.5",
+  "bundle_sha256": "7da49b89ba494f367a48170339ed34a55deb1d23acae0e7773cb756c02731266",
+  "tree_sha256": "658ee4c57a1bc96a10aa3577ed9a960f8f0818b6b1b969f674492c327ad5525b",
+  "published_at": "2026-10-16T18:37:44.329Z",
+  "commit": "657f12cf61a51356eba3397baa6fe6e802dd0f06",
+  "changelog": "Add ten bounded task prompts and existing tool routes, clarify contribution eligibility and reward pickup, and point free endpoint checks to the preflight contract."
 }
