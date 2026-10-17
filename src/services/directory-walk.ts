@@ -1,3 +1,4 @@
+import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { payOnce } from "@/lib/pay-fetch";
@@ -344,7 +345,7 @@ export const X402SCAN_READER: DirectoryReader = {
     if (!Number.isFinite(page) || page < 0) return null;
     let signer;
     try {
-      signer = await fieldSignerFromKey(env.FIELD_WALLET_KEY);
+      signer = allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY), "directory_walks");
     } catch {
       return null;
     }

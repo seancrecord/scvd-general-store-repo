@@ -143,6 +143,10 @@ describe("The Opening Day, delivered", () => {
             headers: { "content-type": "application/json" },
           });
         }
+        const rpcBody=init?.body ? JSON.parse(String(init.body)) as {method?:string} : {};
+        if(rpcBody.method === "eth_chainId") return Response.json({result:"0x2105"});
+        if(rpcBody.method === "eth_getBlockByNumber") return Response.json({result:{number:"0x64",timestamp:`0x${(Math.floor(Date.now()/1000)-1).toString(16)}`}});
+        if(rpcBody.method === "eth_call" && String(init?.body).includes("0x70a08231")) return Response.json({result:"0x989680"});
         return inner(input as never, init as never);
       }) as typeof fetch,
     );

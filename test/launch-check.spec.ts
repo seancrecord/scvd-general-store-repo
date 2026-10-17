@@ -1,3 +1,4 @@
+import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
 import { SELF, env } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MENU_ITEMS } from "@/store";
@@ -207,6 +208,15 @@ function fakeSeller(
 const clearScreen = async () => ({ listed: false as const, source: "test screen" });
 
 describe("the walk engine, stage by stage", () => {
+  it("reports unavailable allocation as the store's unpaid limit before presenting a signature",async()=>{
+    const log:SellerLog={requests:[]};
+    const signer=allocatedFieldSigner({...testEnv,FIELD_WALLET_ALLOCATIONS:undefined},await fieldSignerFromKey(TEST_FIELD_KEY),"launch_checks");
+    const check=await performLaunchCheck(testEnv,TARGET,{fetch:fakeSeller(log),signer,screen:clearScreen});
+    expect(check.verdict).toBe("unpaid_by_rule");expect(check.paid_usd).toBe(0);
+    expect(log.requests).toHaveLength(1);expect(log.requests[0]?.payment).toBeFalsy();
+    expect(check.stages.find(s=>s.stage==="payment")).toMatchObject({ok:false,detail:expect.stringContaining("could not allocate")});
+  });
+
   it("settles: real viem signature presented, receipt read, delivery recorded", async () => {
     const log: SellerLog = { requests: [] };
     const check = await performLaunchCheck(testEnv, TARGET, {
@@ -827,6 +837,10 @@ describe("the launch check door", () => {
             { status: 200, headers: { "content-type": "application/json" } },
           );
         }
+        const rpcBody=init?.body ? JSON.parse(String(init.body)) as {method?:string;params?:unknown[]} : {};
+        if(rpcBody.method === "eth_chainId") return Response.json({result:"0x2105"});
+        if(rpcBody.method === "eth_getBlockByNumber") return Response.json({result:{number:"0x64",timestamp:`0x${(Math.floor(Date.now()/1000)-1).toString(16)}`}});
+        if(rpcBody.method === "eth_call" && String(init?.body).includes("0x70a08231")) return Response.json({result:"0x989680"});
         return inner(input as never, init as never);
       }) as typeof fetch,
     );

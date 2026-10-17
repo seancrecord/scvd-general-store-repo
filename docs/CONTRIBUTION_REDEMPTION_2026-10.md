@@ -120,3 +120,12 @@ before implementation. Synthetic receipt tests cover exact pairing, substituted
 payer/recipient/amount/asset/nonce, cancellation without transfer, expired
 original terms, finality, chain/transaction identity, unavailable RPC, private
 route gates and unchanged retained records. Live redemption is not exercised.
+
+
+## Prospective shared allocation
+
+New contribution signatures now pass through the same durable allocation ledger
+as shopping/study rewards, credit cash-outs and paid site checks. This closes
+competition among newly routed authorizations. It does not import older
+obligations or reserve unsigned accepted work; those remain necessary before
+raising caps. [Coverage, expiry rules and rollout](FIELD_WALLET_ALLOCATIONS.md).

@@ -137,6 +137,7 @@
       // the store itself bounds, and the one cap that stays is returned
       // with the reading. services/signal-store.ts.
       { "name": "SIGNALS", "class_name": "SignalStore" },
+      { "name": "FIELD_WALLET_ALLOCATIONS", "class_name": "FieldWalletAllocations" },
       { "name": "CONTRIBUTION_TASKS", "class_name": "ContributionTask" }
     ]
   },
@@ -154,7 +155,8 @@
     { "tag": "v6-counter-ledger", "new_sqlite_classes": ["CounterLedger"] },
     // The signal maps' one writer; the capped KV maps stay as the fail-open path.
     { "tag": "v7-signal-store", "new_sqlite_classes": ["SignalStore"] },
-    { "tag": "v8-contribution-tasks", "new_sqlite_classes": ["ContributionTask"] }
+    { "tag": "v8-contribution-tasks", "new_sqlite_classes": ["ContributionTask"] },
+    { "tag": "v9-field-wallet-allocations", "new_sqlite_classes": ["FieldWalletAllocations"] }
   ],
   "vars": {
     "MPP_CHECKOUT_ENABLED": "true",

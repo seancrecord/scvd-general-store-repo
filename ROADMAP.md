@@ -1,5 +1,19 @@
 # ROADMAP — September 2026
 
+## October 16 — shared allocation for new field-wallet authorizations
+
+All six production Base USDC signing paths now reserve through one SQLite
+Durable Object per paying wallet: contributions, shopping rewards, studies,
+credit cash-outs, launch checks and directory walks. Concurrent requests share
+one total before any signature is issued. Exact retries reuse their hold;
+changed terms or a changed program cannot reuse that nonce. A finalized block's
+balance controls expiry reclamation; signing failures retain their allocation.
+The private funding view shows dated aggregate holds and their coverage limits.
+This covers newly routed authorizations, not legacy promises, unsigned accepted
+work, future credit accrual or external scripts. Existing caps remain unchanged.
+Remaining: migrate legacy obligations and reserve work at commitment time before
+raising capacity. [Implementation and limits](docs/FIELD_WALLET_ALLOCATIONS.md).
+
 ## October 16 — exact contribution reward transaction checks
 
 The contribution desk now offers a read-only check for a supplied redemption

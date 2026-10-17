@@ -1,3 +1,4 @@
+import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
 import {authorizationTypes} from "@x402/evm";
 import {BASE_USDC, rpcEndpoints, usdcBalanceOf} from "@/lib/base-rpc";
 import {fieldSignerFromKey, oracleScreen, type FieldSigner} from "@/services/launch-check";
@@ -16,12 +17,13 @@ export const CONTRIBUTION_REDEMPTION = {
 } as const;
 export async function contributionSigner(env: Env): Promise<FieldSigner> {
   if (!env.FIELD_WALLET_KEY) throw new Error("Contribution payout unavailable");
-  return fieldSignerFromKey(env.FIELD_WALLET_KEY);
+  return allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY), "contributions");
 }
 export async function signContributionReward(env: Env, signer: FieldSigner, authorization: ContributionAuthorization) {
   const screen = await oracleScreen(rpcEndpoints(env), fetch)(authorization.to);
   if (screen.listed !== false) throw new Error("Contribution payout unavailable");
-  // A spot balance check is not a reservation against other programs' promises.
+  // Early liquidity check; the production signer separately allocates against
+  // the shared ledger before issuing this authorization.
   const balance = await usdcBalanceOf(env, signer.address);
   if (balance < BigInt(authorization.value)) throw new Error("Contribution payout unavailable");
   return signer.signTypedData({domain: {...EVM_USDC_DOMAIN, chainId: Number(BASE_NETWORK.split(":")[1]), verifyingContract: BASE_USDC},

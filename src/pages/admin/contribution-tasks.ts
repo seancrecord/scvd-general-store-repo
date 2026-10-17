@@ -1,3 +1,5 @@
+import {atomicToUsdc} from "@/lib/payments";
+import type {readFieldAllocationSummary, FieldAllocationProgram} from "@/services/field-wallet-allocations";
 import {FIRST_CONTRIBUTION_ROUND, FIRST_CONTRIBUTION_MAXIMUM} from "@/services/contribution-launch";
 import {contributionQaBrief} from "@/store/contribution-qa-brief";
 import {CONTRIBUTION_REDEMPTION, privateContributionPayout} from "@/services/contribution-payout";
@@ -120,4 +122,12 @@ export function renderContributionRetry(action: ContributionAdminAction, taskId:
     content += `<button type="submit">Retry this same action</button></form>`;
   } else content += "<p>The request did not match a complete form. No replacement form was generated from unknown fields. Read the current record before preparing another action.</p>";
   return renderAdminShell("bounties", content);
+}
+
+export function renderFieldAllocations(data: Awaited<ReturnType<typeof readFieldAllocationSummary>>) {
+  const title="<h2>Shared wallet allocations</h2>";
+  const limits=`<p>${esc(data.limits)}</p>`;
+  if (!("programs" in data)) return `${title}<p>${data.status === "unprovisioned" ? "The paying wallet is not configured." : "Allocation records are unavailable. No zero balance is inferred."}</p>${limits}`;
+  const labels:Record<FieldAllocationProgram,string>={contributions:"Contribution rewards",shopping:"Shopping rewards",studies:"Field studies",credit:"Store-credit cash-outs",launch_checks:"Paid endpoint checks",directory_walks:"Paid directory reads"};
+  return `${title}<p>${data.started_at ? `Tracking new authorizations since ${esc(data.started_at)}.` : "No new authorizations have been allocated yet. Older obligations are outside this ledger."}</p><table><tr><th>Program</th><th>Holds retained</th><th>USDC held</th></tr>${Object.entries(labels).map(([program,label])=>{const row=data.programs[program]!;return `<tr><td>${esc(label)}</td><td>${row.count}</td><td>${atomicToUsdc(row.amount_atomic)}</td></tr>`;}).join("")}</table><p>Total held: ${atomicToUsdc(data.held_atomic)} USDC. Balance observed: ${data.balance_atomic === null ? "Unavailable" : `${atomicToUsdc(data.balance_atomic)} USDC`}. Observation: ${esc(data.balance_observed_at ?? "None")}. This page does not refresh the chain or release holds.</p>${limits}`;
 }
