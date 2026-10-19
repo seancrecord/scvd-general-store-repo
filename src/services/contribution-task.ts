@@ -1,6 +1,6 @@
 import {reconcileContributionPayment, type ContributionPaymentChecks} from "@/services/contribution-reconciliation";
 import {signContributionAcceptance, type ContributionReceipt} from "@/services/contribution-receipt";
-import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
+import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionFundingWallet, reserveContributionAcceptance, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
 import { DurableObject } from "cloudflare:workers";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { sha256Hex } from "@/lib/idempotency";
@@ -23,6 +23,7 @@ export interface ContributionReservation {
   arrival?: ContributionArrival; updates?: ContributionUpdate[];
   report?: ContributionReport; payout_to?: string; submission_digest?: string; submitted_at?: string;
   review?: {decision: string; reason: string; outcome: string; reference: string; at: string};
+  acceptance_funding?: {id:string; wallet?:string; state:"pending" | "held"; review:NonNullable<ContributionReservation["review"]>};
   payout?: ContributionPayout;
   payment_checks?: ContributionPaymentChecks;
   payment_check_generation?: number;
@@ -94,7 +95,7 @@ export function publicContribution(state: ContributionTaskState, now: number) {
   return {...state.terms, availability_reason: availabilityReason, published_at: state.published_at, purchase_required: false, payment_method: state.terms.payment_method ?? "keeper_paid_base_usdc", redemption: state.terms.payment_method ? CONTRIBUTION_REDEMPTION : null, maximum_reward_usd: Math.round(state.terms.reward_usd * 100) * state.terms.slots / 100, status: state.closed ? "closed" : Date.parse(state.terms.expires_at) <= now ? "expired" : "open", available_slots: availabilityReason === "available" ? state.terms.slots - active.length : 0, pending_review: state.reservations.filter(r => r.status === "submitted").length};
 }
 function ownReservation(task: ContributionTaskState, row: ContributionReservation, now: number) {
-  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.acceptance_receipt ? {acceptance_receipt: row.acceptance_receipt, acceptance_receipt_inputs: {terms: task.terms, report: row.report, review: row.review}} : {}), ...(row.review?.decision === "accepted" ? {acceptance_receipt_state: row.acceptance_receipt ? "issued" : "unavailable"} : {}), ...(row.payment_checks ? {payment_checks: row.payment_checks} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
+  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.acceptance_funding ? {acceptance_funding_state:row.acceptance_funding.state} : {}), ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.acceptance_receipt ? {acceptance_receipt: row.acceptance_receipt, acceptance_receipt_inputs: {terms: task.terms, report: row.report, review: row.review}} : {}), ...(row.review?.decision === "accepted" ? {acceptance_receipt_state: row.acceptance_receipt ? "issued" : "unavailable"} : {}), ...(row.payment_checks ? {payment_checks: row.payment_checks} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
 }
 
 /** The alarm and its tests use the same clock for both expiry and the next due time. */
@@ -160,6 +161,26 @@ export class ContributionTask extends DurableObject<Env> {
     this.save(state);
     return {...observation, saved:true, save_reason:"retained"};
   }
+  /** The durable review intent is the retry identity across the two actors.
+   * A lost reply leaves the work submitted and the same hold recoverable. */
+  private async fundAcceptance(submissionId: string, now: number): Promise<Result> {
+    try {
+      let state=this.read()!, row=state.reservations.find(r=>r.id===submissionId)!;
+      if(!row.acceptance_funding!.wallet) {
+        const wallet=await contributionFundingWallet(this.env);
+        state=this.read()!;row=state.reservations.find(r=>r.id===submissionId)!;
+        if(!row.acceptance_funding!.wallet) {row.acceptance_funding!.wallet=wallet;this.save(state);}
+      }
+      const funding=row.acceptance_funding!;
+      await reserveContributionAcceptance(this.env,funding.wallet!,funding.id,row.payout_to!,state.terms.reward_usd,now);
+      state=this.read()!;row=state.reservations.find(r=>r.id===submissionId)!;
+      if(!row.review) {
+        row.review={...row.acceptance_funding!.review,at:new Date(now).toISOString()};
+        row.status="accepted";row.acceptance_funding!.state="held";this.save(state);
+      }
+      return {status:200,data:ownReservation(state,row,now)};
+    } catch {return {status:503,data:{code:"acceptance_funding_unavailable",error:"Acceptance is pending its funding hold. The same review intent is retained; retry this review. Do not issue a separate payment or change the decision while its funding result is uncertain."}};}
+  }
   /** An immutable intent precedes external I/O. Concurrent presses sign the same
    * nonce; the fresh read after signing preserves intervening notes and alarms. */
   async issueReward(body: Record<string, unknown>, now = Date.now()): Promise<Result> {
@@ -170,9 +191,10 @@ export class ContributionTask extends DurableObject<Env> {
       let row = state?.reservations.find(r => r.id === body.submission_id);
       if (!state || !row || row.status !== "accepted" || state.terms.payment_method !== "signed_authorization" || row.payment) return refuse("not_authorizable", "An accepted submission under signed-authorization terms is required. Existing terms are unchanged.");
       if (row.payout?.signature) return {status: 200, data: ownReservation(state, row, now)};
-      const signer = await contributionSigner(this.env);
+      const signer = await contributionSigner(this.env,row.acceptance_funding?.id);
       state = this.read()!; row = state.reservations.find(r => r.id === body.submission_id)!;
       if (row.payout?.signature) return {status: 200, data: ownReservation(state, row, now)};
+      if (row.acceptance_funding && (row.acceptance_funding.state !== "held" || row.acceptance_funding.wallet?.toLowerCase() !== signer.address.toLowerCase())) return refuse("payout_wallet_changed", "The wallet holding this accepted reward is required. No replacement authorization was made.");
       if (!row.payout) {
         row.payout = {created_at: new Date(now).toISOString(), authorization: {from: signer.address, to: row.payout_to!,
           value: contributionRewardUnits(state.terms.reward_usd), validAfter: "0",
@@ -273,6 +295,11 @@ export class ContributionTask extends DurableObject<Env> {
         boundedBytes(review, CONTRIBUTION_REVIEW_BYTES, "Review");
         if (row.review) return JSON.stringify({...row.review, at: date}) === JSON.stringify(review) ? {status: 200, data: ownReservation(state, row, now)} : refused(409, "review_immutable", "The recorded decision stands. No second decision was stored.");
         if (row.status !== "submitted") return refused(409, "not_submitted", "Review requires a submitted report.");
+        if (row.acceptance_funding && JSON.stringify({...row.acceptance_funding.review,at:date}) !== JSON.stringify(review)) return refused(409,"review_pending","A funding attempt already retains a different review. Retry that original decision; it may already hold funds.");
+        if (body.decision === "accepted" && state.terms.payment_method === "signed_authorization") {
+          if (!row.acceptance_funding) {row.acceptance_funding={id:`${state.terms.id}:${row.id}`,state:"pending",review};this.save(state);}
+          return await this.fundAcceptance(row.id,now);
+        }
         row.review = review; row.status = body.decision;
       } else if (action === "progress") {
         onlyFields(body, ["submission_id", "update_id", "outcome", "note", "reference"]);

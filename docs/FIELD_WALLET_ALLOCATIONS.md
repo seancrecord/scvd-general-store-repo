@@ -55,9 +55,10 @@ The migration provisions a new SQLite-backed Durable Object. Main deployment
 must provision that class before preview version uploads can use it; a preview
 cannot create an unprovisioned class. Missing storage fails closed at signing.
 
-This is prospective authorization coordination, not a complete reservation of
-all obligations. The ledger begins with authorizations routed through this
-version. Older outstanding authorizations, unsigned contribution commitments,
+This is prospective authorization and acceptance coordination, not a complete
+reservation of all obligations. The ledger begins with authorizations routed through this
+version. Older outstanding authorizations and acceptances, work not yet accepted, legacy
+manual-payment contribution commitments,
 credit not yet cashed out, external wallet scripts and direct wallet transfers
 remain outside it. The previous reward inventory is non-atomic and eventually
 consistent; it is deliberately not used as an authoritative opening balance.
@@ -76,3 +77,40 @@ check permits only one. Tests also cover all program buckets, immutable retries,
 expiry against the finalized balance, rollback on insufficient capacity, delayed
 older reads, signing failures, missing storage, invalid terms, production signer
 wiring, private aggregate output and an unpaid launch-check result.
+
+## October 19: funding new signed-authorization acceptances
+
+For signed-authorization briefs, the review desk now saves an immutable acceptance
+intent before requesting a funding hold. It retains the original paying wallet,
+brief/submission identity, recipient and exact reward. The shared wallet actor
+checks these commitments and all existing authorization holds against the same
+finalized balance, then saves the hold before the review becomes accepted.
+Concurrent reviews cannot each claim the same remainder. A failed chain read,
+missing wallet, insufficient balance or uncertain response leaves the review
+pending and the submission intact. This is an operational failure, not a rejected
+report or a change to its published reward criteria and deadlines.
+
+Retrying the saved review recovers the same commitment. A conflicting decision
+cannot replace an uncertain intent that may already have held funds. The private
+desk has a direct retry with the saved fields. A fresh read after external work
+preserves concurrent notes and visitor-digest maintenance. The acceptance date
+is saved when the final decision succeeds; repeated successful reviews retain it.
+
+Issuance binds that commitment to exactly one nonce, recipient, amount and paying
+wallet. The signed authorization and its commitment count once. Wallet rotation
+cannot move a retained commitment or issue a replacement authorization from a
+new wallet. Signing failures keep both identities available for the same retry.
+Existing accepted rows without funding metadata retain their earlier issuance
+path; manual-payment briefs retain their original terms and workflow.
+
+Acceptance holds do not expire with the authorization, because an expired
+signature does not prove the obligation was paid. This version has no release
+operation for these holds: even confirmed desk observations leave them held.
+The aggregate count can include a pending review whose funding response was lost.
+Consequently the ledger may conservatively count already-paid rewards against a
+balance which already reflects their debit. Settlement-aware release is a next
+step, with exact payment evidence and a compatible finalized balance required.
+
+Still outstanding: funding before workers reserve/start work, exact import or
+resolution of older/manual obligations, uncash-out credit and external spenders.
+No cap increase, new brief, automatic acceptance or payment is introduced.

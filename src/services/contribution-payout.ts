@@ -1,4 +1,4 @@
-import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
+import {allocatedFieldSigner, allocationLedger} from "@/services/field-wallet-allocations";
 import {authorizationTypes} from "@x402/evm";
 import {BASE_USDC, rpcEndpoints, usdcBalanceOf} from "@/lib/base-rpc";
 import {fieldSignerFromKey, oracleScreen, type FieldSigner} from "@/services/launch-check";
@@ -15,9 +15,16 @@ export const CONTRIBUTION_REDEMPTION = {
   network: BASE_NETWORK, asset: BASE_USDC, validity_seconds: CONTRIBUTION_AUTH_SECONDS,
   instructions: "Before reserving, arrange Base ETH for your own redemption or a submitter willing to pay gas. SCVD pays no gas and provides no sponsored route. After acceptance and keeper approval, retrieve the signed transferWithAuthorization through private status and submit it on Base before its validBefore time. Anyone may submit; the signed recipient cannot be changed. An authorization is not a received payment. Verify the on-chain transfer independently. Expired authorizations are not automatically replaced.",
 } as const;
-export async function contributionSigner(env: Env): Promise<FieldSigner> {
+export async function contributionSigner(env: Env, commitmentId?: string): Promise<FieldSigner> {
   if (!env.FIELD_WALLET_KEY) throw new Error("Contribution payout unavailable");
-  return allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY), "contributions");
+  return allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY), "contributions", commitmentId);
+}
+export async function contributionFundingWallet(env: Env) {
+  if (!env.FIELD_WALLET_KEY) throw new Error("Contribution funding unavailable");
+  return (await fieldSignerFromKey(env.FIELD_WALLET_KEY)).address;
+}
+export async function reserveContributionAcceptance(env: Env, wallet: string, id: string, recipient: string, reward: number, now: number) {
+  return allocationLedger(env,wallet).commitContribution(wallet,id,recipient,contributionRewardUnits(reward),now);
 }
 export async function signContributionReward(env: Env, signer: FieldSigner, authorization: ContributionAuthorization) {
   const screen = await oracleScreen(rpcEndpoints(env), fetch)(authorization.to);

@@ -31,7 +31,13 @@ async function accepted() {
  const key='a'.repeat(64),payout_to=`0x${'3'.repeat(40)}`;
  const r=await store.act('reserve',{reservation_key:key},'fixture',now);
  await store.act('submit',{reservation_key:key,payout_to,report:{attempted:'Fixture steps',environment:'Synthetic only',expected:'A documented response',observed:'Response obtained',evidence:'Fixture timestamp and result',suggestion:'No change needed'}},'',now);
- await store.act('review',{submission_id:r.data.submission_id,decision:'accepted',reason:'Matches the agreed criteria',outcome:'no_change',reference:'https://scvd.store/what'},'',now);
+ // Retained pre-funding acceptance: these tests isolate issuance and legacy retries.
+ await runInDurableObject(store,async(_,state)=>{
+  const record=JSON.parse(state.storage.sql.exec<{data:string}>("SELECT data FROM task WHERE id=1").one().data);
+  record.reservations[0].status='accepted';
+  record.reservations[0].review={decision:'accepted',reason:'Matches the agreed criteria',outcome:'no_change',reference:'https://scvd.store/what',at:new Date(now).toISOString()};
+  state.storage.sql.exec("UPDATE task SET data=? WHERE id=1",JSON.stringify(record));
+ });
  return {store,key,id:r.data.submission_id!};
 }
 
