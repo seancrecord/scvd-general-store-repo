@@ -31,6 +31,7 @@ export const CONTRIBUTION_SCHEMAS = {
     ...Object.fromEntries(["task_id", "submission_id", "status", "reserved_at", "submit_by", "task_kind", "arrival_goal"].map(k => [k, text])),
     reward_usd: {type: "number"}, review_due_at: {type: ["string", "null"]}, payment_due_at: {type: ["string", "null"]},
     review: {type: "object", properties: Object.fromEntries(["decision", "reason", "outcome", "reference", "at"].map(k => [k, text]))},
+    acceptance_funding_state: {type:"string",enum:["pending","held"],description:"Present for newly funded signed-authorization acceptances. Pending work remains submitted; held is an internal funding reservation, not payment or full wallet coverage."},
     payout: ref("ContributionPayout"), acceptance_receipt: ref("ContributionAcceptanceReceipt"), acceptance_receipt_inputs: {type: "object", description: "Private original objects for independent digest comparison; never published on the board.", properties: {terms: {type: "object"}, report: ref("ContributionReportStrings"), review: {type: "object"}}}, acceptance_receipt_state: {type: "string", enum: ["issued", "unavailable"]},
     payment: {type: "object", properties: {tx_hash: text, at: text, verification: {type: "string", const: "not_checked"}}},
     updates: {type: "array", maxItems: CONTRIBUTION_UPDATE_CAP, description: "Append-only keeper follow-through; original review and payment deadline remain unchanged.", items: {type: "object", properties: Object.fromEntries(["update_id", "outcome", "note", "reference", "at"].map(k => [k, text]))}},

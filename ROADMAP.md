@@ -1,5 +1,17 @@
 # ROADMAP — September 2026
 
+## October 19 — reserve funding before signed contribution acceptance
+
+New signed-authorization acceptances reserve their exact reward through the shared
+wallet ledger before the final review is saved. Lost responses recover the same
+review and hold; payout issuance binds one nonce without counting the reward twice.
+The private desk exposes pending funding and a retry of the retained decision.
+Acceptance holds remain through authorization expiry and payment observations;
+release on verified settlement is still outstanding. Existing manual terms and
+older acceptances retain their paths. Next: reconcile/release exact paid holds,
+fund work before reservation, and resolve old obligations before increasing caps.
+[Implementation and limits](docs/FIELD_WALLET_ALLOCATIONS.md).
+
 ## October 16 — shared allocation for new field-wallet authorizations
 
 All six production Base USDC signing paths now reserve through one SQLite

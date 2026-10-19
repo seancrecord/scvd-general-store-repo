@@ -15,7 +15,7 @@ function args(i=1,amount="6000000",until=seconds+100):Parameters<FieldSigner["si
 let actor:ReturnType<typeof allocationLedger>;
 beforeEach(async()=>{
  actor=allocationLedger(bindings,wallet);
- await runInDurableObject(actor,async(_,state)=>{state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
+ await runInDurableObject(actor,async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
  vi.spyOn(rpc,"getFinalizedBlockNumber").mockResolvedValue(100);
  vi.spyOn(rpc,"getBlockTimestamp").mockResolvedValue(new Date(now-1000));
  vi.spyOn(rpc,"usdcBalanceOf").mockResolvedValue(10000000n);
@@ -126,7 +126,7 @@ it("the production contribution signer allocates before returning a real signatu
  const {contributionSigner}=await import("@/services/contribution-payout");
  const signer=await contributionSigner({...bindings,FIELD_WALLET_KEY:"11".repeat(32)});
  const ledger=allocationLedger(bindings,signer.address);
- await runInDurableObject(ledger,async(_,state)=>{state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
+ await runInDurableObject(ledger,async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
  const a=args();a.message.from=signer.address;
  expect(await signer.signTypedData(a)).toMatch(/^0x[0-9a-f]{130}$/i);
  expect((await ledger.summary()).held_atomic).toBe("6000000");
@@ -158,4 +158,62 @@ it("renders unavailable allocation storage without claiming zero holds",async()=
  const {renderFieldAllocations}=await import("@/pages/admin/contribution-tasks");
  const body=renderFieldAllocations({status:"unavailable",limits:"Coverage limits"});
  expect(body).toContain("Allocation records are unavailable");expect(body).not.toContain("Total held: 0");
+});
+
+const commitmentId=(i:number)=>`brief:${i.toString(16).padStart(8,"0")}-0000-4000-8000-000000000000`;
+async function commit(i=1,amount="6000000",to=recipient) {
+ return runInDurableObject(actor,async instance=>{
+  try{return await instance.commitContribution(wallet,commitmentId(i),to,amount,now);}catch{return {error:"refused"};}
+ });
+}
+it("shares accepted contribution holds with concurrent authorizations from other programs",async()=>{
+ const results=await Promise.all([commit(),reserve(2,"studies")]);
+ expect(results.filter(r=>"reserved" in r)).toHaveLength(1);
+ expect((await actor.summary()).held_atomic).toBe("6000000");
+});
+it("retains one exact commitment across response loss and refuses rebinding its amount or recipient",async()=>{
+ expect(await commit()).toMatchObject({reserved:true,reused:false});
+ vi.mocked(rpc.usdcBalanceOf).mockRejectedValue(new Error("offline"));
+ expect(await commit()).toMatchObject({reserved:true,reused:true});
+ expect(await commit(1,"1")).toHaveProperty("error");
+ expect(await commit(1,"6000000",wallet)).toHaveProperty("error");
+ expect((await actor.summary()).contribution_commitments).toBe(1);
+});
+it("counts an accepted reward once when signing, and keeps its debt held after authorization expiry",async()=>{
+ await commit();
+ await runInDurableObject(actor,async instance=>expect(await instance.reserve(wallet,"contributions",args(),now,commitmentId(1))).toMatchObject({reserved:true}));
+ expect((await actor.summary()).held_atomic).toBe("6000000");
+ expect(await reserve(2,"credit","4000000")).toMatchObject({reserved:true});
+ vi.mocked(rpc.getFinalizedBlockNumber).mockResolvedValue(101);
+ vi.mocked(rpc.getBlockTimestamp).mockResolvedValue(new Date(now+101000));
+ expect(await reserve(3,"credit","5000000",now+200000,seconds+500)).toHaveProperty("error");
+ expect(await reserve(3,"credit","4000000",now+200000,seconds+500)).toMatchObject({reserved:true});
+ expect((await actor.summary()).held_atomic).toBe("10000000");
+});
+it.each(["amount","recipient","program","missing"])("refuses a %s mismatch when signing against accepted work",async kind=>{
+ await commit();const a=args();if(kind==="amount")a.message.value="1";if(kind==="recipient")a.message.to=wallet;
+ const result=await runInDurableObject(actor,async instance=>{
+  try {await instance.reserve(wallet,kind==="program"?"studies":"contributions",a,now,commitmentId(kind==="missing"?2:1));return "signed";}catch{return "refused";}
+ });
+ expect(result).toBe("refused");expect((await actor.summary()).held_atomic).toBe("6000000");
+});
+it("binds one nonce to a commitment even when competing signing requests race",async()=>{
+ await commit();
+ const results=await runInDurableObject(actor,async instance=>Promise.all([1,2].map(async i=>{
+  try{await instance.reserve(wallet,"contributions",args(i),now,commitmentId(1));return "signed";}catch{return "refused";}
+ })));
+ expect(results.sort()).toEqual(["refused","signed"]);expect((await actor.summary()).held_atomic).toBe("6000000");
+});
+it("the production contribution signer consumes its acceptance hold without allocating twice",async()=>{
+ vi.spyOn(Date,"now").mockReturnValue(now);
+ const {contributionSigner}=await import("@/services/contribution-payout");
+ const local={...bindings,FIELD_WALLET_KEY:"11".repeat(32)},signer=await contributionSigner(local,commitmentId(1));
+ const ledger=allocationLedger(local,signer.address);
+ await runInDurableObject(ledger,async(instance,state)=>{
+  state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");
+  await instance.commitContribution(signer.address,commitmentId(1),recipient,"6000000",now);
+ });
+ const a=args();a.message.from=signer.address;
+ expect(await signer.signTypedData(a)).toMatch(/^0x[0-9a-f]{130}$/i);
+ expect((await ledger.summary()).held_atomic).toBe("6000000");
 });

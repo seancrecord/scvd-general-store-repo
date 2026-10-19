@@ -142,7 +142,7 @@ async function adminFormAction(c: Context<HonoEnv>, action: ContributionAdminAct
     if (!form || response.status < 400) return response;
     const result: unknown = await response.json();
     const error = isRecord(result) && typeof result.error === "string" ? result.error : "The action could not be completed.";
-    return c.html(renderContributionRetry(action, id, body, error, false), response.status as 400 | 404 | 409);
+    return c.html(renderContributionRetry(action, id, body, error, response.status >= 500), response.status as 400 | 404 | 409 | 503);
   } catch (error) {
     if (!form) throw error;
     const invalid = error instanceof ContributionInputError;
