@@ -19,10 +19,11 @@ import type { CertificateRecord, Env, PayerRecord } from "@/types";
  * certificates said 94 plus the penny pages.
  *
  * We do track it. The per-settle records (KV_KEYS.payerSettle) are
- * one key per settlement, written once, and cannot lose one; the
- * certificates carry the amount and the rail. The tallies were the
- * only lossy witness, and they were the ones the storefront read.
- * This walks the lossless witnesses, computes what every tally
+ * one key per settlement and avoid shared-counter overwrite races; an
+ * interrupted request can still omit its record. Confirmed x402 purchase
+ * recovery now retains that missing evidence before retiring its alarm. The
+ * certificates carry the amount and the rail. This walks retained
+ * evidence, computes the floor each eligible tally
  * should hold, and lifts any that are short — never lowers one,
  * never touches a tally the records cannot speak for.
  *

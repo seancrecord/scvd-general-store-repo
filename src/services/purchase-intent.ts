@@ -76,6 +76,8 @@ export interface PurchaseIntent {
   /** Retained before submission; bookkeeping must survive delivery and lost acknowledgements. */
   gateway_house?: boolean;
   mpp?: { challenge_id: string; house: boolean; accounted?: true };
+  /** Retained before submission so x402 accounting can outlive the request. */
+  x402?: { house?: boolean; accounted?: true };
 
 }
 
@@ -286,7 +288,7 @@ type PurchaseInput = {
   idempotency?: { surface: string; key: string };
   terms: PaymentRequirements; request: string; item?: MenuItem; commission?: CommissionPurchase; publication?: PublicationSnapshot;
   mpp?: PurchaseIntent["mpp"];
-  gateway_house?: boolean;
+  house?: boolean;
 };
 
 /** Called only after x402 verification, at the last seam before settlement. */
@@ -335,7 +337,9 @@ export async function beginVerifiedPurchaseIntent(env: Env, input: PurchaseInput
     const result = await purchaseIntentStore(env, id).beginPurchase(JSON.stringify({ version: 2, id,
       payment_context: input.payment, request_digest: requestDigest,
       ...(input.mpp ? { mpp: input.mpp } : {}),
-      ...(input.terms.network === ARC_NETWORK ? { gateway_house: input.gateway_house ?? isHouseTraffic(env, { payer }) } : {}),
+      ...(input.payment.protocol === "x402" && input.terms.network !== ARC_NETWORK
+        ? { x402: { house: input.house ?? isHouseTraffic(env, { payer }) } } : {}),
+      ...(input.terms.network === ARC_NETWORK ? { gateway_house: input.house ?? isHouseTraffic(env, { payer }) } : {}),
       token: crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", ""),
       path: input.path, door: input.door, payer, terms: input.terms, request: input.request,
       payment_proof: input.payment.proof_digest,

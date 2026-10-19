@@ -733,6 +733,12 @@ The store's standing documents, so nobody needs `ls` to find them:
   reconciliation catches money the books never saw. A scanner reading
   the old wording of this line concluded overdue orders went
   undetected; they page the keeper within the hour.
+- Confirmed x402 purchase recovery retains a missing settlement record even
+  after delivery and retries failed bookkeeping. It does not replay counters
+  that may already have advanced; the hourly raise lifts eligible legacy
+  counters from retained records and certificates. The admin reconciliation
+  subtracts the founding allowance before reporting any unexplained residue.
+  [October 19 correction and evidence](docs/X402_RECOVERY_ACCOUNTING_2026-10-19.md).
 - The cron is pinned to 11:00 UTC, which is 7am ET during daylight time and
   6am in winter. The keeper is asleep either way.
 - Workers KV has no atomic increments. Patron numbers are allocated by

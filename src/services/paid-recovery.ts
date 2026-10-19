@@ -27,6 +27,7 @@ import { purchaseRecoveryAlarmAt } from "@/lib/purchase-recovery-clock";
 import { supportsArtifactRecovery } from "@/lib/artifact-checkpoint";
 import { evmChainOf } from "@/lib/base-rpc";
 import { purchaseProtocol, type PurchaseIntent } from "@/services/purchase-intent";
+import { needsX402Accounting, retainX402Settlement } from "@/services/x402-recovery-accounting";
 import { DurableObject } from "cloudflare:workers";
 import type { SettledPayment } from "@/lib/payments";
 import { kvPut } from "@/lib/kv-retry";
@@ -262,7 +263,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     return this.ctx.storage.transaction(async (txn) => {
       const prior = await txn.get<PurchaseIntent>("purchase");
       if (prior) {
-        if ((!prior.delivery || gatewayNeedsCheck(prior.payment?.gateway) || (prior.mpp && !prior.mpp.accounted)) && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
+        if ((!prior.delivery || gatewayNeedsCheck(prior.payment?.gateway) || (prior.mpp && !prior.mpp.accounted) || needsX402Accounting(prior)) && prior.state !== "not_settled" && !await txn.getAlarm()) await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
         return { started: false, record: JSON.stringify(prior) };
       }
       if (proposal.observation_digest) {
@@ -414,6 +415,17 @@ export class PaidRecoveryStore extends DurableObject<Env> {
     });
   }
 
+  async accountX402Purchase(): Promise<void> {
+    const record = await this.ctx.storage.get<PurchaseIntent>("purchase");
+    if (!record || !needsX402Accounting(record)) return;
+    await retainX402Settlement(this.env, record);
+    await this.ctx.storage.transaction(async txn => {
+      const latest = await txn.get<PurchaseIntent>("purchase");
+      if (latest) await txn.put("purchase", { ...latest,
+        x402: { ...latest.x402, accounted: true } });
+    });
+  }
+
   /** Same paid journal as recovery, so a lost response never mints a second good. */
   async completeMppPurchase(delivery: Record<string, unknown>): Promise<void> {
     await this.ctx.storage.transaction(async txn => {
@@ -428,7 +440,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
   async schedulePurchaseRecovery(): Promise<void> {
     await this.ctx.storage.transaction(async (txn) => {
       const record = await txn.get<PurchaseIntent>("purchase");
-      if (record && (!record.delivery || gatewayNeedsCheck(record.payment?.gateway) || (record.mpp && !record.mpp.accounted)) && record.state !== "not_settled" && !await txn.getAlarm()) {
+      if (record && (!record.delivery || gatewayNeedsCheck(record.payment?.gateway) || (record.mpp && !record.mpp.accounted) || needsX402Accounting(record)) && record.state !== "not_settled" && !await txn.getAlarm()) {
         await txn.setAlarm(purchaseRecoveryAlarmAt(60_000));
       }
     });
@@ -456,6 +468,11 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       } catch { return; }
       if (record.state === "not_settled") { await this.updatePurchase({}); await this.ctx.storage.deleteAlarm(); return; }
       if (record.state === "unknown") return;
+    }
+    // The accounting obligation also covers goods this alarm cannot recreate.
+    if (needsX402Accounting(record)) {
+      await this.ctx.storage.setAlarm(purchaseRecoveryAlarmAt(300_000));
+      await this.accountX402Purchase();
     }
     if (record.delivery) {
       if (record.mpp && !record.mpp.accounted) {
@@ -491,6 +508,7 @@ export class PaidRecoveryStore extends DurableObject<Env> {
       }
       // Complete the durable accounting obligation even when the goods already exist.
       if (latest.mpp) await this.accountMppPurchase();
+      if (needsX402Accounting(latest)) await this.accountX402Purchase();
       const delivery = await deliverRecordedPurchase(this.env, latest);
       if (!delivery) return;
       await this.ctx.storage.transaction(async (txn) => {

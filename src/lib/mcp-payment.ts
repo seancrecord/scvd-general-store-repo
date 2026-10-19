@@ -589,7 +589,7 @@ export async function runMcpPayment(
 
   const settle = async (): Promise<SettledPayment> => {
     if (alreadySettled) return alreadySettled;
-    const purchase = await beginPurchaseIntent(env, { path, door: "mcp", payer: verifiedPayer, gateway_house: isHouseTraffic(env, { ...signals, payer: verifiedPayer }),
+    const purchase = await beginPurchaseIntent(env, { path, door: "mcp", payer: verifiedPayer, house: isHouseTraffic(env, { ...signals, payer: verifiedPayer }),
       terms: verifiedRequirementsForSettle, payload: verifiedPayloadForSettle,
       request: askedFor ?? "{}", item: getMenuItem(itemId), idempotency });
     recoveryHandle = purchaseRecovery(env, purchase);

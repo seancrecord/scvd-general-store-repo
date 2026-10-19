@@ -146,8 +146,12 @@ function settlesHtml(r: SettleReconciliation | null): string {
     <p><small>All-time on both sides: payer rows carry no month, so a
     month-window compare would manufacture a discrepancy every time the
     calendar turned. "Purchases on the payer rows" is the larger of each
-    wallet's row and its per-settle records. A certificate without a matching legacy record needs its payment protocol and settlement checked first.
+    wallet's row and its per-settle records. The founding allowance is already subtracted from "unexplained";
+    it does not explain a residual left after that subtraction. A certificate without a matching legacy record needs its payment protocol and settlement checked first.
     The certificate backfill at <code>POST /admin/repair/payer-settles</code> only imports evidence it can classify as x402.
+    Purchase recovery also retains a missing x402 settlement record from a confirmed payment, including after delivery.
+    It retries a failed record write without replaying counter increments; the hourly raise lifts eligible counters from retained evidence.
+    Record repair and counter repair can therefore become visible at different times. A temporary agreement between them is not a completed reconciliation.
     One shape the counters alone can produce: a settle the till booked as house by user-agent or header, whose
     record the raise read as organic before 2026-10-02 and lifted onto the organic tally as well — one record,
     two counter settles. The sale events (<code>sellevt:</code>, 90 days) carry <code>house</code> and <code>payer</code>
