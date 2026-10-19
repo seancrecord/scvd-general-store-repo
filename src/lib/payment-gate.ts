@@ -1553,7 +1553,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     query.delete("payment_payload");
     const purchase = (menuItem || publication) ? await beginPurchaseIntent(c.env, {
       path: c.req.path, door: "http", terms: verifiedRequirements, payload: verifiedPayload,
-      gateway_house: isHouseTraffic(c.env, { ...gateSignals(c), payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot) }),
+      house: isHouseTraffic(c.env, { ...gateSignals(c), payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot) }),
       ...(idempotencyKey ? { idempotency: { surface: await idempotencyScope(c.req.path, query, bodyDigest), key: idempotencyKey } } : {}),
       payer: payerOfVerifiedRequest(verifiedPayload, verifiedRequirements.network, declineSlot),
       request: query.toString(), item: commission && menuItem ? { ...menuItem, price_usdc: commission.quote_usdc } : menuItem, ...(commission ? { commission } : {}), ...(publication ? { publication } : {}),

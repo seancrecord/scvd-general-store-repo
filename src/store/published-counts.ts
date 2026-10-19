@@ -98,7 +98,7 @@ const CLOSED_MONTH = "the closed calendar month the entry names, UTC";
  * match the document is a register describing a different response.
  */
 const STORE_MONTH_FIGURE = "entries[].document.figures.";
-const TILL = "the till, in the call that produces the organic count (lib/metrics.ts recordSettle)";
+const TILL = "the till (lib/metrics.ts recordSettlementKeyed), with eligible legacy counter floors raised hourly from retained settlement records and certificates (services/counter-raise.ts); confirmed x402 purchase recovery retains missing records without replaying counter increments";
 const PORCH = "the porch counter on every counted surface (lib/metrics.ts recordPorchVisit, lib/porch-surface.ts)";
 const PORCH_FLOOR =
   "the porch records at most 100 visits a minute per isolate and drops the rest; the monthly ledger scans at most 5,000 keys and says when it hit the cap";
