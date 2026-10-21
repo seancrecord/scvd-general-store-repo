@@ -2907,7 +2907,7 @@ const CONTRIBUTION_COMPLETION_SCHEMA: OpenApiObject = {
     kind: { type: "string", enum: ["bounty", "field_study", "contribution"] },
     reward_usd: { type: "number" },
     reward_state: { type: "string", enum: ["authorized", "accepted_pending_payment", "payment_reported", "authorization_issued"] },
-    redemption_state: { type: "string", const: "not_observed" },
+    redemption_state: { type: "string", enum: ["not_observed", "finalized_observed"] },
     reward_note: { type: "string" },
     what_was_verified: { type: "string" },
     what_was_not: { type: "string" },

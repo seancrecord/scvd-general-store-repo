@@ -33,7 +33,7 @@ USDC balance at that same block. That balance includes any redemption which
 landed before expiry. Pruning and the new allocation commit together; a refused
 allocation leaves the old ledger intact.
 
-Live authorizations remain counted even after redemption. That is conservative:
+Unlinked live authorizations remain counted even after redemption. That is conservative:
 a later balance may reflect the debit while its unexpired hold remains. No
 confirmation observation from the contribution desk releases these holds early.
 The ledger does not equate an issued signature or consumed nonce with payment.
@@ -104,13 +104,57 @@ Existing accepted rows without funding metadata retain their earlier issuance
 path; manual-payment briefs retain their original terms and workflow.
 
 Acceptance holds do not expire with the authorization, because an expired
-signature does not prove the obligation was paid. This version has no release
+signature does not prove the obligation was paid. The October 19 version had no release
 operation for these holds: even confirmed desk observations leave them held.
 The aggregate count can include a pending review whose funding response was lost.
 Consequently the ledger may conservatively count already-paid rewards against a
-balance which already reflects their debit. Settlement-aware release is a next
-step, with exact payment evidence and a compatible finalized balance required.
+balance which already reflects their debit. The October 21 addition below provides settlement-aware release, with exact
+payment evidence and a compatible finalized balance required.
 
 Still outstanding: funding before workers reserve/start work, exact import or
 resolution of older/manual obligations, uncash-out credit and external spenders.
 No cap increase, new brief, automatic acceptance or payment is introduced.
+
+
+## October 21: releasing a paid contribution hold
+
+The separate **Reconcile funding hold** action on the private contribution desk
+uses the original wallet and commitment, even after wallet rotation. It requires
+an accepted contribution with a held commitment and issued authorization. Older
+acceptances without a commitment and manual-payment briefs cannot use this path.
+The existing transaction check remains observational and never releases funding.
+
+The ledger itself reads the supplied receipt, requires the matching Base chain,
+canonical USDC AuthorizationUsed/Transfer pair, exact payer, recipient, nonce and
+atomic amount, and a successful transaction. The receipt must be at or below a
+fresh finalized balance block. Its block hash must match the canonical header at
+that height. Missing, stale, inconsistent, reverted, canceled, unpaired or
+unfinalized evidence keeps the hold. This trusts the configured RPC observations;
+it is not independent consensus verification or a promise against chain failure.
+
+Release and advancement of the retained balance floor share a single SQLite
+transaction. Older in-flight allocations cannot subsequently spend the pre-debit
+balance. A newer retained balance overtaking a release refuses the stale release.
+Actual payment can still be reconciled when other remaining obligations exceed
+that observed balance; this does not authorize new spending.
+
+The ledger retains commitment and nonce identities permanently. Same-transaction
+retries return the original dated release without another chain read; changed
+transactions and attempts to re-fund or re-sign the released identity fail.
+If the desk save fails after ledger success, retrying repairs the private task
+record without releasing twice. The task is reread after I/O to preserve notes.
+This action neither signs nor broadcasts and needs no current wallet key.
+
+The private worker status includes only the release transaction, receipt block
+and read time; treasury balance and ledger metadata remain on the private keeper
+desk. Public briefs expose no release evidence. The funding report counts active
+and released commitments separately and still claims no spendable balance.
+Accepted status, reward terms, review date, payment deadline and existing payment
+observations remain unchanged. No new signed certificate is implied by this
+internal reconciliation; the existing acceptance receipt retains its own scope.
+
+Regression coverage includes concurrent retries, delayed stale allocations,
+overtaken releases, atomic rollback, interrupted task saves, exact payment
+mismatches, canonical-block lookup, route authentication and private/public
+separation. The stale-allocation test is witnessed failing when the atomic balance
+floor update is removed, then passing when restored.
