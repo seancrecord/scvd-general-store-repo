@@ -292,3 +292,40 @@ payment deadlines remain unchanged.
 Removing the imported-issuance capacity check allows a six-USDC signature while
 twelve USDC is held against ten; the regression detects that authorization and
 passes after the check is restored.
+
+
+## Private funding-gap inventory
+
+The existing authenticated funding report now separates accepted manual-payment
+terms from signed-authorization terms. The manual total and the subset without a
+payment report overlap the gross accepted-work total; a reported transaction is
+not a verified payment and does not reduce exposure. This does not import manual
+obligations into the allocation coordinator or release them.
+
+Accrued credit is read directly from the bounded `credit:` prefix using the existing
+KV list/bulk helpers. The scan cap is `CREDIT_INVENTORY_SCAN_CAP` in
+`src/services/credit-inventory.ts`. It retains integer atomic amounts and formats
+USDC without floating-point rounding. No wallet, claim identifier or storage error
+is rendered. The report shows its read time, listed/valid record counts, truncation
+and fixed gap categories. Missing, invalid or unreadable rows and unfinished scans
+suppress the complete credit total while preserving explicitly partial observations.
+The existing outstanding aggregate is not substituted for missing records.
+
+Opening this page never calls the expiry-writing balance reader, expires credit,
+signs an authorization or sends a payment. Idle-expiry-due stored balances stay in
+the observed total, with the expiry subset shown separately. The existing idle
+period comes from `CREDIT_IDLE_EXPIRY_DAYS`; the report uses one injected observation
+time. Claim markers are counted only as markers. They can survive signing, and a
+zeroed credit record cannot tell this report whether an authorization was redeemed.
+
+The credit view is separate from reward exposure and from shared wallet holds.
+Those observations are non-atomic, eventual and potentially overlapping; adding
+them would imply an assurance this instrument cannot provide. Credit accrual is
+still outside the coordinator. External spenders and earlier other-program debt
+remain unaccounted for by this change. No full liability or spendable balance is
+published, and no cap or payment term changes.
+
+Validation covers idle-boundary handling, dust and large integer amounts, claim
+markers, invalid/missing records, truncation, storage failure and the existing admin
+gate. The new manual breakdown and rendered credit regressions fail against the
+previous source and pass when the changes are restored.
