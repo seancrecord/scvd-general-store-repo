@@ -83,9 +83,10 @@ for (const action of ["reserve", "submit", "status", "release"] as const) {
     const state = result.data.status;
     const completion = result.status === 200 && (state === "accepted" || state === "payment_reported") ? contributionCompletion(c.env.STORE_BASE_URL, {
       kind: "contribution", contribution_kind: result.data.task_kind, arrival_goal: result.data.arrival_goal, task_id: id, reward_usd: Number(result.data.reward_usd),
+      finalized_redemption_observed: !!result.data.acceptance_funding_release,
       reward_state: result.data.payout && result.data.payout.state !== "issuance_pending" ? "authorization_issued" : state === "accepted" ? "accepted_pending_payment" : "payment_reported",
-      what_was_verified: "The keeper recorded acceptance against the posted brief. This is a review decision, not an independently verified observation.",
-      what_was_not: "The report's claims, payout transaction and completion of any wider task have not been independently verified by this instrument.",
+      what_was_verified: result.data.acceptance_funding_release ? "The keeper recorded acceptance. Separate funding reconciliation retained an exact finalized reward transfer; see its transaction and read time in private status." : "The keeper recorded acceptance against the posted brief. This is a review decision, not an independently verified observation.",
+      what_was_not: result.data.acceptance_funding_release ? "The report's claims, net earnings and completion of any wider task are not established by the payment observation. It is a retained RPC reading, not a live balance or independent consensus verification." : "The report's claims, payout transaction and completion of any wider task have not been independently verified by this instrument.",
     }) : {};
     return c.json({...result.data, ...(result.status === 200 ? {next_steps: contributionNextSteps(c.env.STORE_BASE_URL, result.data)} : {}), ...completion}, result.status);
   });
@@ -170,11 +171,11 @@ adminContributionRoutes.post("/", c => adminFormAction(c, "post", null, async (b
   await kvPut(c.env.COUNTERS, INDEX + terms.id, "1");
   return form ? c.redirect(`/admin/bounties/contributions/${terms.id}`, 303) : c.json(result.data, 201);
 }));
-for (const action of ["close", "review", "payment", "progress", "authorize"] as const) {
+for (const action of ["close", "review", "payment", "progress", "authorize", "release-funding"] as const) {
   adminContributionRoutes.post(`/:id/${action}`, c => {
     const id = c.req.param("id"); if (!validId(id)) return c.json({code: "task_missing", error: "No posted task with that id."}, 404);
     return adminFormAction(c, action, id, async (body, form) => {
-      const result = action === "authorize" ? await task(c.env, id).issueReward(body) : await task(c.env, id).act(action, body);
+      const result = action === "release-funding" ? await task(c.env, id).releaseRewardFunding(body) : action === "authorize" ? await task(c.env, id).issueReward(body) : await task(c.env, id).act(action, body);
       return form && result.status === 200 ? c.redirect(`/admin/bounties/contributions/${id}`, 303) : c.json(result.data, result.status);
     });
   });

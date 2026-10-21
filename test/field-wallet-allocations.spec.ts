@@ -15,7 +15,7 @@ function args(i=1,amount="6000000",until=seconds+100):Parameters<FieldSigner["si
 let actor:ReturnType<typeof allocationLedger>;
 beforeEach(async()=>{
  actor=allocationLedger(bindings,wallet);
- await runInDurableObject(actor,async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
+ await runInDurableObject(actor,async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_releases");state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
  vi.spyOn(rpc,"getFinalizedBlockNumber").mockResolvedValue(100);
  vi.spyOn(rpc,"getBlockTimestamp").mockResolvedValue(new Date(now-1000));
  vi.spyOn(rpc,"usdcBalanceOf").mockResolvedValue(10000000n);
@@ -126,7 +126,7 @@ it("the production contribution signer allocates before returning a real signatu
  const {contributionSigner}=await import("@/services/contribution-payout");
  const signer=await contributionSigner({...bindings,FIELD_WALLET_KEY:"11".repeat(32)});
  const ledger=allocationLedger(bindings,signer.address);
- await runInDurableObject(ledger,async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
+ await runInDurableObject(ledger,async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_releases");state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
  const a=args();a.message.from=signer.address;
  expect(await signer.signTypedData(a)).toMatch(/^0x[0-9a-f]{130}$/i);
  expect((await ledger.summary()).held_atomic).toBe("6000000");
@@ -210,7 +210,7 @@ it("the production contribution signer consumes its acceptance hold without allo
  const local={...bindings,FIELD_WALLET_KEY:"11".repeat(32)},signer=await contributionSigner(local,commitmentId(1));
  const ledger=allocationLedger(local,signer.address);
  await runInDurableObject(ledger,async(instance,state)=>{
-  state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");
+  state.storage.sql.exec("DELETE FROM contribution_releases");state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");
   await instance.commitContribution(signer.address,commitmentId(1),recipient,"6000000",now);
  });
  const a=args();a.message.from=signer.address;

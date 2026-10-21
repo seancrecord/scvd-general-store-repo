@@ -1,5 +1,18 @@
 # ROADMAP — September 2026
 
+## October 21 — release paid contribution funding holds
+
+The private contribution desk now has a separate finalized-payment reconciliation.
+The wallet ledger checks the exact authorization and transfer, canonical block
+identity, and finalized balance at or after payment. Releasing the hold and
+advancing the retained balance happen together, so a delayed older balance cannot
+fund new work with already-spent money. Retries recover the same payment record;
+commitment and nonce identities remain permanently bound. Ordinary transaction
+checks still only retain observations. No gas, payment, new brief or cap increase.
+Next: fund work before workers reserve/start, reconcile older obligations and
+external spenders, then increase funded availability and resume acquisition work.
+[Implementation and limits](docs/FIELD_WALLET_ALLOCATIONS.md).
+
 ## October 19 — reserve funding before signed contribution acceptance
 
 New signed-authorization acceptances reserve their exact reward through the shared

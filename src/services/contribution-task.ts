@@ -1,3 +1,4 @@
+import {allocationLedger, type ContributionFundingRelease} from "@/services/field-wallet-allocations";
 import {reconcileContributionPayment, type ContributionPaymentChecks} from "@/services/contribution-reconciliation";
 import {signContributionAcceptance, type ContributionReceipt} from "@/services/contribution-receipt";
 import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionFundingWallet, reserveContributionAcceptance, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
@@ -24,6 +25,7 @@ export interface ContributionReservation {
   report?: ContributionReport; payout_to?: string; submission_digest?: string; submitted_at?: string;
   review?: {decision: string; reason: string; outcome: string; reference: string; at: string};
   acceptance_funding?: {id:string; wallet?:string; state:"pending" | "held"; review:NonNullable<ContributionReservation["review"]>};
+  acceptance_funding_release?: ContributionFundingRelease;
   payout?: ContributionPayout;
   payment_checks?: ContributionPaymentChecks;
   payment_check_generation?: number;
@@ -95,7 +97,7 @@ export function publicContribution(state: ContributionTaskState, now: number) {
   return {...state.terms, availability_reason: availabilityReason, published_at: state.published_at, purchase_required: false, payment_method: state.terms.payment_method ?? "keeper_paid_base_usdc", redemption: state.terms.payment_method ? CONTRIBUTION_REDEMPTION : null, maximum_reward_usd: Math.round(state.terms.reward_usd * 100) * state.terms.slots / 100, status: state.closed ? "closed" : Date.parse(state.terms.expires_at) <= now ? "expired" : "open", available_slots: availabilityReason === "available" ? state.terms.slots - active.length : 0, pending_review: state.reservations.filter(r => r.status === "submitted").length};
 }
 function ownReservation(task: ContributionTaskState, row: ContributionReservation, now: number) {
-  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.acceptance_funding ? {acceptance_funding_state:row.acceptance_funding.state} : {}), ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.acceptance_receipt ? {acceptance_receipt: row.acceptance_receipt, acceptance_receipt_inputs: {terms: task.terms, report: row.report, review: row.review}} : {}), ...(row.review?.decision === "accepted" ? {acceptance_receipt_state: row.acceptance_receipt ? "issued" : "unavailable"} : {}), ...(row.payment_checks ? {payment_checks: row.payment_checks} : {}), ...(row.payout ? {payout: privateContributionPayout(row.payout, now)} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
+  return {task_id: task.terms.id, task_kind: task.terms.kind, ...(row.arrival ? {arrival_goal: row.arrival.goal} : {}), submission_id: row.id, status: row.status === "reserved" && Date.parse(row.submit_by) <= now ? "expired" : row.status, reserved_at: row.reserved_at, submit_by: row.submit_by, reward_usd: task.terms.reward_usd, review_due_at: row.submitted_at ? new Date(Date.parse(row.submitted_at) + task.terms.review_days * DAY).toISOString() : null, payment_due_at: row.review?.decision === "accepted" ? new Date(Date.parse(row.review.at) + task.terms.payment_days * DAY).toISOString() : null, ...(row.acceptance_funding ? {acceptance_funding_state:row.acceptance_funding_release ? "released" as const : row.acceptance_funding.state} : {}), ...(row.acceptance_funding_release ? {acceptance_funding_release: {transaction:row.acceptance_funding_release.transaction, receipt_block:row.acceptance_funding_release.receipt_block, read_at:row.acceptance_funding_release.read_at}} : {}), ...(row.review ? {review: row.review} : {}), ...(row.payment ? {payment: row.payment} : {}), ...(row.acceptance_receipt ? {acceptance_receipt: row.acceptance_receipt, acceptance_receipt_inputs: {terms: task.terms, report: row.report, review: row.review}} : {}), ...(row.review?.decision === "accepted" ? {acceptance_receipt_state: row.acceptance_receipt ? "issued" : "unavailable"} : {}), ...(row.payment_checks ? {payment_checks: row.payment_checks} : {}), ...(row.payout ? {payout: {...privateContributionPayout(row.payout, now), ...(row.acceptance_funding_release ? {redemption_state:"finalized_observed" as const} : {})}} : {}), ...(row.updates?.length ? {updates: row.updates} : {})};
 }
 
 /** The alarm and its tests use the same clock for both expiry and the next due time. */
@@ -160,6 +162,24 @@ export class ContributionTask extends DurableObject<Env> {
       : {latest:observation, ...(previous?.confirmed ? {confirmed:previous.confirmed} : {}), ...(withdrawal ? {confirmation_withdrawn_at:withdrawal} : {})};
     this.save(state);
     return {...observation, saved:true, save_reason:"retained"};
+  }
+  /** A separate keeper action reconciles the immutable wallet hold. The ledger
+   * reads finalized evidence itself; a retained payment observation is not enough. */
+  async releaseRewardFunding(body: Record<string, unknown>, now = Date.now()): Promise<Result> {
+    try {
+      onlyFields(body,["submission_id","tx_hash"]);
+      if(typeof body.submission_id!=="string" || !body.submission_id || body.submission_id.length>128 || typeof body.tx_hash!=="string" || !/^0x[0-9a-f]{64}$/i.test(body.tx_hash)) fail("Send a submission id and Base transaction hash.");
+    } catch {return {status:400,data:{code:"invalid_input",error:"Send only submission_id and a Base transaction hash in tx_hash."}};}
+    let state=this.read(), row=state?.reservations.find(r=>r.id===body.submission_id);
+    const funding=row?.acceptance_funding, authorization=row?.payout?.authorization;
+    if(!state || !row || row.status!=="accepted" || state.terms.payment_method!=="signed_authorization" || !row.payout?.signature || funding?.state!=="held" || !funding.wallet || funding.id!==`${state.terms.id}:${row.id}` || !authorization || authorization.from.toLowerCase()!==funding.wallet.toLowerCase() || authorization.to.toLowerCase()!==row.payout_to?.toLowerCase() || authorization.value!==contributionRewardUnits(state.terms.reward_usd)) return {status:409,data:{code:"funding_release_not_available",error:"A funded acceptance with its issued original authorization is required. Older or manual-payment work cannot release a hold through this action."}};
+    try {
+      // Use the retained paying wallet even if the current signer has rotated.
+      const release=await allocationLedger(this.env,funding.wallet).releaseContribution(funding.wallet,funding.id,body.tx_hash as string,now);
+      state=this.read()!;row=state.reservations.find(r=>r.id===body.submission_id)!;
+      row.acceptance_funding_release=release;this.save(state);
+      return {status:200,data:ownReservation(state,row,now)};
+    } catch {return {status:503,data:{code:"funding_release_unavailable",error:"Finalized payment and funding release could not be established or saved. Retry this same submission and transaction; do not send another payment."}};}
   }
   /** The durable review intent is the retry identity across the two actors.
    * A lost reply leaves the work submitted and the same hold recoverable. */

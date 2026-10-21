@@ -10,7 +10,7 @@ const wallet=`0x${"1".repeat(40)}`,recipient=`0x${"2".repeat(40)}`,key="a".repea
 const review={decision:"accepted",reason:"Meets the terms",outcome:"no_change",reference:"https://scvd.store/what"};
 const ledger=()=>allocationLedger(bindings,wallet);
 beforeEach(async()=>{
- await runInDurableObject(ledger(),async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
+ await runInDurableObject(ledger(),async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_releases");state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
  vi.spyOn(payout,"contributionFundingWallet").mockResolvedValue(wallet);
  vi.spyOn(rpc,"getFinalizedBlockNumber").mockResolvedValue(100);
  vi.spyOn(rpc,"getBlockTimestamp").mockResolvedValue(new Date(now-1000));
