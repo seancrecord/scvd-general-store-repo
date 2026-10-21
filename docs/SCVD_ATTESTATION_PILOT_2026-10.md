@@ -5,6 +5,67 @@ Release authorized October 7: “make sure the ui is right but then merge push.�
 Merged October 7 in [PR #996](https://github.com/seancrecord/scvd-general-store-repo/pull/996) after the required checks passed.
 Customer activation and invoicing remain separate from the completed implementation.
 
+## October 21 — operating packet approved
+
+The keeper approved proceeding with this bounded pilot and its PR/merge:
+“im fine with the pilot. once done just merge/pr”. This approves the operating
+packet below and closes the internal offer-review step. It does not establish
+a customer's agreement or authorize a message to an outside party. The existing
+implementation remains the delivery path; no new product or buyer-model cohort
+is needed to prepare this experiment.
+
+The offer and limits below were checked against `src/store/evidence-pilot.ts`
+and the activation/report handlers at `e6025dad`. This is a source review,
+not a new live activation or service-reliability measurement.
+
+### First conversation and fit
+
+The existing [BiX discussion](https://github.com/Merit-Systems/x402scan/issues/1197)
+is a possible channel, not an accepted customer. The retained October 15 read
+had no new BiX reply after our October 1 question. VYTREL's October 7 request
+for a paid POST canary is a different operator and a different task. Neither
+request establishes willingness to buy this public-interface report. Re-read
+the thread before any authorized send; do not duplicate an answered question.
+
+The prepared follow-up remains unsent:
+
+> Salman — I revisited our retained Creator Edge check. The October 1 record covers the unpaid request; the paid canary remains unverified.
+>
+> SCVD now has a 30-day public-interface observation pilot: one endpoint, daily checks and a final signed report, $300 invoiced after delivery. The report records changes and missed checks. It would answer a customer or internal review question about the public interface; it would not complete the paid POST canary you requested.
+>
+> Is there a specific reviewer or release decision that needs that record? If so, which question would it need to answer, and would the $300 scope be useful? The scope and unsigned sample are here: https://scvd.store/evidence-pilot. We would confirm the endpoint's input compatibility and public publication before agreeing a start.
+
+### Operating record and decision gates
+
+Sean owns correspondence, customer agreement, activation, handoff and invoicing.
+Codex prepares evidence and reconciles the record. Internal packet review is
+complete; delivery/support time and direct costs remain unmeasured. Record
+estimates before accepting scope and actual keeper/agent minutes and direct
+cash costs during delivery. Do not invent a margin from missing costs.
+
+Keep the customer record privately, with evidence for each separate milestone:
+approved send and timestamp; named reviewer/use case and funder; agreement to
+the endpoint, scope, price, start and public observations; activation/watch id;
+coverage and gaps; final export and verification; handoff; invoice and payment;
+decision use; repeat request and repeat payment. Unknown stays unknown. Do not
+commit buyer contact details, correspondence or invoice records to this repo.
+
+The first useful-action measure is a named review decision that cites or uses
+the delivered evidence. Acknowledgment, activation, invoice and settled payment
+are distinct outcomes. The sample is unsigned and illustrative; no completed
+customer pilot, organic demand or paid repeat use is established by it.
+
+Review channel fit 14 days after an approved send; no send means that clock
+has not started. If the only need remains paid-canary completion, close this
+offer/channel fit and retain the separate merchant-flow request. Insufficient
+exposure is inconclusive. The 30-day delivery clock starts only through the
+existing activation step after customer agreement. Keep this to one endpoint
+and the existing term; no merchant payment, automatic renewal or new capacity
+is part of this packet. Broader investment requires three demonstrably unrelated
+paying customers, at least two repeat uses or renewals, and positive contribution
+after delivery/support cost. One paid design partner can justify only a bounded
+custom case. Builds stay in ROADMAP TR-D/TR-M; customer hands stay on KEEPER_LIST.
+
 ## The offer
 
 One public x402 endpoint, a 30-day observation term, scheduled daily checks,
