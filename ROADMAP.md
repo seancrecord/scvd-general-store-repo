@@ -1,5 +1,21 @@
 # ROADMAP — September 2026
 
+## October 21 — import older issued contribution obligations
+
+The private submission desk can import an older accepted reward from its retained
+Base authorization. It binds the original wallet and nonce, preserves acceptance
+and payment dates, and counts an existing signature allocation only once. Expired
+authorizations remain unresolved work. Existing debt is imported even when its
+finalized balance is insufficient; the current-wallet funding view shows the dated
+shortfall and new allocations remain subject to the combined hold total. Imports
+recover interrupted replies/saves and use the existing exact finalized-payment
+release. No new signature, payment or gas is sent by an import.
+
+This is a per-obligation migration tool, not a completed production migration.
+Next: resolve unsigned/manual and other-program legacy obligations, account for
+credit accrual and external spenders, then increase approved funded availability
+and resume acquisition/distribution. [Scope](docs/FIELD_WALLET_ALLOCATIONS.md).
+
 ## October 21 — fund new contribution reservations before work begins
 
 New reservations on signed-authorization briefs now hold the exact reward in the

@@ -171,11 +171,11 @@ adminContributionRoutes.post("/", c => adminFormAction(c, "post", null, async (b
   await kvPut(c.env.COUNTERS, INDEX + terms.id, "1");
   return form ? c.redirect(`/admin/bounties/contributions/${terms.id}`, 303) : c.json(result.data, 201);
 }));
-for (const action of ["close", "review", "payment", "progress", "authorize", "release-funding"] as const) {
+for (const action of ["close", "review", "payment", "progress", "authorize", "release-funding", "import-funding"] as const) {
   adminContributionRoutes.post(`/:id/${action}`, c => {
     const id = c.req.param("id"); if (!validId(id)) return c.json({code: "task_missing", error: "No posted task with that id."}, 404);
     return adminFormAction(c, action, id, async (body, form) => {
-      const result = action === "release-funding" ? await task(c.env, id).releaseRewardFunding(body) : action === "authorize" ? await task(c.env, id).issueReward(body) : await task(c.env, id).act(action, body);
+      const result = action === "import-funding" ? await task(c.env, id).importRewardFunding(body) : action === "release-funding" ? await task(c.env, id).releaseRewardFunding(body) : action === "authorize" ? await task(c.env, id).issueReward(body) : await task(c.env, id).act(action, body);
       return form && result.status === 200 ? c.redirect(`/admin/bounties/contributions/${id}`, 303) : c.json(result.data, result.status);
     });
   });
