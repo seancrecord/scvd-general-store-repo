@@ -17,7 +17,7 @@ const ADDRESS = /^0x[0-9a-f]{40}$/i;
 const COMMITMENT_ID = /^[a-z0-9-]{3,64}:[a-f0-9-]{36}$/;
 const NONCE = /^0x[0-9a-f]{64}$/i;
 const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
-export const FIELD_ALLOCATION_LIMITS = `Allocations cover new Base USDC authorizations passing through this deployment's ${FIELD_ALLOCATION_PROGRAMS.length} field-wallet signing paths. They are persisted before signing, including failed or uncertain signing attempts. A hold stays until a finalized block after its expiry supplies the balance used for the next allocation; redemption alone does not release it early. New signed-authorization contribution reservations hold their reward before work may begin. Submitted work keeps its hold through review; acceptance inherits it through issuance and expiry. Unused expired or released reservations and rejected work are canceled by the task actor; uncertain cleanup stays held until retried. A separate private funding reconciliation releases an acceptance hold only after matching its exact transfer in a canonical finalized block and retaining a balance at or after that payment. Payment observations alone do not release holds. Older issued contribution rewards may be imported individually by their original authorization and obligation identity; this records existing debt even if the last observed balance is insufficient. Unimported older authorizations, reservations and acceptances, unreserved work, legacy manual-payment briefs, accruing store credit, external scripts and direct wallet transfers are not reserved here. This is not full wallet coverage or permission to raise caps. No gas is paid.`;
+export const FIELD_ALLOCATION_LIMITS = `Allocations cover new Base USDC authorizations passing through this deployment's ${FIELD_ALLOCATION_PROGRAMS.length} field-wallet signing paths. They are persisted before signing, including failed or uncertain signing attempts. A hold stays until a finalized block after its expiry supplies the balance used for the next allocation; redemption alone does not release it early. New signed-authorization contribution reservations hold their reward before work may begin. Submitted work keeps its hold through review; acceptance inherits it through issuance and expiry. Unused expired or released reservations and rejected work are canceled by the task actor; uncertain cleanup stays held until retried. A separate private funding reconciliation releases an acceptance hold only after matching its exact transfer in a canonical finalized block and retaining a balance at or after that payment. Payment observations alone do not release holds. Older accepted signed-authorization rewards may be imported individually by obligation identity, retaining any existing authorization; without an authorization intent, the configured field wallet is retained for that debt; this records existing debt even if the last observed balance is insufficient. Unimported older authorizations, reservations and acceptances, unreserved work, legacy manual-payment briefs, accruing store credit, external scripts and direct wallet transfers are not reserved here. This is not full wallet coverage or permission to raise caps. No gas is paid.`;
 export class FieldAllocationUnavailable extends Error {constructor() {super("Field wallet allocation unavailable");}}
 function unavailable(): never {throw new FieldAllocationUnavailable();}
 function integer(value: unknown): bigint {
@@ -132,6 +132,38 @@ export class FieldWalletAllocations extends DurableObject<Env> {
       this.capacity(wallet,reading,BigInt(amount));
       this.ctx.storage.sql.exec("INSERT INTO contribution_commitments(id,recipient,amount,nonce) VALUES(?,?,?,NULL)",id,recipient,amount);
       return {reserved:true,reused:false};
+    });
+  }
+  /** Record an existing accepted debt before its first authorization exists.
+   * This is accounting, so insufficient funds cannot make the debt disappear. */
+  async importContributionDebt(wallet: string, id: string, recipient: string, amount: string, now=Date.now()) {
+    if(!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || /^0x0{40}$/i.test(recipient) || !COMMITMENT_ID.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0)return unavailable();
+    wallet=wallet.toLowerCase();recipient=recipient.toLowerCase();
+    const inspect=()=>{
+      if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.workHold(id) || this.released(id))return unavailable();
+      const old=this.commitment(id);
+      if(old && (old.recipient!==recipient || old.amount!==amount))return unavailable();
+      return old;
+    };
+    if(inspect())return {imported:true,reused:true};
+    const reading=await this.balance(wallet,now);
+    return this.ctx.storage.transactionSync(()=>{
+      if(inspect())return {imported:true,reused:true};
+      this.retainBalance(wallet,reading);
+      this.ctx.storage.sql.exec("INSERT INTO contribution_commitments(id,recipient,amount,nonce) VALUES(?,?,?,NULL)",id,recipient,amount);
+      return {imported:true,reused:false};
+    });
+  }
+  /** Imported debt can exceed its balance. Before issuing an unretained
+   * signature, recheck coverage even when its nonce allocation already exists. */
+  async checkContributionCapacity(wallet: string, id: string, now=Date.now()) {
+    if(!ADDRESS.test(wallet) || !COMMITMENT_ID.test(id) || !Number.isSafeInteger(now) || now<0)return unavailable();
+    wallet=wallet.toLowerCase();
+    const reading=await this.balance(wallet,now);
+    return this.ctx.storage.transactionSync(()=>{
+      if(!this.commitment(id) || this.released(id))return unavailable();
+      this.capacity(wallet,reading,0n);
+      return {checked:true};
     });
   }
   /** Import an already-issued contribution, not permission to promise new work.

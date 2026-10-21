@@ -221,18 +221,32 @@ six-USDC reservations against ten USDC; restoring the total passes.
 ## October 21 — import older issued contribution obligations
 
 The private submission page offers **Import existing obligation** for accepted
-signed-authorization work that has an issued original payout and no managed work
-hold. `POST /admin/bounties/contributions/{id}/import-funding` takes only the
+signed-authorization work without a managed work hold, including unissued rewards
+and interrupted authorization attempts. `POST /admin/bounties/contributions/{id}/import-funding` takes only the
 submission ID. Its existing admin authentication, same-origin check and failed-form
 retry apply. No caller can supply a replacement wallet, amount, nonce or deadline.
 
-The task saves an import intent before calling the original wallet's ledger. The
-ledger validates the full retained signing request, reads a fresh finalized balance,
-and atomically links the obligation and authorization identities. A preexisting
+The task saves an import intent before resolving any wallet. If an authorization
+intent exists, its original paying wallet and nonce are retained even if no
+signature was saved. Otherwise, the currently configured field wallet is selected
+once and retained with the debt before the ledger call; an interrupted retry cannot
+move the obligation to a newly configured wallet. The ledger validates any retained
+signing request, reads a fresh finalized balance, and atomically links the obligation
+and authorization identities. Unissued work without an authorization has no nonce
+until the separate issuance action binds it. A preexisting
 contribution allocation for that exact nonce is reused, not counted twice. A nonce
 assigned to another program or obligation, changed terms, canceled work, or a paid
 release cannot be imported as a new debt. Repeated imports recover the same result.
-Original acceptance dates, receipt bytes, report and signed payout remain unchanged.
+Original acceptance dates, receipt bytes, report and any payout remain unchanged.
+
+Later issuance uses the imported hold exactly once and remains subject to the full
+capacity check and original-wallet requirement. Imported unsigned rewards refresh
+that check even when an earlier attempt already allocated their nonce: an import
+may have revealed other debt exceeding the wallet balance. An expired retained intent is not
+replaced. If funding identity changes while issuance prepares its signer, issuance
+refuses and asks for a retry using the retained obligation. An already-running
+signing attempt keeps its original nonce; importing that intent links its allocation
+without duplicating the debt. Pending imports never authorize new signing.
 
 Unlike a new reservation, an import recognizes a debt already incurred. A low
 balance cannot erase that debt: importing six USDC against one USDC records the
@@ -250,8 +264,8 @@ transfer and canonical block are established. A prior payment observation or man
 payment report cannot release it. This import does not sign, broadcast, refresh an
 expired authorization, extend a deadline, raise caps or sponsor gas.
 
-This deploy adds the tool; it does not run a production migration. Unsigned rewards,
-manual-payment briefs, older reservations, other programs' legacy obligations,
+This deploy adds the tool; it does not run a production migration.
+Manual-payment briefs, older reservations, other programs' legacy obligations,
 credit accrual and external spenders still need their own resolution. A zero
 observed shortfall does not close those gaps.
 
@@ -269,3 +283,12 @@ The new import regression is also run with the source change removed to witness
 its failure before restoration. A second negative control omits the permanent
 obligation link: expired debt is then pruned, and the expected ten-USDC total
 incorrectly becomes four USDC. Restoring the link preserves all ten USDC.
+
+Unsigned-reward validation also covers shortfalls before issuance, retained-wallet
+recovery, later signing counted once, pending wallet resolution, and imports racing
+both signer preparation and an already-running signing attempt. Acceptance and
+payment deadlines remain unchanged.
+
+Removing the imported-issuance capacity check allows a six-USDC signature while
+twelve USDC is held against ten; the regression detects that authorization and
+passes after the check is restored.

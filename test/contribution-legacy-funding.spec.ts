@@ -113,10 +113,9 @@ it("recovers a lost ledger response without signing again or restarting acceptan
  expect((await actor.adminView())!.reservations[0]!.review).toEqual(s.reservations[0]!.review);
  expect((await ledger().summary()).held_atomic).toBe("6000000");
 });
-it.each(["manual","unsigned","submitted","amount","recipient","managed"] as const)("refuses %s records without creating an obligation",async kind=>{
+it.each(["manual","submitted","amount","recipient","managed"] as const)("refuses %s records without creating an obligation",async kind=>{
  const {actor,body}=await fixture();await change(actor,s=>{const row=s.reservations[0]!;
   if(kind==="manual")delete s.terms.payment_method;
-  if(kind==="unsigned")delete row.payout!.signature;
   if(kind==="submitted")row.status="submitted";
   if(kind==="amount")row.payout!.authorization.value="7000000";
   if(kind==="recipient")row.payout!.authorization.to=wallet;
@@ -170,4 +169,119 @@ it("does not interpret an unavailable or stale chain read as successful import",
  expect((await actor.adminView())!.reservations[0]!.status).toBe("accepted");
  vi.mocked(rpc.getBlockTimestamp).mockResolvedValue(new Date(now-1000));
  expect((await actor.importRewardFunding(body,now)).status).toBe(200);
+});
+
+it.each(["no_intent","unsigned_intent","expired_intent"] as const)("imports %s without issuing a signature or restarting the deadline",async kind=>{
+ const {actor,body,s}=await fixture();await change(actor,state=>{const row=state.reservations[0]!;if(kind==="no_intent")delete row.payout;else {delete row.payout!.signature;if(kind==="expired_intent")row.payout!.authorization.validBefore=String(now/1000-1);}});
+ const previous=(await actor.adminView())!.reservations[0]!.payout;
+ vi.spyOn(payout,"contributionFundingWallet").mockResolvedValue(wallet);
+ const sign=vi.spyOn(payout,"signContributionReward").mockRejectedValue(new Error("must not sign"));
+ vi.mocked(rpc.usdcBalanceOf).mockResolvedValue(1000000n);
+ const result=await actor.importRewardFunding(body,now);
+ expect(result.status).toBe(200);expect(result.data.payment_due_at).toBe(new Date(now+2*86400000).toISOString());
+ const row=(await actor.adminView())!.reservations[0]!;expect(row.review).toEqual(s.reservations[0]!.review);expect(row.payout).toEqual(previous);
+ expect(sign).not.toHaveBeenCalled();expect(await ledger().summary()).toMatchObject({held_atomic:"6000000",observed_shortfall_atomic:"5000000"});
+ expect(payout.contributionFundingWallet).toHaveBeenCalledTimes(kind==="no_intent"?1:0);
+});
+async function unsigned(){const f=await fixture();await change(f.actor,s=>{delete s.reservations[0]!.payout;});vi.spyOn(payout,"contributionFundingWallet").mockResolvedValue(wallet);return f;}
+async function signingPath(){
+ const {allocatedFieldSigner}=await import("@/services/field-wallet-allocations");
+ const sign=vi.fn(async()=>"retained-signature");
+ vi.spyOn(Date,"now").mockReturnValue(now);
+ vi.spyOn(payout,"contributionSigner").mockImplementation(async(_env,identity)=>allocatedFieldSigner(bindings,{address:wallet,signTypedData:sign},"contributions",identity));
+ vi.spyOn(payout,"signContributionReward").mockImplementation(async(_env,signer,authorization)=>signer.signTypedData(payout.contributionSigningRequest(authorization)));
+ return sign;
+}
+it.each(["no_intent","unsigned_intent"] as const)("issues %s against its imported hold exactly once",async kind=>{
+ const f=await unsigned();if(kind==="unsigned_intent")await change(f.actor,s=>{s.reservations[0]!.payout={created_at:new Date(now-1000).toISOString(),authorization:auth()};});
+ await f.actor.importRewardFunding(f.body,now);const sign=await signingPath();
+ expect((await f.actor.issueReward(f.body,now)).status).toBe(200);
+ const row=(await f.actor.adminView())!.reservations[0]!;expect(row.payout!.signature).toBe("retained-signature");
+ if(kind==="unsigned_intent")expect(row.payout!.authorization).toEqual(auth());
+ expect((await ledger().summary()).held_atomic).toBe("6000000");
+ expect((await f.actor.issueReward(f.body,now+1)).status).toBe(200);expect(sign).toHaveBeenCalledTimes(1);
+ expect((await f.actor.importRewardFunding(f.body,now+1)).status).toBe(200);
+});
+it("records unfunded unsigned debt but refuses its later authorization until funds suffice",async()=>{
+ const {actor,body}=await unsigned();vi.mocked(rpc.usdcBalanceOf).mockResolvedValue(1000000n);
+ await actor.importRewardFunding(body,now);const sign=await signingPath();
+ expect((await actor.issueReward(body,now)).status).toBe(503);expect(sign).not.toHaveBeenCalled();
+ const intent=(await actor.adminView())!.reservations[0]!.payout!.authorization;
+ vi.mocked(rpc.getFinalizedBlockNumber).mockResolvedValue(101);vi.mocked(rpc.usdcBalanceOf).mockResolvedValue(10000000n);
+ expect((await actor.issueReward(body,now+1)).status).toBe(200);
+ expect((await actor.adminView())!.reservations[0]!.payout!.authorization).toEqual(intent);
+ expect((await ledger().summary()).held_atomic).toBe("6000000");
+});
+it("retains the chosen wallet through failed imports and refuses a rotated signer",async()=>{
+ const {actor,body}=await unsigned();vi.mocked(rpc.getBlockTimestamp).mockResolvedValue(new Date(now-7200000));
+ expect((await actor.importRewardFunding(body,now)).status).toBe(503);
+ vi.mocked(payout.contributionFundingWallet).mockResolvedValue(recipient);
+ vi.mocked(rpc.getBlockTimestamp).mockResolvedValue(new Date(now-1000));
+ expect((await actor.importRewardFunding(body,now)).status).toBe(200);
+ expect(payout.contributionFundingWallet).toHaveBeenCalledTimes(1);
+ const sign=vi.fn(async()=>"never");vi.spyOn(payout,"contributionSigner").mockResolvedValue({address:recipient,signTypedData:sign});
+ expect((await actor.issueReward(body,now)).data.code).toBe("payout_wallet_changed");expect(sign).not.toHaveBeenCalled();
+});
+it("recovers a lost unsigned-debt import reply with the same obligation",async()=>{
+ const {actor,body}=await unsigned(),original=FieldWalletAllocations.prototype.importContributionDebt;
+ const spy=vi.spyOn(FieldWalletAllocations.prototype,"importContributionDebt").mockImplementationOnce(async function(this:FieldWalletAllocations,...args){await original.apply(this,args);throw new Error("lost reply");});
+ expect((await actor.importRewardFunding(body,now)).status).toBe(503);spy.mockRestore();
+ expect((await actor.importRewardFunding(body,now+1)).status).toBe(200);expect((await ledger().summary()).held_atomic).toBe("6000000");
+});
+it("blocks an issuance prepared before the import from using an unlinked signer",async()=>{
+ const {actor,body}=await unsigned();const sign=await signingPath();
+ await runInDurableObject<ContributionTask,void>(actor,async instance=>{
+  const original=vi.mocked(payout.contributionSigner).getMockImplementation()!;
+  let resume!:()=>void,started!:()=>void;const began=new Promise<void>(r=>{started=r;});
+  vi.mocked(payout.contributionSigner).mockImplementationOnce(async(...args)=>{started();await new Promise<void>(r=>{resume=r;});return original(...args);});
+  const issuance=instance.issueReward(body,now);await began;expect((await instance.importRewardFunding(body,now)).status).toBe(200);resume();
+  expect((await issuance).data.code).toBe("funding_changed");
+ });
+ expect(sign).not.toHaveBeenCalled();expect((await ledger().summary()).held_atomic).toBe("6000000");
+ expect((await actor.issueReward(body,now)).status).toBe(200);expect((await ledger().summary()).held_atomic).toBe("6000000");
+});
+it("blocks issuance while the import has no resolved wallet yet",async()=>{
+ const {actor,body}=await unsigned();const sign=await signingPath();
+ await runInDurableObject<ContributionTask,void>(actor,async instance=>{
+  let resume!:(w:string)=>void,started!:()=>void;const began=new Promise<void>(r=>{started=r;});
+  vi.mocked(payout.contributionFundingWallet).mockImplementationOnce(()=>{started();return new Promise(r=>{resume=r;});});
+  const importing=instance.importRewardFunding(body,now);await began;
+  expect((await instance.issueReward(body,now)).data.code).toBe("funding_import_pending");resume(wallet);expect((await importing).status).toBe(200);
+ });
+ expect(sign).not.toHaveBeenCalled();expect((await actor.adminView())!.reservations[0]!.payout).toBeUndefined();
+});
+it("preserves a signing attempt already in flight when its obligation is imported",async()=>{
+ const {actor,body}=await unsigned();await change(actor,s=>{s.reservations[0]!.payout={created_at:new Date(now-1000).toISOString(),authorization:auth()};});await signingPath();
+ await runInDurableObject<ContributionTask,void>(actor,async instance=>{
+  const original=vi.mocked(payout.signContributionReward).getMockImplementation()!;
+  let resume!:()=>void,started!:()=>void;const began=new Promise<void>(r=>{started=r;});
+  vi.mocked(payout.signContributionReward).mockImplementationOnce(async(...args)=>{const signature=await original(...args);started();await new Promise<void>(r=>{resume=r;});return signature;});
+  const issuing=instance.issueReward(body,now);await began;expect((await instance.importRewardFunding(body,now)).status).toBe(200);resume();expect((await issuing).status).toBe(200);
+ });
+ expect((await ledger().summary()).held_atomic).toBe("6000000");expect((await actor.adminView())!.reservations[0]!.payout!.authorization).toEqual(auth());
+});
+it("permanently binds unsigned debt to recipient and amount across concurrent retries",async()=>{
+ const results=await Promise.all([ledger().importContributionDebt(wallet,id,recipient,"6000000",now),ledger().importContributionDebt(wallet,id,recipient,"6000000",now)]);
+ expect(results.filter(r=>!r.reused)).toHaveLength(1);
+ await refuses(i=>i.importContributionDebt(wallet,id,wallet,"6000000",now));
+ await refuses(i=>i.importContributionDebt(wallet,id,recipient,"7000000",now));
+ expect((await ledger().summary()).held_atomic).toBe("6000000");
+});
+
+it("keeps an expired unsigned intent without creating a replacement authorization",async()=>{
+ const {actor,body}=await fixture();await change(actor,s=>{delete s.reservations[0]!.payout!.signature;s.reservations[0]!.payout!.authorization.validBefore=String(now/1000-1);});
+ await actor.importRewardFunding(body,now);const intent=(await actor.adminView())!.reservations[0]!.payout,sign=await signingPath();
+ expect((await actor.issueReward(body,now)).data.code).toBe("authorization_expired");expect(sign).not.toHaveBeenCalled();
+ expect((await actor.adminView())!.reservations[0]!.payout).toEqual(intent);expect((await ledger().summary()).held_atomic).toBe("6000000");
+});
+
+it("checks all holds before signing an imported intent even when its nonce allocation exists",async()=>{
+ const {actor,body}=await fixture();await change(actor,s=>{delete s.reservations[0]!.payout!.signature;});
+ await actor.importRewardFunding(body,now);
+ await ledger().importContributionDebt(wallet,second,recipient,"6000000",now);
+ const sign=await signingPath();expect((await actor.issueReward(body,now)).status).toBe(503);expect(sign).not.toHaveBeenCalled();
+ expect((await ledger().summary()).held_atomic).toBe("12000000");
+ vi.mocked(rpc.getFinalizedBlockNumber).mockResolvedValue(101);vi.mocked(rpc.usdcBalanceOf).mockResolvedValue(12000000n);
+ expect((await actor.issueReward(body,now)).status).toBe(200);expect(sign).toHaveBeenCalledTimes(1);
+ expect((await ledger().summary()).held_atomic).toBe("12000000");
 });
