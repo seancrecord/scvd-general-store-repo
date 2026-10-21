@@ -1,3 +1,4 @@
+import type {readCreditInventory} from "@/services/credit-inventory";
 import {atomicToUsdc} from "@/lib/payments";
 import type {readFieldAllocationSummary, FieldAllocationProgram} from "@/services/field-wallet-allocations";
 import {FIRST_CONTRIBUTION_ROUND, FIRST_CONTRIBUTION_MAXIMUM} from "@/services/contribution-launch";
@@ -137,4 +138,11 @@ export function renderFieldAllocations(data: Awaited<ReturnType<typeof readField
   if (!("programs" in data)) return `${title}<p>${data.status === "unprovisioned" ? "The paying wallet is not configured." : "Allocation records are unavailable. No zero balance is inferred."}</p>${limits}`;
   const labels:Record<FieldAllocationProgram,string>={contributions:"Contribution rewards",shopping:"Shopping rewards",studies:"Field studies",credit:"Store-credit cash-outs",launch_checks:"Paid endpoint checks",directory_walks:"Paid directory reads"};
   return `${title}<p>${data.started_at ? `Tracking authorizations and accepted-work holds since ${esc(data.started_at)}.` : "No authorizations or accepted-work holds have been allocated yet. Older obligations are outside this ledger."}</p><table><tr><th>Program</th><th>Holds retained</th><th>USDC held</th></tr>${Object.entries(labels).map(([program,label])=>{const row=data.programs[program]!;return `<tr><td>${esc(label)}</td><td>${row.count}</td><td>${atomicToUsdc(row.amount_atomic)}</td></tr>`;}).join("")}</table><p>${data.work_reservations} work reservations or submissions hold funds before acceptance. ${data.contribution_commitments} acceptance funding holds, including uncertain reviews, are included in the contribution total, counted once even after authorization. ${data.released_contributions} paid contribution holds have been released through separate finalized-payment reconciliation. Ordinary payment checks do not release holds.</p><p>Total held: ${atomicToUsdc(data.held_atomic)} USDC. Balance observed: ${data.balance_atomic === null ? "Unavailable" : `${atomicToUsdc(data.balance_atomic)} USDC`}. Observation: ${esc(data.balance_observed_at ?? "None")}. This page does not refresh the chain or release holds.</p><p>Observed shortfall: ${data.observed_shortfall_atomic === null ? "Unavailable" : `${atomicToUsdc(data.observed_shortfall_atomic)} USDC`}. This compares counted holds with the retained balance reading; zero does not establish complete wallet coverage.</p>${limits}`;
+}
+
+export function renderCreditInventory(data: Awaited<ReturnType<typeof readCreditInventory>>) {
+  return `<h2>Accrued store credit</h2><p>Stored balance total: ${data.retained_balance_usdc ?? "Unavailable"} USDC. Read ${esc(data.read_at)}. ${data.coverage.valid_records} valid records out of ${data.coverage.records_read} listed; scan cap ${data.coverage.cap}${data.coverage.truncated ? "; more records exist" : ""}.</p>
+    ${data.gaps.length ? `<p>Gaps: ${esc(data.gaps.join(", "))}. Amounts below cover only readable records.</p>` : ""}
+    <table><tr><th>Stored credit category</th><th>USDC</th></tr><tr><td>Retained balances observed</td><td>${data.observed.retained_balance_usdc}</td></tr><tr><td>Due for idle expiry (included above)</td><td>${data.observed.idle_expiry_due_subset_usdc}</td></tr></table>
+    <p>${data.observed.claim_marker_records} records retain a cash-out claim marker. These markers do not establish payment.</p><p>${esc(data.limits)}</p>`;
 }

@@ -1,5 +1,22 @@
 # ROADMAP — September 2026
 
+## October 21 — expose manual rewards and accrued credit in the funding view
+
+The private funding report separates accepted manual-payment terms, including the
+subset with no payment report. Reports still do not discharge debt. A bounded,
+read-only credit inventory shows stored balances, idle-expiry-due balances and
+claim markers without expiring credit or treating a claim as payment. Truncated,
+missing or invalid records make the complete credit total unavailable; readable
+subsets remain labelled. Credit and wallet holds remain separate because cash-out
+can zero a balance before the authorization settles.
+
+This closes a visibility gap, not funding coverage. Remaining: manual-payment
+hold/reconciliation, credit accrual coordination and older other-program debt;
+external spending remains outside the coordinator. No cap change or new spending
+is included. After those bounded funding gaps, resume funded availability and
+acquisition/distribution rather than extending the accounting report indefinitely.
+[Scope](docs/FIELD_WALLET_ALLOCATIONS.md#private-funding-gap-inventory).
+
 ## October 21 — import older accepted contribution obligations
 
 The private submission desk can import an older accepted signed-authorization

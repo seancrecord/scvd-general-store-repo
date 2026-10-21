@@ -57,3 +57,16 @@ it('preserves sub-cent USDC authorizations in the combined inventory',()=>{
   expect(result.shopping_authorization_face_value_usd).toBe(0.001001);
   expect(result.reward_exposure_usd).toBe(2.501001);
 });
+
+it('separates manual terms from signed rewards without treating a manual report as payment',()=>{
+  const manual=contribution(); delete manual.reservations[0]!.payout;
+  const reported=contribution(); delete reported.reservations[0]!.payout;
+  reported.reservations[0]!.status='payment_reported';
+  reported.reservations[0]!.payment={tx_hash:'private-transaction',at:new Date(now).toISOString(),verification:'not_checked'};
+  const signed=contribution(); signed.terms.payment_method='signed_authorization';
+  const pending=contribution(); pending.reservations[0]!.status='submitted';
+  const result=summarizeRewardCommitments([manual,reported,signed,pending],[],[],now);
+  expect(result.contributions).toMatchObject({manual_terms_accepted_subset_usd:5,manual_terms_without_report_subset_usd:2.5,accepted_total_usd:7.5,accepted_unreconciled_usd:7.5,manual_report_subset_usd:2.5,conditional_reserved_or_submitted_usd:2.5});
+  expect(result.reward_exposure_usd).toBe(7.5);
+  expect(JSON.stringify(result)).not.toContain('private-transaction');
+});

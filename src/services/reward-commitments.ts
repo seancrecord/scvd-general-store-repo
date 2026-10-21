@@ -21,6 +21,7 @@ function seconds(value: string): number {
 }
 /** Face-value exposure in retained records, NOT a settlement or solvency check. */
 export function summarizeRewardCommitments(contributions: readonly ContributionTaskState[], bounties: readonly BountyRecord[], studies: readonly StudyRecord[], now: number) {
+  let manual = 0, manualUnreported = 0;
   let accepted = 0, issued = 0, reported = 0, pending = 0, available = 0, expired = 0, confirmed = 0;
   const counted = new Set<string>();
   const confirmationDates: string[] = [];
@@ -30,6 +31,10 @@ export function summarizeRewardCommitments(contributions: readonly ContributionT
     for (const row of task.reservations) {
       if (row.status === 'accepted' || row.status === 'payment_reported') {
         accepted += reward;
+        if (task.terms.payment_method !== 'signed_authorization') {
+          manual += reward;
+          if (!row.payment) manualUnreported += reward;
+        }
         const observation = confirmedContributionPayment(task, row, now);
         if (observation?.binding) {
           const identity = `${observation.binding.authorizer.toLowerCase()}:${observation.binding.nonce.toLowerCase()}`;
@@ -46,9 +51,9 @@ export function summarizeRewardCommitments(contributions: readonly ContributionT
   }
   const bounty = bounties.reduce((sum, row) => row.status === 'paid' && row.claim && seconds(row.claim.authorization_valid_before) * 1000 > now ? sum + atomic(row.reward_usd) : sum, 0);
   const study = studies.reduce((sum, row) => row.debrief && seconds(row.debrief.authorization_valid_before) * 1000 > now ? sum + atomic(row.debrief.reward_usd) : sum, 0);
-  if (![accepted, confirmed, issued, reported, pending, available, bounty, study, accepted+bounty+study].every(Number.isSafeInteger)) throw new Error('Reward total exceeds accounting range');
+  if (![manual, manualUnreported, accepted, confirmed, issued, reported, pending, available, bounty, study, accepted+bounty+study].every(Number.isSafeInteger)) throw new Error('Reward total exceeds accounting range');
   return {
-    contributions: {accepted_total_usd: atomicToUsdc(String(accepted)), confirmed_redemption_observed_usd: atomicToUsdc(String(confirmed)), accepted_unreconciled_usd: atomicToUsdc(String(accepted-confirmed)), confirmation_observed_from: confirmationDates.sort()[0] ?? null, confirmation_observed_through: confirmationDates.at(-1) ?? null, issued_authorization_subset_usd: atomicToUsdc(String(issued)), manual_report_subset_usd: atomicToUsdc(String(reported)), expired_authorizations: expired, conditional_reserved_or_submitted_usd: atomicToUsdc(String(pending)), available_slot_maximum_usd: atomicToUsdc(String(available))},
+    contributions: {manual_terms_accepted_subset_usd: atomicToUsdc(String(manual)), manual_terms_without_report_subset_usd: atomicToUsdc(String(manualUnreported)), accepted_total_usd: atomicToUsdc(String(accepted)), confirmed_redemption_observed_usd: atomicToUsdc(String(confirmed)), accepted_unreconciled_usd: atomicToUsdc(String(accepted-confirmed)), confirmation_observed_from: confirmationDates.sort()[0] ?? null, confirmation_observed_through: confirmationDates.at(-1) ?? null, issued_authorization_subset_usd: atomicToUsdc(String(issued)), manual_report_subset_usd: atomicToUsdc(String(reported)), expired_authorizations: expired, conditional_reserved_or_submitted_usd: atomicToUsdc(String(pending)), available_slot_maximum_usd: atomicToUsdc(String(available))},
     shopping_authorization_face_value_usd: atomicToUsdc(String(bounty)),
     study_authorization_face_value_usd: atomicToUsdc(String(study)),
     reward_exposure_usd: atomicToUsdc(String(accepted+bounty+study)),
