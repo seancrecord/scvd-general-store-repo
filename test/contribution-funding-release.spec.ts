@@ -26,7 +26,7 @@ function paid(){vi.mocked(rpc.getFinalizedBlockNumber).mockResolvedValue(102);vi
 async function funded(identity=id){await ledger().commitContribution(wallet,identity,recipient,"6000000",now);await ledger().reserve(wallet,"contributions",args(),now,identity);}
 async function release(identity=id,transaction=tx){return runInDurableObject(ledger(),async instance=>{try{return await instance.releaseContribution(wallet,identity,transaction,now);}catch(error){return {error:(error as Error).message};}});}
 beforeEach(async()=>{
- await runInDurableObject(ledger(),async(_,state)=>{for(const table of ["contribution_releases","contribution_commitments","allocations","allocation_meta"])state.storage.sql.exec(`DELETE FROM ${table}`);});
+ await runInDurableObject(ledger(),async(_,state)=>{for(const table of ["contribution_work_holds","contribution_releases","contribution_commitments","allocations","allocation_meta"])state.storage.sql.exec(`DELETE FROM ${table}`);});
  vi.spyOn(rpc,"getFinalizedBlockNumber").mockResolvedValue(100);
  vi.spyOn(rpc,"getBlockTimestamp").mockResolvedValue(new Date(now-1000));
  vi.spyOn(rpc,"usdcBalanceOf").mockResolvedValue(10000000n);

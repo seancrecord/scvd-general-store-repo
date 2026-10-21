@@ -10,12 +10,14 @@ export const FIELD_ALLOCATION_PROGRAMS = ["contributions", "shopping", "studies"
 export type FieldAllocationProgram = typeof FIELD_ALLOCATION_PROGRAMS[number];
 export interface ContributionFundingRelease {transaction:string; receipt_block:number; receipt_block_hash:string; finalized_block:number; balance_atomic:string; read_at:string}
 type ReleaseRow = {id:string; data:string};
+type WorkHold = {id:string; wallet:string; amount:string; state:"held" | "canceled" | "accepted"};
 type Commitment = {id:string; recipient:string; amount:string; nonce:string | null};
 type SigningRequest = Parameters<FieldSigner["signTypedData"]>[0];
 const ADDRESS = /^0x[0-9a-f]{40}$/i;
+const COMMITMENT_ID = /^[a-z0-9-]{3,64}:[a-f0-9-]{36}$/;
 const NONCE = /^0x[0-9a-f]{64}$/i;
 const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
-export const FIELD_ALLOCATION_LIMITS = `Allocations cover new Base USDC authorizations passing through this deployment's ${FIELD_ALLOCATION_PROGRAMS.length} field-wallet signing paths. They are persisted before signing, including failed or uncertain signing attempts. A hold stays until a finalized block after its expiry supplies the balance used for the next allocation; redemption alone does not release it early. New signed-authorization contribution acceptances also hold funds through issuance and expiry. A separate private funding reconciliation releases an acceptance hold only after matching its exact transfer in a canonical finalized block and retaining a balance at or after that payment. Payment observations alone do not release holds. Older authorizations and acceptances, work not yet accepted, legacy manual-payment briefs, accruing store credit, external scripts and direct wallet transfers are not reserved here. This is not full wallet coverage or permission to raise caps. No gas is paid.`;
+export const FIELD_ALLOCATION_LIMITS = `Allocations cover new Base USDC authorizations passing through this deployment's ${FIELD_ALLOCATION_PROGRAMS.length} field-wallet signing paths. They are persisted before signing, including failed or uncertain signing attempts. A hold stays until a finalized block after its expiry supplies the balance used for the next allocation; redemption alone does not release it early. New signed-authorization contribution reservations hold their reward before work may begin. Submitted work keeps its hold through review; acceptance inherits it through issuance and expiry. Unused expired or released reservations and rejected work are canceled by the task actor; uncertain cleanup stays held until retried. A separate private funding reconciliation releases an acceptance hold only after matching its exact transfer in a canonical finalized block and retaining a balance at or after that payment. Payment observations alone do not release holds. Older authorizations, reservations and acceptances, unreserved work, legacy manual-payment briefs, accruing store credit, external scripts and direct wallet transfers are not reserved here. This is not full wallet coverage or permission to raise caps. No gas is paid.`;
 export class FieldAllocationUnavailable extends Error {constructor() {super("Field wallet allocation unavailable");}}
 function unavailable(): never {throw new FieldAllocationUnavailable();}
 function integer(value: unknown): bigint {
@@ -46,11 +48,13 @@ export class FieldWalletAllocations extends DurableObject<Env> {
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS allocation_meta (id INTEGER PRIMARY KEY CHECK(id=1), wallet TEXT NOT NULL, block INTEGER NOT NULL, timestamp INTEGER NOT NULL, balance TEXT NOT NULL, read_at TEXT NOT NULL, started_at TEXT NOT NULL)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS allocations (nonce TEXT PRIMARY KEY, program TEXT NOT NULL, amount TEXT NOT NULL, valid_before INTEGER NOT NULL, terms TEXT NOT NULL)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_commitments (id TEXT PRIMARY KEY, recipient TEXT NOT NULL, amount TEXT NOT NULL, nonce TEXT UNIQUE)");
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_work_holds (id TEXT PRIMARY KEY, wallet TEXT NOT NULL, amount TEXT NOT NULL, state TEXT NOT NULL)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_releases (id TEXT PRIMARY KEY, data TEXT NOT NULL)");
   }
+  private workHold(id: string) {return this.ctx.storage.sql.exec<WorkHold>("SELECT * FROM contribution_work_holds WHERE id=?",id).toArray()[0];}
   private released(id: string): ContributionFundingRelease | undefined {const row=this.ctx.storage.sql.exec<ReleaseRow>("SELECT * FROM contribution_releases WHERE id=?",id).toArray()[0];return row ? JSON.parse(row.data) as ContributionFundingRelease : undefined;}
   private commitment(id: string) {return this.ctx.storage.sql.exec<Commitment>("SELECT * FROM contribution_commitments WHERE id=?",id).toArray()[0];}
-  private holds() {return this.ctx.storage.sql.exec<{program:string;amount:string}>("SELECT program,amount FROM allocations WHERE nonce NOT IN (SELECT nonce FROM contribution_commitments WHERE nonce IS NOT NULL) UNION ALL SELECT 'contributions' AS program,amount FROM contribution_commitments WHERE id NOT IN (SELECT id FROM contribution_releases)");}
+  private holds() {return this.ctx.storage.sql.exec<{program:string;amount:string}>("SELECT program,amount FROM allocations WHERE nonce NOT IN (SELECT nonce FROM contribution_commitments WHERE nonce IS NOT NULL) UNION ALL SELECT 'contributions' AS program,amount FROM contribution_commitments WHERE id NOT IN (SELECT id FROM contribution_releases) UNION ALL SELECT 'contributions' AS program,amount FROM contribution_work_holds WHERE state='held'");}
   private meta() {return this.ctx.storage.sql.exec<{wallet:string;block:number;timestamp:number;balance:string;read_at:string;started_at:string}>("SELECT * FROM allocation_meta WHERE id=1").toArray()[0];}
   private held(nonce: string) {return this.ctx.storage.sql.exec<{terms:string;program:string}>("SELECT terms,program FROM allocations WHERE nonce=?",nonce).toArray()[0];}
   private async balance(wallet: string, now: number) {
@@ -74,15 +78,55 @@ export class FieldWalletAllocations extends DurableObject<Env> {
     let held=0n; for (const row of this.holds()) held+=BigInt(row.amount);
     if (held+additional > BigInt(reading.balance)) return unavailable();
   }
+  /** Work owns its hold before the visitor may begin. Only the task actor can
+   * cancel unused/rejected work; ledger clocks never expire submitted evidence. */
+  async reserveContributionWork(wallet: string, id: string, amount: string, now=Date.now()) {
+    if(!ADDRESS.test(wallet) || !COMMITMENT_ID.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0) return unavailable();
+    wallet=wallet.toLowerCase();
+    const matches=(row:WorkHold)=>{if(row.wallet!==wallet || row.amount!==amount || row.state!=="held")return unavailable();return {reserved:true,reused:true};};
+    if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.commitment(id))return unavailable();
+    const old=this.workHold(id);if(old)return matches(old);
+    const reading=await this.balance(wallet,now);
+    const raced=this.workHold(id);if(raced)return matches(raced);
+    if(this.commitment(id))return unavailable();
+    return this.ctx.storage.transactionSync(()=>{
+      this.capacity(wallet,reading,BigInt(amount));
+      this.ctx.storage.sql.exec("INSERT INTO contribution_work_holds(id,wallet,amount,state) VALUES(?,?,?,'held')",id,wallet,amount);
+      return {reserved:true,reused:false};
+    });
+  }
+  /** Persist cancellation even if funding has not answered yet. A delayed
+   * reservation cannot recreate the hold after the task has stopped the work. */
+  cancelContributionWork(wallet: string, id: string, amount: string) {
+    if(!ADDRESS.test(wallet) || !COMMITMENT_ID.test(id) || integer(amount)<=0n)return unavailable();
+    wallet=wallet.toLowerCase();
+    const old=this.workHold(id);
+    if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.commitment(id) || old && (old.wallet!==wallet || old.amount!==amount || old.state==="accepted"))return unavailable();
+    this.ctx.storage.sql.exec("INSERT INTO contribution_work_holds(id,wallet,amount,state) VALUES(?,?,?,'canceled') ON CONFLICT(id) DO UPDATE SET state='canceled'",id,wallet,amount);
+    return {canceled:true};
+  }
   /** Acceptance owns a permanent identity. A failed response can be retried
    * without allocating again; neither deadlines nor signing release the debt. */
   async commitContribution(wallet: string, id: string, recipient: string, amount: string, now=Date.now()) {
-    if (!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || /^0x0{40}$/i.test(recipient) || !/^[a-z0-9-]{3,64}:[a-f0-9-]{36}$/.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0) return unavailable();
+    if (!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || /^0x0{40}$/i.test(recipient) || !COMMITMENT_ID.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0) return unavailable();
     wallet=wallet.toLowerCase(); recipient=recipient.toLowerCase();
     const matches=(row:Commitment)=>{if(row.recipient!==recipient || row.amount!==amount) return unavailable();return {reserved:true,reused:true};};
     if(this.meta()?.wallet && this.meta()!.wallet!==wallet) return unavailable();
     const old=this.commitment(id);if(old) {if(this.released(id)) return unavailable();return matches(old);}
+    const work=this.workHold(id);
+    if(work) {
+      if(work.state!=="held" || work.wallet!==wallet || work.amount!==amount)return unavailable();
+      // The accepted obligation inherits the existing work hold. No new money
+      // is reserved and a transient RPC outage cannot invalidate earned work.
+      return this.ctx.storage.transactionSync(()=>{
+        this.ctx.storage.sql.exec("INSERT INTO contribution_commitments(id,recipient,amount,nonce) VALUES(?,?,?,NULL)",id,recipient,amount);
+        this.ctx.storage.sql.exec("UPDATE contribution_work_holds SET state='accepted' WHERE id=?",id);
+        return {reserved:true,reused:true};
+      });
+    }
     const reading=await this.balance(wallet,now);
+    // A cancellation may have arrived while the legacy acceptance read waited.
+    if(this.workHold(id))return unavailable();
     const raced=this.commitment(id);if(raced) {if(this.released(id)) return unavailable();return matches(raced);}
     return this.ctx.storage.transactionSync(()=>{
       this.capacity(wallet,reading,BigInt(amount));
@@ -157,7 +201,7 @@ export class FieldWalletAllocations extends DurableObject<Env> {
       const p=programs[row.program]; if (!p) return unavailable();
       p.count++; p.amount_atomic=String(BigInt(p.amount_atomic)+BigInt(row.amount)); total+=BigInt(row.amount);
     }
-    return {started_at:meta?.started_at ?? null, balance_observed_at:meta?.read_at ?? null, finalized_block:meta?.block ?? null, balance_atomic:meta?.balance ?? null, held_atomic:String(total), programs, contribution_commitments:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_commitments WHERE id NOT IN (SELECT id FROM contribution_releases)").one().count, released_contributions:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_releases").one().count, spendable_atomic:null, limits:FIELD_ALLOCATION_LIMITS};
+    return {started_at:meta?.started_at ?? null, balance_observed_at:meta?.read_at ?? null, finalized_block:meta?.block ?? null, balance_atomic:meta?.balance ?? null, held_atomic:String(total), programs, contribution_commitments:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_commitments WHERE id NOT IN (SELECT id FROM contribution_releases)").one().count, work_reservations:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_work_holds WHERE state='held'").one().count, released_contributions:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_releases").one().count, spendable_atomic:null, limits:FIELD_ALLOCATION_LIMITS};
   }
 }
 export function allocationLedger(env: Env, wallet: string) {

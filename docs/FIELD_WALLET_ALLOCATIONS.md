@@ -57,7 +57,7 @@ cannot create an unprovisioned class. Missing storage fails closed at signing.
 
 This is prospective authorization and acceptance coordination, not a complete
 reservation of all obligations. The ledger begins with authorizations routed through this
-version. Older outstanding authorizations and acceptances, work not yet accepted, legacy
+version. Older outstanding authorizations, reservations and acceptances, unreserved work, legacy
 manual-payment contribution commitments,
 credit not yet cashed out, external wallet scripts and direct wallet transfers
 remain outside it. The previous reward inventory is non-atomic and eventually
@@ -158,3 +158,61 @@ overtaken releases, atomic rollback, interrupted task saves, exact payment
 mismatches, canonical-block lookup, route authentication and private/public
 separation. The stale-allocation test is witnessed failing when the atomic balance
 floor update is removed, then passing when restored.
+
+
+## October 21: fund work before a new reservation succeeds
+
+For signed-authorization contribution briefs, a new reservation first saves its
+identity and deadline, then requests the exact reward from the shared wallet
+ledger. Only a confirmed hold returns `status: reserved`. `funding_pending` blocks
+submission and provides a same-key reserve retry or cancellation. A failed or lost
+response retains the original key, identity, wallet once resolved, and deadline;
+no replacement identity or deadline extension is needed. The pending attempt
+occupies its slot until released or expired, preventing a second worker from
+starting it. Public availability is a slot count, not a live funding assertion.
+
+Reservation does not ask for a payout address; the worker supplies it with their report. A
+submitted report remains held through review, beyond the original submission
+deadline. Acceptance binds the immutable recipient and amount and converts the
+work hold into the acceptance commitment in one transaction. It does not allocate
+again or make earned acceptance depend on a new RPC read. Issuance retains its
+fresh shared-balance check, and finalized-payment release remains a separate
+keeper action. Rotation uses the original retained wallet; a new key cannot move
+this obligation.
+
+Unused release or expiry and keeper rejection stop the work in the task record
+before canceling its wallet hold. The ledger saves a cancellation tombstone even
+when the funding request has not answered yet. A delayed balance read cannot
+recreate that canceled identity. Accepted commitments cannot be canceled through
+this path. No funds moved during cancellation, so it does not require a new
+balance read or pretend that a transfer occurred.
+
+A cleanup alarm is armed before starting or stopping funded work. It preserves
+the earliest expiry and visitor-digest maintenance. Cleanup re-arms before RPC,
+keeps uncertain holds conservative, and retries interrupted cleanup, including
+a crash after saving a terminal decision but before saving the cleanup intent. The same
+release/rejection request also repairs a lost reply. The platform alarm handler
+uses the same explicitly clocked maintenance method as the tests. At most the
+existing bounded reservation list is processed; no wallet-wide scan is added.
+The [Cloudflare alarm contract](https://developers.cloudflare.com/durable-objects/api/alarms/)
+defines the platform callback and its one-alarm scheduling behavior.
+
+Private status distinguishes pending, held, transferred-to-acceptance, cleanup
+pending, and released funding. The private desk and aggregate inventory show work
+holds separately from acceptance holds, counted once in the shared total. Wallet
+and hold identities remain private; public briefs state only whether new
+reservations require this funding path. This is internal allocation rather than
+escrow, payment, full-wallet coverage or a net-income guarantee.
+
+Existing reservations without work-funding metadata keep their original path;
+signed work can still acquire its hold at acceptance. Manual-payment briefs are
+unchanged. No budget, price, paid slot, gas sponsorship or payment was added.
+Outstanding coverage remains older/manual obligations, credit accrual before
+cash-out, and external wallet spenders.
+
+Validation covers competing work and other-program authorizations, immutable
+retries, delayed funding versus cancellation, cleanup failures and alarms,
+reservation expiry versus submitted work, atomic acceptance conversion, wallet
+rotation, legacy behavior and private discovery instructions. Removing work holds
+from the shared total makes the competing-reservation test fail with two funded
+six-USDC reservations against ten USDC; restoring the total passes.

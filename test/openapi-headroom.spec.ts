@@ -93,6 +93,8 @@ describe("OpenAPI headroom with all checkout rails enabled", () => {
         const tasks = (before.properties.contribution_list as {properties:{tasks:{items:{properties:Record<string,unknown>}}}}).properties.tasks.items.properties;
         expect(tasks.redemption).toEqual(CONTRIBUTION_SCHEMAS.ContributionRedemption);
         delete tasks.redemption;
+        expect(tasks.reservation_funding).toEqual({type:"string",enum:["required_for_new_reservations","not_managed"]});
+        delete tasks.reservation_funding;
         expect(before, pointer).toEqual(schema);
       } else {
         expect(expanded, pointer).toEqual(schema);
