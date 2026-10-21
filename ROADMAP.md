@@ -1,5 +1,20 @@
 # ROADMAP — September 2026
 
+## October 21 — fund new contribution reservations before work begins
+
+New reservations on signed-authorization briefs now hold the exact reward in the
+shared wallet ledger before returning permission to start. Pending funding keeps
+the same reservation identity and deadline, blocks submission, and tells the
+worker to retry with the same key. Submission retains the hold through review;
+acceptance converts it atomically without allocating twice. Unused released or
+expired reservations and rejected work cancel through durable, retriable cleanup.
+A canceled identity cannot be recreated by a late funding response. Older
+reservations and manual-payment terms retain their existing behavior.
+Next: reconcile older/manual obligations, accruing credit and external spenders;
+then increase approved funded availability and return to acquisition/distribution.
+No gas sponsorship, new brief, payment or cap increase is introduced.
+[Implementation and limits](docs/FIELD_WALLET_ALLOCATIONS.md).
+
 ## October 21 — release paid contribution funding holds
 
 The private contribution desk now has a separate finalized-payment reconciliation.

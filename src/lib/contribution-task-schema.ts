@@ -25,12 +25,14 @@ export const CONTRIBUTION_SCHEMAS = {
   ContributionTask: {type: "object", required: ["id", "reward_usd", "available_slots", "purchase_required"], properties: {
     ...Object.fromEntries(["id", "kind", "title", "target", "brief", "acceptance", "expires_at", "published_at", "status", "payment_method", "availability_reason", "task_url"].map(k => [k, text])),
     ...Object.fromEntries(["slots", "review_days", "payment_days", "available_slots", "pending_review"].map(k => [k, {type: "integer"}])),
+    reservation_funding: {type:"string",enum:["required_for_new_reservations","not_managed"]},
     reward_usd: {type: "number"}, maximum_reward_usd: {type: "number"}, redemption: ref("ContributionRedemption"), purchase_required: {type: "boolean", const: false},
   }},
   ContributionState: {type: "object", required: ["task_id", "submission_id", "status", "reward_usd", "submit_by"], properties: {
     ...Object.fromEntries(["task_id", "submission_id", "status", "reserved_at", "submit_by", "task_kind", "arrival_goal"].map(k => [k, text])),
     reward_usd: {type: "number"}, review_due_at: {type: ["string", "null"]}, payment_due_at: {type: ["string", "null"]},
     review: {type: "object", properties: Object.fromEntries(["decision", "reason", "outcome", "reference", "at"].map(k => [k, text]))},
+    work_funding_state: {type:"string",enum:["pending","held","transferred","release_pending","released"],description:"Present for new signed-authorization reservations. Pending means do not start or submit; retry reserve with the same key. Submitted work stays held until review; transferred means the same hold now backs acceptance. This is an internal allocation, not escrow or payment."},
     acceptance_funding_release: {type:"object",description:"Retained finalized-payment reconciliation that released the internal hold. No new transfer or gas was sent.",properties:{transaction:text,receipt_block:{type:"integer"},read_at:text}},
     acceptance_funding_state: {type:"string",enum:["pending","held","released"],description:"Present for newly funded signed-authorization acceptances. Pending work remains submitted; held is an internal funding reservation, not payment or full wallet coverage. Released means the hold was reconciled against finalized payment."},
     payout: ref("ContributionPayout"), acceptance_receipt: ref("ContributionAcceptanceReceipt"), acceptance_receipt_inputs: {type: "object", description: "Private original objects for independent digest comparison; never published on the board.", properties: {terms: {type: "object"}, report: ref("ContributionReportStrings"), review: {type: "object"}}}, acceptance_receipt_state: {type: "string", enum: ["issued", "unavailable"]},
