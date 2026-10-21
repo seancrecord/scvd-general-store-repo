@@ -1,5 +1,15 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-21 — durable obligation import transactions
+
+Read [Cloudflare SQLite-backed storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/#transactionsync)
+(page updated September 21, 2026). `transactionSync` commits a synchronous callback
+atomically and rolls it back on an exception. Applied to the balance observation,
+authorization allocation and permanent contribution-obligation link; chain reads
+finish before the transaction. The page was reachable. This is storage-contract
+validation, not a new on-chain payment observation or a production migration.
+[Implementation](FIELD_WALLET_ALLOCATIONS.md#october-21--import-older-issued-contribution-obligations).
+
 ## 2026-10-16 — task entry points for visitor acquisition
 
 Read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features)

@@ -1,7 +1,7 @@
 import {allocationLedger, type ContributionFundingRelease} from "@/services/field-wallet-allocations";
 import {reconcileContributionPayment, type ContributionPaymentChecks} from "@/services/contribution-reconciliation";
 import {signContributionAcceptance, type ContributionReceipt} from "@/services/contribution-receipt";
-import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionFundingWallet, reserveContributionAcceptance, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
+import {CONTRIBUTION_REDEMPTION, CONTRIBUTION_AUTH_SECONDS, contributionFundingWallet, contributionSigningRequest, reserveContributionAcceptance, contributionRewardUnits, contributionSigner, signContributionReward, privateContributionPayout, type ContributionPayout} from "@/services/contribution-payout";
 import { DurableObject } from "cloudflare:workers";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { sha256Hex } from "@/lib/idempotency";
@@ -25,7 +25,7 @@ export interface ContributionReservation {
   report?: ContributionReport; payout_to?: string; submission_digest?: string; submitted_at?: string;
   review?: {decision: string; reason: string; outcome: string; reference: string; at: string};
   work_funding?: {id:string; wallet?:string; state:"pending" | "held" | "release_pending" | "released"};
-  acceptance_funding?: {id:string; wallet?:string; state:"pending" | "held"; review:NonNullable<ContributionReservation["review"]>};
+  acceptance_funding?: {id:string; wallet?:string; state:"pending" | "held"; source?:"legacy_import"; review:NonNullable<ContributionReservation["review"]>};
   acceptance_funding_release?: ContributionFundingRelease;
   payout?: ContributionPayout;
   payment_checks?: ContributionPaymentChecks;
@@ -236,6 +236,36 @@ export class ContributionTask extends DurableObject<Env> {
       return {status:200,data:ownReservation(state,row,now)};
     } catch {return {status:503,data:{code:"funding_release_unavailable",error:"Finalized payment and funding release could not be established or saved. Retry this same submission and transaction; do not send another payment."}};}
   }
+  /** Keep any original authorization; otherwise retain the configured wallet
+   * before I/O. Importing debt never changes acceptance or creates a signature. */
+  async importRewardFunding(body: Record<string, unknown>, now=Date.now()): Promise<Result> {
+    try {onlyFields(body,["submission_id"]);if(typeof body.submission_id!=="string" || !body.submission_id || body.submission_id.length>128)fail("Send a submission id.");}
+    catch {return {status:400,data:{code:"invalid_input",error:"Send only submission_id."}};}
+    let state=this.read(),row=state?.reservations.find(r=>r.id===body.submission_id);
+    const a=row?.payout?.authorization;
+    if(!state || !row || row.status!=="accepted" || row.review?.decision!=="accepted" || state.terms.payment_method!=="signed_authorization" || row.payment || row.work_funding || row.acceptance_funding && row.acceptance_funding.source!=="legacy_import" || !row.payout_to || a && (a.to.toLowerCase()!==row.payout_to.toLowerCase() || a.value!==contributionRewardUnits(state.terms.reward_usd))) return {status:409,data:{code:"funding_import_not_available",error:"An older accepted contribution under signed-authorization terms is required. Any retained authorization must match its reward and recipient. Manual payments and already managed work are unchanged."}};
+    const id=`${state.terms.id}:${row.id}`;
+    if(row.acceptance_funding && (row.acceptance_funding.id!==id || a && row.acceptance_funding.wallet && row.acceptance_funding.wallet!==a.from.toLowerCase()))return {status:409,data:{code:"funding_import_mismatch",error:"The retained funding identity differs from this authorization. No replacement was made."}};
+    if(row.acceptance_funding?.state==="held")return {status:200,data:ownReservation(state,row,now)};
+    try {
+      // Persist pending before resolving the wallet: an overlapping issuance
+      // must not start an unlinked allocation while this import is in progress.
+      if(!row.acceptance_funding){row.acceptance_funding={id,state:"pending",source:"legacy_import",review:row.review,...(a ? {wallet:a.from.toLowerCase()} : {})};this.save(state);}
+      if(!row.acceptance_funding.wallet){
+        const wallet=(await contributionFundingWallet(this.env)).toLowerCase();
+        state=this.read()!;row=state.reservations.find(r=>r.id===body.submission_id)!;
+        if(!row.acceptance_funding!.wallet){row.acceptance_funding!.wallet=wallet;this.save(state);}
+      }
+      const wallet=row.acceptance_funding!.wallet!,intent=row.payout?.authorization;
+      if(intent){
+        if(intent.from.toLowerCase()!==wallet)throw new Error("Funding identity changed");
+        await allocationLedger(this.env,wallet).importContribution(wallet,id,contributionSigningRequest(intent),now);
+      } else await allocationLedger(this.env,wallet).importContributionDebt(wallet,id,row.payout_to!,contributionRewardUnits(state.terms.reward_usd),now);
+      state=this.read()!;row=state.reservations.find(r=>r.id===body.submission_id)!;
+      row.acceptance_funding!.state="held";this.save(state);
+      return {status:200,data:ownReservation(state,row,now)};
+    } catch {return {status:503,data:{code:"funding_import_unavailable",error:"The existing obligation could not be imported or its result saved. Retry this same submission. Its acceptance and payment deadline are unchanged; do not issue another payment."}};}
+  }
   /** The durable review intent is the retry identity across the two actors.
    * A lost reply leaves the work submitted and the same hold recoverable. */
   private async fundAcceptance(submissionId: string, now: number): Promise<Result> {
@@ -266,9 +296,12 @@ export class ContributionTask extends DurableObject<Env> {
       let row = state?.reservations.find(r => r.id === body.submission_id);
       if (!state || !row || row.status !== "accepted" || state.terms.payment_method !== "signed_authorization" || row.payment) return refuse("not_authorizable", "An accepted submission under signed-authorization terms is required. Existing terms are unchanged.");
       if (row.payout?.signature) return {status: 200, data: ownReservation(state, row, now)};
-      const signer = await contributionSigner(this.env,row.acceptance_funding?.id);
+      if(row.acceptance_funding?.source==="legacy_import" && row.acceptance_funding.state==="pending")return refuse("funding_import_pending", "Retry the existing obligation import before issuing its reward. The original acceptance and payment deadline are unchanged.");
+      const fundingId=row.acceptance_funding?.id;
+      const signer = await contributionSigner(this.env,fundingId);
       state = this.read()!; row = state.reservations.find(r => r.id === body.submission_id)!;
       if (row.payout?.signature) return {status: 200, data: ownReservation(state, row, now)};
+      if(row.acceptance_funding?.id!==fundingId)return refuse("funding_changed", "Funding changed while preparing this reward. Retry this same submission so its authorization uses the retained obligation.");
       if (row.acceptance_funding && (row.acceptance_funding.state !== "held" || row.acceptance_funding.wallet?.toLowerCase() !== signer.address.toLowerCase())) return refuse("payout_wallet_changed", "The wallet holding this accepted reward is required. No replacement authorization was made.");
       if (!row.payout) {
         row.payout = {created_at: new Date(now).toISOString(), authorization: {from: signer.address, to: row.payout_to!,
@@ -280,6 +313,11 @@ export class ContributionTask extends DurableObject<Env> {
       const intent = row.payout;
       if (intent.authorization.from.toLowerCase() !== signer.address.toLowerCase()) return refuse("payout_wallet_changed", "The original signing wallet is required. No replacement authorization was made.");
       if (Number(intent.authorization.validBefore) * 1000 <= now) return refuse("authorization_expired", "The saved authorization window expired. No new nonce was created; review the retained record before resolving this obligation.");
+      if(row.acceptance_funding?.source==="legacy_import") {
+        await allocationLedger(this.env,signer.address).checkContributionCapacity(signer.address,row.acceptance_funding.id,now);
+        state=this.read()!;row=state.reservations.find(r=>r.id===body.submission_id)!;
+        if(row.payout?.signature)return {status:200,data:ownReservation(state,row,now)};
+      }
       const signature = await signContributionReward(this.env, signer, intent.authorization);
       state = this.read()!; row = state.reservations.find(r => r.id === body.submission_id)!;
       if (!row.payout?.signature) {
