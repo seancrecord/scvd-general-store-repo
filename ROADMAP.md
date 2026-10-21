@@ -54,6 +54,11 @@ store-skill examples point to these existing destinations. Owned catalog drafts
 and the ClawHub bundle are refreshed; external publication is tracked separately.
 Next: release through CI and verify the live paths, then publish the prepared
 distribution updates. Additional study receipts and new pilots remain deferred.
+**October 21 scoped update:** the keeper approved the existing SCVD Attestation
+operating packet and its PR/merge. This reopens preparation for that single
+bounded offer, not new pilot products or model studies. The implementation is
+already merged in #996; [operating gates](docs/SCVD_ATTESTATION_PILOT_2026-10.md#october-21--operating-packet-approved)
+and the existing KEEPER_LIST entry hold customer follow-through. No build added.
 [Scope and release checks](docs/AGENT_TASK_ENTRY_2026-10.md).
 Follow-up prepared: private task request counts and a bounded cross-program reward
 inventory. Counts do not claim people, search discovery or completed work. Reward
