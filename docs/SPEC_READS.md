@@ -1,5 +1,18 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-22 — manual contribution payment reconciliation
+
+Read [ERC-20 Transfer](https://eips.ethereum.org/EIPS/eip-20#transfer-1),
+[Ethereum receipt fields](https://ethereum.org/developers/docs/apis/json-rpc/#eth_gettransactionreceipt),
+and [Cloudflare SQLite transactions](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/#transactionsync).
+The manual path matches the indexed sender/recipient and exact value in canonical
+Base USDC, checks successful receipt identity and canonical finalized block, and
+binds one transaction to one manual obligation atomically with the balance floor.
+This deliberately excludes split/batched transfers and authorization-bearing USDC
+receipts. These docs do not establish a particular payment's purpose or full wallet
+coverage; the keeper's immutable report selects the candidate and the original
+acceptance time bounds it. No production payment or RPC result was used as proof.
+
 ## 2026-10-21 — durable obligation import transactions
 
 Read [Cloudflare SQLite-backed storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/#transactionsync)

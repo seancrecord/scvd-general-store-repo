@@ -26,6 +26,7 @@ export interface ContributionReservation {
   review?: {decision: string; reason: string; outcome: string; reference: string; at: string};
   work_funding?: {id:string; wallet?:string; state:"pending" | "held" | "release_pending" | "released"};
   acceptance_funding?: {id:string; wallet?:string; state:"pending" | "held"; source?:"legacy_import"; review:NonNullable<ContributionReservation["review"]>};
+  manual_funding?: {id:string; wallet?:string; state:"pending" | "held"; release?:ContributionFundingRelease};
   acceptance_funding_release?: ContributionFundingRelease;
   payout?: ContributionPayout;
   payment_checks?: ContributionPaymentChecks;
@@ -235,6 +236,43 @@ export class ContributionTask extends DurableObject<Env> {
       row.acceptance_funding_release=release;this.save(state);
       return {status:200,data:ownReservation(state,row,now)};
     } catch {return {status:503,data:{code:"funding_release_unavailable",error:"Finalized payment and funding release could not be established or saved. Retry this same submission and transaction; do not send another payment."}};}
+  }
+  /** Manual terms keep their original recipient and review. The paying wallet
+   * is retained once; imports and later observations never send money. */
+  async importManualFunding(body: Record<string, unknown>, now=Date.now()): Promise<Result> {
+    try {onlyFields(body,["submission_id"]);if(typeof body.submission_id!=="string" || !body.submission_id || body.submission_id.length>128)fail("Send a submission id.");}
+    catch {return {status:400,data:{code:"invalid_input",error:"Send only submission_id."}};}
+    let state=this.read(),row=state?.reservations.find(r=>r.id===body.submission_id);
+    if(!state || !row || !["accepted","payment_reported"].includes(row.status) || row.review?.decision!=="accepted" || state.terms.payment_method || row.payout || row.acceptance_funding || row.work_funding || !row.payout_to)return {status:409,data:{code:"manual_funding_not_available",error:"An accepted manual-payment obligation with its retained recipient is required."}};
+    const id=`${state.terms.id}:${row.id}`;
+    if(row.manual_funding && row.manual_funding.id!==id)return {status:409,data:{code:"manual_funding_mismatch",error:"The retained funding identity differs. No replacement was made."}};
+    if(row.manual_funding?.state==="held")return {status:200,data:ownReservation(state,row,now)};
+    try {
+      if(!row.manual_funding){row.manual_funding={id,state:"pending"};this.save(state);}
+      if(!row.manual_funding.wallet){
+        const wallet=(await contributionFundingWallet(this.env)).toLowerCase();
+        state=this.read()!;row=state.reservations.find(r=>r.id===body.submission_id)!;
+        if(!row.manual_funding!.wallet){row.manual_funding!.wallet=wallet;this.save(state);}
+      }
+      const wallet=row.manual_funding!.wallet!;
+      await allocationLedger(this.env,wallet).importManualContribution(wallet,id,row.payout_to!,contributionRewardUnits(state.terms.reward_usd),Date.parse(row.review!.at),now);
+      state=this.read()!;row=state.reservations.find(r=>r.id===body.submission_id)!;
+      row.manual_funding!.state="held";this.save(state);
+      return {status:200,data:ownReservation(state,row,now)};
+    } catch {return {status:503,data:{code:"manual_funding_unavailable",error:"Import could not be confirmed. Retry this same submission; its terms and payment deadline are unchanged. No payment was sent."}};}
+  }
+  async releaseManualFunding(body: Record<string, unknown>, now=Date.now()): Promise<Result> {
+    try {onlyFields(body,["submission_id"]);if(typeof body.submission_id!=="string" || !body.submission_id || body.submission_id.length>128)fail("Send a submission id.");}
+    catch {return {status:400,data:{code:"invalid_input",error:"Send only submission_id; the original reported transaction is used."}};}
+    let state=this.read(),row=state?.reservations.find(r=>r.id===body.submission_id);
+    const funding=row?.manual_funding;
+    if(!state || !row || state.terms.payment_method || row.payout || row.status!=="payment_reported" || !row.payment || funding?.state!=="held" || !funding.wallet || funding.id!==`${state.terms.id}:${row.id}`)return {status:409,data:{code:"manual_release_not_available",error:"Import the accepted manual obligation and record its original payment transaction before reconciling."}};
+    try {
+      const release=await allocationLedger(this.env,funding.wallet).releaseManualContribution(funding.wallet,funding.id,row.payment.tx_hash,now);
+      state=this.read()!;row=state.reservations.find(r=>r.id===body.submission_id)!;
+      row.manual_funding!.release=release;this.save(state);
+      return {status:200,data:ownReservation(state,row,now)};
+    } catch {return {status:503,data:{code:"manual_release_unavailable",error:"The reported payment could not be reconciled. The hold remains until confirmed; retry this same submission. Batched, split, different-wallet or authorization-bearing payments require separate resolution. Do not send another payment."}};}
   }
   /** Keep any original authorization; otherwise retain the configured wallet
    * before I/O. Importing debt never changes acceptance or creates a signature. */
