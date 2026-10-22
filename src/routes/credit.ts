@@ -37,6 +37,7 @@ const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 const CHALLENGE_TTL_SECONDS = 300;
 
 function challengeText(address: string, nonce: string): string {
+  if(nonce.startsWith("recovery:"))return `scvd.store credit cash-out recovery for ${address.toLowerCase()} — nonce ${nonce}. Signing this only retrieves the saved authorization for this wallet; it does not authorize a new cash-out.`;
   return `scvd.store credit cash-out for ${address.toLowerCase()} — nonce ${nonce}. Signing this authorizes sending the wallet's full credit balance to the wallet itself, nowhere else.`;
 }
 
@@ -73,6 +74,7 @@ function creditHtml(base: string, outstandingUsd: number): string {
       <p class="menu-desc"><strong>1.</strong> <code>POST /api/credit/challenge</code> with <code>{"address":"0x…"}</code> — you get a single-use challenge string, good for five minutes.</p>
       <p class="menu-desc"><strong>2.</strong> Sign it with the wallet's own key (EIP-191 <code>personal_sign</code>, EOA only — the same discipline the claims door uses).</p>
       <p class="menu-desc"><strong>3.</strong> <code>POST /api/credit/redeem</code> with <code>{"address","signature"}</code>. The full balance comes back as a signed EIP-3009 authorization payable <em>only</em> to that wallet, which you redeem on Base yourself. There is no <code>payout_to</code> to steal, because there is nowhere else the money can go.</p>
+      <p class="menu-desc">Lost a cash-out response? Request a fresh challenge with <code>{"address":"0x…","recovery_only":true}</code>, sign it, then send <code>{"address","signature","recovery_only":true}</code> to the same redeem endpoint. This returns the saved authorization with its original nonce and expiry, even after the paying wallet changes. It does not spend newly accrued credit, sign another payout or prove on-chain payment. Older or unsaved authorizations may be unavailable.</p>
     </section>
     <section>
       <h2>On the books, in public</h2>
@@ -244,13 +246,15 @@ creditRoutes.post("/api/credit/challenge", async (c) => {
     isRecord(body) && typeof body["address"] === "string"
       ? body["address"].trim()
       : "";
+  const recoveryOnly=isRecord(body) && body["recovery_only"]===true;
+  if(isRecord(body) && body["recovery_only"]!==undefined && typeof body["recovery_only"]!=="boolean")return c.json({error:"recovery_only must be a boolean."},400);
   if (!ADDRESS.test(address)) {
     return c.json(
       { error: 'Send JSON with {"address":"0x…"} — the wallet whose credit you hold.' },
       400,
     );
   }
-  const nonce = crypto.randomUUID();
+  const nonce = `${recoveryOnly ? "recovery:" : ""}${crypto.randomUUID()}`;
   await kvPut(c.env.COUNTERS, 
     KV_KEYS.creditChallenge(address.toLowerCase()),
     nonce,
@@ -259,7 +263,7 @@ creditRoutes.post("/api/credit/challenge", async (c) => {
   return c.json({
     challenge: challengeText(address, nonce),
     expires_in_seconds: CHALLENGE_TTL_SECONDS,
-    then:
+    then: recoveryOnly ? "Sign this exact recovery-only challenge, then POST /api/credit/redeem with { address, signature, recovery_only: true }. Recovery returns saved bytes only; it never signs another payout." :
       "EIP-191 personal_sign over the exact challenge string with the wallet's own key, then POST /api/credit/redeem with { address, signature }. EOA signatures only — same limit as the claims door, stated rather than hidden.",
   });
 });
@@ -274,6 +278,8 @@ creditRoutes.post("/api/credit/redeem", async (c) => {
     isRecord(body) && typeof body["signature"] === "string"
       ? body["signature"].trim()
       : "";
+  const recoveryOnly=isRecord(body) && body["recovery_only"]===true;
+  if(isRecord(body) && body["recovery_only"]!==undefined && typeof body["recovery_only"]!=="boolean")return c.json({error:"recovery_only must be a boolean."},400);
   if (!ADDRESS.test(address) || !signature.startsWith("0x")) {
     return c.json(
       { error: "Send JSON with address (0x + 40 hex) and signature over the challenge from /api/credit/challenge." },
@@ -288,6 +294,7 @@ creditRoutes.post("/api/credit/redeem", async (c) => {
       400,
     );
   }
+  if(nonce.startsWith("recovery:")!==recoveryOnly)return c.json({error:"The challenge mode differs. Request and sign a new challenge with the same recovery_only value as this request."},400);
   // Single-use before verification, the claims door's law: a failed
   // attempt burns the nonce, so nothing about this door rewards guessing.
   await c.env.COUNTERS.delete(kvKey);
@@ -310,7 +317,7 @@ creditRoutes.post("/api/credit/redeem", async (c) => {
     );
   }
   try {
-    const result = await redeemCredit(c.env, address);
+    const result = await redeemCredit(c.env, address, {recoveryOnly});
     return c.json(result, 200);
   } catch (error) {
     if (error instanceof CreditRefused) {

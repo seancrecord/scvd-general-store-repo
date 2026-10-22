@@ -27,6 +27,7 @@ export function creditTerms(base: string) {
     balance_url_template: `${base}/api/credit/{evm_wallet}`,
     terms_url: `${base}/credit`,
     redemption: { challenge_url: `${base}/api/credit/challenge`, redeem_url: `${base}/api/credit/redeem`, method: "POST", requires_wallet_signature: true, automatic: false },
+    cash_out_recovery: { challenge_url: `${base}/api/credit/challenge`, redeem_url: `${base}/api/credit/redeem`, method: "POST", recovery_only: true, requires_wallet_signature: true, instructions: "Include recovery_only: true in both requests. Sign the exact recovery-only challenge. Returns the saved authorization with its original nonce and expiry; never signs another payout or consumes new credit. Older or unsaved authorizations may be unavailable. Not proof of on-chain payment." },
     rail_limit: "The current balance and cash-out API accepts EVM addresses only; do not infer Solana cash-out support.",
   };
 }

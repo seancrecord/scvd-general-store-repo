@@ -1,4 +1,4 @@
-import {allocatedFieldSigner} from "@/services/field-wallet-allocations";
+import {allocationLedger, allocatedFieldSigner, type StoredCreditPayout} from "@/services/field-wallet-allocations";
 import { creditPickup } from "@/lib/credit-terms";
 import { BASE_USDC, rpcEndpoints } from "@/lib/base-rpc";
 import { canonicalAddress } from "@/lib/addresses";
@@ -57,6 +57,8 @@ export interface CreditRecord {
    * rival's. Absent on records that have never been redeemed.
    */
   claimed_by?: string;
+  /** Private pointer to the most recent prepared cash-out; accrual preserves it. */
+  cashout_recovery?: {wallet:string; claim_id:string};
 }
 
 /**
@@ -73,6 +75,7 @@ async function signWithRollback<T>(
   claimId: string,
   amount: bigint,
   sign: () => Promise<T>,
+  previousRecovery?: CreditRecord["cashout_recovery"],
 ): Promise<T> {
   try {
     return await sign();
@@ -107,6 +110,10 @@ async function signWithRollback<T>(
         ).toString(),
       };
       delete restored.claimed_by;
+      if(restored.cashout_recovery?.claim_id===claimId){
+        if(previousRecovery)restored.cashout_recovery=previousRecovery;
+        else delete restored.cashout_recovery;
+      }
       await kvPut(env.COUNTERS, creditKey, JSON.stringify(restored));
     }
     throw error;
@@ -239,6 +246,7 @@ export async function accrueCredit(
 export class CreditRefused extends Error {}
 
 export interface RedeemOptions {
+  recoveryOnly?: boolean;
   fetch?: typeof fetch;
   signer?: FieldSigner;
   screen?: SanctionsScreen;
@@ -264,24 +272,8 @@ export async function redeemCredit(
   env: Env,
   wallet: string,
   options: RedeemOptions = {},
-): Promise<{
-  redeemed_usd: number;
-  payout: {
-    method: "eip3009_transfer_with_authorization";
-    asset: string;
-    chain: string;
-    authorization: {
-      from: string;
-      to: string;
-      value: string;
-      validAfter: string;
-      validBefore: string;
-      nonce: string;
-    };
-    signature: string;
-    how_to_redeem: string;
-  };
-}> {
+): Promise<ReturnType<typeof creditPayoutResponse>> {
+  if(options.recoveryOnly)return recoverCreditPayout(env,wallet);
   const now = options.now ?? new Date();
   if (!env.FIELD_WALLET_KEY && !options.signer) {
     throw new CreditRefused(
@@ -407,7 +399,7 @@ export async function redeemCredit(
   // Preparation can fail after the claim too (key setup or nonce creation).
   // Keep it with signing inside the same recovery boundary. Once signing has
   // succeeded, later bookkeeping must never restore spendable credit.
-  const {authorization, signature} = await signWithRollback(
+  const {authorization, signature, signingRequest} = await signWithRollback(
     env,
     creditKey,
     claimId,
@@ -426,7 +418,13 @@ export async function redeemCredit(
         ),
         nonce: (options.randomNonce ?? defaultNonce)(),
       };
-      const signature = await signer.signTypedData({
+      if(!options.signer){
+        const current=await kvGetJson<CreditRecord>(env.COUNTERS,creditKey,"json");
+        if(current?.claimed_by!==claimId)throw new CreditRefused("The credit claim changed before signing; no new authorization was signed here.");
+        current.cashout_recovery={wallet:signer.address.toLowerCase(),claim_id:claimId};
+        await kvPut(env.COUNTERS,creditKey,JSON.stringify(current));
+      }
+      const signingRequest: Parameters<FieldSigner["signTypedData"]>[0] = {
         domain: {
           name: "USD Coin",
           version: "2",
@@ -445,22 +443,43 @@ export async function redeemCredit(
         },
         primaryType: "TransferWithAuthorization",
         message: authorization,
-      });
-      return {authorization, signature};
+      };
+      const signature=await signer.signTypedData(signingRequest);
+      return {authorization, signature, signingRequest};
     },
+    record.cashout_recovery,
   );
+  // A signature now exists. A save/response failure must not restore spendable
+  // credit. A lost save reply can recover the retained bytes via the pointer.
+  if(!options.signer)await allocationLedger(env,authorization.from).saveCreditPayout(authorization.from,claimId,signingRequest,signature,now.getTime());
   await bumpOutstanding(env, -balance);
+  return creditPayoutResponse({authorization,signature});
+}
+
+function creditPayoutResponse({authorization,signature}:StoredCreditPayout) {
   return {
-    redeemed_usd: usd(balance),
+    redeemed_usd: usd(BigInt(authorization.value)),
     payout: {
-      method: "eip3009_transfer_with_authorization",
+      method: "eip3009_transfer_with_authorization" as const,
       asset: BASE_USDC,
       chain: "eip155:8453",
       authorization,
       signature,
-      how_to_redeem: `Submit transferWithAuthorization on the USDC contract (${BASE_USDC}) on Base with these fields and this signature — from your own wallet or any relayer; the function is submittable by anyone, and the payout can only land at the wallet that earned it. Valid until unix ${authorization.validBefore}; unredeemed, it expires and nothing is lost — ask again. The signature is the payment.`,
+      how_to_redeem: `Submit transferWithAuthorization on the USDC contract (${BASE_USDC}) on Base with these fields and this signature — from your own wallet or any relayer; the function is submittable by anyone, and the payout can only land at the wallet that earned it. Valid until unix ${authorization.validBefore}. This is an authorization, not evidence of received payment. Recovery returns the original authorization and expiry; it does not issue a replacement or sponsor gas.`,
     },
   };
+}
+
+/** Ownership is proved by the route's recovery-only challenge. This lookup is
+ * deliberately read-only, including for idle balances and retired paying keys. */
+async function recoverCreditPayout(env:Env,wallet:string) {
+  const recipient=canonicalAddress(wallet);
+  const record=await kvGetJson<CreditRecord>(env.COUNTERS,KV_KEYS.credit(recipient),"json");
+  const pointer=record?.cashout_recovery;
+  if(record?.wallet!==recipient || !pointer)throw new CreditRefused("No retained cash-out reference is available for this wallet. Recovery cannot reconstruct older or unsaved authorizations; no new payment was created.");
+  const retained=await allocationLedger(env,pointer.wallet).readCreditPayout(pointer.wallet,pointer.claim_id,recipient);
+  if(!retained)throw new CreditRefused("The last cash-out has no saved authorization to recover. Its completion is unresolved; do not infer payment or request a replacement from this result.");
+  return creditPayoutResponse(retained);
 }
 
 /** Outstanding credit across every wallet, for the books' eye. */

@@ -9,6 +9,8 @@ import type {Env} from "@/types";
 export const FIELD_ALLOCATION_PROGRAMS = ["contributions", "shopping", "studies", "credit", "launch_checks", "directory_walks"] as const;
 export type FieldAllocationProgram = typeof FIELD_ALLOCATION_PROGRAMS[number];
 export interface ContributionFundingRelease {transaction:string; receipt_block:number; receipt_block_hash:string; finalized_block:number; balance_atomic:string; read_at:string}
+export interface CreditAuthorization {from:string; to:string; value:string; validAfter:string; validBefore:string; nonce:string}
+export interface StoredCreditPayout {authorization:CreditAuthorization; signature:string}
 type ReleaseRow = {id:string; data:string};
 type WorkHold = {id:string; wallet:string; amount:string; state:"held" | "canceled" | "accepted"};
 type ManualHold = {id:string; recipient:string; amount:string; accepted_at:number; transaction_hash:string | null};
@@ -51,6 +53,7 @@ export class FieldWalletAllocations extends DurableObject<Env> {
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_commitments (id TEXT PRIMARY KEY, recipient TEXT NOT NULL, amount TEXT NOT NULL, nonce TEXT UNIQUE)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_work_holds (id TEXT PRIMARY KEY, wallet TEXT NOT NULL, amount TEXT NOT NULL, state TEXT NOT NULL)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS manual_contribution_holds (id TEXT PRIMARY KEY, recipient TEXT NOT NULL, amount TEXT NOT NULL, accepted_at INTEGER NOT NULL, transaction_hash TEXT UNIQUE)");
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS credit_payouts (claim_id TEXT PRIMARY KEY, recipient TEXT NOT NULL, nonce TEXT UNIQUE NOT NULL, data TEXT NOT NULL)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_releases (id TEXT PRIMARY KEY, data TEXT NOT NULL)");
   }
   private manualHold(id: string) {return this.ctx.storage.sql.exec<ManualHold>("SELECT * FROM manual_contribution_holds WHERE id=?",id).toArray()[0];}
@@ -311,6 +314,29 @@ export class FieldWalletAllocations extends DurableObject<Env> {
       this.ctx.storage.sql.exec("INSERT INTO contribution_releases(id,data) VALUES(?,?)",id,JSON.stringify(result));
       return result;
     });
+  }
+  /** Retain only an already allocated credit authorization. Saving its response
+   * neither moves money nor releases the allocation; recovery never signs again. */
+  saveCreditPayout(wallet:string, claimId:string, args:SigningRequest, signature:string, now=Date.now()): StoredCreditPayout {
+    if(!NONCE.test(claimId) || !/^0x[0-9a-f]{130}$/i.test(signature))return unavailable();
+    wallet=wallet.toLowerCase();claimId=claimId.toLowerCase();
+    const r=request(wallet,args,now,true), recipient=String(args.message.to).toLowerCase();
+    const data=JSON.stringify({authorization:args.message,signature});
+    const old=this.ctx.storage.sql.exec<{recipient:string;data:string}>("SELECT recipient,data FROM credit_payouts WHERE claim_id=?",claimId).toArray()[0];
+    if(old){if(old.recipient!==recipient || old.data!==data)return unavailable();return JSON.parse(old.data) as StoredCreditPayout;}
+    const allocation=this.held(r.nonce);
+    if(this.meta()?.wallet!==wallet || allocation?.program!=="credit" || allocation.terms!==r.terms)return unavailable();
+    this.ctx.storage.sql.exec("INSERT INTO credit_payouts(claim_id,recipient,nonce,data) VALUES(?,?,?,?)",claimId,recipient,r.nonce,data);
+    return JSON.parse(data) as StoredCreditPayout;
+  }
+  /** The caller proves wallet ownership before this private RPC. No key, chain
+   * read, balance mutation or expiry extension is needed to return old bytes. */
+  readCreditPayout(wallet:string, claimId:string, recipient:string): StoredCreditPayout | null {
+    if(!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || !NONCE.test(claimId) || this.meta()?.wallet!==wallet.toLowerCase())return unavailable();
+    const row=this.ctx.storage.sql.exec<{recipient:string;data:string}>("SELECT recipient,data FROM credit_payouts WHERE claim_id=?",claimId.toLowerCase()).toArray()[0];
+    if(!row)return null;
+    if(row.recipient!==recipient.toLowerCase())return unavailable();
+    return JSON.parse(row.data) as StoredCreditPayout;
   }
   /** No chain read, release, private nonce, recipient, signature or request. */
   summary() {
