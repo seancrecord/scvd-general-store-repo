@@ -33,6 +33,16 @@ is included. After those bounded funding gaps, resume funded availability and
 acquisition/distribution rather than extending the accounting report indefinitely.
 [Scope](docs/FIELD_WALLET_ALLOCATIONS.md#private-funding-gap-inventory).
 
+## October 22 — recover credit when cash-out preparation fails
+
+Signer setup and authorization nonce creation now share the existing claimed-credit
+recovery boundary. If either fails before signing, the original claimant can get
+its balance back and retry. A failure after a signature succeeds does not restore
+spendable credit. Regression tests reproduce both preparation failures against the
+previous code. This closes a failure window, not credit funding coordination:
+accrual still uses KV, and durable ownership, retained authorization recovery and
+shared-wallet holds at accrual remain future work. Caps and payout terms stay unchanged.
+
 ## October 21 — import older accepted contribution obligations
 
 The private submission desk can import an older accepted signed-authorization
