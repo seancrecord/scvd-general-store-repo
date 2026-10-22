@@ -29,7 +29,7 @@ import {
   STORE_METADATA,
   STORE_SERVICE_NAME,
 } from "@/store";
-import { OPERATED_BY, POSITION_OPENING } from "@/store/copy/position";
+import { OPERATED_BY, OTHER_WORK_BY_OPERATOR, OTHER_WORK_LABEL, POSITION_OPENING } from "@/store/copy/position";
 import {
   CORPUS_DATASET_DESCRIPTION,
   CORPUS_DATASET_LICENSE,
@@ -425,6 +425,13 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
  * from the front of the store the day it is built rather than the day
  * somebody remembers this footer exists.
  */
+/** The operator's other sites, one hairline link each. See OTHER_WORK_BY_OPERATOR. */
+function otherWorkHtml(): string {
+  return OTHER_WORK_BY_OPERATOR.map(
+    (site) => `<a href="${site.url}" rel="noopener">${escapeHtml(site.name)}</a>`,
+  ).join(" · ");
+}
+
 function roomsFooterHtml(): string {
   return STOREFRONT_ROOMS.map(
     (room) => `<a href="${room.path}">${escapeHtml(room.name)}</a>`,
@@ -1290,6 +1297,7 @@ ${webmcpOriginTrialTags()}
       <p class="porch-rooms-label">Every room, all free to read</p>
       <p class="porch-rooms">${roomsFooterHtml()}</p>
       <p class="porch-trade">Reselling to agents rather than buying for one? <a href="/trade">The Trade Counter</a> sells this shelf on account to marketplaces, tool directories, agent frameworks and payment layers: ${escapeHtml(TRADE_PROPOSITION)}</p>
+      <p class="porch-others">${escapeHtml(OTHER_WORK_LABEL)}: ${otherWorkHtml()}</p>
       <p class="porch-est">${COPY.footerAddress} \u00B7 ${escapeHtml(OPERATED_BY)}</p>
     </footer>
 
