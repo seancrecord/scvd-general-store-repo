@@ -56,6 +56,20 @@ export const POSITION_DATED = "2026-08-07";
  */
 export const OPERATED_BY = "Record Creative Co. LLC";
 
+/**
+ * THE OTHER SHOPS ON THE SAME STREET, typed once. The LLC above keeps
+ * more than one site; each carries a quiet line to the others in its
+ * footer so a reader (or a crawler) can see they belong to one
+ * operator. Kept out of the first screen on purpose: it is a
+ * backlink, not a pitch. Add a site here and it appears in the
+ * footer; nowhere else spells these addresses out.
+ */
+export const OTHER_WORK_LABEL = "Other stuff by Record Creative Co.";
+export const OTHER_WORK_BY_OPERATOR: ReadonlyArray<{ name: string; url: string }> = [
+  { name: "Little Wheels", url: "https://littlewheels.app" },
+  { name: "Jongg", url: "https://jongg.app" },
+];
+
 /** When the payment ordering turned over. See HOUSE_RULES rule 9. */
 export const DELIVERY_ORDER_DATED = "2026-08-10";
 
