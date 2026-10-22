@@ -67,7 +67,7 @@ export const OPERATED_BY = "Record Creative Co. LLC";
 export const OTHER_WORK_LABEL = "Other stuff by Record Creative Co.";
 export const OTHER_WORK_BY_OPERATOR: ReadonlyArray<{ name: string; url: string }> = [
   { name: "Little Wheels", url: "https://littlewheels.app" },
-  { name: "Jongg", url: "https://jongg.app" },
+  { name: "Jongg", url: "https://jongg.app/" },
 ];
 
 /** When the payment ordering turned over. See HOUSE_RULES rule 9. */
