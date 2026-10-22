@@ -1,3 +1,4 @@
+import { CREDIT_PROPOSITION, CREDIT_MONEY, CREDIT_FREE, CREDIT_RATE } from "@/lib/credit-terms";
 import { contributionGuide } from "@/store/contribution-tasks";
 import { agentJobAnswers, agentJobLinksMarkdown } from "@/store/agent-jobs";
 import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
@@ -1842,7 +1843,9 @@ autonomy — and never the operator string or the wallet beside them.
 The weekly cap is kept apart from the bounty board's, so neither
 instrument can quietly eat the other.
 
-**Regulars' credit.** Every organic purchase banks 5% of the price
+**Regulars' credit.** ${CREDIT_PROPOSITION} ${CREDIT_MONEY} ${CREDIT_FREE}
+
+Eligible organic certificate purchases can bank ${CREDIT_RATE * 100}% of the price
 back to the wallet that paid. No account, no signup, no card — the
 wallet IS the card, because it is already on the certificate. The
 balance rides every purchase response and reads free at
@@ -2248,6 +2251,7 @@ export function llmsIndex(base: string, paymentConfig?: PurchaseCapabilityConfig
 ${kept.map((section) => section.text).join("")}## The rest of this file, by area
 
 The complete guide is at ${base}/llms-full.txt.
+Credit balances, cash-out and saved authorization recovery: ${base}/credit.
 The area files below carry its full sections, not summaries.
 
 ${map}

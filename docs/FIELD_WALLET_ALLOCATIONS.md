@@ -400,3 +400,41 @@ Tests cover exact evidence refusals, duplicate payments, concurrent reads, rollb
 original-wallet retention, lost replies, payment reporting during import and admin
 access. Negative controls omit manual holds from capacity and omit the payment
 identity write; both regressions fail, then pass with the protections restored.
+
+
+## Credit authorization recovery
+
+New production credit cash-outs retain the signed authorization in the original
+paying wallet's SQLite ledger. A save requires an existing exact credit allocation
+and binds a unique claim identity, recipient and authorization nonce. Repeating
+that save returns the same bytes; a different allocation, program, recipient or
+payload cannot replace them. Expiry reclamation does not delete saved payouts.
+This journal neither signs nor releases wallet holds.
+
+Before signing, the credit record retains a private pointer to that wallet and
+claim. Accrual preserves the pointer. Preparation/signing failure restores the
+previous pointer only while the same request still owns its claim. After signing,
+a failed journal save or aggregate update never restores spendable credit. A lost
+reply from a committed journal save can recover the authorization. A save that
+never committed remains unresolved, and no replacement is manufactured. This is
+recovery of the latest prepared cash-out, not a full historical payout inventory.
+
+Request `POST /api/credit/challenge` with `address` and `recovery_only:true`, sign
+the exact returned EIP-191 message, then `POST /api/credit/redeem` with `address`,
+`signature` and `recovery_only:true`. The recovery mode is bound into the challenge:
+a recovery signature cannot be used for a new cash-out, or vice versa. The existing
+single-use, expiry and earning-wallet signature checks apply. The public balance
+never exposes the private pointer or payout signature.
+
+Recovery reads the retained pointer and journal without a current signing key,
+sanctions-screen rerun, chain read, credit mutation or expiry update. It returns
+the original nonce, signature and expiry even when expired; it does not establish
+settlement, reissue payment, sponsor gas or repair aggregate accounting. Old
+cash-outs without saved references and interrupted saves can be unavailable.
+KV remains eventually consistent: this journal is not durable credit ownership,
+atomic accrual, complete cross-location cash-out deduplication or funding at accrual.
+
+The tests exercise lost save replies, refusal after a failed save, key rotation,
+expired and idle balances, new accrual, prior-pointer restoration, binding changes,
+private response boundaries and challenge-mode substitution. No production credit
+record or wallet was read or changed by this implementation task.

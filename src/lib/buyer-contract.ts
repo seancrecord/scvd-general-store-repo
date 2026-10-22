@@ -6,7 +6,6 @@ import { publicationCollections } from "@/lib/publication-checkout";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { priceTiersUsdc, USDC_DECIMALS } from "@/lib/payments";
 import { CAPABILITY_QUERY } from "@/store/spec";
-import { artifactClassForItem } from "@/store/attestation-spec";
 import { MENU_ITEMS } from "@/store";
 import type { MenuItem } from "@/types";
 import { DISCLOSURE_FIELDS } from "@/lib/disclosure";
@@ -170,12 +169,15 @@ function compactInputSchema(item: MenuItem): Record<string, unknown> {
 }
 
 export function compactItemContract(item: MenuItem, base: string, config?: PurchaseCapabilityConfig) {
-  const artifact = artifactClassForItem(item.id);
+  // The compact contract carries these claims once, at top level. Keep the
+  // evidence links beside buyer guidance without repeating the same prose.
+  const {evidence, ...guidance} = buyerGuidance(item, base);
+  const {signs, does_not_prove, ...evidenceLinks} = evidence;
   const capabilities = purchaseCapabilities(item, config);
   return {
     ...compactItemRow(item, base, config),
     ...(capabilities.some(row => row.protocol === "mpp") ? { payment_capabilities: capabilities } : {}),
-    buyer_guidance: buyerGuidance(item, base),
+    buyer_guidance: {...guidance, evidence: evidenceLinks},
     purchase_checklist: purchaseChecklist(item, config),
     description: item.description,
     reads: item.reads,
@@ -183,7 +185,7 @@ export function compactItemContract(item: MenuItem, base: string, config?: Purch
     ...(item.sample_url ? { sample_url: item.sample_url, sample_kind: item.sample_kind ?? "unsigned_specimen" } : {}),
     input_schema: compactInputSchema(item),
     availability: "Checkout checks stock, keeper availability and subject prerequisites before charging.",
-    ...(artifact ? { signs: artifact.signs, does_not_prove: artifact.does_not_prove } : {}),
+    ...(signs ? {signs, does_not_prove} : {}),
     checkout: checkoutContract(base),
   };
 }

@@ -1,5 +1,14 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-22 — retained credit authorization journal
+
+Read [Cloudflare SQLite-backed Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/).
+The journal uses synchronous SQL and unique claim/nonce constraints in the existing
+paying-wallet actor. Saved payout bytes survive allocation expiry and are read
+without signing or chain calls. This does not strengthen the consistency of the
+separate KV credit record or turn an authorization into settlement evidence.
+
+
 ## 2026-10-22 — manual contribution payment reconciliation
 
 Read [ERC-20 Transfer](https://eips.ethereum.org/EIPS/eip-20#transfer-1),

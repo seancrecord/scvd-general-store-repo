@@ -1,5 +1,20 @@
 # ROADMAP — September 2026
 
+## October 22 — recover retained credit cash-out authorizations
+
+New production cash-outs retain their signed authorization in the original paying
+wallet's allocation ledger before the response. A recovery-only wallet challenge
+returns those bytes even after wallet rotation or expiry, without spending new
+credit, signing again or refreshing the expiry. The credit room, shared machine
+terms and OpenAPI describe the same request. Failed preparation restores the prior
+recovery pointer when the request still owns its claim.
+
+This recovers saved authorizations, not an interrupted operation before the save.
+It does not establish on-chain payment or repair a failed aggregate update. KV
+credit ownership and accrual funding remain separate gaps; no cap change or gas
+sponsorship. [Recovery contract](docs/FIELD_WALLET_ALLOCATIONS.md#credit-authorization-recovery).
+
+
 ## October 22 — retain and reconcile accepted manual contribution rewards
 
 The private submission desk can import an accepted manual-payment obligation into
