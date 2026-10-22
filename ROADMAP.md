@@ -1,5 +1,15 @@
 # ROADMAP — September 2026
 
+## October 22 — contribution availability and useful next steps
+
+The existing contribution list and bounty page expose page-scoped available slots
+and a clear boundary between browsing and permission to start. Returned read steps
+point to posted briefs and the next directory page. Empty or fully held pages offer
+existing free expense, endpoint discovery and preflight guides, explicitly separate
+from paid work. A failed listing remains unknown rather than reporting zero slots.
+No brief, payment, reservation, cap increase or new outreach is created by browsing.
+
+
 ## October 22 — retain and reconcile accepted manual contribution rewards
 
 The private submission desk can import an accepted manual-payment obligation into
