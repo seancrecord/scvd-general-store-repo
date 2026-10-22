@@ -1,5 +1,21 @@
 # ROADMAP — September 2026
 
+## October 22 — retain and reconcile accepted manual contribution rewards
+
+The private submission desk can import an accepted manual-payment obligation into
+the same field-wallet holds. It retains the selected wallet, exact reward,
+recipient and original acceptance time; retries preserve the deadline and do not
+sign or send a payment. The keeper's original reported transaction can then release
+the hold only after one exact USDC transfer is observed in a canonical finalized
+block after acceptance, together with the wallet balance at or after payment.
+One transaction can clear only one manual obligation. Batches, split payments,
+different-wallet payments and authorization-bearing receipts remain unresolved.
+
+This adds per-obligation recovery, not a production migration or automatic funding
+for all manual briefs. Remaining funding work: coordinate credit accrual and older
+other-program obligations; external spending remains outside the ledger. No cap
+increase or gas sponsorship. [Scope](docs/FIELD_WALLET_ALLOCATIONS.md#manual-contribution-obligations).
+
 ## October 21 — expose manual rewards and accrued credit in the funding view
 
 The private funding report separates accepted manual-payment terms, including the

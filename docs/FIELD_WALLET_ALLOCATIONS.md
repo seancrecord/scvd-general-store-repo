@@ -329,3 +329,55 @@ Validation covers idle-boundary handling, dust and large integer amounts, claim
 markers, invalid/missing records, truncation, storage failure and the existing admin
 gate. The new manual breakdown and rendered credit regressions fail against the
 previous source and pass when the changes are restored.
+
+
+## Manual contribution obligations
+
+The private submission desk offers **Import manual obligation** for accepted manual
+terms, including work with an existing keeper payment report. The original reward,
+recipient and acceptance time become a permanent identity in the shared paying
+wallet ledger. The configured field wallet is selected once and retained before
+import; wallet rotation during a failed attempt cannot retarget it. Imports count
+existing debt even with insufficient balance and preserve original deadlines.
+Manual identities cannot be converted into signed-authorization or work holds.
+This is a per-obligation tool: it neither migrates production records on deploy nor
+funds all manual briefs automatically.
+
+After the original payment report exists, **Reconcile reported manual payment**
+uses that transaction; it takes no replacement hash, recipient, amount or wallet.
+The ledger itself requires canonical Base USDC, the exact sender/recipient/amount,
+a successful receipt with matching transaction identity, canonical block hash,
+finalized inclusion, and a block timestamp at or after acceptance. It accepts one
+USDC transfer in the receipt and refuses any USDC AuthorizationUsed event, leaving
+split/batched and authorization payments to separate resolution. A transfer from
+a different wallet cannot release the retained hold. These refusals never instruct
+the keeper to pay again.
+
+The ledger stores a unique transaction identity, advances the retained balance
+floor and records the release in one SQLite transaction. An interrupted write rolls
+all three back. Concurrent attempts cannot clear two obligations with one payment;
+same-obligation retries recover the existing result. A later balance floor prevents
+a delayed pre-payment reading from funding new work. Actual payment reconciliation
+can release its debt even when the remaining obligations still exceed the balance.
+The signed-authorization path remains distinct and keeps its exact nonce checks.
+
+The original manual payment report and worker-visible terms keep their bytes.
+Private submission details show the reconciliation, while worker status gains no
+treasury balance or key material. Gross reward inventory still includes manual work;
+it does not subtract these separate ledger releases. The shared-wallet report counts
+imported manual holds and completed releases. Credit accrual, unimported older debt,
+external scripts and other direct transfers remain outside that guarantee.
+
+Routes use existing admin authentication, same-origin protection, bounded bodies
+and form recovery: `POST /admin/bounties/contributions/{id}/import-manual-funding`
+and `POST /admin/bounties/contributions/{id}/release-manual-funding`, both with only
+`submission_id`. Neither route signs, broadcasts, sponsors gas or changes caps.
+The keeper's reported transaction supplies the claimed purpose; matching on-chain
+terms does not independently establish that purpose or complete wallet solvency.
+
+Primary sources and interpretation limits were read October 22 and recorded in
+[the spec register](SPEC_READS.md#2026-10-22--manual-contribution-payment-reconciliation).
+Tests cover exact evidence refusals, duplicate payments, concurrent reads, rollback,
+original-wallet retention, lost replies, payment reporting during import and admin
+access. Negative controls omit manual holds from capacity and omit the payment
+identity write; both regressions fail, then pass with the protections restored.
