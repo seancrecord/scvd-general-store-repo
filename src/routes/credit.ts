@@ -1,4 +1,4 @@
-import { creditTerms } from "@/lib/credit-terms";
+import { creditTerms, CREDIT_PROPOSITION, CREDIT_MONEY, CREDIT_FREE } from "@/lib/credit-terms";
 import { Hono } from "hono";
 import { recoverMessageAddress } from "viem";
 import { escapeHtml } from "@/lib/sanitize";
@@ -56,6 +56,7 @@ function challengeText(address: string, nonce: string): string {
 function creditHtml(base: string, outstandingUsd: number): string {
   const rate = `${CREDIT_RATE * 100}%`;
   return `<section>
+      <p class="menu-desc">${escapeHtml(CREDIT_PROPOSITION)}</p><p class="menu-desc">${escapeHtml(CREDIT_MONEY)}</p><p class="menu-desc">${escapeHtml(CREDIT_FREE)}</p>
       <p class="menu-desc"><strong>We reward our regulars: come back and pay less.</strong> ${escapeHtml(rate)} of each eligible organic certificate purchase banks back to the wallet that paid it, so the next visit costs less than the sticker says. No account, no signup, no card to carry — the wallet is the card.</p>
       <p class="menu-desc">Credit can accrue after a certificate purchase settles and mints; the store_credit field confirms an accrual. Publication-only payments do not accrue. The current balance and cash-out API supports EVM wallets only. When a balance reaches $${usd(CREDIT_FLOOR_ATOMIC).toFixed(2)} it can be cashed out as USDC, back to the wallet that earned it and nowhere else. Balances cap at $${usd(CREDIT_CAP_ATOMIC).toFixed(2)} and balances idle ${CREDIT_IDLE_EXPIRY_DAYS} days expire.</p>
     </section>
@@ -152,6 +153,13 @@ creditRoutes.get("/credit", async (c) => {
    */
   const pagePayload = {
       terms: creditTerms(base),
+      proposition: CREDIT_PROPOSITION,
+      for_money: CREDIT_MONEY,
+      free_first: CREDIT_FREE,
+      price: "Balance reads and requests are free. On-chain redemption requires caller-arranged gas.",
+      how_to_call: creditTerms(base).redemption,
+      errors: "Invalid or mismatched challenges are refused. Cash-out requires an eligible balance and a provisioned paying wallet. Older or unsaved recovery may be unavailable; an error does not establish payment.",
+      security: "Sign the exact challenge locally with the earning EVM wallet. Never send keys or wallet secrets. Recovery-only signatures cannot authorize a new cash-out.",
       what_this_is: `Regulars' credit: ${CREDIT_RATE * 100}% of each eligible organic certificate purchase banks to the wallet that paid. A closed-loop rebate — the store's IOU, redeemable as USDC back to the earning wallet only, never transferable, never a token.`,
       rate_pct: CREDIT_RATE * 100,
       cash_out_floor_usd: usd(CREDIT_FLOOR_ATOMIC),

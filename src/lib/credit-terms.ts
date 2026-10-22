@@ -11,6 +11,11 @@ export const CREDIT_IDLE_EXPIRY_DAYS = 90;
 /** Redemption authorizations expire like the bounty board's. */
 export const CREDIT_AUTH_VALID_SECONDS = 7 * 24 * 3600;
 
+export const CREDIT_PROPOSITION = "Read earned store credit, cash out an eligible balance or recover the latest saved cash-out authorization with the earning wallet.";
+export const CREDIT_MONEY = "Eligible organic certificate purchases can accrue a closed-loop USDC rebate; cash-out returns an authorization and does not prove received payment.";
+export const CREDIT_FREE = "Balance reads and cash-out requests are free; the earning wallet signs locally and arranges its own Base redemption and gas.";
+export const CREDIT_CASHOUT_PATHS = ["/api/credit/challenge", "/api/credit/redeem"] as const;
+
 /** Pure terms: discovery must never import the cash-out signer. */
 export function creditTerms(base: string) {
   return {
