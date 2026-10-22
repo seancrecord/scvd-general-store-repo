@@ -404,28 +404,29 @@ export async function redeemCredit(
     );
   }
 
-  const signer =
-    options.signer ??
-    allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY as string), "credit");
-  const authorization = {
-    from: signer.address,
-    to: record.wallet,
-    value: balance.toString(),
-    validAfter: "0",
-    validBefore: String(
-      Math.floor(now.getTime() / 1000) + CREDIT_AUTH_VALID_SECONDS,
-    ),
-    nonce: (options.randomNonce ?? defaultNonce)(),
-  };
-  // If signing throws after the claim, the buyer's balance would be
-  // gone with nothing to show for it. Hand it back and re-raise.
-  const signature = await signWithRollback(
+  // Preparation can fail after the claim too (key setup or nonce creation).
+  // Keep it with signing inside the same recovery boundary. Once signing has
+  // succeeded, later bookkeeping must never restore spendable credit.
+  const {authorization, signature} = await signWithRollback(
     env,
     creditKey,
     claimId,
     balance,
-    () =>
-      signer.signTypedData({
+    async () => {
+      const signer =
+        options.signer ??
+        allocatedFieldSigner(env, await fieldSignerFromKey(env.FIELD_WALLET_KEY as string), "credit");
+      const authorization = {
+        from: signer.address,
+        to: record.wallet,
+        value: balance.toString(),
+        validAfter: "0",
+        validBefore: String(
+          Math.floor(now.getTime() / 1000) + CREDIT_AUTH_VALID_SECONDS,
+        ),
+        nonce: (options.randomNonce ?? defaultNonce)(),
+      };
+      const signature = await signer.signTypedData({
         domain: {
           name: "USD Coin",
           version: "2",
@@ -444,7 +445,9 @@ export async function redeemCredit(
         },
         primaryType: "TransferWithAuthorization",
         message: authorization,
-      }),
+      });
+      return {authorization, signature};
+    },
   );
   await bumpOutstanding(env, -balance);
   return {

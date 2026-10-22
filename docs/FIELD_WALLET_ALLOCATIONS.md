@@ -294,6 +294,25 @@ twelve USDC is held against ten; the regression detects that authorization and
 passes after the check is restored.
 
 
+## Credit cash-out preparation recovery
+
+The credit cash-out path claims the balance before preparing and signing its
+payout. Signer construction and authorization nonce creation now run inside the
+same recovery boundary as signing. If preparation fails, the existing recovery
+re-reads the credit record and restores the amount only while that request still
+owns its claim. The redeemed total is reversed with the balance; outstanding
+credit has not yet been reduced. A later aggregate-write failure, after signing
+succeeded, stays outside recovery so it cannot recreate spendable credit behind
+an issued authorization.
+
+This does not make KV claims atomic across locations, reserve accruing credit,
+or provide retained authorization recovery after a lost response. Those need
+durable credit ownership and remain outstanding. Existing allocation holds are
+not released by a signing failure. The regression in
+`test/credit-cashout-preparation.spec.ts` fails before the change for signer and
+nonce preparation, then verifies restoration and retry, signing failures, and
+no restoration after a successful signature followed by failed bookkeeping.
+
 ## Private funding-gap inventory
 
 The existing authenticated funding report now separates accepted manual-payment
