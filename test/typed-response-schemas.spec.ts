@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { isRecord } from "@/types";
@@ -49,7 +50,7 @@ const PROBES: Probe[] = [
   {
     path: "/menu.json",
     method: "get",
-    call: () => SELF.fetch(`${BASE}/menu.json`),
+    call: () => fetchWithPublicStatistics(`${BASE}/menu.json`),
   },
   {
     path: "/api/preflight/checks",
@@ -92,7 +93,7 @@ const PROBES: Probe[] = [
   {
     path: "/pulse.json",
     method: "get",
-    call: () => SELF.fetch(`${BASE}/pulse.json`),
+    call: () => fetchWithPublicStatistics(`${BASE}/pulse.json`),
   },
   {
     path: "/api/preflight/v1",

@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -425,7 +426,7 @@ describe("the room a person walks into", () => {
     expect(targets.length).toBeGreaterThan(5);
     const dead: string[] = [];
     for (const href of targets) {
-      const response = await SELF.fetch(`${BASE}${href}`);
+      const response = await fetchWithPublicStatistics(`${BASE}${href}`);
       if (response.status >= 400) dead.push(`${href} -> ${response.status}`);
     }
     expect(dead, "the door list points somewhere that does not answer").toEqual([]);

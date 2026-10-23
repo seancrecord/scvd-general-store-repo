@@ -25,9 +25,6 @@ import { kvGet, kvGetJson, kvList, kvPut, withKvRetry } from "@/lib/kv-retry";
  * the one a stranger could otherwise mint without limit.
  */
 import { venueCounterKey } from "@/store/venues";
-import { recordReferrerHost } from "@/lib/referrer-census";
-import { recordInstrumentClient } from "@/lib/client-census";
-import { isCensusedInstrument } from "@/lib/instrument-roster";
 import { quoteToPayMs } from "@/lib/quote-stamp";
 import type { Channel, Env, PayerRecord } from "@/types";
 
@@ -809,11 +806,10 @@ export async function recordPaymentDecline(
 }
 
 /**
- * Front-porch logging: one event row per free-tier visit. Paths and
- * headers only, no bodies, no cookies, nothing client-side. Rows use
- * unique keys (no counter contention); a per-isolate token bucket
- * caps writes at crawler volume, so porch counts are floors under
- * storm conditions. Paid events are never sampled.
+ * Aggregate free-visit counts only. Raw visit and client/referral detail
+ * collection retired for operating cost on 2026-10-23. The existing
+ * per-isolate admission cap remains; it is not an account-wide write cap.
+ * Quote and payment evidence use separate writers.
  */
 const PORCH_WRITES_PER_MINUTE = 100;
 let porchBudgetMinute = "";
@@ -834,8 +830,7 @@ export async function recordPorchVisit(
   }
   porchBudgetUsed += 1;
   const event = buildEvent(env, "porch", surface, signals);
-  // Aggregate counter alongside the event row, so the porch table
-  // reads from a handful of keys instead of scanning event rows.
+  // Retain month/week aggregates so discovery counts remain comparable.
   const suffix = bucketSuffix(event, true);
   await Promise.all([
     bump(
@@ -860,25 +855,8 @@ export async function recordPorchVisit(
       ),
     );
   }
-  // Who linked here, by month (lib/referrer-census.ts): organic only,
-  // hosts only, our own host excluded there. The event row keeps the
-  // verbatim referrer for 90 days; this keeps the host for good.
-  if (suffix === "" && event.referrer) {
-    await recordReferrerHost(env, event.referrer, metricsMonth()).catch(() => undefined);
-  }
-  // Who calls each instrument (lib/client-census.ts): organic calls to
-  // the free roster and the paid tools, by user-agent, one capped map
-  // per instrument per month. The answer to "one prober or many".
-  if (suffix === "" && isCensusedInstrument(surface)) {
-    await recordInstrumentClient(env, surface, event.user_agent, metricsMonth()).catch(() => undefined);
-  }
-  // Same diet as the challenge path: a crawler reading the porch is
-  // the noise floor, and the aggregate counter above already says how
-  // much of it there was. The bell ledger and the porch surface tables
-  // read organic rows, which are all still written.
-  if (suffix !== "i") {
-    await writeEvent(env, event);
-  }
+  // Coarse campaign attribution stays; raw rows and client/referrer detail
+  // do not. Quote/payment evidence uses its separate writers.
 }
 
 /** Somebody re-checked one of our signatures. Re-verification is demand. */
@@ -1766,11 +1744,15 @@ export async function readMonthLedger(
     cap: METRIC_KEY_CAP,
   });
   ledger.truncated = listed.truncated;
-  const values = await bulkGetText(
-    env.COUNTERS,
-    listed.names,
-  );
-  for (const name of listed.names) {
+  // Listing completeness still belongs to the whole prefix. Values outside
+  // these kinds cannot contribute to this reader and need not be purchased.
+  const auxiliaryKinds = new Set(["d402", "dpaid", "venue", "nopayer", "rev", "revh", "src", "srch", "src402", "src402h", "src402i", "tier", "tierh"]);
+  const consumed = listed.names.filter(name => {
+    const kind = name.slice(KV_KEYS.metricMonthPrefix(month).length).split(":")[0] ?? "";
+    return SHELF_KINDS.has(kind) || auxiliaryKinds.has(kind);
+  });
+  const values = await bulkGetText(env.COUNTERS, consumed);
+  for (const name of consumed) {
     const value = parseInt(values.get(name) ?? "0", 10);
     const rest = name.slice(KV_KEYS.metricMonthPrefix(month).length);
     const [kind, ...parts] = rest.split(":");

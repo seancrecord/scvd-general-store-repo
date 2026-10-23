@@ -78,9 +78,9 @@
    */
   "workers_dev": false,
   // Weekly digest: Sundays 7am ET (11:00 UTC during daylight time).
-  // Hourly: the phantom-check walk (due out-of-band probes).
+  // Hourly :30: the existing sweeps. :15: public statistics only (separate invocation).
   "triggers": {
-    "crons": ["0 11 * * SUN", "30 * * * *"]
+    "crons": ["0 11 * * SUN", "30 * * * *", "15 * * * *"]
   },
   // KV namespaces. Create them once with:
   //   wrangler kv namespace create ORDERS

@@ -334,27 +334,14 @@ describe("the free instruments, sorted out of the observatory", () => {
  * sample answers it for the ninety days the rows keep.
  */
 describe("who called, by instrument", () => {
-  it("censuses organic calls on the roster and the paid tools, never on the handshake", async () => {
+  it("keeps the historical client census unchanged when free calls arrive", async () => {
     const { recordPorchVisit, metricsMonth } = await import("@/lib/metrics");
-    const { readInstrumentClients, INSTRUMENT_CLIENT_CAP } = await import("@/lib/client-census");
-    await recordPorchVisit(testEnv, "conformance", { userAgent: "node-fetch/3.3.2" });
-    await recordPorchVisit(testEnv, "conformance", { userAgent: "node-fetch/3.3.2" });
-    await recordPorchVisit(testEnv, "conformance", { userAgent: "curl/8.4.0" });
-    await recordPorchVisit(testEnv, "conformance", {});
+    const { readInstrumentClients, instrumentClientsKey } = await import("@/lib/client-census");
+    await testEnv.COUNTERS.put(instrumentClientsKey(metricsMonth(), "conformance"), JSON.stringify({ "earlier-client": 2 }));
+    const before = await readInstrumentClients(testEnv, metricsMonth());
+    await recordPorchVisit(testEnv, "conformance", { userAgent: "new-client" });
     await recordPorchVisit(testEnv, "mcp:tool:buy_simple", { userAgent: "buyer-sdk/1.0", viaMcp: true });
-    await recordPorchVisit(testEnv, "mcp:initialize", { userAgent: "buyer-sdk/1.0", viaMcp: true });
-    // A known crawler is infrastructure at the door and never reaches the census.
-    await recordPorchVisit(testEnv, "conformance", { userAgent: "x402-conformance-monitor/0.1" });
-    const census = await readInstrumentClients(testEnv, metricsMonth());
-    const conformance = census.get("conformance")!;
-    expect(conformance.distinct).toBe(3);
-    expect(conformance.calls).toBe(4);
-    expect(conformance.top[0]).toEqual({ client: "node-fetch/3.3.2", calls: 2 });
-    expect(conformance.top.map((c) => c.client)).toContain("(no user-agent)");
-    expect(JSON.stringify(conformance)).not.toContain("conformance-monitor");
-    expect(census.get("mcp:tool:buy_simple")?.top[0]).toEqual({ client: "buyer-sdk/1.0", calls: 1 });
-    expect(census.has("mcp:initialize")).toBe(false);
-    expect(INSTRUMENT_CLIENT_CAP).toBeGreaterThan(0);
+    expect(await readInstrumentClients(testEnv, metricsMonth())).toEqual(before);
   });
 
   it("names the day's key slices and reads one day by them, grouped by client", async () => {

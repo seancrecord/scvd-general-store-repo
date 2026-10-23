@@ -4186,6 +4186,15 @@ const PULSE_SCHEMA: OpenApiObject = {
       type: "string",
       description: "When these numbers were read. Every figure here is dated.",
     },
+    statistics_summary: {
+      type: "object",
+      description: "Saved publication date; stale means the hourly refresh is overdue. Visits do not change dates.",
+      properties: {
+        computed_at: { type: "string", format: "date-time" },
+        refresh: { type: "string" },
+        stale: { type: "boolean" },
+      },
+    },
     house_flag_policy: {
       type: "string",
       description:
@@ -5150,12 +5159,14 @@ function returnsOn402(
 function returns(
   operation: OpenApiObject,
   schema: OpenApiObject,
+  additionalResponses: OpenApiObject = {},
 ): OpenApiObject {
   const responses = operation["responses"] as OpenApiObject;
   return {
     ...operation,
     responses: {
       ...responses,
+      ...additionalResponses,
       "200": {
         description: "OK",
         content: { "application/json": { schema } },
@@ -6569,9 +6580,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: returns(
           freeOp(
             "The funnel, denominator included",
-            "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
+            "Organic 402 offers, settlements and re-verifications; house wallets excluded. Undefined conversion is null. Saved hourly with original dates and stale status. Missing summaries return 503 with Retry-After. Free; HTML: /pulse.",
           ),
           PULSE_SCHEMA,
+          { "503": { description: "Summary unavailable; follow Retry-After. Requests never rebuild it.", ...JSON_RESPONSE } },
         ),
       },
       /**

@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { roomHandles } from "@/pages/simple-page";
@@ -22,7 +23,7 @@ const AS_A_BROWSER = {
  * rows carry the same item ids the API and the till use.
  */
 async function html(path: string): Promise<string> {
-  const response = await SELF.fetch(`${BASE}${path}`, { headers: AS_A_BROWSER });
+  const response = await fetchWithPublicStatistics(`${BASE}${path}`, { headers: AS_A_BROWSER });
   expect(response.status, path).toBe(200);
   return response.text();
 }

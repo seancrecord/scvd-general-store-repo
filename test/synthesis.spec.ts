@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SPEC_KEY_ORDER, SPEC_KEY_ORDER_FULL } from "@/lib/listing-spec";
@@ -48,7 +49,7 @@ describe("S1: one schema, one field order, all items", () => {
   });
 
   it("every listing conforms, literal key order included", async () => {
-    const menu = await json(await SELF.fetch(`${BASE}/menu.json`));
+    const menu = await json(await fetchWithPublicStatistics(`${BASE}/menu.json`));
     const items = menu["items"] as Array<Record<string, unknown>>;
     expect(items.length).toBeGreaterThan(0);
     for (const item of items) {
@@ -123,8 +124,8 @@ describe("S2: verification adjacency on the 402", () => {
 });
 
 describe("C2: the honest books at /stats", () => {
-  it("computes live, publishes the exclusion policy, states the zero", async () => {
-    const stats = await json(await SELF.fetch(`${BASE}/stats`));
+  it("publishes the dated calculation, exclusion policy and zero", async () => {
+    const stats = await json(await fetchWithPublicStatistics(`${BASE}/stats`));
     expect(stats["operating_since"]).toBe("2026-07-22");
     expect(typeof stats["settled_purchases_total"]).toBe("number");
     expect(typeof stats["organic_settlements"]).toBe("number");
@@ -133,7 +134,7 @@ describe("C2: the honest books at /stats", () => {
   });
 
   it("rides the catalog root metadata", async () => {
-    const menu = await json(await SELF.fetch(`${BASE}/menu.json`));
+    const menu = await json(await fetchWithPublicStatistics(`${BASE}/menu.json`));
     const store = menu["store"] as Record<string, unknown>;
     expect(store["stats"]).toBe(`${BASE}/stats`);
     expect(String(store["track_record"])).toContain("Settled purchases");
@@ -192,7 +193,7 @@ describe("C1 + C3 on the MCP door", () => {
 
 describe("S3: the skill reads as structure", () => {
   it("carries the three layers and its version", async () => {
-    const skill = await (await SELF.fetch(`${BASE}/skill.md`)).text();
+    const skill = await (await fetchWithPublicStatistics(`${BASE}/skill.md`)).text();
     /**
      * PINNED TO THE CONSTANT, NOT THE NUMBER. This read "version:
      * 2.2.0" as a literal and passed happily for three releases while

@@ -7,11 +7,9 @@ import { recordTradeDelivery, tradeSettlementFor, utcMonth } from "@/services/tr
 import type { Env } from "@/types";
 
 /**
- * THE TRADE GAUGE ON THE FRONT OF THE STORE (2026-09-05, the keeper:
- * "how do we display any trades on the home page"). Live deliveries
- * on account this month, counted from the door's own month counters,
- * one KV get per live account. Zero is a number; no live account is
- * an open door.
+ * The homepage keeps the trade invitation without reading account
+ * counters on every visit. Deliveries still update the financial
+ * counters; retiring the decorative gauge must not retire the books.
  */
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
@@ -27,21 +25,20 @@ async function clearPrefix(prefix: string): Promise<void> {
   for (const key of rows.keys) await testEnv.COUNTERS.delete(key.name);
 }
 
-describe("the trade gauge", () => {
+describe("the trade invitation without a live gauge", () => {
   beforeEach(async () => {
     await clearPrefix("trade_month:");
     await clearPrefix("trade_account:");
   });
 
-  it("reads zero on account this month when the live account has sold nothing", async () => {
+  it("links to the trade counter without inventing a monthly figure", async () => {
     const html = await frontPage();
     expect(html).toContain("On account");
-    expect(html).toContain('<em class="led-num">0</em> on account this month');
-    expect(html).toContain('<a href="/trade">1 marketplace</a>');
-    expect(html).toContain('<a href="/api/trade/ledger">the books</a>');
+    expect(html).not.toContain("on account this month");
+    expect(html).toContain('<a href="/trade">the counter is open</a>');
   });
 
-  it("counts a live delivery from the door's own month counter, never a typed figure", async () => {
+  it("keeps counting deliveries without adding a live homepage gauge", async () => {
     const hal = getTradePartner("hal")!;
     const item = getMenuItem("certificate_of_patronage")!;
     const settlement = tradeSettlementFor(hal, item, "c".repeat(64));
@@ -50,6 +47,7 @@ describe("the trade gauge", () => {
     const counted = await testEnv.COUNTERS.get(KV_KEYS.tradeMonth(hal.id, utcMonth()));
     expect(counted).toBe("2");
     const html = await frontPage();
-    expect(html).toContain('<em class="led-num">2</em> on account this month');
+    expect(html).not.toContain("on account this month");
+    expect(html).toContain('<a href="/trade">the counter is open</a>');
   });
 });

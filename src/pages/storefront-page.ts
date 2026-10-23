@@ -141,11 +141,11 @@ export interface StorefrontData {
    * the wall rather than showing a zero it did not measure.
    */
   patronCount: number | null;
-  /** Live books, for the structured data. Absent rather than stale. */
+  /** Dated saved books for structured data; absent before first publication. */
   stats?: StoreStats | null;
   /**
    * C2, at shopfront length: the organic count and payment protocol,
-   * computed live and never hand-edited. The longer version
+   * read from the dated hourly publication, never hand-edited. The longer version
    * still exists — it is what /stats, /skill.md and the catalog print,
    * and it is one click away from here.
    */
@@ -172,7 +172,7 @@ export interface StorefrontData {
    * first, rendered into the HTML rather than fetched by the page.
    *
    * The server draws it so a reader with no JavaScript, a crawler and
-   * an answer engine all get the same rows; /shop-window.js only keeps
+   * an answer engine all get the same rows; a page reload now keeps
    * them moving while somebody is looking. Null when the read failed —
    * the section then reads exactly as it does on a quiet day, which is
    * the same fail-soft every other gauge here takes, because a window
@@ -219,14 +219,8 @@ function tradeGaugeHtml(trade: StorefrontData["trade"]): string {
  * Rows are the item's own shelf name and how long ago it went — no
  * wallet, no price, no total, and nothing a reader is invited to add
  * up (services/shop-window.ts says why each of those is missing). The
- * <ul> carries the data attributes /shop-window.js reads: the hook it
- * looks for, and the empty line it needs when a poll comes back with
- * nothing, so the one piece of copy the script can print still lives
- * in the keeper's copy file rather than inside a string of JavaScript.
- *
- * aria-live="polite" because the point of the section is that it
- * changes underneath the reader; the script only redraws on an actual
- * change, so a screen reader hears a sale and never hears a repaint.
+ * existing list hooks remain for styling and compatibility, but the rows
+ * refresh only when the page is loaded. Automatic polling is retired.
  *
  * IT HANGS UNDER THE SHELF, not up in the gauges, and that placement
  * is the argument. "A Small Blessing, four minutes ago" means nothing
@@ -1146,7 +1140,6 @@ ${webmcpOriginTrialTags()}
     nothing at all if it never loads. routes/shop-window.ts carries
     the reasoning and the whole of the script.
   -->
-  <script src="/shop-window.js" defer></script>
 </head>
 <body class="night">
   <div class="stars"></div>

@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
@@ -28,7 +29,7 @@ const JSON_ACCEPT = { Accept: "application/json" };
  */
 
 async function text(path: string, headers: Record<string, string>): Promise<string> {
-  const response = await SELF.fetch(`${BASE}${path}`, { headers });
+  const response = await fetchWithPublicStatistics(`${BASE}${path}`, { headers });
   expect(response.status, `${path} answers`).toBe(200);
   return response.text();
 }

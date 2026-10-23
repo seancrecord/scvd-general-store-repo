@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -46,7 +47,7 @@ async function clearPayers(): Promise<void> {
 }
 
 async function frontPage(): Promise<string> {
-  const response = await SELF.fetch("https://scvd.store/", {
+  const response = await fetchWithPublicStatistics("https://scvd.store/", {
     headers: { Accept: "text/html" },
   });
   expect(response.status).toBe(200);
@@ -115,7 +116,7 @@ describe("the patrons gauge", () => {
     await payerRow("0x2222222222222222222222222222222222222222");
 
     const stats = (await (
-      await SELF.fetch("https://scvd.store/stats", {
+      await fetchWithPublicStatistics("https://scvd.store/stats", {
         headers: { Accept: "application/json" },
       })
     ).json()) as {

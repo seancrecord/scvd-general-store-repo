@@ -1,5 +1,20 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-23 — hourly public statistics summary
+
+Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+[Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+and [How KV works](https://developers.cloudflare.com/kv/concepts/how-kv-works/).
+Checked KV `get`/`put` and scheduled-handler definitions in published Workers
+Types 5.20261023.1 against the repository's installed definitions. The existing
+binding helpers remain in use; no dependency or configuration upgrade is needed.
+KV is eventually consistent, including missing-key lookups: a refresh can take
+additional time to appear at other edges. Public requests read a dated retained
+summary and never use a missing key as a reason to rebuild. This establishes the
+platform contract, not a measured production refresh delay or bill saving.
+All referenced pages were reachable.
+
+
 ## 2026-10-22 — retained credit authorization journal
 
 Read [Cloudflare SQLite-backed Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/).

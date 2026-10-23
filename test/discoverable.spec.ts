@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { HUMAN_SURFACES } from "@/routes/site-meta";
@@ -37,7 +38,7 @@ describe("every room in the sitemap is a room", () => {
       HUMAN_SURFACES.map(async (path) => ({
         path,
         page: await (
-          await SELF.fetch(`${BASE}${path}`, { headers: HTML })
+          await fetchWithPublicStatistics(`${BASE}${path}`, { headers: HTML })
         ).text(),
       })),
     );
@@ -47,7 +48,7 @@ describe("every room in the sitemap is a room", () => {
     const answers = await Promise.all(
       HUMAN_SURFACES.map(async (path) => ({
         path,
-        status: (await SELF.fetch(`${BASE}${path}`, { headers: HTML })).status,
+        status: (await fetchWithPublicStatistics(`${BASE}${path}`, { headers: HTML })).status,
       })),
     );
     for (const { path, status } of answers) {
@@ -118,7 +119,7 @@ describe("the rooms the keeper held off the index (F3, 2026-09-03)", () => {
 
   it("still answer, still say what they are, and tell search crawlers not to index them", async () => {
     for (const room of UNLISTED_ROOMS) {
-      const response = await SELF.fetch(`${BASE}${room.path}`, { headers: HTML });
+      const response = await fetchWithPublicStatistics(`${BASE}${room.path}`, { headers: HTML });
       expect(response.status, `${room.path} is a room and does not answer`).toBe(200);
       const page = await response.text();
       expect(page, `${room.path} has no meta description`).toContain('<meta name="description"');
@@ -262,7 +263,7 @@ describe("a room is published on every surface, or it is not published", () => {
     // would have an engine answering under a title nobody uses.
     for (const room of ROOMS) {
       const page = await (
-        await SELF.fetch(`${BASE}${room.path}`, { headers: HTML })
+        await fetchWithPublicStatistics(`${BASE}${room.path}`, { headers: HTML })
       ).text();
       // Titles ship HTML-escaped; the apostrophes in "The Keeper's
       // Almanac" arrive as entities. Unescape rather than escape the
@@ -567,7 +568,7 @@ describe("the buyer-side questions are published on /what", () => {
     // Each new answer points at free surfaces; a named URL that 404s
     // would be the exact defect the sitemap test exists to catch.
     for (const path of ["/conformance", "/.well-known/trust.json", "/corrections"]) {
-      const response = await SELF.fetch(`${BASE}${path}`);
+      const response = await fetchWithPublicStatistics(`${BASE}${path}`);
       expect(response.status, `${path} is cited in a buyer-side answer and does not answer`).toBe(200);
     }
   });
