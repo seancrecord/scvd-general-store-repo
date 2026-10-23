@@ -4188,7 +4188,7 @@ const PULSE_SCHEMA: OpenApiObject = {
     },
     statistics_summary: {
       type: "object",
-      description: "The saved publication date and whether its next hourly refresh is overdue. Dates are never rewritten by a page visit.",
+      description: "Saved publication date; stale means the hourly refresh is overdue. Visits do not change dates.",
       properties: {
         computed_at: { type: "string", format: "date-time" },
         refresh: { type: "string" },
@@ -6580,10 +6580,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: returns(
           freeOp(
             "The funnel, denominator included",
-            "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Saved hourly with the original computation date; overdue readings are marked stale. Before a readable summary exists, returns 503 with Retry-After. Free. The human twin is /pulse.",
+            "Organic 402 offers, settlements and re-verifications; house wallets excluded. Undefined conversion is null. Saved hourly with original dates and stale status. Missing summaries return 503 with Retry-After. Free; HTML: /pulse.",
           ),
           PULSE_SCHEMA,
-          { "503": { description: "Public statistics are temporarily unavailable. Retry after the Retry-After interval; this request never rebuilds them.", ...JSON_RESPONSE } },
+          { "503": { description: "Summary unavailable; follow Retry-After. Requests never rebuild it.", ...JSON_RESPONSE } },
         ),
       },
       /**
