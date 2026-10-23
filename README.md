@@ -1,5 +1,7 @@
 # scvd.store
 
+[![AgentShield Security](https://merx.help/badge/A+.svg)](https://merx.help/shield)
+
 ## Personal-agent connections
 
 Hermes discovers the skills at `https://scvd.store/.well-known/skills/index.json`. [Connection and no-spend rehearsal guidance](skills/scvd-personal-shopper/references/hosts.md) covers Hermes, OpenClaw, Skills CLI and chat sessions. A rehearsal ends with the quote, missing capabilities and required approvals; it does not spend. [Tested versus untested paths](docs/AGENT_ENTRY_2026-10.md).
