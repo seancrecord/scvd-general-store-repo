@@ -220,8 +220,8 @@ export { monthsSinceOpening };
  * path drops (an absent split is honest) and the invariant sweep must
  * hear about (a dropped split means two substrates disagree, and that
  * is a defect wherever it is quiet). One computation, two readers;
- * the diagnostic can no more drift from the page than the page from
- * itself.
+ * the hourly public summary saves this same result. Its date distinguishes
+ * the published reading from a later live diagnostic.
  */
 /** One item's settle count at the till, raw, before reclassification. */
 export interface TillItemCount {
@@ -362,7 +362,8 @@ export async function computeStatsDiagnosed(
    * This used to await each month in turn: 2 serial KV round trips
    * per month, growing by one month every month, with no code change
    * and no commit for anybody to review. On the storefront, /menu.json
-   * and /stats.json, all free, none cached.
+   * and /stats, all free. They now serve the hourly public summary;
+   * this computation remains available to the scheduler and exact diagnostics.
    *
    * The months are independent — each reads its own key prefix and
    * none reads another's result — so they go out in one wave and the
@@ -613,7 +614,7 @@ export function trackRecordLine(stats: StoreStats, base: string): string {
     `Only the organic figure counts as proof.`,
     ...(stats.payments ? [purchaseHeadline(stats.payments)] : []),
     ...(stats.organic_by_rail ? [railSentence(stats.organic_by_rail)] : []),
-    `Every number here is computed live from ${base}/stats; every artifact ever issued (${stats.artifacts_issued}, free shelf included) verifies at ${base}/api/verify/{id}.`,
+    `Figures as of ${stats.computed_at}, from ${base}/stats; every artifact ever issued (${stats.artifacts_issued}, free shelf included) verifies at ${base}/api/verify/{id}.`,
   ].join(" ");
 }
 

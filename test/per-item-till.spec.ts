@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { registeredCount } from "@/store/published-counts";
@@ -19,10 +20,10 @@ beforeAll(() => {
 describe("the per-item till on the public books", () => {
   it("shows a settle under its item, with the caveat and the denominator rows", async () => {
     const url = `${BASE}/api/buy/hello?agent_name=till-spec`;
-    const challenge = decodePaymentRequired(await SELF.fetch(url));
-    const paid = await SELF.fetch(url, { headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(challenge.accepts[0]!) } });
+    const challenge = decodePaymentRequired(await fetchWithPublicStatistics(url));
+    const paid = await fetchWithPublicStatistics(url, { headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(challenge.accepts[0]!) } });
     expect(paid.status, await paid.clone().text()).toBe(200);
-    const stats = (await (await SELF.fetch(`${BASE}/stats`, { headers: { Accept: "application/json" } })).json()) as {
+    const stats = (await (await fetchWithPublicStatistics(`${BASE}/stats`, { headers: { Accept: "application/json" } })).json()) as {
       till_by_item: Record<string, { organic: number; house: number }>;
       till_by_item_note: string;
     };

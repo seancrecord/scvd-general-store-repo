@@ -118,14 +118,13 @@ describe("a stranger cannot mint venue counters", () => {
     ).toBe(true);
   });
 
-  /**
-   * The raw string is the reason bucketing is acceptable. If an
-   * unrecognised marker were bucketed AND forgotten, a one-off hand
-   * test would become unreadable, and the venue table would go from
-   * attacker-writable to useless. The event row keeps it verbatim.
-   */
-  it("keeps the exact invented string readable per-event", async () => {
-    await arriveWithMarker("some-hand-test");
+  // Quotes still retain exact attribution evidence; free visits retain only
+  // bounded venue totals after the operating-cost reduction.
+  it("keeps the exact invented string readable on a price-quote event", async () => {
+    const { recordChallengeIssued } = await import("@/lib/metrics");
+    await recordChallengeIssued(testEnv, "/api/buy/hello", {
+      userAgent: "cold-arrival-check/1.0", declaredSource: "some-hand-test",
+    });
     const listed = await testEnv.COUNTERS.list({ prefix: "evt:" });
     const rows = await Promise.all(
       listed.keys.map(async (entry) =>

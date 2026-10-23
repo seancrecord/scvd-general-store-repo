@@ -1,4 +1,4 @@
-import { SELF } from "cloudflare:test";
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { describe, expect, it } from "vitest";
 import { ROOMS } from "@/store/rooms";
 import { MENU_ITEMS } from "@/store";
@@ -34,7 +34,7 @@ const BROWSER = {
  */
 
 async function html(path: string): Promise<string> {
-  const response = await SELF.fetch(`${BASE}${path}`, { headers: BROWSER });
+  const response = await fetchWithPublicStatistics(`${BASE}${path}`, { headers: BROWSER });
   expect(response.status, `${path} does not answer a browser`).toBe(200);
   return response.text();
 }

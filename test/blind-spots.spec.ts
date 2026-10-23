@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import type { Env } from "@/types";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -56,7 +57,7 @@ describe("the funnel does not assert what it cannot check", () => {
     // Delivery precedes settlement, but a counter alone is still not proof
     // that a particular buyer received the goods. Keep that limit explicit.
     const body = (await (
-      await SELF.fetch(`${BASE}/pulse.json`)
+      await fetchWithPublicStatistics(`${BASE}/pulse.json`)
     ).json()) as Record<string, unknown>;
     const text = JSON.stringify(body);
     expect(text).not.toContain("Every settlement counted here minted");
@@ -72,7 +73,7 @@ describe("the funnel does not assert what it cannot check", () => {
     // /pulse content-negotiates; without this header it serves JSON,
     // so the first cut of this test was checking the wrong document.
     const html = await (
-      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+      await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
     ).text();
     expect(html).not.toContain("Every settlement counted here minted a signed artifact —");
     expect(html).toContain("checked rather than asserted");
@@ -216,7 +217,7 @@ describe("round two: the record and the books state their limits", () => {
     // "Computed live, no hand edits" was standing in for independence
     // it does not provide: a settle that never bumped a counter is an
     // ABSENCE here, not a discrepancy, so the page reads clean.
-    const body = (await (await SELF.fetch(`${BASE}/stats`)).json()) as Record<
+    const body = (await (await fetchWithPublicStatistics(`${BASE}/stats`)).json()) as Record<
       string,
       unknown
     >;
@@ -232,7 +233,7 @@ describe("round two: the record and the books state their limits", () => {
   it("/stats still publishes the numbers it is caveating", async () => {
     // A caveat that arrived by deleting the figure would be the wrong
     // fix. The books stay; the frame goes around them.
-    const body = (await (await SELF.fetch(`${BASE}/stats`)).json()) as Record<
+    const body = (await (await fetchWithPublicStatistics(`${BASE}/stats`)).json()) as Record<
       string,
       unknown
     >;

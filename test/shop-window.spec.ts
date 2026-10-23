@@ -242,7 +242,7 @@ describe("the shop window", () => {
     expect(html).toContain('class="sold-row"');
     // The script is an enhancement on top of rows that are already
     // there; a reader with no JavaScript sees the same window.
-    expect(html).toContain('src="/shop-window.js"');
+    expect(html).not.toContain('src="/shop-window.js"');
   });
 
   it("says so plainly when nothing has crossed the counter", async () => {
@@ -293,7 +293,7 @@ describe("the shop window", () => {
     expect(body.toLowerCase()).not.toContain("payer");
   });
 
-  it("serves its script as a script, and one that builds nodes rather than markup", async () => {
+  it("serves a no-op for cached pages that still reference the retired polling script", async () => {
     const response = await SELF.fetch(`${BASE}/shop-window.js`);
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toContain("javascript");
@@ -303,8 +303,8 @@ describe("the shop window", () => {
      * values from storage reach the page as text, never as markup.
      */
     expect(source).not.toContain("innerHTML");
-    expect(source).toContain("textContent");
-    expect(source).toContain("/shop-window.json");
+    expect(source).not.toContain("setInterval");
+    expect(source).not.toMatch(/\bfetch\s*\(/);
   });
 });
 

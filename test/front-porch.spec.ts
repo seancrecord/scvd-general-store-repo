@@ -208,35 +208,23 @@ describe("nothing client-side that can act", () => {
    * and the count is PINNED so a new script has to argue with this
    * test in review.
    *
-   * THE SECOND SCRIPT ARGUED ITS CASE ON 2026-09-06, and this is the
-   * argument. /shop-window.js refreshes the "over the counter" rows on
-   * the front page while somebody is looking at it. It cannot act by
-   * the same construction /webmcp.js cannot: one same-origin GET to a
-   * public feed the page has already rendered from, no wallet, no
-   * keys, no storage, no cookies, and no input from the visitor to
-   * take. It reads and it draws text. If it never loads, the rows the
-   * server drew stay exactly as they are — so it is not even load-
-   * bearing for the page it decorates, which is the strongest form of
-   * "the visitor decides" available to a script.
-   *
-   * Both are named below rather than counted loosely: a THIRD script
-   * fails this test by name and comes back to review, which is the
-   * property the pin was always for.
+   * Sales polling was retired on 2026-10-23 to stop background reads.
+   * Pin the remaining WebMCP script by count and name so additions
+   * still have to justify their presence.
    */
-  it("serves the storefront with only the two fenced first-party scripts and no cookies", async () => {
+  it("serves the storefront with only the fenced first-party WebMCP script and no cookies", async () => {
     const response = await SELF.fetch(`${BASE}/`, {
       headers: { "User-Agent": "browser/1.0" },
     });
     const html = await response.text();
     expect(response.headers.get("Set-Cookie")).toBeNull();
     // JSON-LD is inert structured data; executable script is exactly
-    // the derived read-only WebMCP surface and the shop window's
-    // refresh, both same-origin and both unable to act.
+    // the derived read-only WebMCP surface, same-origin and unable to act.
     const executableScripts =
       html.match(/<script(?![^>]*type="application\/ld\+json")/g) ?? [];
-    expect(executableScripts).toHaveLength(2);
+    expect(executableScripts).toHaveLength(1);
     expect(html).toContain('<script src="/webmcp.js" defer>');
-    expect(html).toContain('<script src="/shop-window.js" defer>');
+    expect(html).not.toContain('<script src="/shop-window.js" defer>');
     expect(
       response.headers.get("Content-Security-Policy") ?? "",
     ).toContain("script-src 'self'");

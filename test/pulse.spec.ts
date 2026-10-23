@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
@@ -30,7 +31,7 @@ interface PulseBody {
 }
 
 async function pulse(): Promise<PulseBody> {
-  const response = await SELF.fetch(`${BASE}/pulse.json`);
+  const response = await fetchWithPublicStatistics(`${BASE}/pulse.json`);
   expect(response.status).toBe(200);
   return (await response.json()) as PulseBody;
 }
@@ -80,7 +81,7 @@ describe("the public pulse", () => {
     const body = await pulse();
     expect(body.house_flag_policy).toBe(HOUSE_FLAG_POLICY);
     const stats = (await (
-      await SELF.fetch(`${BASE}/stats`)
+      await fetchWithPublicStatistics(`${BASE}/stats`)
     ).json()) as Record<string, unknown>;
     expect(body.house_flag_policy).toBe(stats["house_flag_policy"]);
   });
@@ -128,12 +129,12 @@ describe("house traffic never reaches the public funnel", () => {
   it("does not count a house-flagged purchase", async () => {
     const before = await pulse();
     const url = `${BASE}/api/buy/hello?house=${testEnv.HOUSE_SECRET}`;
-    const challenge = await SELF.fetch(url);
+    const challenge = await fetchWithPublicStatistics(url);
     const accepted = decodePaymentRequired(challenge).accepts[0];
     if (!accepted) {
       throw new Error("No tier offered");
     }
-    await SELF.fetch(url, {
+    await fetchWithPublicStatistics(url, {
       headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
     });
     const after = await pulse();
@@ -151,12 +152,12 @@ describe("house traffic never reaches the public funnel", () => {
     // worthless if nothing is ever counted at all.
     const before = await pulse();
     const url = `${BASE}/api/buy/hello`;
-    const challenge = await SELF.fetch(url);
+    const challenge = await fetchWithPublicStatistics(url);
     const accepted = decodePaymentRequired(challenge).accepts[0];
     if (!accepted) {
       throw new Error("No tier offered");
     }
-    await SELF.fetch(url, {
+    await fetchWithPublicStatistics(url, {
       headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
     });
     const after = await pulse();
@@ -215,7 +216,7 @@ describe("the funnel's middle is published, derived rather than metered", () => 
 
   it("no longer serves the name that read like the protocol step", async () => {
     const body = (await (
-      await SELF.fetch(`${BASE}/pulse.json`)
+      await fetchWithPublicStatistics(`${BASE}/pulse.json`)
     ).json()) as Record<string, unknown>;
     // Scan the DATA, not the prose: the note is ALLOWED to say
     // "organic_verifies" — a dated correction must name the thing it
@@ -240,7 +241,7 @@ describe("the funnel says nothing about any individual", () => {
      * not testing the thing.
      */
     const body = (await (
-      await SELF.fetch(`${BASE}/pulse.json`)
+      await fetchWithPublicStatistics(`${BASE}/pulse.json`)
     ).json()) as Record<string, unknown>;
     // The published-counts register describes the fields (one of them is
     // named known_machinery_by_user_agent) and carries no event data; it is
@@ -279,7 +280,7 @@ describe("the funnel says nothing about any individual", () => {
     // Tier 3: a number beside the means to verify it beats a number
     // beside a promise that it is true.
     const body = (await (
-      await SELF.fetch(`${BASE}/pulse.json`)
+      await fetchWithPublicStatistics(`${BASE}/pulse.json`)
     ).json()) as Record<string, unknown>;
     expect(String(body["verify_url"])).toContain("/api/verify/");
     expect(String(body["signing_key"])).toContain("scvd-signing-key");
@@ -311,16 +312,16 @@ describe("the service, directly", () => {
 describe("the pulse has a face", () => {
   it("serves HTML to a person and JSON to everything else", async () => {
     const page = await (
-      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+      await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
     ).text();
     expect(page).toContain("<table");
-    const json = await (await SELF.fetch(`${BASE}/pulse`)).json();
+    const json = await (await fetchWithPublicStatistics(`${BASE}/pulse`)).json();
     expect(json).toHaveProperty("all_time");
   });
 
   it("states the funnel as a sentence, not a scoreboard", async () => {
     const page = await (
-      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+      await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
     ).text();
     /*
      * The sentence counts QUOTES, not heads (the instrument audit,
@@ -338,7 +339,7 @@ describe("the pulse has a face", () => {
 
   it("tells a reader to read the denominator before the rate", async () => {
     const page = await (
-      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+      await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
     ).text();
     expect(page).toContain("READ THE DENOMINATOR BEFORE THE RATE");
     // The sentence that stops a thin number being read as a market verdict.
@@ -349,7 +350,7 @@ describe("the pulse has a face", () => {
 
   it("hands over the means to check it, on the page itself", async () => {
     const page = await (
-      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+      await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
     ).text();
     expect(page).toContain("/house-ledger.json");
     expect(page).toContain("scvd-signing-key");
@@ -367,7 +368,7 @@ describe("the pulse has a face", () => {
     // The keeper's instruction stands until he changes it. A test
     // rather than a note, because "we'll remember" is what failed.
     const front = await (
-      await SELF.fetch(BASE, { headers: { Accept: "text/html" } })
+      await fetchWithPublicStatistics(BASE, { headers: { Accept: "text/html" } })
     ).text();
     expect(front).not.toContain("/pulse");
   });
@@ -425,7 +426,7 @@ describe("the conversion rate keeps its three states apart", () => {
 describe("the rendered rate agrees with the row it is on", () => {
   it("never shows a zero rate beside a settlement", async () => {
     const page = await (
-      await SELF.fetch("https://scvd.store/pulse", {
+      await fetchWithPublicStatistics("https://scvd.store/pulse", {
         headers: { Accept: "text/html" },
       })
     ).text();
@@ -451,12 +452,12 @@ describe("the correction walk's own age rides the pulse (2026-09-02)", () => {
   it("is null before the first walk and the walk's computed_at after it", async () => {
     const { recomputeCorrections } = await import("@/services/reclassify");
     await testEnv.COUNTERS.delete("metric:corrections");
-    const before = (await (await SELF.fetch(`${BASE}/pulse.json`)).json()) as Record<string, unknown>;
+    const before = (await (await fetchWithPublicStatistics(`${BASE}/pulse.json`)).json()) as Record<string, unknown>;
     expect(before["crawler_correction_computed_at"]).toBeNull();
     await recomputeCorrections(testEnv);
-    const after = (await (await SELF.fetch(`${BASE}/pulse.json`)).json()) as Record<string, unknown>;
+    const after = (await (await fetchWithPublicStatistics(`${BASE}/pulse.json`)).json()) as Record<string, unknown>;
     expect(String(after["crawler_correction_computed_at"])).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    const page = await (await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })).text();
+    const page = await (await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: { Accept: "text/html" } })).text();
     expect(page).toContain("The correction walk last ran at");
   });
 });
@@ -481,7 +482,7 @@ describe("known machinery shows its two halves", () => {
     }
     await put("mako-pulse-prober/0.1", "hello", 50_000);
     await recomputeCorrections(testEnv, new Date("2026-07-31T00:00:00Z"));
-    const body = (await (await SELF.fetch("https://scvd.store/pulse.json")).json()) as {
+    const body = (await (await fetchWithPublicStatistics("https://scvd.store/pulse.json")).json()) as {
       months: { month: string; known_machinery?: number; known_machinery_by_user_agent?: number; known_machinery_by_behaviour?: number }[];
     };
     const july = body.months.find((m) => m.month === "2026-07");
@@ -503,7 +504,7 @@ describe("partial correction progress", () => {
       const pulse = await computePulse(testEnv);
       expect(pulse.crawler_correction_complete).toBe(false);
       expect(pulse.crawler_correction_scan).toEqual(scan);
-      const response = await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } });
+      const response = await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: { Accept: "text/html" } });
       expect(response.status).toBe(200);
       const html = await response.text();
       expect(html).toContain("The scan is incomplete; partial months are withheld.");

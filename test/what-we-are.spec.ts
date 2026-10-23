@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { describe, expect, it } from "vitest";
 import { whatFaq } from "@/store/copy/what";
 
@@ -46,7 +47,7 @@ describe("every proof /what offers actually answers", () => {
     }
     expect(cited.size, "no answer cites any evidence at all").toBeGreaterThan(5);
     for (const path of cited) {
-      const response = await SELF.fetch(`${BASE}${path}`, { headers: HTML });
+      const response = await fetchWithPublicStatistics(`${BASE}${path}`, { headers: HTML });
       // 404 is the failure that matters: a cited proof that is not
       // there. 405 is not — /mcp is POST-only, and a method mismatch
       // still proves the route exists. A 5xx is a broken page, which
