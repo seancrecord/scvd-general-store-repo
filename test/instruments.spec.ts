@@ -385,6 +385,6 @@ describe("who called, by instrument", () => {
     const html = await page.text();
     expect(html).toContain(`A day, on request: ${day}`);
     expect(html).toContain("one-script/1.0");
-    expect(html).toContain("Who called,");
+    expect(html).toContain("Who called — retained detail");
   });
 });

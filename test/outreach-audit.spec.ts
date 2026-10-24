@@ -346,7 +346,7 @@ describe("the desk shows the re-reads and the press", () => {
     expect(before).toContain('action="/admin/outreach/audit-sent"');
     // The press is one press now, not a ritual of ten at a time.
     expect(before).toContain(`Re-read now — up to ${AUDIT_PRESS_CAP} in one press`);
-    expect(before).toContain("five a pass on the half-hourly tick");
+    expect(before).toContain("five a pass on the hourly sweep");
 
     const pressed = await SELF.fetch(`${BASE}/admin/outreach/audit-sent`, {
       method: "POST",
