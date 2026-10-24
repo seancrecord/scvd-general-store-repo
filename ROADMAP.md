@@ -49,6 +49,16 @@ for all manual briefs. Remaining funding work: coordinate credit accrual and old
 other-program obligations; external spending remains outside the ledger. No cap
 increase or gas sponsorship. [Scope](docs/FIELD_WALLET_ALLOCATIONS.md#manual-contribution-obligations).
 
+## October 22 — contribution availability and useful next steps
+
+The existing contribution list and bounty page expose page-scoped available slots
+and a clear boundary between browsing and permission to start. Returned read steps
+point to posted briefs and the next directory page. Empty or fully held pages offer
+existing free expense, endpoint discovery and preflight guides, explicitly separate
+from paid work. A failed listing remains unknown rather than reporting zero slots.
+No brief, payment, reservation, cap increase or new outreach is created by browsing.
+
+
 ## October 21 — expose manual rewards and accrued credit in the funding view
 
 The private funding report separates accepted manual-payment terms, including the
