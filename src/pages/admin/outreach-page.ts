@@ -543,7 +543,7 @@ export function renderOutreachPage(
   };
   const auditBlock = written
     ? `<section id="audit"><h2>Doors we wrote to, re-read (${audits.length} of ${written})</h2>
-    <p class="menu-desc">A note is a claim with a date on it, and the reply that corrects it arrives on the operator's schedule. Every door a note went to is knocked on again — <strong>automatically, five a pass on the half-hourly tick, each door at most once a day</strong> — and the answer is held against <em>what that note actually claimed</em>, not against this week's census row. Sends nothing, ever.
+    <p class="menu-desc">A note is a claim with a date on it, and the reply that corrects it arrives on the operator's schedule. Every door a note went to is knocked on again — <strong>automatically, five a pass on the hourly sweep, each door at most once a day</strong> — and the answer is held against <em>what that note actually claimed</em>, not against this week's census row. Sends nothing, ever.
     <form method="post" action="/admin/outreach/audit-sent" style="display:inline"><button type="submit"><strong>Re-read now — up to ${AUDIT_PRESS_CAP} in one press</strong></button></form>
     <span class="menu-meta"> — you do not have to: the sweep reaches every door within a day and pages you when one disagrees. This is for when you want the answer before then.</span></p>
     ${
@@ -582,7 +582,7 @@ export function renderOutreachPage(
   const hiddenLine = showAll
     ? `<p class="menu-meta"><strong>Showing every door, address or not.</strong> <a href="/admin/outreach">Back to the doors you can write to</a>.</p>`
     : hidden > 0
-      ? `<p class="menu-meta">${hidden} door${hidden === 1 ? "" : "s"} on this round ${hidden === 1 ? "is" : "are"} not drawn below — ${hidden === 1 ? "it has" : "they have"} no published address, so there is nothing to press. ${hidden === 1 ? "It is" : "They are"} still on the round, still ranked, and still in line for the scout — and ${hidden === 1 ? "it appears" : "they appear"} here the moment one publishes an address. <a href="/admin/outreach?all=1">Show them anyway</a>.</p>`
+      ? `<p class="menu-meta">${hidden} door${hidden === 1 ? "" : "s"} on this round ${hidden === 1 ? "is" : "are"} not drawn below — ${hidden === 1 ? "it has" : "they have"} no published address, so there is nothing to press. ${hidden === 1 ? "It is" : "They are"} still on the round, still ranked, and available for the manual scout — and ${hidden === 1 ? "it appears" : "they appear"} here after a Scout contacts press finds a published address. <a href="/admin/outreach?all=1">Show them anyway</a>.</p>`
       : "";
   const renderedHosts = new Set([
     ...freshShown.map((p) => p.host),
@@ -602,7 +602,7 @@ export function renderOutreachPage(
   <form method="post" action="/admin/outreach/scout" style="display:inline">
     <button type="submit"><strong>Scout contacts (${unscouted} unscouted, 25 per press)</strong></button>
   </form>
-  <span class="menu-meta"> — reads each door's security.txt for a published address; a found address puts the door on the queue below.</span>
+  <span class="menu-meta"> — Scouting runs only when you press Scout contacts. It reads each door's security.txt for a published address; a found address puts the door on the queue below. Sent-note audits continue automatically.</span>
   </section>
   ${unsentSummary(prospects, welcomes, ledger, renderedHosts, base)}
   <p class="menu-desc">Derived from round <strong>${escapeHtml(round.week)}</strong>:

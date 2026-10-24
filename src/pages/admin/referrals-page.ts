@@ -66,6 +66,7 @@ export function renderReferralsPage(
       <strong>by itself</strong>. Same instinct, nothing else in common —
       do not add these numbers together.</p>
       <p class="menu-desc">${escapeHtml(referrers.honest_limit)}</p>
+      <p class="menu-meta">New free visits do not add referring-host detail. These are retained rows, including continuing price-quote and payment evidence; they do not measure all current arrivals.</p>
       <p class="menu-meta">Rows scanned: ${referrers.rows_scanned} · carried a referrer: ${referrers.with_referrer}</p>
       ${
         referrers.hosts.length > 0
@@ -78,10 +79,8 @@ export function renderReferralsPage(
           )
           .join("")}</tbody>
       </table>`
-          : `<p class="menu-desc"><strong>Nothing yet, and that is the
-      expected reading rather than a fault.</strong> Nobody has arrived
-      here by clicking a link in a browser. The instrument is working; the
-      clicks are not happening.</p>`
+          : `<p class="menu-desc"><strong>No referring hosts in the retained rows scanned.</strong>
+      New free visits are not collected here. This is not evidence that nobody clicked a link.</p>`
       }
     </section>`,
   );

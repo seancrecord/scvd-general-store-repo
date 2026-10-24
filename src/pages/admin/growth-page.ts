@@ -95,7 +95,7 @@ function instrumentsHtml(months: GrowthMonth[]): string {
     const r = m.free_instruments.by_instrument.find((entry) => entry.surface === surface);
     if (!r) return "<small>—</small>";
     const delta = r.delta === null ? "" : ` <small>(${r.delta > 0 ? "+" : ""}${r.delta})</small>`;
-    const clients = r.distinct_clients === null ? "" : ` <small>· ${r.distinct_clients} client${r.distinct_clients === 1 ? "" : "s"}</small>`;
+    const clients = r.distinct_clients === null ? "" : ` <small>· ${r.distinct_clients} historical client${r.distinct_clients === 1 ? "" : "s"}</small>`;
     return `${r.organic}${r.per_day !== null ? ` <small>· ${r.per_day}/d</small>` : ""}${delta}${clients}`;
   };
   const lines = ordered
@@ -118,7 +118,7 @@ function instrumentsHtml(months: GrowthMonth[]): string {
       ${row("asks per 100 argument-carrying checks", months, (m) => n(m.free_instruments.funnel.asks_per_hundred_checks))}
       ${row("settles per 100 argument-carrying checks", months, (m) => n(m.free_instruments.funnel.settles_per_hundred_checks))}
     </table>
-    <p><small>Sales include x402 and MPP; price asks cover x402. Three counts in a row, not a journey: nothing here ties one caller's check to that caller's purchase. <a href="/admin/instruments">The instruments desk</a> does the nearest thing by user-agent inside a window. A dash means the line did not exist that month; the roster's logged-since date is beside each name. Per-day divides by the UTC calendar days the line existed, including today's partial day. Month-to-month deltas wait until the month closes.</small></p>
+    <p><small>Sales include x402 and MPP; price asks cover x402. Three counts in a row, not a journey: nothing here ties one caller's check to that caller's purchase. <a href="/admin/instruments">The instruments desk</a> retains historical joins by user-agent inside a window; new free calls cannot be joined to later purchases. A dash means the line did not exist that month; the roster's logged-since date is beside each name. Per-day divides by the UTC calendar days the line existed, including today's partial day. Month-to-month deltas wait until the month closes.</small></p>
     <table border="1" cellpadding="4">
       ${monthHead(months)}
       ${lines || `<tr><td colspan="${months.length + 1}">no free instrument has been used yet</td></tr>`}
@@ -137,7 +137,7 @@ function clientsHtml(newest: GrowthMonth | undefined): string {
   if (!newest) return "";
   const rows = newest.free_instruments.by_instrument.filter((r) => r.distinct_clients !== null && r.distinct_clients > 0);
   if (rows.length === 0) {
-    return `<p><small>No client census for ${escapeHtml(newest.month)} yet: the census began 2026-09-11 and counts organic calls from then.</small></p>`;
+    return `<p><small>No retained client detail for ${escapeHtml(newest.month)}. Free-visit client collection has stopped; aggregate uses continue.</small></p>`;
   }
   const lines = rows
     .map((r) => {
@@ -145,7 +145,7 @@ function clientsHtml(newest: GrowthMonth | undefined): string {
       return `<li><code>${escapeHtml(r.surface)}</code>: ${r.distinct_clients} distinct · busiest ${top}</li>`;
     })
     .join("");
-  return `<p><small><strong>Who called, ${escapeHtml(newest.month)}</strong> — distinct user-agents per instrument off the client census (organic only; a user-agent is software, not a person; past 40 names the count lands on <code>other</code>). One name carrying most of a line's calls is a script, whatever the total says.</small></p><ul>${lines}</ul>`;
+  return `<p><small><strong>Who called — retained detail, ${escapeHtml(newest.month)}</strong> — retained organic user-agent counts; collection has stopped. These do not measure current-month clients. A user-agent is software, not a person; past 40 names the count lands on <code>other</code>. One name carrying most of a line's calls is a script, whatever the total says.</small></p><ul>${lines}</ul>`;
 }
 
 function agentsHtml(months: GrowthMonth[]): string {
@@ -166,10 +166,10 @@ function agentsHtml(months: GrowthMonth[]): string {
       ${row("organic 402s by channel", months, (m) => `<small>${record(m.agents.asks_by_channel)}</small>`)}
       ${row("asks moved to known machinery", months, (m) => n(m.agents.known_machinery))}
       ${row("re-checks by artifact age", months, (m) => `<small>${record(m.agents.rechecks_by_age)}</small>`)}
-      ${row("referred visits", months, (m) => n(m.agents.referred_visits))}
+      ${row("retained referring visits (collection stopped)", months, (m) => n(m.agents.referred_visits))}
       ${row("<small>&nbsp;&nbsp;referring hosts</small>", months, (m) => `<small>${hosts(m)}</small>`)}
     </table>
-    <p><small>The client census began 2026-08-29 and the referring-host census 2026-09-11; a month before either is unmeasured on that line. Re-checks over a week old are artifacts travelling: somebody whose session did not mint the thing is reading it. The referring hosts are the store's word of mouth with history; <a href="/admin/referrals">the word-of-mouth desk</a> has the last ninety days row by row.</small></p>
+    <p><small>MCP client handshakes continue to be counted. Free-visit client and referring-host detail has stopped; the referring-host rows above are retained history, not a current-traffic comparison. A month before collection began is unmeasured. Re-checks over a week old are artifacts travelling: somebody whose session did not mint the thing is reading it. Retained referring hosts can help explain older traffic; <a href="/admin/referrals">the word-of-mouth desk</a> has the last ninety days row by row.</small></p>
   </section>`;
 }
 

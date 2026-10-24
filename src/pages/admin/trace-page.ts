@@ -31,7 +31,7 @@ export function renderTracePage(trace: ClientTrace | null): string {
     const body = `
   <section>
     <h2>Trace a client</h2>
-    <p>Name a client and get everything it did, in order, oldest first:
+    <p>Name a client to read its retained events, oldest first:
     <code>/admin/trace?ua=&lt;user-agent&gt;</code>. The key is the walker key the
     rest of the office uses — the user-agent verbatim, or the literal string
     <code>(no user-agent)</code> for the clients that send none, which are a real
@@ -97,12 +97,12 @@ export function renderTracePage(trace: ClientTrace | null): string {
         : challenges > 0
           ? `<p>Read <strong>${challenges}</strong> price(s), never signed. Nothing was
              refused, so nothing here is the till's fault: this client looked and left.</p>`
-          : `<p>No priced events at all in the rows scanned — free doors only.</p>`;
+          : `<p>No price or payment rows for this client in the rows scanned. New free visits are not recorded here.</p>`;
 
   const body = `
   <section>
     <h2>${escapeHtml(trace.user_agent)}</h2>
-    <p>Everything this client did, in order, oldest first. The sequence is the
+    <p>Retained events for this client, oldest first. New free visits are not recorded here; this is not a complete journey. The sequence is the
     evidence: which items it tried, how many prices it read first, and whether a
     refusal reason changed between attempts.</p>
     ${shape}
