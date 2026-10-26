@@ -240,14 +240,10 @@ export async function publishRegistryWeekFromCorpus(
  * that produced the W36 hole in the first place.
  */
 export async function unpublishedCorpusWeeks(env: Env): Promise<string[]> {
-  const [{ listCorpus }, pulse] = await Promise.all([
+  const [{ indexedCorpusWeeks }, pulse] = await Promise.all([
     import("@/services/corpus-list"),
     readRegistryPulse(env),
   ]);
   const published = new Set(pulse.weeks.map((row) => row.week));
-  const records = await listCorpus(env);
-  return records
-    .map((record) => record.snapshot?.week)
-    .filter((week): week is string => Boolean(week) && !published.has(week!))
-    .sort();
+  return indexedCorpusWeeks(env, published);
 }

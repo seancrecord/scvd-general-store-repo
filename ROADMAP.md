@@ -1,5 +1,12 @@
 # ROADMAP — September 2026
 
+## October 26 — admin Round archive reads
+
+Prepared a metadata-only unpublished-week lookup so opening the Round no
+longer downloads the full archive for that list. Regression tests, typecheck
+and bundle checks pass; release follows required PR checks. Original 1102
+CPU/memory attribution remains unconfirmed. [Scope and validation](docs/ADMIN_ROUND_RESOURCE_READS_2026-10.md).
+
 ## October 23 — public statistics cost reduction
 
 Prepared locally: the homepage, menu and skill page read the same hourly saved
