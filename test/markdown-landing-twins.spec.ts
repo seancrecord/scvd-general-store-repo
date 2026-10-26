@@ -1,5 +1,5 @@
 import { SELF, env } from "cloudflare:test";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { takeCorpusSnapshot } from "@/services/corpus";
 import type { Env } from "@/types";
@@ -34,6 +34,13 @@ const LANDING_PAGES = [
 ] as const;
 
 describe("the landing pages' markdown representation", () => {
+  beforeEach(() => {
+    // Compare representations at the same observation time: the bounty
+    // board includes when its availability was evaluated on each request.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-22T12:00:00Z"));
+  });
+  afterEach(() => vi.useRealTimers());
   it("serves markdown to a caller that asks for it", async () => {
     for (const path of LANDING_PAGES) {
       const response = await SELF.fetch(`${BASE}${path}`, {
