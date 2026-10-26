@@ -1,5 +1,45 @@
 # ROADMAP — September 2026
 
+## October 26 — admin Round archive reads
+
+Prepared a metadata-only unpublished-week lookup so opening the Round no
+longer downloads the full archive for that list. Regression tests, typecheck
+and bundle checks pass; release follows required PR checks. Original 1102
+CPU/memory attribution remains unconfirmed. [Scope and validation](docs/ADMIN_ROUND_RESOURCE_READS_2026-10.md).
+
+## October 23 — public statistics cost reduction
+
+Prepared locally: the homepage, menu and skill page read the same hourly saved
+books as `/stats`; `/pulse` and its JSON twin read the saved funnel. Public
+requests never reconstruct those figures, including on a missing summary.
+Saved dates remain visible after a failed refresh. Payment accounting,
+reconciliation and signed evidence continue to use their existing computations.
+[Scope, verification and rollout](docs/PUBLIC_STATISTICS_SUMMARY_2026-10.md).
+
+The follow-up cost pass is also prepared locally: aggregate-only free-visit
+tracking, manual contact scouting, no sales polling or bounty/trade homepage
+gauges, fewer sale/counter value reads, and traffic corrections every six hours.
+[Value ranking, tradeoffs and validation](docs/OPERATING_COST_CUTS_2026-10-23.md).
+The keeper approved release through PR/CI after the 896-test local validation.
+Deployment and live savings verification remain open, as do the stalled historical
+collector and archive-page reliability. No runtime deployment has been made.
+
+
+## October 22 — recover retained credit cash-out authorizations
+
+New production cash-outs retain their signed authorization in the original paying
+wallet's allocation ledger before the response. A recovery-only wallet challenge
+returns those bytes even after wallet rotation or expiry, without spending new
+credit, signing again or refreshing the expiry. The credit room, shared machine
+terms and OpenAPI describe the same request. Failed preparation restores the prior
+recovery pointer when the request still owns its claim.
+
+This recovers saved authorizations, not an interrupted operation before the save.
+It does not establish on-chain payment or repair a failed aggregate update. KV
+credit ownership and accrual funding remain separate gaps; no cap change or gas
+sponsorship. [Recovery contract](docs/FIELD_WALLET_ALLOCATIONS.md#credit-authorization-recovery).
+
+
 ## October 22 — retain and reconcile accepted manual contribution rewards
 
 The private submission desk can import an accepted manual-payment obligation into

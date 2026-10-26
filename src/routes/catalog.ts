@@ -1,3 +1,4 @@
+import { readPublicStats } from "@/services/public-statistics";
 import { relatedOffersHtml } from "@/pages/offer-paths";
 import { purchaseCapabilities } from "@/lib/purchase-capabilities";
 import { stripTrailingSlashes } from "@/lib/trailing-slash";
@@ -38,7 +39,7 @@ import { readShelfStock } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
 import type { ShutterState } from "@/services/shutter";
-import { computeStats, trackRecordLine } from "@/services/stats";
+import { trackRecordLine } from "@/services/stats";
 import {
   getMenuItem,
   MENU_ITEMS,
@@ -155,7 +156,7 @@ catalogRoutes.get("/menu.json", async (c) => {
   }
   // The books are part of the catalog's root metadata (C2); a ledger
   // hiccup never blocks the menu.
-  const stats = await computeStats(c.env).catch(() => null);
+  const stats = await readPublicStats(c.env).catch(() => null);
   const shutter: ShutterState = await shutterState(c.env).catch(() => ({
     closed: false,
   }));

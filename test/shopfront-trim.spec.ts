@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { KV_KEYS, invertedTimestamp } from "@/lib/kv-keys";
@@ -31,7 +32,7 @@ const HTML = { Accept: "text/html" };
  */
 describe("the front of the store, trimmed", () => {
   it("prints the organic count, not the whole ledger paragraph", async () => {
-    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const page = await (await fetchWithPublicStatistics(BASE, { headers: HTML })).text();
     // The paragraph's own furniture, all of which now lives at /stats.
     expect(page).not.toContain("Operating since");
     expect(page).not.toContain("Settled purchases:");
@@ -43,7 +44,7 @@ describe("the front of the store, trimmed", () => {
   });
 
   it("says on the human side of the page which rails it takes", async () => {
-    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const page = await (await fetchWithPublicStatistics(BASE, { headers: HTML })).text();
     const human = page.slice(0, page.indexOf('class="door-agent"'));
     // Before the trim, "Base or Solana" appeared ONLY inside the agent
     // door — a terminal panel a buyer's human never reads.
@@ -242,7 +243,7 @@ describe("the wall", () => {
         message: "Signed to prove the wall renders.",
       }),
     });
-    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const page = await (await fetchWithPublicStatistics(BASE, { headers: HTML })).text();
     expect(page).toContain('class="wall-slips"');
     expect(page).toContain('class="guest-sig"');
     // Its own face, not the page's body serif.
@@ -252,7 +253,7 @@ describe("the wall", () => {
 
 describe("the footer", () => {
   it("is a door to every room and little else", async () => {
-    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const page = await (await fetchWithPublicStatistics(BASE, { headers: HTML })).text();
     const footer = page.slice(page.indexOf('class="porch-print"'));
     // The paragraphs that each have a room of their own to say it in.
     expect(footer).not.toContain("founding edition");
@@ -265,7 +266,7 @@ describe("the footer", () => {
   });
 
   it("stops sending people to the Gazette from the front of the store", async () => {
-    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const page = await (await fetchWithPublicStatistics(BASE, { headers: HTML })).text();
     expect(page).not.toContain('href="/gazette"');
     expect(page).not.toContain('href="/gazette/founding"');
     // Still open, still free, still named where an agent reads.
@@ -274,7 +275,7 @@ describe("the footer", () => {
   });
 
   it("gives the address without the flourish the keeper struck", async () => {
-    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const page = await (await fetchWithPublicStatistics(BASE, { headers: HTML })).text();
     expect(page).toContain("Oak City");
     expect(page).not.toContain("that's the whole address");
     expect(page).not.toContain("that&#39;s the whole address");

@@ -1,3 +1,4 @@
+import {authorizationTypes} from "@x402/evm";
 import { FIELD_STUDY_ELIGIBILITY } from "@/store/field-study-copy";
 import { CONTRIBUTION_OPENAPI, CONTRIBUTION_SCHEMAS, CONTRIBUTION_RESPONSES } from "@/lib/contribution-task-schema";
 import { SELLER_DECLARATION_INPUT_SCHEMA, DECLARATION_READ_SCHEMA, DECLARATION_WRITE_SCHEMA } from "@/lib/seller-declaration-schema";
@@ -3418,6 +3419,18 @@ const CREDIT_SCHEMA: OpenApiObject = {
   },
 };
 
+const CREDIT_CASHOUT_BODY: OpenApiObject = {type:"object",required:["address","signature"],properties:{
+  address:{type:"string",pattern:"^0x[0-9a-fA-F]{40}$"}, signature:{type:"string"},
+  recovery_only:{type:"boolean",default:false,description:"Use true in BOTH challenge and redeem to retrieve the last saved authorization without a new cash-out."},
+}};
+const CREDIT_CASHOUT_SCHEMA: OpenApiObject = {type:"object",required:["redeemed_usd","payout"],properties:{
+  redeemed_usd:{type:"number",description:"Amount authorized; not evidence of received payment."},
+  payout:{type:"object",required:["method","asset","chain","authorization","signature","how_to_redeem"],properties:{
+    method:{type:"string"},asset:{type:"string"},chain:{type:"string"},signature:{type:"string"},how_to_redeem:{type:"string"},
+    authorization:{type:"object",required:authorizationTypes.TransferWithAuthorization.map(field=>field.name),properties:Object.fromEntries(authorizationTypes.TransferWithAuthorization.map(field=>[field.name,{type:"string"}]))},
+  }},
+}};
+
 /** The Gazette rack. */
 const GAZETTE_SCHEMA: OpenApiObject = {
   type: "object",
@@ -4172,6 +4185,15 @@ const PULSE_SCHEMA: OpenApiObject = {
     computed_at: {
       type: "string",
       description: "When these numbers were read. Every figure here is dated.",
+    },
+    statistics_summary: {
+      type: "object",
+      description: "Saved publication date; stale means the hourly refresh is overdue. Visits do not change dates.",
+      properties: {
+        computed_at: { type: "string", format: "date-time" },
+        refresh: { type: "string" },
+        stale: { type: "boolean" },
+      },
     },
     house_flag_policy: {
       type: "string",
@@ -5137,12 +5159,14 @@ function returnsOn402(
 function returns(
   operation: OpenApiObject,
   schema: OpenApiObject,
+  additionalResponses: OpenApiObject = {},
 ): OpenApiObject {
   const responses = operation["responses"] as OpenApiObject;
   return {
     ...operation,
     responses: {
       ...responses,
+      ...additionalResponses,
       "200": {
         description: "OK",
         content: { "application/json": { schema } },
@@ -6556,9 +6580,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: returns(
           freeOp(
             "The funnel, denominator included",
-            "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
+            "Organic 402 offers, settlements and re-verifications; house wallets excluded. Undefined conversion is null. Saved hourly with original dates and stale status. Missing summaries return 503 with Retry-After. Free; HTML: /pulse.",
           ),
           PULSE_SCHEMA,
+          { "503": { description: "Summary unavailable; follow Retry-After. Requests never rebuild it.", ...JSON_RESPONSE } },
         ),
       },
       /**
@@ -7772,6 +7797,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           CREDIT_SCHEMA,
         ),
+      },
+      "/api/credit/challenge": {
+        post: returns(postOp("Prepare a credit cash-out or recovery challenge", "Free. An earning EVM wallet signs the returned EIP-191 challenge. Set recovery_only:true to retrieve a saved payout; that signature cannot authorize a new cash-out. Challenges expire and are single-use.", "Address and optional recovery_only boolean.", { ...CREDIT_CASHOUT_BODY, required:["address"], properties:{address:(CREDIT_CASHOUT_BODY.properties as OpenApiObject).address,recovery_only:(CREDIT_CASHOUT_BODY.properties as OpenApiObject).recovery_only} }), {type:"object",properties:{challenge:{type:"string"},expires_in_seconds:{type:"integer"},then:{type:"string"}}}),
+      },
+      "/api/credit/redeem": {
+        post: returns(postOp("Cash out credit or recover its saved authorization", "Free request. Requires the earning wallet's challenge signature. recovery_only must match the challenge mode. Recovery returns the original saved nonce, signature and expiry without signing, allocating, spending new credit or sending gas. Older/unsaved payouts may be unavailable (400); unknown storage failures are not a successful recovery. A returned authorization is not proof of on-chain payment.", "Address, wallet signature and optional recovery_only boolean.", CREDIT_CASHOUT_BODY), CREDIT_CASHOUT_SCHEMA),
       },
       "/api/credit/{wallet}": {
         get: {

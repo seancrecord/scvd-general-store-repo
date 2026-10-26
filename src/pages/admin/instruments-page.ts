@@ -36,7 +36,7 @@ const HEAD = `<tr><th>instrument</th><th>kind</th><th>logged since · days</th><
 function unknownHtml(u: UnknownSplit): string {
   const hosts = u.referrer_hosts.map((h) => `<code>${escapeHtml(h.host)}</code> ${h.visits}`).join(", ") || "none";
   const surfaces = u.no_user_agent_by_surface.map((s) => `<code>${escapeHtml(s.surface)}</code> ${s.visits}`).join(", ") || "none";
-  return `<p><strong>What "unknown" is this month</strong>, off the event rows (${u.rows_scanned} newest rows scanned${u.complete ? ", the whole month" : ", cap hit: a floor"}):
+  return `<p><strong>Historical "unknown" free visits</strong>, off the event rows (${u.rows_scanned} newest rows scanned${u.complete ? ", all retained rows for the month" : ", cap hit: a floor"}):
     no user-agent at all <strong>${u.no_user_agent}</strong> (caller type unknown) · referred from our own pages <strong>${u.self_referred}</strong> (a reader following the store's links) · a referrer the inferrer does not name <strong>${u.referred}</strong> (somebody linking here).</p>
     <p><small>Referring hosts: ${hosts}.<br>No-user-agent visits by surface: ${surfaces}.</small></p>`;
 }
@@ -60,10 +60,10 @@ function handoffHtml(h: Handoff): string {
   const infra = h.infrastructure_checkers > 0
     ? ` Kept out of every number here: <strong>${h.infrastructure_checkers}</strong> infrastructure client(s) that also made an argument-carrying call — the store's own noise floor, excluded because a monitor reading a door is not a customer hesitating at it.`
     : "";
-  return `<p><strong>The handoff</strong>, off the same rows, by user-agent (a floor on clients: one SDK string is many agents, and two agents on one string inside the window read as one):
+  return `<p><strong>The handoff — historical rows</strong>, off the same rows, by user-agent (a floor on clients: one SDK string is many agents, and two agents on one string inside the window read as one):
     clients that made an argument-carrying free call <strong>${h.checkers}</strong> · of those, asked a price within ${h.window_minutes} min <strong>${h.then_priced}</strong> · of those, settled within ${h.window_minutes} min <strong>${h.then_settled}</strong>.${infra}</p>
     <p><small>Priced after a check: ${items}.</small></p>
-    <p><small>Who they were — each links to its whole trail, so the counts above can be traced instead of believed.
+    <p><small>Who they were — each links to its retained trail, so the counts above can be traced instead of believed.
     Checked: ${clientLinks(h.checker_clients)}. Of those, priced: ${clientLinks(h.priced_clients)}.</small></p>
     <p><small><strong>How the exclusion reads history:</strong> channel inference used to short-circuit on the MCP
     flag before it consulted the crawler table, so a prober arriving through the MCP door was stamped <code>mcp</code>
@@ -80,7 +80,7 @@ function handoffHtml(h: Handoff): string {
  * whatever the total says — the reading the conformance drop needed.
  */
 function clientsHtml(rows: InstrumentClients[], heading: string, note: string): string {
-  if (rows.length === 0) return `<p><small><strong>${heading}</strong>: nothing counted. ${note}</small></p>`;
+  if (rows.length === 0) return `<p><small><strong>${heading}</strong>: no retained detail. ${note}</small></p>`;
   const lines = rows
     .map((r) => {
       const top = r.top.map((c) => `<a href="/admin/trace?ua=${encodeURIComponent(c.client)}"><code>${escapeHtml(c.client)}</code></a> ${c.calls}`).join(", ");
@@ -91,8 +91,8 @@ function clientsHtml(rows: InstrumentClients[], heading: string, note: string): 
 }
 
 function daySampleHtml(sample: DaySample | null): string {
-  const form = `<form method="get" action="/admin/instruments"><label>A day's rows, by instrument, by client: <input type="date" name="day" value="${sample ? escapeHtml(sample.day) : ""}"></label> <button type="submit">read the day</button></form>
-    <p><small>Reads one UTC day by its own key slices, so a month the newest-first scan cannot reach — August — is one request. Rows keep ninety days.</small></p>`;
+  const form = `<form method="get" action="/admin/instruments"><label>Historical day rows, by instrument, by client: <input type="date" name="day" value="${sample ? escapeHtml(sample.day) : ""}"></label> <button type="submit">read the day</button></form>
+    <p><small>Reads one UTC day by its own key slices, so a month the newest-first scan cannot reach — August — is one request. Rows keep ninety days. New free calls no longer create these rows; an empty day does not mean no use.</small></p>`;
   if (!sample) return `<section><h3>A day, on request</h3>${form}</section>`;
   const floor = sample.complete ? "every slice of the day listed to its end" : "the read hit its cap: a floor";
   return `<section><h3>A day, on request: ${escapeHtml(sample.day)}</h3>${form}
@@ -137,7 +137,7 @@ function monthHtml(m: InstrumentMonth): string {
     </table>
     ${m.unknown ? unknownHtml(m.unknown) : ""}
     ${m.handoff ? handoffHtml(m.handoff) : ""}
-    ${m.clients ? clientsHtml(m.clients, `Who called, ${escapeHtml(m.month)}`, "Off the client census, organic calls since 2026-09-11; past 40 names a line counts to <code>other</code>.") : ""}
+    ${m.clients ? clientsHtml(m.clients, `Who called — retained detail, ${escapeHtml(m.month)}`, "Historical client census; collection has stopped; past 40 names a line counts to <code>other</code>.") : ""}
     ${
       m.paid_tools.length > 0
         ? `<p><small>Paid tools the same month:</small></p><table border="1" cellpadding="4">${HEAD}${rowsHtml(m.paid_tools)}</table>`
@@ -158,6 +158,7 @@ export function renderInstrumentsPage(usage: InstrumentUsage): string {
     on ${escapeHtml(usage.doors_logged_since)}; the verifier door's tools on ${escapeHtml(usage.verifier_logged_since)}, the documentation door's on ${escapeHtml(usage.docs_logged_since)}.
     A zero before a row's logged-since date is the counter's absence, not the agents'. "Per day" divides by the days the line existed this month, so a partial month reads beside a whole one.</small></p>
   </section>
+  <section><h3>Historical free-visit detail</h3><p>Aggregate instrument counts continue. Client names, unknown-visitor splits, daily samples and free-call-to-purchase joins below use retained detail only. New free visits no longer add that detail, so empty rows or a missing handoff do not establish no use or no conversion.</p></section>
   ${daySampleHtml(usage.day_sample)}
   ${usage.months.map(monthHtml).join("")}
   <section><p><small>Roster, by prefix: ${usage.roster

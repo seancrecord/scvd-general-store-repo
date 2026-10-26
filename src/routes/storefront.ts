@@ -1,3 +1,4 @@
+import { readPublicStats } from "@/services/public-statistics";
 import { Hono } from "hono";
 import {
   MARKDOWN_MEDIA_TYPE,
@@ -12,8 +13,7 @@ import { getFirstDollar } from "@/lib/metrics";
 import { renderStorefront } from "@/pages/storefront-page";
 import { listGuestbook } from "@/services/guestbook";
 import { listKeys } from "@/lib/kv-list";
-import { computeStats, storefrontLedgerLine } from "@/services/stats";
-import { tradeMonthGauge } from "@/services/trade-counter";
+import { storefrontLedgerLine } from "@/services/stats";
 import { readShopWindow, WINDOW_SIZE } from "@/services/shop-window";
 import { releaseCommits } from "@/services/cards";
 import { DEFAULT_WEEK_NOTE } from "@/store";
@@ -111,8 +111,6 @@ storefrontRoutes.get("/", async (c) => {
     corpusKeys,
     stats,
     firstDollar,
-    board,
-    trade,
     shopWindow,
     rackCommits,
   ] = await Promise.all([
@@ -132,28 +130,8 @@ storefrontRoutes.get("/", async (c) => {
       prefix: KV_KEYS.corpusPrefix,
       cap: 1000,
     }).catch(() => ({ names: [], truncated: false })),
-    computeStats(c.env).catch(() => null),
+    readPublicStats(c.env).catch(() => null),
     getFirstDollar(c.env).catch(() => null),
-    /*
-     * The bounty board, for the strip: one capped key-list and a bulk
-     * read, the same cost /api/bounties pays. Fail-soft to null like
-     * every other gauge here — the strip then says only what the
-     * keeper's copy already says, never a stale count.
-     */
-    import("@/services/bounty-board")
-      .then(({ bountyBoard }) => bountyBoard(c.env))
-      .then((b) => ({
-        open_count: b.open_count,
-        budget_left_usd: Math.max(0, b.weekly_budget_usd - b.spent_this_week_usd),
-      }))
-      .catch(() => null),
-    /*
-     * The trade gauge: one counter get per live account (rule 52 is
-     * satisfied by the counter being the door's own, not a walk cut
-     * short). Fail-soft to null: a KV hiccup hides the gauge, never
-     * breaks the front page.
-     */
-    tradeMonthGauge(c.env).catch(() => null),
     /*
      * The shop window: one capped key-list and a bulk read on a prefix
      * where every key is a sale, so the newest few are reached without
@@ -227,18 +205,17 @@ storefrontRoutes.get("/", async (c) => {
       /*
        * THE PATRON GAUGE READS THE BOOKS NOW (2026-09-13), not the
        * patron counter it used to read straight out of KV. Same wave,
-       * one fewer read: computeStats already walks the till, and the
-       * customer list is one capped key-list inside it. Null when the
-       * books could not be computed, which takes the gauge off the
+       * one summary read supplies both the ledger and the customer count.
+       * Null before the hourly books have been published, which takes the gauge off the
        * wall rather than hanging a zero nobody measured — the same
        * fail-soft every other gauge on this page uses.
        */
       patronCount: stats ? stats.distinct_organic_buyers : null,
       stats,
-      ledgerLine: stats ? storefrontLedgerLine(stats) : undefined,
+      ledgerLine: stats ? `${storefrontLedgerLine(stats)} Statistics as of ${stats.computed_at}; refreshed hourly.` : undefined,
       firstDollar,
-      board,
-      trade,
+      board: null,
+      trade: null,
       shopWindow,
       releaseCommits: rackCommits,
     }),

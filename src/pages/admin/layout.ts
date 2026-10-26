@@ -1,3 +1,4 @@
+import { FREE_TRAFFIC_COLLECTION_NOTE, TRAFFIC_CORRECTION_INTERVAL_HOURS } from "@/lib/operating-cost";
 import { escapeHtml, stripTags } from "@/lib/sanitize";
 import { OFFICE_CSS } from "@/pages/admin/office-css";
 
@@ -436,7 +437,7 @@ export function renderAdminShell(
   </nav>
   </details>
   ${sections.links}
-  <main id="admin-content" tabindex="-1">${sections.body}</main>
+  <main id="admin-content" tabindex="-1"><p class="menu-meta">${escapeHtml(FREE_TRAFFIC_COLLECTION_NOTE)} Automatic contact scouting is paused; use Scout contacts when needed. Historical traffic corrections are scheduled every ${TRAFFIC_CORRECTION_INTERVAL_HOURS} hours.</p>${sections.body}</main>
   </div>
 </body>
 </html>`;

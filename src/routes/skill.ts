@@ -1,3 +1,4 @@
+import { readPublicStats } from "@/services/public-statistics";
 import { PERSONAL_SHOPPER } from "@/store/personal-shopper";
 import { DELIVERY_ORDER } from "@/store/copy/position";
 import { AURA_WALK_WHY } from "@/store/aura-walk";
@@ -14,7 +15,7 @@ import {
 import { Hono } from "hono";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
-import { computeStats, trackRecordLine } from "@/services/stats";
+import { trackRecordLine } from "@/services/stats";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { OPERATED_BY } from "@/store/copy/position";
 import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
@@ -85,7 +86,7 @@ export async function renderSkillMarkdown(
   const base = env.STORE_BASE_URL;
   const menuTable = MENU_ITEMS.map(menuLine).join("\n");
   const signals = SCHEDULING_SIGNALS.map((line) => `- ${line}`).join("\n");
-  const stats = options.live ? await computeStats(env).catch(() => null) : null;
+  const stats = options.live ? await readPublicStats(env).catch(() => null) : null;
   const trackRecord = stats
     ? trackRecordLine(stats, base)
     : `The live numbers answer at ${base}/stats.`;
