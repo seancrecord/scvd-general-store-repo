@@ -45,6 +45,8 @@ export const CONTRIBUTION_SCHEMAS = {
   }},
 };
 export const CONTRIBUTION_RESPONSES = {
+  // One component for the four action doors' 200, not four inlined copies.
+  ContributionStateResponse: response(ref("ContributionState")),
   ContributionError: {description: "Named refusal: invalid input, missing record, no slot/conflicting retry, oversized body or unavailable storage.", content: {"application/problem+json": {schema: ref("Problem")}, "application/json": {schema: ref("Problem")}}},
 };
 const error = {$ref: "#/components/responses/ContributionError"};
@@ -60,6 +62,6 @@ export const CONTRIBUTION_OPENAPI = {
     requestBody: {required: true, content: {"application/json": {schema: action !== "submit" ? ref("ContributionKeyInput") : {type: "object", additionalProperties: false, required: action === "submit" ? ["reservation_key", "payout_to", "report"] : ["reservation_key"], properties: {
       reservation_key: key,
       ...(action === "submit" ? {arrival: ref("ContributionArrival"), payout_to: {type: "string", pattern: "^0x[a-fA-F0-9]{40}$"}, report: {type: "object", additionalProperties: false, required: Object.keys(CONTRIBUTION_REPORT_FIELDS), properties: Object.fromEntries(Object.entries(CONTRIBUTION_REPORT_FIELDS).map(([name, description]) => [name, {type: "string", minLength: 1, maxLength: CONTRIBUTION_FIELD_CAP, description}]))}} : {}),
-    }}}}}, responses: {"200": response(ref("ContributionState")), ...errors},
+    }}}}}, responses: {"200": {$ref: "#/components/responses/ContributionStateResponse"}, ...errors},
   }}])),
 };
