@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { describe, expect, it } from "vitest";
 
 const BASE = "https://scvd.store";
@@ -77,7 +78,7 @@ describe("the structured data actually parses", () => {
 describe("the books are readable by a parser, not only a reader", () => {
   it("publishes the organic settlement count in the structured data", async () => {
     const html = await (
-      await SELF.fetch(BASE, { headers: { Accept: "text/html" } })
+      await fetchWithPublicStatistics(BASE, { headers: { Accept: "text/html" } })
     ).text();
     const match = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(
       html,

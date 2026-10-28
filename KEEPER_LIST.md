@@ -65,9 +65,13 @@ build, it is on the roadmap.
   longer-term traffic/cost effects are unmeasured. No further approval is
   pending. [Rule, evidence and scope](docs/PYTHON_CLIENT_ACCESS_2026-10.md).
 
-- **SCVD Attestation pilot, October 7 — first customer hands.** The bounded offer
+- **SCVD Attestation pilot — operating packet approved October 21.** The bounded offer
   is built and merged in [#996](https://github.com/seancrecord/scvd-general-store-repo/pull/996) on October 7. [Runbook](docs/SCVD_ATTESTATION_PILOT_2026-10.md).
-  Once a buyer agrees the public endpoint, price and start time,
+  Internal offer review is complete. The runbook holds the exact unsent BiX
+  follow-up and the decision-use, payment, cost and repeat-use gates. Next hand:
+  authorize that external message if this channel is wanted; no send is inferred
+  from approval of the packet or its PR. Once a buyer agrees the public endpoint,
+  public observation, price and start time,
   activate from `/admin/evidence-pilot`; hand over and verify the final report
   before invoicing. No prospect was contacted, customer activated or invoice sent.
   Implementation and release status live on ROADMAP, not this desk.

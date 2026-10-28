@@ -1,3 +1,4 @@
+import { CREDIT_PROPOSITION, CREDIT_MONEY, CREDIT_FREE, CREDIT_CASHOUT_PATHS } from "@/lib/credit-terms";
 import { CONTRIBUTION_PATHS } from "@/lib/contribution-task-schema";
 import { CONTRIBUTION_PROPOSITION, CONTRIBUTION_MONEY, CONTRIBUTION_FREE } from "@/store/contribution-tasks";
 import { DECLARATION_PROPOSITION, DECLARATION_FREE, DECLARATION_MONEY, SELLER_DECLARATIONS_PATH } from "@/store/seller-declarations";
@@ -110,6 +111,7 @@ export interface Feature {
 }
 
 export const FEATURES: readonly Feature[] = [
+  {id: "credit_cashout", name: "Credit cash-out and recovery", room: "/credit", proposition: CREDIT_PROPOSITION, for_money: CREDIT_MONEY, free_first: CREDIT_FREE, doors: CREDIT_CASHOUT_PATHS, named_on: ["/menu"], opened: "2026-10-22"},
   {id: "contribution_work", name: "Contribution work", room: "/bounties", proposition: CONTRIBUTION_PROPOSITION, for_money: CONTRIBUTION_MONEY, free_first: CONTRIBUTION_FREE, doors: CONTRIBUTION_PATHS, named_on: ["/field-study"], opened: "2026-10-13"},
   { id: "seller_declarations", name: "Seller declarations", room: SELLER_DECLARATIONS_PATH,
     proposition: DECLARATION_PROPOSITION, for_money: DECLARATION_MONEY, free_first: DECLARATION_FREE,

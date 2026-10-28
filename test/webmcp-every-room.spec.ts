@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { webmcpScript } from "@/routes/webmcp";
@@ -46,7 +47,7 @@ describe("the served script", () => {
 describe("every room carries the door and the fence", () => {
   it("serves the script tag and the CSP on every HTML room", async () => {
     for (const room of ROOMS) {
-      const response = await SELF.fetch(`${BASE}${room.path}`, { headers: AS_A_BROWSER });
+      const response = await fetchWithPublicStatistics(`${BASE}${room.path}`, { headers: AS_A_BROWSER });
       expect(response.status, room.path).toBe(200);
       const type = response.headers.get("content-type") ?? "";
       if (!type.startsWith("text/html")) continue;

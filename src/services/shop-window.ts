@@ -215,7 +215,7 @@ export async function readShopWindow(
   let oldest: string | null = null;
 
   /**
-   * ONE CAPPED LIST, THEN ONE BULK READ, THROUGH THE HOUSE HELPER —
+   * ONE CAPPED LIST, THEN SMALL VALUE BATCHES, THROUGH THE HOUSE HELPERS —
    * and the first draft of this hand-rolled the paging instead, which
    * hung CI for two hours on 2026-09-06.
    *
@@ -241,7 +241,8 @@ export async function readShopWindow(
      * Sale keys are `sellevt:<invertedTimestamp>:<rand>`, and the
      * inverted stamp is zero-padded to a fixed 13 digits — so KV's
      * lexicographic order IS reverse chronological order, exactly.
-     * The window wants the newest five; the cap reads two hundred.
+     * The window wants the newest five; the list caps at two hundred names.
+     * Values are fetched only until five outside sales are found.
      * Anything past the cap is therefore OLDER than every row already
      * in hand and cannot displace one of them. A truncated read and a
      * complete read return the same five sales.
@@ -255,22 +256,15 @@ export async function readShopWindow(
      * saying the cap is big enough.
      */
     const listed = await listKeys(env.COUNTERS, { prefix, cap: SCAN_CAP });
-    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, listed.names);
-    for (const name of listed.names) {
-      if (rows.length >= limit) {
-        return;
-      }
-      const event = values.get(name);
-      if (!event) {
-        continue;
-      }
-      // Every row the scan READ sets the floor, sale or not: it is
-      // how far back the window can honestly claim to have looked.
-      if (!oldest || event.at < oldest) {
-        oldest = event.at;
-      }
-      if (isOutsideSale(event)) {
-        rows.push(event);
+    for (let offset = 0; offset < listed.names.length && rows.length < limit;) {
+      const names = listed.names.slice(offset, offset + Math.max(1, limit - rows.length));
+      offset += names.length;
+      const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+      for (const name of names) {
+        const event = values.get(name);
+        if (!event) continue;
+        if (!oldest || event.at < oldest) oldest = event.at;
+        if (isOutsideSale(event)) rows.push(event);
       }
     }
   };

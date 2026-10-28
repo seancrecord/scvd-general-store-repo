@@ -235,6 +235,33 @@ export const listCorpus = readOnceInScope(async (env: Env): Promise<CorpusRecord
 });
 
 /**
+ * Week discovery needs the index, not every signed report's host rows.
+ * Check object presence for unpublished candidates without downloading bodies;
+ * the publish action still reads the signed record before deriving its tally.
+ */
+export async function indexedCorpusWeeks(
+  env: Env,
+  excludedWeeks: ReadonlySet<string>,
+): Promise<string[]> {
+  const pointers = await listPointers(env);
+  if (pointers.truncated) throw new Error("Corpus week index is incomplete");
+  const weeks = new Set<string>();
+  for (const name of pointers.names) {
+    const stored = pointers.values.get(name);
+    if (!stored) throw new Error("Corpus week index entry could not be read");
+    const week = isPointer(stored) ? stored.week : stored.snapshot?.week;
+    if (!week) throw new Error("Corpus week index entry has no week");
+    if (excludedWeeks.has(week) || weeks.has(week)) continue;
+    if (isPointer(stored)) {
+      if (!env.CORPUS_R2) throw new Error("Corpus archive binding is unavailable");
+      if (!(await env.CORPUS_R2.head(stored.r2_key))) continue;
+    }
+    weeks.add(week);
+  }
+  return [...weeks].sort();
+}
+
+/**
  * The fingerprint of a chain already in hand, from the records'
  * own sequence, digest and stamp — the same facts the pointers carry —
  * so a memo over a derivation of the records (the chain check in

@@ -1,3 +1,4 @@
+import { refreshPublicStatistics } from "@/services/public-statistics";
 import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
 import { app } from "@/index";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -28,6 +29,7 @@ async function probeFetch(url: string, init?: RequestInit): Promise<Response> {
 beforeAll(async () => {
   facilitator = installFacilitatorMock();
   await markKeeperPresent(probeEnv);
+  await refreshPublicStatistics(probeEnv);
 });
 afterAll(() => {
   try {

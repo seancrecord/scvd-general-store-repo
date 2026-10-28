@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { receiptAudience } from "@/routes/verify";
@@ -54,9 +55,9 @@ describe("every artifact renders for a person", () => {
 
   it("renders the receipt with the item linked, the buyer's next steps and the attest loop", async () => {
     const url = `${BASE}/api/buy/hello?agent_name=pages-spec`;
-    const quote = await SELF.fetch(url);
+    const quote = await fetchWithPublicStatistics(url);
     const challenge = decodePaymentRequired(quote);
-    const paid = await SELF.fetch(url, { headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(challenge.accepts[0]!), Accept: "application/json" } });
+    const paid = await fetchWithPublicStatistics(url, { headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(challenge.accepts[0]!), Accept: "application/json" } });
     expect(paid.status, await paid.clone().text()).toBe(200);
     const purchase = (await paid.json()) as { certificate: { cert_id: string; settlement_tx?: string } };
     const html = await (await SELF.fetch(`${BASE}/api/verify/${purchase.certificate.cert_id}`, { headers: BROWSER })).text();
@@ -141,7 +142,7 @@ describe("the host page and the purpose field", () => {
   });
 
   it("keeps the pulse page's denominators beside the numbers it prints", async () => {
-    const html = await (await SELF.fetch(`${BASE}/pulse`, { headers: BROWSER })).text();
+    const html = await (await fetchWithPublicStatistics(`${BASE}/pulse`, { headers: BROWSER })).text();
     expect(html).toContain(PUBLISHED_COUNTS_RULE.slice(0, 40));
   });
 });

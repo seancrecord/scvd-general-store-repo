@@ -77,27 +77,25 @@ describe("the handshake is counted by who made it", () => {
   });
 });
 
-describe("every tool call leaves a trace, not just five", () => {
-  it("records a free tool that never recorded itself", async () => {
+describe("every recognized tool call keeps an aggregate count", () => {
+  it("counts a free tool without keeping a raw visit record", async () => {
     /*
      * read_store_guide is one of the eight that logged nothing. If
      * this passes, the door is counting the whole shelf rather than
      * the handful of handlers that happened to call the porch.
      */
-    const { listRecentPorchEvents } = await import("@/lib/metrics");
+    const { listRecentPorchEvents, readPorchLedger } = await import("@/lib/metrics");
+    const surface = "mcp:tool:read_store_guide";
+    const before = (await readPorchLedger(testEnv)).surfaces[surface]?.organic ?? 0;
     await rpc("tools/call", { name: "read_store_guide", arguments: {} });
     // The count rides waitUntil so the tool call never waits on it
     // (rule 50), so the assertion waits instead.
     await vi.waitFor(async () => {
-      const events = await listRecentPorchEvents(
-        testEnv,
-        "mcp:tool:read_store_guide",
-      );
-      expect(
-        events.length,
-        "read_store_guide left no trace at the MCP door",
-      ).toBeGreaterThan(0);
+      const count = (await readPorchLedger(testEnv)).surfaces[surface]?.organic ?? 0;
+      expect(count, "read_store_guide left no aggregate at the MCP door").toBeGreaterThan(before);
     });
+    // Optional raw free-visit history retired; the count remains the contract.
+    expect(await listRecentPorchEvents(testEnv, surface)).toEqual([]);
   });
 
   it("bounds the key space by the catalog, not by what a stranger types", async () => {
@@ -115,7 +113,7 @@ describe("every tool call leaves a trace, not just five", () => {
      * not. The present half fails the moment the recording line goes
      * away, which is what makes the absent half worth reading.
      */
-    const { listRecentPorchEvents } = await import("@/lib/metrics");
+    const { readPorchLedger } = await import("@/lib/metrics");
     const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     // A free tool from the catalog: no itemId means nothing is sold,
     // so the call costs nothing and the recording line is still
@@ -130,19 +128,18 @@ describe("every tool call leaves a trace, not just five", () => {
       "the invented name is on the shelf, so this proves nothing",
     ).toBeUndefined();
 
+    const surface = `mcp:tool:${listed!.name}`;
+    const before = (await readPorchLedger(testEnv)).surfaces[surface]?.organic ?? 0;
     await rpc("tools/call", { name: listed!.name, arguments: {} });
     await rpc("tools/call", { name: invented, arguments: {} });
 
     await vi.waitFor(async () => {
-      expect(
-        (await listRecentPorchEvents(testEnv, `mcp:tool:${listed!.name}`))
-          .length,
-        `${listed!.name} is on the shelf and left no trace`,
-      ).toBeGreaterThan(0);
+      const count = (await readPorchLedger(testEnv)).surfaces[surface]?.organic ?? 0;
+      expect(count, `${listed!.name} is on the shelf and left no aggregate`).toBeGreaterThan(before);
     });
     expect(
-      (await listRecentPorchEvents(testEnv, `mcp:tool:${invented}`)).length,
+      (await readPorchLedger(testEnv)).surfaces[`mcp:tool:${invented}`],
       "an invented tool name minted a counter key",
-    ).toBe(0);
+    ).toBeUndefined();
   });
 });

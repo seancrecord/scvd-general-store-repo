@@ -1,3 +1,4 @@
+import { FREE_TRAFFIC_COLLECTION_NOTE } from "@/lib/operating-cost";
 import { readCommerceMonthLedger } from "@/services/commerce-month";
 import { atomicToUsdc } from "@/lib/payments";
 import { bulkGetText } from "@/lib/kv-bulk";
@@ -202,6 +203,7 @@ export interface GrowthMonth {
 }
 
 export interface GrowthLedger {
+  collection_note?: string;
   computed_at: string;
   /** Newest first. */
   months: GrowthMonth[];
@@ -645,6 +647,7 @@ export async function computeGrowth(env: Env, options: GrowthOptions = {}): Prom
   return {
     computed_at: now.toISOString(),
     months,
+    collection_note: FREE_TRAFFIC_COLLECTION_NOTE,
     porch_counting_since: PORCH_COUNTING_SINCE,
     doors_logged_since: DOORS_LOGGED_SINCE,
     floors: {
