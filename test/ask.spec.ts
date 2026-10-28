@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { askIndex, askRank, scoreEntry } from "@/store/ask-index";
@@ -181,7 +182,7 @@ describe("the NLWeb surfaces", () => {
     for (const entry of askIndex()) {
       // A fragment addresses a place on a page, not a page.
       const path = entry.path.split("#")[0]!;
-      const response = await SELF.fetch(`${BASE}${path}`);
+      const response = await fetchWithPublicStatistics(`${BASE}${path}`);
       // 402 is a paid door quoting its price; 400 is an intake door
       // saying what it needs. Both exist. 404 is the failure.
       if (![200, 400, 402, 405].includes(response.status)) {

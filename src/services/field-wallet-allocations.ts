@@ -1,31 +1,39 @@
 import {DurableObject} from "cloudflare:workers";
 import {authorizationTypes} from "@x402/evm";
-import {BASE_EVM, BASE_USDC, getFinalizedBlockNumber, getBlockTimestamp, usdcBalanceOf} from "@/lib/base-rpc";
+import {BASE_EVM, BASE_USDC, getFinalizedBlockNumber, getBlockTimestamp, usdcBalanceOf, getReceipt, getChainId, getBlockHash, TRANSFER_TOPIC, AUTHORIZATION_USED_TOPIC} from "@/lib/base-rpc";
+import {readAuthorizationReceipt} from "@/lib/authorization-receipt";
 import {jcsCanonicalize} from "@/lib/jcs";
 import type {FieldSigner} from "@/services/launch-check";
 import type {Env} from "@/types";
 
 export const FIELD_ALLOCATION_PROGRAMS = ["contributions", "shopping", "studies", "credit", "launch_checks", "directory_walks"] as const;
 export type FieldAllocationProgram = typeof FIELD_ALLOCATION_PROGRAMS[number];
+export interface ContributionFundingRelease {transaction:string; receipt_block:number; receipt_block_hash:string; finalized_block:number; balance_atomic:string; read_at:string}
+export interface CreditAuthorization {from:string; to:string; value:string; validAfter:string; validBefore:string; nonce:string}
+export interface StoredCreditPayout {authorization:CreditAuthorization; signature:string}
+type ReleaseRow = {id:string; data:string};
+type WorkHold = {id:string; wallet:string; amount:string; state:"held" | "canceled" | "accepted"};
+type ManualHold = {id:string; recipient:string; amount:string; accepted_at:number; transaction_hash:string | null};
 type Commitment = {id:string; recipient:string; amount:string; nonce:string | null};
 type SigningRequest = Parameters<FieldSigner["signTypedData"]>[0];
 const ADDRESS = /^0x[0-9a-f]{40}$/i;
+const COMMITMENT_ID = /^[a-z0-9-]{3,64}:[a-f0-9-]{36}$/;
 const NONCE = /^0x[0-9a-f]{64}$/i;
 const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
-export const FIELD_ALLOCATION_LIMITS = `Allocations cover new Base USDC authorizations passing through this deployment's ${FIELD_ALLOCATION_PROGRAMS.length} field-wallet signing paths. They are persisted before signing, including failed or uncertain signing attempts. A hold stays until a finalized block after its expiry supplies the balance used for the next allocation; redemption alone does not release it early. New signed-authorization contribution acceptances also hold funds through issuance and expiry. This version does not release acceptance holds after payment checks. Older authorizations and acceptances, work not yet accepted, legacy manual-payment briefs, accruing store credit, external scripts and direct wallet transfers are not reserved here. This is not full wallet coverage or permission to raise caps. No gas is paid.`;
+export const FIELD_ALLOCATION_LIMITS = `Allocations cover new Base USDC authorizations passing through this deployment's ${FIELD_ALLOCATION_PROGRAMS.length} field-wallet signing paths. They are persisted before signing, including failed or uncertain signing attempts. A hold stays until a finalized block after its expiry supplies the balance used for the next allocation; redemption alone does not release it early. New signed-authorization contribution reservations hold their reward before work may begin. Submitted work keeps its hold through review; acceptance inherits it through issuance and expiry. Unused expired or released reservations and rejected work are canceled by the task actor; uncertain cleanup stays held until retried. A separate private funding reconciliation releases an acceptance hold only after matching its exact transfer in a canonical finalized block and retaining a balance at or after that payment. Payment observations alone do not release holds. Older accepted manual-payment rewards may be imported against a retained configured field wallet and released only by their reported single-transfer payment after acceptance; batched, split and authorization-bearing receipts remain unresolved. Older accepted signed-authorization rewards may be imported individually by obligation identity, retaining any existing authorization; without an authorization intent, the configured field wallet is retained for that debt; this records existing debt even if the last observed balance is insufficient. Unimported older authorizations, reservations and acceptances, unreserved work, unimported manual-payment briefs, accruing store credit, external scripts and direct wallet transfers are not reserved here. This is not full wallet coverage or permission to raise caps. No gas is paid.`;
 export class FieldAllocationUnavailable extends Error {constructor() {super("Field wallet allocation unavailable");}}
 function unavailable(): never {throw new FieldAllocationUnavailable();}
 function integer(value: unknown): bigint {
   if (typeof value !== "string" || !/^(0|[1-9][0-9]{0,77})$/.test(value)) return unavailable();
   const n = BigInt(value); if (n >= 2n ** 256n) return unavailable(); return n;
 }
-function request(wallet: string, args: SigningRequest, now: number) {
+function request(wallet: string, args: SigningRequest, now: number, allowExpired = false) {
   if (!ADDRESS.test(wallet) || args.domain.chainId !== Number(BASE_EVM.caip2.split(":")[1]) || args.domain.verifyingContract.toLowerCase() !== BASE_USDC || args.domain.name !== "USD Coin" || args.domain.version !== "2" || args.primaryType !== "TransferWithAuthorization") return unavailable();
   if (jcsCanonicalize(args.types) !== jcsCanonicalize({TransferWithAuthorization: [...authorizationTypes.TransferWithAuthorization]})) return unavailable();
   const m = args.message;
   if (Object.keys(m).sort().join(",") !== "from,nonce,to,validAfter,validBefore,value" || typeof m.from !== "string" || m.from.toLowerCase() !== wallet.toLowerCase() || typeof m.to !== "string" || !ADDRESS.test(m.to) || typeof m.nonce !== "string" || !NONCE.test(m.nonce)) return unavailable();
   const amount = integer(m.value), after = integer(m.validAfter), before = integer(m.validBefore);
-  if (amount <= 0n || after >= before || before > BigInt(Number.MAX_SAFE_INTEGER) || before * 1000n <= BigInt(now)) return unavailable();
+  if (amount <= 0n || after >= before || before > BigInt(Number.MAX_SAFE_INTEGER) || !allowExpired && before * 1000n <= BigInt(now)) return unavailable();
   return {nonce:m.nonce.toLowerCase(), amount:amount.toString(), until:Number(before), terms:jcsCanonicalize({...args, message:{...m, from:m.from.toLowerCase(), to:m.to.toLowerCase(), nonce:m.nonce.toLowerCase()}})};
 }
 export async function readAllocationBalance(env: Env, wallet: string, now: number) {
@@ -43,9 +51,16 @@ export class FieldWalletAllocations extends DurableObject<Env> {
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS allocation_meta (id INTEGER PRIMARY KEY CHECK(id=1), wallet TEXT NOT NULL, block INTEGER NOT NULL, timestamp INTEGER NOT NULL, balance TEXT NOT NULL, read_at TEXT NOT NULL, started_at TEXT NOT NULL)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS allocations (nonce TEXT PRIMARY KEY, program TEXT NOT NULL, amount TEXT NOT NULL, valid_before INTEGER NOT NULL, terms TEXT NOT NULL)");
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_commitments (id TEXT PRIMARY KEY, recipient TEXT NOT NULL, amount TEXT NOT NULL, nonce TEXT UNIQUE)");
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_work_holds (id TEXT PRIMARY KEY, wallet TEXT NOT NULL, amount TEXT NOT NULL, state TEXT NOT NULL)");
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS manual_contribution_holds (id TEXT PRIMARY KEY, recipient TEXT NOT NULL, amount TEXT NOT NULL, accepted_at INTEGER NOT NULL, transaction_hash TEXT UNIQUE)");
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS credit_payouts (claim_id TEXT PRIMARY KEY, recipient TEXT NOT NULL, nonce TEXT UNIQUE NOT NULL, data TEXT NOT NULL)");
+    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS contribution_releases (id TEXT PRIMARY KEY, data TEXT NOT NULL)");
   }
+  private manualHold(id: string) {return this.ctx.storage.sql.exec<ManualHold>("SELECT * FROM manual_contribution_holds WHERE id=?",id).toArray()[0];}
+  private workHold(id: string) {return this.ctx.storage.sql.exec<WorkHold>("SELECT * FROM contribution_work_holds WHERE id=?",id).toArray()[0];}
+  private released(id: string): ContributionFundingRelease | undefined {const row=this.ctx.storage.sql.exec<ReleaseRow>("SELECT * FROM contribution_releases WHERE id=?",id).toArray()[0];return row ? JSON.parse(row.data) as ContributionFundingRelease : undefined;}
   private commitment(id: string) {return this.ctx.storage.sql.exec<Commitment>("SELECT * FROM contribution_commitments WHERE id=?",id).toArray()[0];}
-  private holds() {return this.ctx.storage.sql.exec<{program:string;amount:string}>("SELECT program,amount FROM allocations WHERE nonce NOT IN (SELECT nonce FROM contribution_commitments WHERE nonce IS NOT NULL) UNION ALL SELECT 'contributions' AS program,amount FROM contribution_commitments");}
+  private holds() {return this.ctx.storage.sql.exec<{program:string;amount:string}>("SELECT program,amount FROM allocations WHERE nonce NOT IN (SELECT nonce FROM contribution_commitments WHERE nonce IS NOT NULL) UNION ALL SELECT 'contributions' AS program,amount FROM contribution_commitments WHERE id NOT IN (SELECT id FROM contribution_releases) UNION ALL SELECT 'contributions' AS program,amount FROM manual_contribution_holds WHERE id NOT IN (SELECT id FROM contribution_releases) UNION ALL SELECT 'contributions' AS program,amount FROM contribution_work_holds WHERE state='held'");}
   private meta() {return this.ctx.storage.sql.exec<{wallet:string;block:number;timestamp:number;balance:string;read_at:string;started_at:string}>("SELECT * FROM allocation_meta WHERE id=1").toArray()[0];}
   private held(nonce: string) {return this.ctx.storage.sql.exec<{terms:string;program:string}>("SELECT terms,program FROM allocations WHERE nonce=?",nonce).toArray()[0];}
   private async balance(wallet: string, now: number) {
@@ -56,30 +71,190 @@ export class FieldWalletAllocations extends DurableObject<Env> {
     if (current && (current.wallet !== wallet || reading.block < current.block || reading.timestamp < current.timestamp || reading.block === current.block && (reading.balance !== current.balance || reading.timestamp !== current.timestamp))) return unavailable();
     return reading;
   }
-  private capacity(wallet: string, reading: Awaited<ReturnType<typeof readAllocationBalance>>, additional: bigint) {
+  private retainBalance(wallet: string, reading: Awaited<ReturnType<typeof readAllocationBalance>>) {
     const current=this.meta();
     if (current && (current.wallet!==wallet || reading.block<current.block || reading.timestamp<current.timestamp || reading.block===current.block && (reading.balance!==current.balance || reading.timestamp!==current.timestamp))) return unavailable();
+    this.ctx.storage.sql.exec("INSERT INTO allocation_meta(id,wallet,block,timestamp,balance,read_at,started_at) VALUES(1,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET block=excluded.block,timestamp=excluded.timestamp,balance=excluded.balance,read_at=excluded.read_at",wallet,reading.block,reading.timestamp,reading.balance,reading.read_at,this.meta()?.started_at ?? reading.read_at);
+  }
+  private capacity(wallet: string, reading: Awaited<ReturnType<typeof readAllocationBalance>>, additional: bigint) {
+    this.retainBalance(wallet,reading);
     // Only unlinked authorization holds expire. An accepted contribution remains
     // owed until its payment is reconciled, even after its signature expires.
     this.ctx.storage.sql.exec("DELETE FROM allocations WHERE valid_before < ? AND nonce NOT IN (SELECT nonce FROM contribution_commitments WHERE nonce IS NOT NULL)",reading.timestamp);
     let held=0n; for (const row of this.holds()) held+=BigInt(row.amount);
     if (held+additional > BigInt(reading.balance)) return unavailable();
-    this.ctx.storage.sql.exec("INSERT INTO allocation_meta(id,wallet,block,timestamp,balance,read_at,started_at) VALUES(1,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET block=excluded.block,timestamp=excluded.timestamp,balance=excluded.balance,read_at=excluded.read_at",wallet,reading.block,reading.timestamp,reading.balance,reading.read_at,this.meta()?.started_at ?? reading.read_at);
+  }
+  /** Work owns its hold before the visitor may begin. Only the task actor can
+   * cancel unused/rejected work; ledger clocks never expire submitted evidence. */
+  async reserveContributionWork(wallet: string, id: string, amount: string, now=Date.now()) {
+    if(this.manualHold(id))return unavailable();
+    if(!ADDRESS.test(wallet) || !COMMITMENT_ID.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0) return unavailable();
+    wallet=wallet.toLowerCase();
+    const matches=(row:WorkHold)=>{if(row.wallet!==wallet || row.amount!==amount || row.state!=="held")return unavailable();return {reserved:true,reused:true};};
+    if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.commitment(id))return unavailable();
+    const old=this.workHold(id);if(old)return matches(old);
+    const reading=await this.balance(wallet,now);
+    const raced=this.workHold(id);if(raced)return matches(raced);
+    if(this.commitment(id) || this.manualHold(id))return unavailable();
+    return this.ctx.storage.transactionSync(()=>{
+      this.capacity(wallet,reading,BigInt(amount));
+      this.ctx.storage.sql.exec("INSERT INTO contribution_work_holds(id,wallet,amount,state) VALUES(?,?,?,'held')",id,wallet,amount);
+      return {reserved:true,reused:false};
+    });
+  }
+  /** Persist cancellation even if funding has not answered yet. A delayed
+   * reservation cannot recreate the hold after the task has stopped the work. */
+  cancelContributionWork(wallet: string, id: string, amount: string) {
+    if(this.manualHold(id))return unavailable();
+    if(!ADDRESS.test(wallet) || !COMMITMENT_ID.test(id) || integer(amount)<=0n)return unavailable();
+    wallet=wallet.toLowerCase();
+    const old=this.workHold(id);
+    if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.commitment(id) || old && (old.wallet!==wallet || old.amount!==amount || old.state==="accepted"))return unavailable();
+    this.ctx.storage.sql.exec("INSERT INTO contribution_work_holds(id,wallet,amount,state) VALUES(?,?,?,'canceled') ON CONFLICT(id) DO UPDATE SET state='canceled'",id,wallet,amount);
+    return {canceled:true};
   }
   /** Acceptance owns a permanent identity. A failed response can be retried
    * without allocating again; neither deadlines nor signing release the debt. */
   async commitContribution(wallet: string, id: string, recipient: string, amount: string, now=Date.now()) {
-    if (!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || /^0x0{40}$/i.test(recipient) || !/^[a-z0-9-]{3,64}:[a-f0-9-]{36}$/.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0) return unavailable();
+    if(this.manualHold(id))return unavailable();
+    if (!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || /^0x0{40}$/i.test(recipient) || !COMMITMENT_ID.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0) return unavailable();
     wallet=wallet.toLowerCase(); recipient=recipient.toLowerCase();
     const matches=(row:Commitment)=>{if(row.recipient!==recipient || row.amount!==amount) return unavailable();return {reserved:true,reused:true};};
     if(this.meta()?.wallet && this.meta()!.wallet!==wallet) return unavailable();
-    const old=this.commitment(id);if(old) return matches(old);
+    const old=this.commitment(id);if(old) {if(this.released(id)) return unavailable();return matches(old);}
+    const work=this.workHold(id);
+    if(work) {
+      if(work.state!=="held" || work.wallet!==wallet || work.amount!==amount)return unavailable();
+      // The accepted obligation inherits the existing work hold. No new money
+      // is reserved and a transient RPC outage cannot invalidate earned work.
+      return this.ctx.storage.transactionSync(()=>{
+        this.ctx.storage.sql.exec("INSERT INTO contribution_commitments(id,recipient,amount,nonce) VALUES(?,?,?,NULL)",id,recipient,amount);
+        this.ctx.storage.sql.exec("UPDATE contribution_work_holds SET state='accepted' WHERE id=?",id);
+        return {reserved:true,reused:true};
+      });
+    }
     const reading=await this.balance(wallet,now);
-    const raced=this.commitment(id);if(raced) return matches(raced);
+    // A cancellation may have arrived while the legacy acceptance read waited.
+    if(this.workHold(id) || this.manualHold(id))return unavailable();
+    const raced=this.commitment(id);if(raced) {if(this.released(id)) return unavailable();return matches(raced);}
     return this.ctx.storage.transactionSync(()=>{
       this.capacity(wallet,reading,BigInt(amount));
       this.ctx.storage.sql.exec("INSERT INTO contribution_commitments(id,recipient,amount,nonce) VALUES(?,?,?,NULL)",id,recipient,amount);
       return {reserved:true,reused:false};
+    });
+  }
+  /** Record an existing accepted debt before its first authorization exists.
+   * This is accounting, so insufficient funds cannot make the debt disappear. */
+  async importContributionDebt(wallet: string, id: string, recipient: string, amount: string, now=Date.now()) {
+    if(!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || /^0x0{40}$/i.test(recipient) || !COMMITMENT_ID.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0)return unavailable();
+    wallet=wallet.toLowerCase();recipient=recipient.toLowerCase();
+    const inspect=()=>{
+      if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.workHold(id) || this.manualHold(id) || this.released(id))return unavailable();
+      const old=this.commitment(id);
+      if(old && (old.recipient!==recipient || old.amount!==amount))return unavailable();
+      return old;
+    };
+    if(inspect())return {imported:true,reused:true};
+    const reading=await this.balance(wallet,now);
+    return this.ctx.storage.transactionSync(()=>{
+      if(inspect())return {imported:true,reused:true};
+      this.retainBalance(wallet,reading);
+      this.ctx.storage.sql.exec("INSERT INTO contribution_commitments(id,recipient,amount,nonce) VALUES(?,?,?,NULL)",id,recipient,amount);
+      return {imported:true,reused:false};
+    });
+  }
+  /** Manual terms never become a signature. Existing debt counts even in a
+   * shortfall, and a payment report alone never frees its hold. */
+  async importManualContribution(wallet: string, id: string, recipient: string, amount: string, acceptedAt: number, now=Date.now()) {
+    if(!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || /^0x0{40}$/i.test(recipient) || !COMMITMENT_ID.test(id) || integer(amount)<=0n || !Number.isSafeInteger(now) || now<0 || !Number.isSafeInteger(acceptedAt) || acceptedAt<0 || acceptedAt>now)return unavailable();
+    wallet=wallet.toLowerCase();recipient=recipient.toLowerCase();
+    const inspect=()=>{
+      if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.commitment(id) || this.workHold(id) || this.released(id))return unavailable();
+      const old=this.manualHold(id);
+      if(old && (old.recipient!==recipient || old.amount!==amount || old.accepted_at!==acceptedAt))return unavailable();
+      return old;
+    };
+    if(inspect())return {imported:true,reused:true};
+    const reading=await this.balance(wallet,now);
+    return this.ctx.storage.transactionSync(()=>{
+      if(inspect())return {imported:true,reused:true};
+      this.retainBalance(wallet,reading);
+      this.ctx.storage.sql.exec("INSERT INTO manual_contribution_holds(id,recipient,amount,accepted_at) VALUES(?,?,?,?)",id,recipient,amount,acceptedAt);
+      return {imported:true,reused:false};
+    });
+  }
+  /** Deliberately narrow: one canonical-USDC transfer, no authorization event,
+   * no split/batched payment. A transaction can clear only one manual obligation. */
+  async releaseManualContribution(wallet: string, id: string, transaction: string, now=Date.now()): Promise<ContributionFundingRelease> {
+    if(!ADDRESS.test(wallet) || !COMMITMENT_ID.test(id) || !NONCE.test(transaction) || !Number.isSafeInteger(now) || now<0)return unavailable();
+    wallet=wallet.toLowerCase();transaction=transaction.toLowerCase();
+    const hold=this.manualHold(id);
+    if(!hold || this.meta()?.wallet!==wallet)return unavailable();
+    const previous=this.released(id);
+    if(previous){if(previous.transaction!==transaction)return unavailable();return previous;}
+    let reading:Awaited<ReturnType<typeof readAllocationBalance>>, receipt:Awaited<ReturnType<typeof getReceipt>>, chainId:string;
+    try {[reading,receipt,chainId]=await Promise.all([this.balance(wallet,now),getReceipt(this.env,transaction,BASE_EVM),getChainId(this.env,BASE_EVM)]);}catch{return unavailable();}
+    if(!/^0x[0-9a-f]+$/i.test(chainId) || BigInt(chainId)!==BigInt(BASE_EVM.caip2.split(":")[1]!) || !receipt || receipt.transactionHash?.toLowerCase()!==transaction || receipt.status!=="0x1" || !/^0x[0-9a-f]+$/i.test(receipt.blockNumber) || !receipt.blockHash || !NONCE.test(receipt.blockHash) || !Array.isArray(receipt.logs))return unavailable();
+    const block=Number.parseInt(receipt.blockNumber,16);
+    if(!Number.isSafeInteger(block) || block<0 || block>reading.block)return unavailable();
+    const logs=receipt.logs.filter(log=>log && typeof log.address==="string" && log.address.toLowerCase()===BASE_USDC);
+    if(logs.some(log=>!Array.isArray(log.topics) || log.topics[0]?.toLowerCase()===AUTHORIZATION_USED_TOPIC))return unavailable();
+    const transfers=logs.filter(log=>log.topics[0]?.toLowerCase()===TRANSFER_TOPIC);
+    if(transfers.length!==1)return unavailable();
+    const transfer=transfers[0]!;
+    const topic=(address:string)=>`0x${address.slice(2).padStart(64,"0")}`;
+    if(transfer.topics.length!==3 || transfer.topics[1]?.toLowerCase()!==topic(wallet) || transfer.topics[2]?.toLowerCase()!==topic(hold.recipient) || !/^0x[0-9a-f]{64}$/i.test(transfer.data) || BigInt(transfer.data)!==BigInt(hold.amount))return unavailable();
+    let hash:string, at:Date|null;
+    try {[hash,at]=await Promise.all([getBlockHash(this.env,block,BASE_EVM),getBlockTimestamp(this.env,block,BASE_EVM)]);}catch{return unavailable();}
+    if(hash!==receipt.blockHash.toLowerCase() || !at || !Number.isSafeInteger(at.getTime()) || at.getTime()<hold.accepted_at || at.getTime()>reading.timestamp*1000)return unavailable();
+    const result:ContributionFundingRelease={transaction,receipt_block:block,receipt_block_hash:hash,finalized_block:reading.block,balance_atomic:reading.balance,read_at:reading.read_at};
+    return this.ctx.storage.transactionSync(()=>{
+      const raced=this.released(id);if(raced){if(raced.transaction!==transaction)return unavailable();return raced;}
+      // Unique transaction identity and balance floor move with the release;
+      // failures roll all three back, and stale in-flight allocations refuse.
+      this.retainBalance(wallet,reading);
+      if(this.ctx.storage.sql.exec("SELECT id FROM manual_contribution_holds WHERE transaction_hash=? AND id<>?",transaction,id).toArray().length)return unavailable();
+      this.ctx.storage.sql.exec("UPDATE manual_contribution_holds SET transaction_hash=? WHERE id=?",transaction,id);
+      this.ctx.storage.sql.exec("INSERT INTO contribution_releases(id,data) VALUES(?,?)",id,JSON.stringify(result));
+      return result;
+    });
+  }
+  /** Imported debt can exceed its balance. Before issuing an unretained
+   * signature, recheck coverage even when its nonce allocation already exists. */
+  async checkContributionCapacity(wallet: string, id: string, now=Date.now()) {
+    if(!ADDRESS.test(wallet) || !COMMITMENT_ID.test(id) || !Number.isSafeInteger(now) || now<0)return unavailable();
+    wallet=wallet.toLowerCase();
+    const reading=await this.balance(wallet,now);
+    return this.ctx.storage.transactionSync(()=>{
+      if(!this.commitment(id) || this.released(id))return unavailable();
+      this.capacity(wallet,reading,0n);
+      return {checked:true};
+    });
+  }
+  /** Import an already-issued contribution, not permission to promise new work.
+   * Existing debt must be counted even when its balance is insufficient. */
+  async importContribution(wallet: string, id: string, args: SigningRequest, now=Date.now()) {
+    if(!COMMITMENT_ID.test(id) || !Number.isSafeInteger(now) || now<0) return unavailable();
+    const r=request(wallet,args,now,true);wallet=wallet.toLowerCase();
+    const recipient=String(args.message.to).toLowerCase();
+    const inspect=()=>{
+      if(this.meta()?.wallet && this.meta()!.wallet!==wallet || this.workHold(id) || this.manualHold(id) || this.released(id)) return unavailable();
+      const old=this.commitment(id), allocation=this.held(r.nonce);
+      if(allocation && (allocation.program!=="contributions" || allocation.terms!==r.terms)) return unavailable();
+      if(old && (old.recipient!==recipient || old.amount!==r.amount || old.nonce!==r.nonce || !allocation)) return unavailable();
+      if(this.ctx.storage.sql.exec<{id:string}>("SELECT id FROM contribution_commitments WHERE nonce=? AND id<>?",r.nonce,id).toArray().length) return unavailable();
+      return {old,allocation};
+    };
+    if(inspect().old)return {imported:true,reused:true};
+    const reading=await this.balance(wallet,now);
+    return this.ctx.storage.transactionSync(()=>{
+      const {old,allocation}=inspect();if(old)return {imported:true,reused:true};
+      this.retainBalance(wallet,reading);
+      // An existing signature allocation and its obligation are ONE exposure.
+      // Linking the nonce also keeps this debt held after signature expiry.
+      if(!allocation)this.ctx.storage.sql.exec("INSERT INTO allocations(nonce,program,amount,valid_before,terms) VALUES(?,'contributions',?,?,?)",r.nonce,r.amount,r.until,r.terms);
+      this.ctx.storage.sql.exec("INSERT INTO contribution_commitments(id,recipient,amount,nonce) VALUES(?,?,?,?)",id,recipient,r.amount,r.nonce);
+      return {imported:true,reused:false};
     });
   }
   async reserve(wallet: string, program: FieldAllocationProgram, args: SigningRequest, now = Date.now(), commitmentId?: string) {
@@ -88,12 +263,14 @@ export class FieldWalletAllocations extends DurableObject<Env> {
     if(this.meta()?.wallet && this.meta()!.wallet!==wallet) return unavailable();
     const commitment=commitmentId === undefined ? undefined : this.commitment(commitmentId);
     if(commitmentId !== undefined && (!commitment || program!=="contributions" || commitment.amount!==r.amount || commitment.recipient!==String(args.message.to).toLowerCase() || commitment.nonce!==null && commitment.nonce!==r.nonce)) return unavailable();
+    if(this.ctx.storage.sql.exec("SELECT 1 FROM contribution_commitments c JOIN contribution_releases r ON r.id=c.id WHERE c.nonce=?",r.nonce).toArray().length) return unavailable();
     const existing=this.held(r.nonce);
     if(existing) {
       if(existing.terms!==r.terms || existing.program!==program || commitment && commitment.nonce!==r.nonce) return unavailable();
       return {reserved:true,reused:true};
     }
     const reading=await this.balance(wallet,now);
+    if(this.ctx.storage.sql.exec("SELECT 1 FROM contribution_commitments c JOIN contribution_releases r ON r.id=c.id WHERE c.nonce=?",r.nonce).toArray().length) return unavailable();
     const raced=this.held(r.nonce);
     if(raced) {
       if(raced.terms!==r.terms || raced.program!==program || commitmentId && this.commitment(commitmentId)?.nonce!==r.nonce) return unavailable();
@@ -108,6 +285,59 @@ export class FieldWalletAllocations extends DurableObject<Env> {
       return {reserved:true,reused:false};
     });
   }
+  /** Read the chain ourselves, using the immutable hold rather than a supplied
+   * confirmation. Keep both identities as tombstones so retries cannot re-fund
+   * or re-sign a released reward. No signature, broadcast or key is needed. */
+  async releaseContribution(wallet: string, id: string, transaction: string, now=Date.now()): Promise<ContributionFundingRelease> {
+    if(!ADDRESS.test(wallet) || !NONCE.test(transaction) || !Number.isSafeInteger(now) || now<0) return unavailable();
+    wallet=wallet.toLowerCase();transaction=transaction.toLowerCase();
+    const commitment=this.commitment(id),meta=this.meta();
+    if(!commitment?.nonce || !meta || meta.wallet!==wallet) return unavailable();
+    const previous=this.released(id);
+    if(previous) {if(previous.transaction!==transaction) return unavailable();return previous;}
+    const allocation=this.held(commitment.nonce);
+    if(!allocation || allocation.program!=="contributions") return unavailable();
+    let reading:Awaited<ReturnType<typeof readAllocationBalance>>, receipt:Awaited<ReturnType<typeof getReceipt>>, chainId:string;
+    try {[reading,receipt,chainId]=await Promise.all([this.balance(wallet,now),getReceipt(this.env,transaction,BASE_EVM),getChainId(this.env,BASE_EVM)]);}catch{return unavailable();}
+    const exact=readAuthorizationReceipt(receipt,reading.block,chainId,transaction,{network:BASE_EVM.caip2,asset:BASE_USDC,payer:wallet,recipient:commitment.recipient,nonce:commitment.nonce,amount_atomic:commitment.amount},BASE_EVM);
+    if(exact.status!=="matched" || !receipt?.blockHash || !NONCE.test(receipt.blockHash)) return unavailable();
+    const block=Number.parseInt(receipt.blockNumber,16);
+    let hash:string;try {hash=await getBlockHash(this.env,block,BASE_EVM);}catch{return unavailable();}
+    if(hash!==receipt.blockHash.toLowerCase()) return unavailable();
+    const result:ContributionFundingRelease={transaction,receipt_block:block,receipt_block_hash:hash,finalized_block:reading.block,balance_atomic:reading.balance,read_at:reading.read_at};
+    return this.ctx.storage.transactionSync(()=>{
+      const raced=this.released(id);
+      if(raced) {if(raced.transaction!==transaction) return unavailable();return raced;}
+      // Advance the balance floor in the SAME transaction as releasing the hold.
+      // An older in-flight allocation cannot spend the pre-payment balance.
+      this.retainBalance(wallet,reading);
+      this.ctx.storage.sql.exec("INSERT INTO contribution_releases(id,data) VALUES(?,?)",id,JSON.stringify(result));
+      return result;
+    });
+  }
+  /** Retain only an already allocated credit authorization. Saving its response
+   * neither moves money nor releases the allocation; recovery never signs again. */
+  saveCreditPayout(wallet:string, claimId:string, args:SigningRequest, signature:string, now=Date.now()): StoredCreditPayout {
+    if(!NONCE.test(claimId) || !/^0x[0-9a-f]{130}$/i.test(signature))return unavailable();
+    wallet=wallet.toLowerCase();claimId=claimId.toLowerCase();
+    const r=request(wallet,args,now,true), recipient=String(args.message.to).toLowerCase();
+    const data=JSON.stringify({authorization:args.message,signature});
+    const old=this.ctx.storage.sql.exec<{recipient:string;data:string}>("SELECT recipient,data FROM credit_payouts WHERE claim_id=?",claimId).toArray()[0];
+    if(old){if(old.recipient!==recipient || old.data!==data)return unavailable();return JSON.parse(old.data) as StoredCreditPayout;}
+    const allocation=this.held(r.nonce);
+    if(this.meta()?.wallet!==wallet || allocation?.program!=="credit" || allocation.terms!==r.terms)return unavailable();
+    this.ctx.storage.sql.exec("INSERT INTO credit_payouts(claim_id,recipient,nonce,data) VALUES(?,?,?,?)",claimId,recipient,r.nonce,data);
+    return JSON.parse(data) as StoredCreditPayout;
+  }
+  /** The caller proves wallet ownership before this private RPC. No key, chain
+   * read, balance mutation or expiry extension is needed to return old bytes. */
+  readCreditPayout(wallet:string, claimId:string, recipient:string): StoredCreditPayout | null {
+    if(!ADDRESS.test(wallet) || !ADDRESS.test(recipient) || !NONCE.test(claimId) || this.meta()?.wallet!==wallet.toLowerCase())return unavailable();
+    const row=this.ctx.storage.sql.exec<{recipient:string;data:string}>("SELECT recipient,data FROM credit_payouts WHERE claim_id=?",claimId.toLowerCase()).toArray()[0];
+    if(!row)return null;
+    if(row.recipient!==recipient.toLowerCase())return unavailable();
+    return JSON.parse(row.data) as StoredCreditPayout;
+  }
   /** No chain read, release, private nonce, recipient, signature or request. */
   summary() {
     const meta = this.meta();
@@ -117,7 +347,7 @@ export class FieldWalletAllocations extends DurableObject<Env> {
       const p=programs[row.program]; if (!p) return unavailable();
       p.count++; p.amount_atomic=String(BigInt(p.amount_atomic)+BigInt(row.amount)); total+=BigInt(row.amount);
     }
-    return {started_at:meta?.started_at ?? null, balance_observed_at:meta?.read_at ?? null, finalized_block:meta?.block ?? null, balance_atomic:meta?.balance ?? null, held_atomic:String(total), programs, contribution_commitments:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_commitments").one().count, spendable_atomic:null, limits:FIELD_ALLOCATION_LIMITS};
+    return {started_at:meta?.started_at ?? null, balance_observed_at:meta?.read_at ?? null, finalized_block:meta?.block ?? null, balance_atomic:meta?.balance ?? null, held_atomic:String(total), observed_shortfall_atomic:meta ? String(total>BigInt(meta.balance) ? total-BigInt(meta.balance) : 0n) : null, programs, manual_contribution_holds:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM manual_contribution_holds WHERE id NOT IN (SELECT id FROM contribution_releases)").one().count, contribution_commitments:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_commitments WHERE id NOT IN (SELECT id FROM contribution_releases)").one().count, work_reservations:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_work_holds WHERE state='held'").one().count, released_contributions:this.ctx.storage.sql.exec<{count:number}>("SELECT COUNT(*) AS count FROM contribution_releases").one().count, spendable_atomic:null, limits:FIELD_ALLOCATION_LIMITS};
   }
 }
 export function allocationLedger(env: Env, wallet: string) {

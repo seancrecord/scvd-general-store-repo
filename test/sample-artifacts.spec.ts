@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { performServiceAudit } from "@/services/service-audit";
@@ -238,7 +239,7 @@ describe("the room a buyer walks into", () => {
     const hrefs = [...html.matchAll(/href="(\/[^"#]*)"/g)].map((match) => match[1]!);
     const dead: string[] = [];
     for (const href of [...new Set(hrefs)].filter((h) => !h.includes("{"))) {
-      const response = await SELF.fetch(`${BASE}${href}`);
+      const response = await fetchWithPublicStatistics(`${BASE}${href}`);
       if (response.status >= 400 && response.status !== 402) {
         dead.push(`${href} -> ${response.status}`);
       }

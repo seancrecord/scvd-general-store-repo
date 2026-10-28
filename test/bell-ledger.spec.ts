@@ -1,13 +1,17 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { listRecentPorchEvents, readPorchLedger } from "@/lib/metrics";
+import { FREE_TRAFFIC_COLLECTION_NOTE } from "@/lib/operating-cost";
+import type { Env } from "@/types";
 
 /**
- * The bell, ring by ring: every door that rings now leaves a porch
- * row, and the office reads them back from the raw 90-day log.
+ * Both bell doors keep aggregate counts. The office's ring-by-ring
+ * view is historical now that optional raw free-visit rows are retired.
  */
 
 const BASE = "https://scvd.store";
+const testEnv = env as unknown as Env;
 const adminAuth = {
   Authorization: `Basic ${btoa("keeper:test-admin-password")}`,
 };
@@ -17,7 +21,8 @@ beforeAll(() => {
 });
 
 describe("the bell ledger", () => {
-  it("hears rings from both doors and remembers their provenance", async () => {
+  it("counts both doors without collecting individual visitor details", async () => {
+    const before = (await readPorchLedger(testEnv)).surfaces.bell?.organic ?? 0;
     // HTTP ring, arriving off the skill's own bell line.
     const httpRing = await SELF.fetch(
       `${BASE}/api/bell?src=clawhub-skill`,
@@ -31,6 +36,9 @@ describe("the bell ledger", () => {
       },
     );
     expect(httpRing.status).toBe(200);
+    await vi.waitFor(async () => {
+      expect((await readPorchLedger(testEnv)).surfaces.bell?.organic).toBe(before + 1);
+    });
 
     // MCP ring; this door used to ring silently.
     const mcpRing = await SELF.fetch(`${BASE}/mcp`, {
@@ -45,23 +53,16 @@ describe("the bell ledger", () => {
     });
     expect(mcpRing.status).toBe(200);
 
-    // The ring's bookkeeping is deferred past the response and, since
-    // 2026-09-11, goes through the counter ledger before it reaches
-    // KV; read the page until both rings are on it, as window-shopping
-    // does for the almanac's porch row.
-    await vi.waitFor(
-      async () => {
-        const ledger = await SELF.fetch(`${BASE}/admin/bell`, {
-          headers: adminAuth,
-        });
-        expect(ledger.status).toBe(200);
-        const html = await ledger.text();
-        expect(html).toContain("The bell, ring by ring");
-        expect(html).toContain("clawhub-skill");
-        expect(html).toContain("curious-agent/1.0");
-        expect(html).toContain("<td>mcp</td>");
-      },
-      { timeout: 2000, interval: 25 },
-    );
+    await vi.waitFor(async () => {
+      expect((await readPorchLedger(testEnv)).surfaces.bell?.organic).toBe(before + 2);
+    });
+    expect(await listRecentPorchEvents(testEnv, "bell")).toEqual([]);
+    const ledger = await SELF.fetch(`${BASE}/admin/bell`, { headers: adminAuth });
+    expect(ledger.status).toBe(200);
+    const html = await ledger.text();
+    expect(html).toContain("The bell, ring by ring");
+    expect(html).toContain(FREE_TRAFFIC_COLLECTION_NOTE);
+    expect(html).toContain("New rings keep aggregate counts only");
+    expect(html).not.toContain("curious-agent/1.0");
   });
 });

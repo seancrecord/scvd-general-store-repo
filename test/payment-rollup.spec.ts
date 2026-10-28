@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { env, SELF } from "cloudflare:test";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { computeStats } from "@/services/stats";
@@ -28,7 +29,7 @@ beforeEach(async () => {
 afterEach(() => vi.useRealTimers());
 
 async function json(path: string): Promise<Record<string, unknown>> {
-  const response = await SELF.fetch(`${base}${path}`, { headers: { Accept: "application/json" } });
+  const response = await fetchWithPublicStatistics(`${base}${path}`, { headers: { Accept: "application/json" } });
   expect(response.status).toBe(200);
   return response.json();
 }
@@ -46,7 +47,7 @@ describe("one purchase, three payment dimensions", () => {
   });
 
   it("keeps the homepage compact and links the detailed rollup", async () => {
-    const html = await (await SELF.fetch(`${base}/`, { headers: { Accept: "text/html" } })).text();
+    const html = await (await fetchWithPublicStatistics(`${base}/`, { headers: { Accept: "text/html" } })).text();
     expect(html).toContain("101 organic purchases via x402");
     expect(html).not.toContain("101 organic sales — 80 on Base");
     expect(html).toContain('href="/rails">Payment breakdown</a>');

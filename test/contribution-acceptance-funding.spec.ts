@@ -10,7 +10,7 @@ const wallet=`0x${"1".repeat(40)}`,recipient=`0x${"2".repeat(40)}`,key="a".repea
 const review={decision:"accepted",reason:"Meets the terms",outcome:"no_change",reference:"https://scvd.store/what"};
 const ledger=()=>allocationLedger(bindings,wallet);
 beforeEach(async()=>{
- await runInDurableObject(ledger(),async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
+ await runInDurableObject(ledger(),async(_,state)=>{state.storage.sql.exec("DELETE FROM contribution_work_holds");state.storage.sql.exec("DELETE FROM contribution_releases");state.storage.sql.exec("DELETE FROM contribution_commitments");state.storage.sql.exec("DELETE FROM allocations");state.storage.sql.exec("DELETE FROM allocation_meta");});
  vi.spyOn(payout,"contributionFundingWallet").mockResolvedValue(wallet);
  vi.spyOn(rpc,"getFinalizedBlockNumber").mockResolvedValue(100);
  vi.spyOn(rpc,"getBlockTimestamp").mockResolvedValue(new Date(now-1000));
@@ -19,9 +19,11 @@ beforeEach(async()=>{
 afterEach(()=>vi.restoreAllMocks());
 async function submitted(signed=true){
  const id=`fund-${crypto.randomUUID()}`,store=bindings.CONTRIBUTION_TASKS!.getByName(id);
- await store.create({id,kind:"docs",title:"Read docs",target:"https://scvd.store/what",brief:"Read",acceptance:"Report",reward_usd:6,slots:1,expires_at:new Date(now+86400000).toISOString(),review_days:3,payment_days:3,...(signed?{payment_method:"signed_authorization" as const}:{})},now);
+ await store.create({id,kind:"docs",title:"Read docs",target:"https://scvd.store/what",brief:"Read",acceptance:"Report",reward_usd:6,slots:1,expires_at:new Date(now+86400000).toISOString(),review_days:3,payment_days:3,},now);
  const reserved=await store.act("reserve",{reservation_key:key},"visitor",now);
  await store.act("submit",{reservation_key:key,payout_to:recipient,report:{attempted:"Read",environment:"Fixture",expected:"Contract",observed:"Matches",evidence:"Transcript",suggestion:"None"}},"",now);
+ // Seed the existing pre-upgrade submission whose funding begins at acceptance.
+ if(signed)await runInDurableObject(store,async(_,state)=>{const saved=JSON.parse(state.storage.sql.exec<{data:string}>("SELECT data FROM task").one().data);saved.terms.payment_method="signed_authorization";state.storage.sql.exec("UPDATE task SET data=?",JSON.stringify(saved));});
  return {store,id:reserved.data.submission_id!};
 }
 it("accepts only one of two six-USDC submissions against ten USDC",async()=>{

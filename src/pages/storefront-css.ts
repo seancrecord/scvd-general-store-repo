@@ -649,6 +649,16 @@ html { overflow-x: clip; }
   transition: border-color 160ms ease, color 160ms ease;
 }
 .porch-rooms a:hover { border-bottom-color: var(--neon-hot); }
+.porch-others {
+  margin-top: 1rem !important;
+  font-size: 0.72rem; color: var(--line);
+}
+.porch-others a {
+  text-decoration: none;
+  border-bottom: 1px solid rgba(93,230,200,0.22);
+  padding-bottom: 1px;
+}
+.porch-others a:hover { border-bottom-color: var(--neon-hot); }
 .porch-est {
   margin-top: 1.4rem !important;
   letter-spacing: 0.2em; font-size: 0.68rem; text-transform: uppercase;

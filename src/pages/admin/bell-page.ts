@@ -25,7 +25,7 @@ function bucket(event: MetricEvent): string {
 
 function ringsHtml(rings: MetricEvent[]): string {
   if (rings.length === 0) {
-    return "<p>No logged rings yet. The counter predates the porch log; rings before it left no row.</p>";
+    return "<p>No retained ring details. New rings keep aggregate counts only.</p>";
   }
   const rows = rings
     .map(
@@ -49,11 +49,11 @@ export function renderBellPage(data: BellPageData): string {
   const body = `
   <section>
     <h2>The bell, ring by ring</h2>
-    <p>From the raw 90-day event rows, newest first. The all-time counter
-    on the storefront predates this log; early rings left no row. A
+    <p>Retained historical rows, newest first, until their original 90-day expiry.
+    New rings keep aggregate counts only. The all-time counter on the storefront
+    predates this log; early rings left no row. A
     declared source of clawhub-skill means the ring came off the skill's
-    own bell line. MCP rings book here too (channel: mcp), as of the
-    fix that made that door audible.</p>
+    own bell line. Historical MCP rings have channel mcp.</p>
     ${ringsHtml(data.rings)}
   </section>`;
   return renderAdminShell("bell", body);

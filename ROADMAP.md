@@ -1,5 +1,134 @@
 # ROADMAP — September 2026
 
+## October 26 — admin Round archive reads
+
+Prepared a metadata-only unpublished-week lookup so opening the Round no
+longer downloads the full archive for that list. Regression tests, typecheck
+and bundle checks pass; release follows required PR checks. Original 1102
+CPU/memory attribution remains unconfirmed. [Scope and validation](docs/ADMIN_ROUND_RESOURCE_READS_2026-10.md).
+
+## October 23 — public statistics cost reduction
+
+Prepared locally: the homepage, menu and skill page read the same hourly saved
+books as `/stats`; `/pulse` and its JSON twin read the saved funnel. Public
+requests never reconstruct those figures, including on a missing summary.
+Saved dates remain visible after a failed refresh. Payment accounting,
+reconciliation and signed evidence continue to use their existing computations.
+[Scope, verification and rollout](docs/PUBLIC_STATISTICS_SUMMARY_2026-10.md).
+
+The follow-up cost pass is also prepared locally: aggregate-only free-visit
+tracking, manual contact scouting, no sales polling or bounty/trade homepage
+gauges, fewer sale/counter value reads, and traffic corrections every six hours.
+[Value ranking, tradeoffs and validation](docs/OPERATING_COST_CUTS_2026-10-23.md).
+The keeper approved release through PR/CI after the 896-test local validation.
+Deployment and live savings verification remain open, as do the stalled historical
+collector and archive-page reliability. No runtime deployment has been made.
+
+
+## October 22 — recover retained credit cash-out authorizations
+
+New production cash-outs retain their signed authorization in the original paying
+wallet's allocation ledger before the response. A recovery-only wallet challenge
+returns those bytes even after wallet rotation or expiry, without spending new
+credit, signing again or refreshing the expiry. The credit room, shared machine
+terms and OpenAPI describe the same request. Failed preparation restores the prior
+recovery pointer when the request still owns its claim.
+
+This recovers saved authorizations, not an interrupted operation before the save.
+It does not establish on-chain payment or repair a failed aggregate update. KV
+credit ownership and accrual funding remain separate gaps; no cap change or gas
+sponsorship. [Recovery contract](docs/FIELD_WALLET_ALLOCATIONS.md#credit-authorization-recovery).
+
+
+## October 22 — retain and reconcile accepted manual contribution rewards
+
+The private submission desk can import an accepted manual-payment obligation into
+the same field-wallet holds. It retains the selected wallet, exact reward,
+recipient and original acceptance time; retries preserve the deadline and do not
+sign or send a payment. The keeper's original reported transaction can then release
+the hold only after one exact USDC transfer is observed in a canonical finalized
+block after acceptance, together with the wallet balance at or after payment.
+One transaction can clear only one manual obligation. Batches, split payments,
+different-wallet payments and authorization-bearing receipts remain unresolved.
+
+This adds per-obligation recovery, not a production migration or automatic funding
+for all manual briefs. Remaining funding work: coordinate credit accrual and older
+other-program obligations; external spending remains outside the ledger. No cap
+increase or gas sponsorship. [Scope](docs/FIELD_WALLET_ALLOCATIONS.md#manual-contribution-obligations).
+
+## October 21 — expose manual rewards and accrued credit in the funding view
+
+The private funding report separates accepted manual-payment terms, including the
+subset with no payment report. Reports still do not discharge debt. A bounded,
+read-only credit inventory shows stored balances, idle-expiry-due balances and
+claim markers without expiring credit or treating a claim as payment. Truncated,
+missing or invalid records make the complete credit total unavailable; readable
+subsets remain labelled. Credit and wallet holds remain separate because cash-out
+can zero a balance before the authorization settles.
+
+This closes a visibility gap, not funding coverage. Remaining: manual-payment
+hold/reconciliation, credit accrual coordination and older other-program debt;
+external spending remains outside the coordinator. No cap change or new spending
+is included. After those bounded funding gaps, resume funded availability and
+acquisition/distribution rather than extending the accounting report indefinitely.
+[Scope](docs/FIELD_WALLET_ALLOCATIONS.md#private-funding-gap-inventory).
+
+## October 22 — recover credit when cash-out preparation fails
+
+Signer setup and authorization nonce creation now share the existing claimed-credit
+recovery boundary. If either fails before signing, the original claimant can get
+its balance back and retry. A failure after a signature succeeds does not restore
+spendable credit. Regression tests reproduce both preparation failures against the
+previous code. This closes a failure window, not credit funding coordination:
+accrual still uses KV, and durable ownership, retained authorization recovery and
+shared-wallet holds at accrual remain future work. Caps and payout terms stay unchanged.
+
+## October 21 — import older accepted contribution obligations
+
+The private submission desk can import an older accepted signed-authorization
+reward before or after issuance. Any retained authorization binds the original
+wallet and nonce; otherwise the configured field wallet is selected once for the
+debt. Acceptance and payment dates remain unchanged. Existing allocations and
+later issuance count the same obligation once, including concurrent imports. Expired
+authorizations remain unresolved work. Existing debt is imported even when its
+finalized balance is insufficient; the current-wallet funding view shows the dated
+shortfall and new allocations remain subject to the combined hold total. Imports
+recover interrupted replies/saves and use the existing exact finalized-payment
+release. No new signature, payment or gas is sent by an import.
+
+This is a per-obligation migration tool, not a completed production migration.
+Next: resolve manual-payment and other-program legacy obligations, account for
+credit accrual and external spenders, then increase approved funded availability
+and resume acquisition/distribution. [Scope](docs/FIELD_WALLET_ALLOCATIONS.md).
+
+## October 21 — fund new contribution reservations before work begins
+
+New reservations on signed-authorization briefs now hold the exact reward in the
+shared wallet ledger before returning permission to start. Pending funding keeps
+the same reservation identity and deadline, blocks submission, and tells the
+worker to retry with the same key. Submission retains the hold through review;
+acceptance converts it atomically without allocating twice. Unused released or
+expired reservations and rejected work cancel through durable, retriable cleanup.
+A canceled identity cannot be recreated by a late funding response. Older
+reservations and manual-payment terms retain their existing behavior.
+Next: reconcile older/manual obligations, accruing credit and external spenders;
+then increase approved funded availability and return to acquisition/distribution.
+No gas sponsorship, new brief, payment or cap increase is introduced.
+[Implementation and limits](docs/FIELD_WALLET_ALLOCATIONS.md).
+
+## October 21 — release paid contribution funding holds
+
+The private contribution desk now has a separate finalized-payment reconciliation.
+The wallet ledger checks the exact authorization and transfer, canonical block
+identity, and finalized balance at or after payment. Releasing the hold and
+advancing the retained balance happen together, so a delayed older balance cannot
+fund new work with already-spent money. Retries recover the same payment record;
+commitment and nonce identities remain permanently bound. Ordinary transaction
+checks still only retain observations. No gas, payment, new brief or cap increase.
+Next: fund work before workers reserve/start, reconcile older obligations and
+external spenders, then increase funded availability and resume acquisition work.
+[Implementation and limits](docs/FIELD_WALLET_ALLOCATIONS.md).
+
 ## October 19 — reserve funding before signed contribution acceptance
 
 New signed-authorization acceptances reserve their exact reward through the shared
@@ -54,6 +183,11 @@ store-skill examples point to these existing destinations. Owned catalog drafts
 and the ClawHub bundle are refreshed; external publication is tracked separately.
 Next: release through CI and verify the live paths, then publish the prepared
 distribution updates. Additional study receipts and new pilots remain deferred.
+**October 21 scoped update:** the keeper approved the existing SCVD Attestation
+operating packet and its PR/merge. This reopens preparation for that single
+bounded offer, not new pilot products or model studies. The implementation is
+already merged in #996; [operating gates](docs/SCVD_ATTESTATION_PILOT_2026-10.md#october-21--operating-packet-approved)
+and the existing KEEPER_LIST entry hold customer follow-through. No build added.
 [Scope and release checks](docs/AGENT_TASK_ENTRY_2026-10.md).
 Follow-up prepared: private task request counts and a bounded cross-program reward
 inventory. Counts do not claim people, search discovery or completed work. Reward

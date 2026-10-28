@@ -210,7 +210,7 @@ export interface ReferrerReport {
 const REFERRER_SCAN_CAP = 2000;
 
 const REFERRER_LIMIT =
-  "CATCHES THE RARE CLICK, NOT GENERAL ATTRIBUTION. The Referer header is set by browsers; HTTP libraries and x402 signing clients do not send one, and almost all traffic here is non-browser. An empty table means nobody arrived by clicking a link — it does NOT mean the instrument is broken, and it is not comparable to the marker counts above. A single row from a directory's own domain would be the first evidence that a listing sends anyone here.";
+  "CATCHES THE RARE CLICK, NOT GENERAL ATTRIBUTION. The Referer header is set by browsers; HTTP libraries and x402 signing clients do not send one, and almost all traffic here is non-browser. Free-visit referrer collection has stopped; retained rows can include historical free visits and continuing price-quote or payment evidence. An empty table does not establish that nobody arrived by clicking a link; it does NOT mean the instrument is broken. Expiry and scan caps also limit coverage. These counts are not comparable to the marker counts above.";
 
 /** Bare host, lowercased. A path would be unbounded key space. */
 function hostOf(referrer: string): string | undefined {

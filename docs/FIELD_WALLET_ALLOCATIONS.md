@@ -33,7 +33,7 @@ USDC balance at that same block. That balance includes any redemption which
 landed before expiry. Pruning and the new allocation commit together; a refused
 allocation leaves the old ledger intact.
 
-Live authorizations remain counted even after redemption. That is conservative:
+Unlinked live authorizations remain counted even after redemption. That is conservative:
 a later balance may reflect the debit while its unexpired hold remains. No
 confirmation observation from the contribution desk releases these holds early.
 The ledger does not equate an issued signature or consumed nonce with payment.
@@ -57,7 +57,7 @@ cannot create an unprovisioned class. Missing storage fails closed at signing.
 
 This is prospective authorization and acceptance coordination, not a complete
 reservation of all obligations. The ledger begins with authorizations routed through this
-version. Older outstanding authorizations and acceptances, work not yet accepted, legacy
+version. Older outstanding authorizations, reservations and acceptances, unreserved work, legacy
 manual-payment contribution commitments,
 credit not yet cashed out, external wallet scripts and direct wallet transfers
 remain outside it. The previous reward inventory is non-atomic and eventually
@@ -104,13 +104,337 @@ Existing accepted rows without funding metadata retain their earlier issuance
 path; manual-payment briefs retain their original terms and workflow.
 
 Acceptance holds do not expire with the authorization, because an expired
-signature does not prove the obligation was paid. This version has no release
+signature does not prove the obligation was paid. The October 19 version had no release
 operation for these holds: even confirmed desk observations leave them held.
 The aggregate count can include a pending review whose funding response was lost.
 Consequently the ledger may conservatively count already-paid rewards against a
-balance which already reflects their debit. Settlement-aware release is a next
-step, with exact payment evidence and a compatible finalized balance required.
+balance which already reflects their debit. The October 21 addition below provides settlement-aware release, with exact
+payment evidence and a compatible finalized balance required.
 
 Still outstanding: funding before workers reserve/start work, exact import or
 resolution of older/manual obligations, uncash-out credit and external spenders.
 No cap increase, new brief, automatic acceptance or payment is introduced.
+
+
+## October 21: releasing a paid contribution hold
+
+The separate **Reconcile funding hold** action on the private contribution desk
+uses the original wallet and commitment, even after wallet rotation. It requires
+an accepted contribution with a held commitment and issued authorization. Older
+acceptances without a commitment and manual-payment briefs cannot use this path.
+The existing transaction check remains observational and never releases funding.
+
+The ledger itself reads the supplied receipt, requires the matching Base chain,
+canonical USDC AuthorizationUsed/Transfer pair, exact payer, recipient, nonce and
+atomic amount, and a successful transaction. The receipt must be at or below a
+fresh finalized balance block. Its block hash must match the canonical header at
+that height. Missing, stale, inconsistent, reverted, canceled, unpaired or
+unfinalized evidence keeps the hold. This trusts the configured RPC observations;
+it is not independent consensus verification or a promise against chain failure.
+
+Release and advancement of the retained balance floor share a single SQLite
+transaction. Older in-flight allocations cannot subsequently spend the pre-debit
+balance. A newer retained balance overtaking a release refuses the stale release.
+Actual payment can still be reconciled when other remaining obligations exceed
+that observed balance; this does not authorize new spending.
+
+The ledger retains commitment and nonce identities permanently. Same-transaction
+retries return the original dated release without another chain read; changed
+transactions and attempts to re-fund or re-sign the released identity fail.
+If the desk save fails after ledger success, retrying repairs the private task
+record without releasing twice. The task is reread after I/O to preserve notes.
+This action neither signs nor broadcasts and needs no current wallet key.
+
+The private worker status includes only the release transaction, receipt block
+and read time; treasury balance and ledger metadata remain on the private keeper
+desk. Public briefs expose no release evidence. The funding report counts active
+and released commitments separately and still claims no spendable balance.
+Accepted status, reward terms, review date, payment deadline and existing payment
+observations remain unchanged. No new signed certificate is implied by this
+internal reconciliation; the existing acceptance receipt retains its own scope.
+
+Regression coverage includes concurrent retries, delayed stale allocations,
+overtaken releases, atomic rollback, interrupted task saves, exact payment
+mismatches, canonical-block lookup, route authentication and private/public
+separation. The stale-allocation test is witnessed failing when the atomic balance
+floor update is removed, then passing when restored.
+
+
+## October 21: fund work before a new reservation succeeds
+
+For signed-authorization contribution briefs, a new reservation first saves its
+identity and deadline, then requests the exact reward from the shared wallet
+ledger. Only a confirmed hold returns `status: reserved`. `funding_pending` blocks
+submission and provides a same-key reserve retry or cancellation. A failed or lost
+response retains the original key, identity, wallet once resolved, and deadline;
+no replacement identity or deadline extension is needed. The pending attempt
+occupies its slot until released or expired, preventing a second worker from
+starting it. Public availability is a slot count, not a live funding assertion.
+
+Reservation does not ask for a payout address; the worker supplies it with their report. A
+submitted report remains held through review, beyond the original submission
+deadline. Acceptance binds the immutable recipient and amount and converts the
+work hold into the acceptance commitment in one transaction. It does not allocate
+again or make earned acceptance depend on a new RPC read. Issuance retains its
+fresh shared-balance check, and finalized-payment release remains a separate
+keeper action. Rotation uses the original retained wallet; a new key cannot move
+this obligation.
+
+Unused release or expiry and keeper rejection stop the work in the task record
+before canceling its wallet hold. The ledger saves a cancellation tombstone even
+when the funding request has not answered yet. A delayed balance read cannot
+recreate that canceled identity. Accepted commitments cannot be canceled through
+this path. No funds moved during cancellation, so it does not require a new
+balance read or pretend that a transfer occurred.
+
+A cleanup alarm is armed before starting or stopping funded work. It preserves
+the earliest expiry and visitor-digest maintenance. Cleanup re-arms before RPC,
+keeps uncertain holds conservative, and retries interrupted cleanup, including
+a crash after saving a terminal decision but before saving the cleanup intent. The same
+release/rejection request also repairs a lost reply. The platform alarm handler
+uses the same explicitly clocked maintenance method as the tests. At most the
+existing bounded reservation list is processed; no wallet-wide scan is added.
+The [Cloudflare alarm contract](https://developers.cloudflare.com/durable-objects/api/alarms/)
+defines the platform callback and its one-alarm scheduling behavior.
+
+Private status distinguishes pending, held, transferred-to-acceptance, cleanup
+pending, and released funding. The private desk and aggregate inventory show work
+holds separately from acceptance holds, counted once in the shared total. Wallet
+and hold identities remain private; public briefs state only whether new
+reservations require this funding path. This is internal allocation rather than
+escrow, payment, full-wallet coverage or a net-income guarantee.
+
+Existing reservations without work-funding metadata keep their original path;
+signed work can still acquire its hold at acceptance. Manual-payment briefs are
+unchanged. No budget, price, paid slot, gas sponsorship or payment was added.
+Outstanding coverage remains older/manual obligations, credit accrual before
+cash-out, and external wallet spenders.
+
+Validation covers competing work and other-program authorizations, immutable
+retries, delayed funding versus cancellation, cleanup failures and alarms,
+reservation expiry versus submitted work, atomic acceptance conversion, wallet
+rotation, legacy behavior and private discovery instructions. Removing work holds
+from the shared total makes the competing-reservation test fail with two funded
+six-USDC reservations against ten USDC; restoring the total passes.
+
+
+## October 21 — import older issued contribution obligations
+
+The private submission page offers **Import existing obligation** for accepted
+signed-authorization work without a managed work hold, including unissued rewards
+and interrupted authorization attempts. `POST /admin/bounties/contributions/{id}/import-funding` takes only the
+submission ID. Its existing admin authentication, same-origin check and failed-form
+retry apply. No caller can supply a replacement wallet, amount, nonce or deadline.
+
+The task saves an import intent before resolving any wallet. If an authorization
+intent exists, its original paying wallet and nonce are retained even if no
+signature was saved. Otherwise, the currently configured field wallet is selected
+once and retained with the debt before the ledger call; an interrupted retry cannot
+move the obligation to a newly configured wallet. The ledger validates any retained
+signing request, reads a fresh finalized balance, and atomically links the obligation
+and authorization identities. Unissued work without an authorization has no nonce
+until the separate issuance action binds it. A preexisting
+contribution allocation for that exact nonce is reused, not counted twice. A nonce
+assigned to another program or obligation, changed terms, canceled work, or a paid
+release cannot be imported as a new debt. Repeated imports recover the same result.
+Original acceptance dates, receipt bytes, report and any payout remain unchanged.
+
+Later issuance uses the imported hold exactly once and remains subject to the full
+capacity check and original-wallet requirement. Imported unsigned rewards refresh
+that check even when an earlier attempt already allocated their nonce: an import
+may have revealed other debt exceeding the wallet balance. An expired retained intent is not
+replaced. If funding identity changes while issuance prepares its signer, issuance
+refuses and asks for a retry using the retained obligation. An already-running
+signing attempt keeps its original nonce; importing that intent links its allocation
+without duplicating the debt. Pending imports never authorize new signing.
+
+Unlike a new reservation, an import recognizes a debt already incurred. A low
+balance cannot erase that debt: importing six USDC against one USDC records the
+six-USDC hold. The current-wallet report shows a five-USDC **observed shortfall**
+against its dated retained balance. Fresh allocations still check all holds.
+Unavailable or stale chain reads leave the import pending, never a claimed success.
+The shortfall is not a live balance or complete solvency calculation. Imported
+obligations on a retired wallet stay with that wallet; the aggregate report still
+reads only the currently configured wallet, and the submission names its original
+wallet privately.
+
+Expiry alone never erases imported accepted work. The existing separate
+finalized-payment reconciliation can release the imported hold once its exact
+transfer and canonical block are established. A prior payment observation or manual
+payment report cannot release it. This import does not sign, broadcast, refresh an
+expired authorization, extend a deadline, raise caps or sponsor gas.
+
+This deploy adds the tool; it does not run a production migration.
+Manual-payment briefs, older reservations, other programs' legacy obligations,
+credit accrual and external spenders still need their own resolution. A zero
+observed shortfall does not close those gaps.
+
+Primary implementation reference read October 21 (recorded in
+[SPEC_READS](SPEC_READS.md#2026-10-21--durable-obligation-import-transactions)):
+[Cloudflare SQLite storage transactions](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/#transactionsync).
+`transactionSync` keeps the balance observation and both identity writes atomic;
+external RPC reads finish before that synchronous transaction.
+
+Validation covers insufficient balance, concurrent imports/new allocations,
+preexisting signature overlap, immutable nonce/program/terms, expired signatures,
+transaction rollback, lost replies, lost task saves, original-wallet retention,
+unchanged acceptance deadlines, exact finalized release and admin access controls.
+The new import regression is also run with the source change removed to witness
+its failure before restoration. A second negative control omits the permanent
+obligation link: expired debt is then pruned, and the expected ten-USDC total
+incorrectly becomes four USDC. Restoring the link preserves all ten USDC.
+
+Unsigned-reward validation also covers shortfalls before issuance, retained-wallet
+recovery, later signing counted once, pending wallet resolution, and imports racing
+both signer preparation and an already-running signing attempt. Acceptance and
+payment deadlines remain unchanged.
+
+Removing the imported-issuance capacity check allows a six-USDC signature while
+twelve USDC is held against ten; the regression detects that authorization and
+passes after the check is restored.
+
+
+## Credit cash-out preparation recovery
+
+The credit cash-out path claims the balance before preparing and signing its
+payout. Signer construction and authorization nonce creation now run inside the
+same recovery boundary as signing. If preparation fails, the existing recovery
+re-reads the credit record and restores the amount only while that request still
+owns its claim. The redeemed total is reversed with the balance; outstanding
+credit has not yet been reduced. A later aggregate-write failure, after signing
+succeeded, stays outside recovery so it cannot recreate spendable credit behind
+an issued authorization.
+
+This does not make KV claims atomic across locations, reserve accruing credit,
+or provide retained authorization recovery after a lost response. Those need
+durable credit ownership and remain outstanding. Existing allocation holds are
+not released by a signing failure. The regression in
+`test/credit-cashout-preparation.spec.ts` fails before the change for signer and
+nonce preparation, then verifies restoration and retry, signing failures, and
+no restoration after a successful signature followed by failed bookkeeping.
+
+## Private funding-gap inventory
+
+The existing authenticated funding report now separates accepted manual-payment
+terms from signed-authorization terms. The manual total and the subset without a
+payment report overlap the gross accepted-work total; a reported transaction is
+not a verified payment and does not reduce exposure. This does not import manual
+obligations into the allocation coordinator or release them.
+
+Accrued credit is read directly from the bounded `credit:` prefix using the existing
+KV list/bulk helpers. The scan cap is `CREDIT_INVENTORY_SCAN_CAP` in
+`src/services/credit-inventory.ts`. It retains integer atomic amounts and formats
+USDC without floating-point rounding. No wallet, claim identifier or storage error
+is rendered. The report shows its read time, listed/valid record counts, truncation
+and fixed gap categories. Missing, invalid or unreadable rows and unfinished scans
+suppress the complete credit total while preserving explicitly partial observations.
+The existing outstanding aggregate is not substituted for missing records.
+
+Opening this page never calls the expiry-writing balance reader, expires credit,
+signs an authorization or sends a payment. Idle-expiry-due stored balances stay in
+the observed total, with the expiry subset shown separately. The existing idle
+period comes from `CREDIT_IDLE_EXPIRY_DAYS`; the report uses one injected observation
+time. Claim markers are counted only as markers. They can survive signing, and a
+zeroed credit record cannot tell this report whether an authorization was redeemed.
+
+The credit view is separate from reward exposure and from shared wallet holds.
+Those observations are non-atomic, eventual and potentially overlapping; adding
+them would imply an assurance this instrument cannot provide. Credit accrual is
+still outside the coordinator. External spenders and earlier other-program debt
+remain unaccounted for by this change. No full liability or spendable balance is
+published, and no cap or payment term changes.
+
+Validation covers idle-boundary handling, dust and large integer amounts, claim
+markers, invalid/missing records, truncation, storage failure and the existing admin
+gate. The new manual breakdown and rendered credit regressions fail against the
+previous source and pass when the changes are restored.
+
+
+## Manual contribution obligations
+
+The private submission desk offers **Import manual obligation** for accepted manual
+terms, including work with an existing keeper payment report. The original reward,
+recipient and acceptance time become a permanent identity in the shared paying
+wallet ledger. The configured field wallet is selected once and retained before
+import; wallet rotation during a failed attempt cannot retarget it. Imports count
+existing debt even with insufficient balance and preserve original deadlines.
+Manual identities cannot be converted into signed-authorization or work holds.
+This is a per-obligation tool: it neither migrates production records on deploy nor
+funds all manual briefs automatically.
+
+After the original payment report exists, **Reconcile reported manual payment**
+uses that transaction; it takes no replacement hash, recipient, amount or wallet.
+The ledger itself requires canonical Base USDC, the exact sender/recipient/amount,
+a successful receipt with matching transaction identity, canonical block hash,
+finalized inclusion, and a block timestamp at or after acceptance. It accepts one
+USDC transfer in the receipt and refuses any USDC AuthorizationUsed event, leaving
+split/batched and authorization payments to separate resolution. A transfer from
+a different wallet cannot release the retained hold. These refusals never instruct
+the keeper to pay again.
+
+The ledger stores a unique transaction identity, advances the retained balance
+floor and records the release in one SQLite transaction. An interrupted write rolls
+all three back. Concurrent attempts cannot clear two obligations with one payment;
+same-obligation retries recover the existing result. A later balance floor prevents
+a delayed pre-payment reading from funding new work. Actual payment reconciliation
+can release its debt even when the remaining obligations still exceed the balance.
+The signed-authorization path remains distinct and keeps its exact nonce checks.
+
+The original manual payment report and worker-visible terms keep their bytes.
+Private submission details show the reconciliation, while worker status gains no
+treasury balance or key material. Gross reward inventory still includes manual work;
+it does not subtract these separate ledger releases. The shared-wallet report counts
+imported manual holds and completed releases. Credit accrual, unimported older debt,
+external scripts and other direct transfers remain outside that guarantee.
+
+Routes use existing admin authentication, same-origin protection, bounded bodies
+and form recovery: `POST /admin/bounties/contributions/{id}/import-manual-funding`
+and `POST /admin/bounties/contributions/{id}/release-manual-funding`, both with only
+`submission_id`. Neither route signs, broadcasts, sponsors gas or changes caps.
+The keeper's reported transaction supplies the claimed purpose; matching on-chain
+terms does not independently establish that purpose or complete wallet solvency.
+
+Primary sources and interpretation limits were read October 22 and recorded in
+[the spec register](SPEC_READS.md#2026-10-22--manual-contribution-payment-reconciliation).
+Tests cover exact evidence refusals, duplicate payments, concurrent reads, rollback,
+original-wallet retention, lost replies, payment reporting during import and admin
+access. Negative controls omit manual holds from capacity and omit the payment
+identity write; both regressions fail, then pass with the protections restored.
+
+
+## Credit authorization recovery
+
+New production credit cash-outs retain the signed authorization in the original
+paying wallet's SQLite ledger. A save requires an existing exact credit allocation
+and binds a unique claim identity, recipient and authorization nonce. Repeating
+that save returns the same bytes; a different allocation, program, recipient or
+payload cannot replace them. Expiry reclamation does not delete saved payouts.
+This journal neither signs nor releases wallet holds.
+
+Before signing, the credit record retains a private pointer to that wallet and
+claim. Accrual preserves the pointer. Preparation/signing failure restores the
+previous pointer only while the same request still owns its claim. After signing,
+a failed journal save or aggregate update never restores spendable credit. A lost
+reply from a committed journal save can recover the authorization. A save that
+never committed remains unresolved, and no replacement is manufactured. This is
+recovery of the latest prepared cash-out, not a full historical payout inventory.
+
+Request `POST /api/credit/challenge` with `address` and `recovery_only:true`, sign
+the exact returned EIP-191 message, then `POST /api/credit/redeem` with `address`,
+`signature` and `recovery_only:true`. The recovery mode is bound into the challenge:
+a recovery signature cannot be used for a new cash-out, or vice versa. The existing
+single-use, expiry and earning-wallet signature checks apply. The public balance
+never exposes the private pointer or payout signature.
+
+Recovery reads the retained pointer and journal without a current signing key,
+sanctions-screen rerun, chain read, credit mutation or expiry update. It returns
+the original nonce, signature and expiry even when expired; it does not establish
+settlement, reissue payment, sponsor gas or repair aggregate accounting. Old
+cash-outs without saved references and interrupted saves can be unavailable.
+KV remains eventually consistent: this journal is not durable credit ownership,
+atomic accrual, complete cross-location cash-out deduplication or funding at accrual.
+
+The tests exercise lost save replies, refusal after a failed save, key rotation,
+expired and idle balances, new accrual, prior-pointer restoration, binding changes,
+private response boundaries and challenge-mode substitution. No production credit
+record or wallet was read or changed by this implementation task.

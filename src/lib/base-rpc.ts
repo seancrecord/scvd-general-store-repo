@@ -331,6 +331,7 @@ export interface UsdcInflowTransfer {
 
 export interface RpcReceipt {
   transactionHash?: string;
+  blockHash?: string;
   status: string;
   blockNumber: string;
   logs: RpcLog[];
@@ -892,6 +893,14 @@ export async function usdcBlacklisted(
     chain,
   );
   return BigInt(result === "0x" ? "0x0" : result) === 1n;
+}
+
+/** Resolve a receipt's block identity on the current canonical chain. */
+export async function getBlockHash(env: Env, block: number, chain: EvmChain = BASE_EVM): Promise<string> {
+  if (!Number.isSafeInteger(block) || block < 0) throw new Error("Block identity unavailable");
+  const header = await rpc<{number?:string;hash?:string} | null>(env,"eth_getBlockByNumber",[`0x${block.toString(16)}`,false],chain);
+  if (!header?.number || !/^0x[0-9a-f]+$/i.test(header.number) || Number.parseInt(header.number,16)!==block || !header.hash || !/^0x[0-9a-f]{64}$/i.test(header.hash)) throw new Error("Block identity unavailable");
+  return header.hash.toLowerCase();
 }
 
 /**

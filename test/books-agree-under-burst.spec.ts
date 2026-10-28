@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { counterLedger } from "@/lib/counter-ledger";
@@ -74,7 +75,7 @@ describe("the books under a burst", () => {
     // The customers' number: /stats, as the storefront and the badges repeat it.
     const stats = await computeStats(testEnv);
     expect(stats.organic_settlements).toBe(total);
-    const publicStats = (await (await SELF.fetch("https://scvd.store/stats", { headers: { Accept: "application/json" } })).json()) as {
+    const publicStats = (await (await fetchWithPublicStatistics("https://scvd.store/stats", { headers: { Accept: "application/json" } })).json()) as {
       organic_settlements: number;
     };
     expect(publicStats.organic_settlements).toBe(total);

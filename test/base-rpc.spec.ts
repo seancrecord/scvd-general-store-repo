@@ -72,3 +72,18 @@ describe("the RPC ladder", () => {
     expect(redactRpc("not a url")).toBe("the configured endpoint");
   });
 });
+
+import {afterEach,vi} from "vitest";
+import {getBlockHash,BASE_EVM} from "@/lib/base-rpc";
+afterEach(()=>vi.unstubAllGlobals());
+it("reads the exact canonical block identity and normalizes its hash",async()=>{
+ const hash=`0x${"A".repeat(64)}`;
+ const request=vi.fn(async()=>Response.json({jsonrpc:"2.0",id:1,result:{number:"0x65",hash}}));vi.stubGlobal("fetch",request);
+ expect(await getBlockHash(envWith({}),101,BASE_EVM)).toBe(hash.toLowerCase());
+ const init=request.mock.calls[0] as unknown as [string,RequestInit];
+ expect(JSON.parse(String(init[1].body))).toMatchObject({method:"eth_getBlockByNumber",params:["0x65",false]});
+});
+it.each([null,{number:"0x66",hash:`0x${"a".repeat(64)}`},{number:"0x65",hash:"0x1"},{number:"0x65"},{hash:`0x${"a".repeat(64)}`}])("refuses a missing or inconsistent block identity: %j",async header=>{
+ vi.stubGlobal("fetch",vi.fn(async()=>Response.json({jsonrpc:"2.0",id:1,result:header})));
+ await expect(getBlockHash(envWith({}),101,BASE_EVM)).rejects.toThrow("Block identity unavailable");
+});
