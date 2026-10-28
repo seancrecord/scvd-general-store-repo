@@ -1,3 +1,4 @@
+import { refreshPublicStatistics } from "@/services/public-statistics";
 import { env, runInDurableObject } from "cloudflare:test";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Env } from "@/types";
@@ -69,6 +70,7 @@ it("uses the recorded denominator for both parts of the displayed pulse rate", a
     [month]: { month, recorded_organic: 100, corrected_organic: 50, moved_to_infrastructure: 50,
       movers: [], rows_read: 100, computed_at: now.toISOString(), complete: true }
   } }));
+  await refreshPublicStatistics(bindings);
   const page = await (await pulseRoutes.request(`${base}/pulse`, html, bindings)).text();
   expect(page).toContain("1.0% (1 in 100)");
   expect(page).not.toContain("1.0% (1 in 50)");
@@ -118,6 +120,7 @@ it("labels historical signed months without inventing missing totals or changing
 
 it("describes native corrections and every recorded network in the public stats method", async () => {
   await nativeSale();
+  await refreshPublicStatistics(bindings);
   const response = await statsRoutes.request(`${base}/stats`, undefined, bindings);
   const body = await response.json() as { rail_split_method: string; till_by_item_note: string };
   expect(body.till_by_item_note).toContain("native MPP rows include their per-item house corrections");

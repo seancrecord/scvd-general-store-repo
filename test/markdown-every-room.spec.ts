@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 
@@ -95,7 +96,7 @@ describe("every room that was missing a markdown representation", () => {
   it("serves markdown to a caller that asks for it", async () => {
     const failures: string[] = [];
     for (const path of ROOMS) {
-      const response = await SELF.fetch(`${BASE}${path}`, {
+      const response = await fetchWithPublicStatistics(`${BASE}${path}`, {
         headers: { Accept: "text/markdown" },
       });
       const type = response.headers.get("content-type") ?? "";
@@ -109,7 +110,7 @@ describe("every room that was missing a markdown representation", () => {
   it("answers the .md suffix with the same document", async () => {
     const failures: string[] = [];
     for (const path of ROOMS) {
-      const twin = await SELF.fetch(`${BASE}${path}.md`);
+      const twin = await fetchWithPublicStatistics(`${BASE}${path}.md`);
       if (!twin.ok) {
         failures.push(`${path}.md -> ${twin.status}`);
         continue;
@@ -153,13 +154,13 @@ describe("every room that was missing a markdown representation", () => {
   it("still answers HTML to a browser and JSON to an agent", async () => {
     const failures: string[] = [];
     for (const path of ROOMS) {
-      const html = await SELF.fetch(`${BASE}${path}`, {
+      const html = await fetchWithPublicStatistics(`${BASE}${path}`, {
         headers: { Accept: "text/html,application/xhtml+xml" },
       });
       if (!html.ok || !(html.headers.get("content-type") ?? "").includes("text/html")) {
         failures.push(`${path} broke for a browser: ${html.status}`);
       }
-      const json = await SELF.fetch(`${BASE}${path}`, {
+      const json = await fetchWithPublicStatistics(`${BASE}${path}`, {
         headers: { Accept: "application/json" },
       });
       // /menu answers JSON with a 301 to /menu.json on purpose — one
@@ -188,7 +189,7 @@ describe("every room that was missing a markdown representation", () => {
   it("hands a named indexer the page, never the JSON twin", async () => {
     const failures: string[] = [];
     for (const path of ROOMS) {
-      const response = await SELF.fetch(`${BASE}${path}`, {
+      const response = await fetchWithPublicStatistics(`${BASE}${path}`, {
         headers: { "User-Agent": "Mozilla/5.0 (compatible; OAI-SearchBot/1.0)", Accept: "*/*" },
       });
       const type = response.headers.get("content-type") ?? "";

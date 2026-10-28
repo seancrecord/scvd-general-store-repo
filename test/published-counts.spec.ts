@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
@@ -100,7 +101,7 @@ describe("every published count has its denominator registered", () => {
 
   for (const { route, url } of ROUTES) {
     it(`serves no numeric leaf without a row: ${url} (the suite's own store)`, async () => {
-      const res = await SELF.fetch(`https://scvd.store${url}`, { headers: { Accept: "application/json" } });
+      const res = await fetchWithPublicStatistics(`https://scvd.store${url}`, { headers: { Accept: "application/json" } });
       expect(res.status).toBe(200);
       const body = (await res.json()) as Record<string, unknown>;
       expect(unregistered(route, body)).toEqual([]);
@@ -137,7 +138,7 @@ describe("every published count has its denominator registered", () => {
 
   it("prints the rows under the figures on the pages that have one", async () => {
     for (const url of ["/pulse", "/rails", "/observatory"]) {
-      const res = await SELF.fetch(`https://scvd.store${url}`, {
+      const res = await fetchWithPublicStatistics(`https://scvd.store${url}`, {
         headers: { Accept: "text/html", "User-Agent": "Mozilla/5.0" },
       });
       const html = await res.text();

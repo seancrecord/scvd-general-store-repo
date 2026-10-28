@@ -1,3 +1,5 @@
+import { scheduleTrafficCorrections } from "@/services/traffic-maintenance";
+import { PUBLIC_STATISTICS_CRON } from "@/services/public-statistics";
 import { contributionRoutes } from "@/routes/contribution-tasks";
 import { sellerDeclarationRoutes } from "@/routes/seller-declarations";
 import { evidencePilotRoutes } from "@/routes/evidence-pilot";
@@ -155,7 +157,6 @@ import { sweepPhantomChecks } from "@/services/phantom";
 import { sweepStandingWatches } from "@/services/standing-watch";
 import { sweepOperatorStatements } from "@/services/operator-statement";
 import { sweepConformanceWatches } from "@/services/conformance-watch";
-import { recomputeCorrections } from "@/services/reclassify";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
 import { runDeliveryAudit } from "@/services/delivery-audit";
@@ -580,6 +581,17 @@ const worker: ExportedHandler<Env> = {
   // (kv-retry.ts): nobody is waiting on a walk, so it can sit out the
   // kind of blip that has now killed three of them.
   scheduled: (event, env, ctx) => withPatientKv(async () => {
+    // A dedicated hourly invocation keeps reporting out of the other sweeps'
+    // work budget. Return here: this trigger must never rerun paid obligations.
+    if (event.cron === PUBLIC_STATISTICS_CRON) {
+      await import("@/services/public-statistics").then(({ refreshPublicStatistics }) =>
+        refreshPublicStatistics(env),
+      ).catch(() => sendAlert(env, {
+        condition: "worker_health",
+        detail: "Public statistics refresh failed. The last saved figures retain their original date; inspect the hourly job.",
+      }));
+      return;
+    }
     /*
      * THE DAY SEED'S COMMIT (the Paywall, 2026-09-12): written within
      * the half hour after every UTC midnight, so the commit's
@@ -931,37 +943,8 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
-    /**
-     * THE SCOUT ON THE TICK (2026-09-10). It was a button that read
-     * twenty-five hosts a press, and the keeper had sixteen hundred
-     * of them: "its taking me fucking forever to manually press 25 at
-     * a time and then ill re run a walk and number will go up".
-     *
-     * The second half is why a hand could never finish. The unscouted
-     * pile is not a fixed backlog — it is re-derived from the latest
-     * round on every read, and the long walk keeps adding hosts to
-     * that round. The keeper was racing a number that grows on its
-     * own. Twenty-five an hour is six hundred a day, which wins that
-     * race; sixty-four presses do not.
-     *
-     * IT SENDS NOTHING. Rule 30 holds the PRESS, not the reading, and
-     * a security.txt is a file a host published at a well-known path
-     * so that strangers would read it. Drafting and delivery are
-     * untouched and the wire stays paused.
-     */
-    ctx.waitUntil(
-      import("@/services/outreach").then(({ scoutSweep }) =>
-        scoutSweep(env).then(
-          () => undefined,
-          (error) =>
-            sendAlert(env, {
-              condition: "worker_health",
-              key: "scout-sweep-failed",
-              detail: `The contact scout failed: ${String(error)}. Unscouted hosts are not being read; press "Scout contacts" on /admin/outreach by hand until this clears.`,
-            }),
-        ),
-      ),
-    );
+    // Optional contact scouting is manual again (keeper's cost cut, 2026-10-23).
+    // The existing Scout contacts action remains; sent-note audits still run.
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>
         sendAlert(env, {
@@ -1325,16 +1308,10 @@ const worker: ExportedHandler<Env> = {
      * correction computed once is a correction with an expiry date
      * nobody wrote down.
      */
-    ctx.waitUntil(
-      recomputeCorrections(env, new Date(), { cache: true }).then(
-        () => undefined,
-        (error) =>
-          sendAlert(env, {
-            condition: "worker_health",
-            detail: `Reclassification walk failed: ${String(error)}`,
-          }),
-      ),
-    );
+    // Retrospective traffic classification is reporting, not payment recovery.
+    // Four passes/day preserve the existing complete-publication rule and date.
+    scheduleTrafficCorrections(event, env, ctx);
+
     /**
      * THE RAIL SPLIT, walked here so the storefront never walks it.
      * The front of the store prints how many organic sales came in on

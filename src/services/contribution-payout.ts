@@ -33,8 +33,11 @@ export async function signContributionReward(env: Env, signer: FieldSigner, auth
   // the shared ledger before issuing this authorization.
   const balance = await usdcBalanceOf(env, signer.address);
   if (balance < BigInt(authorization.value)) throw new Error("Contribution payout unavailable");
-  return signer.signTypedData({domain: {...EVM_USDC_DOMAIN, chainId: Number(BASE_NETWORK.split(":")[1]), verifyingContract: BASE_USDC},
-    types: {TransferWithAuthorization: [...authorizationTypes.TransferWithAuthorization]}, primaryType: "TransferWithAuthorization", message: {...authorization}});
+  return signer.signTypedData(contributionSigningRequest(authorization));
+}
+export function contributionSigningRequest(authorization: ContributionAuthorization): Parameters<FieldSigner["signTypedData"]>[0] {
+  return {domain: {...EVM_USDC_DOMAIN, chainId: Number(BASE_NETWORK.split(":")[1]), verifyingContract: BASE_USDC},
+    types: {TransferWithAuthorization: [...authorizationTypes.TransferWithAuthorization]}, primaryType: "TransferWithAuthorization", message: {...authorization}};
 }
 export function privateContributionPayout(payout: ContributionPayout, now: number) {
   if (!payout.signature) return {state: "issuance_pending", created_at: payout.created_at, redemption: CONTRIBUTION_REDEMPTION};

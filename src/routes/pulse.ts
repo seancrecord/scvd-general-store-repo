@@ -4,7 +4,7 @@ import { prefersMarkdown } from "@/lib/accept";
 import { jsonDocumentMarkdownResponse } from "@/lib/json-markdown";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { denominatorsSectionHtml, publishedCountsBlock } from "@/store/published-counts";
-import { computePulse } from "@/services/pulse";
+import { readPublicStatistics, publicStatisticsStatus, publicStatisticsUnavailable } from "@/services/public-statistics";
 import type { PulseWindow } from "@/services/pulse";
 import type { HonoEnv } from "@/types";
 
@@ -111,13 +111,18 @@ function row(window: PulseWindow, label: string): string {
 }
 
 pulseRoutes.get("/pulse.json", async (c) => {
-  return c.json({ ...(await computePulse(c.env)), published_counts: publishedCountsBlock("/pulse") });
+  const summary = await readPublicStatistics(c.env).catch(() => null);
+  if (!summary) return publicStatisticsUnavailable();
+  return c.json({ ...summary.pulse, statistics_summary: publicStatisticsStatus(summary), published_counts: publishedCountsBlock("/pulse") });
 });
 
 pulseRoutes.get("/pulse", async (c) => {
-  const pulse = await computePulse(c.env);
+  const summary = await readPublicStatistics(c.env).catch(() => null);
+  if (!summary) return publicStatisticsUnavailable();
+  const pulse = summary.pulse;
+  const status = publicStatisticsStatus(summary);
   // Rule 43 for the numbers: every count, with what it is out of (store/published-counts.ts).
-  const document = { ...pulse, published_counts: publishedCountsBlock("/pulse") };
+  const document = { ...pulse, statistics_summary: status, published_counts: publishedCountsBlock("/pulse") };
   if (prefersMarkdown(c.req.header("Accept"), "text/html", c.req.header("User-Agent"))) {
     return jsonDocumentMarkdownResponse({
       base: c.env.STORE_BASE_URL,
@@ -138,6 +143,7 @@ pulseRoutes.get("/pulse", async (c) => {
         "The whole funnel for this x402 store, organic only: how many times a price was quoted (402s answered, not distinct agents), how many purchases settled, and how many artifacts were re-verified afterwards.",
       path: "/pulse",
       bodyHtml: `<section>
+        <p class="menu-meta">Statistics as of ${escapeHtml(summary.computed_at)}. Refreshed hourly.${status.stale ? " The next reading is overdue; these are the last saved figures." : ""}</p>
         <p class="menu-desc"><strong>${pulse.all_time.total_organic_settled ?? pulse.all_time.organic_settled} organic sales across x402 and MPP</strong>, including ${pulse.all_time.mpp_organic_settled ?? 0} native MPP sales. The funnel below covers x402 only; its conversion rate uses x402 asks and settles.</p>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>
         <p class="menu-desc"><strong>${escapeHtml(sentence(pulse.all_time))}</strong> All time, since the meter went in.</p>

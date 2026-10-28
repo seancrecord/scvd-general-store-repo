@@ -1,5 +1,52 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-10-23 — hourly public statistics summary
+
+Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+[Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+and [How KV works](https://developers.cloudflare.com/kv/concepts/how-kv-works/).
+Checked KV `get`/`put` and scheduled-handler definitions in published Workers
+Types 5.20261023.1 against the repository's installed definitions. The existing
+binding helpers remain in use; no dependency or configuration upgrade is needed.
+KV is eventually consistent, including missing-key lookups: a refresh can take
+additional time to appear at other edges. Public requests read a dated retained
+summary and never use a missing key as a reason to rebuild. This establishes the
+platform contract, not a measured production refresh delay or bill saving.
+All referenced pages were reachable.
+
+
+## 2026-10-22 — retained credit authorization journal
+
+Read [Cloudflare SQLite-backed Durable Object storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/).
+The journal uses synchronous SQL and unique claim/nonce constraints in the existing
+paying-wallet actor. Saved payout bytes survive allocation expiry and are read
+without signing or chain calls. This does not strengthen the consistency of the
+separate KV credit record or turn an authorization into settlement evidence.
+
+
+## 2026-10-22 — manual contribution payment reconciliation
+
+Read [ERC-20 Transfer](https://eips.ethereum.org/EIPS/eip-20#transfer-1),
+[Ethereum receipt fields](https://ethereum.org/developers/docs/apis/json-rpc/#eth_gettransactionreceipt),
+and [Cloudflare SQLite transactions](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/#transactionsync).
+The manual path matches the indexed sender/recipient and exact value in canonical
+Base USDC, checks successful receipt identity and canonical finalized block, and
+binds one transaction to one manual obligation atomically with the balance floor.
+This deliberately excludes split/batched transfers and authorization-bearing USDC
+receipts. These docs do not establish a particular payment's purpose or full wallet
+coverage; the keeper's immutable report selects the candidate and the original
+acceptance time bounds it. No production payment or RPC result was used as proof.
+
+## 2026-10-21 — durable obligation import transactions
+
+Read [Cloudflare SQLite-backed storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/#transactionsync)
+(page updated September 21, 2026). `transactionSync` commits a synchronous callback
+atomically and rolls it back on an exception. Applied to the balance observation,
+authorization allocation and permanent contribution-obligation link; chain reads
+finish before the transaction. The page was reachable. This is storage-contract
+validation, not a new on-chain payment observation or a production migration.
+[Implementation](FIELD_WALLET_ALLOCATIONS.md#october-21--import-older-issued-contribution-obligations).
+
 ## 2026-10-16 — task entry points for visitor acquisition
 
 Read [Google AI-feature guidance](https://developers.google.com/search/docs/appearance/ai-features)

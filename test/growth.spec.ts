@@ -80,12 +80,13 @@ describe("the two counters that were missing", () => {
     expect(await readBellRings(testEnv)).toBe(before + 1);
   });
 
-  it("records an outside referring host off a porch visit and never our own", async () => {
+  it("keeps earlier referring-host detail without adding new free visits", async () => {
+    const before = await readReferrerCensus(testEnv, metricsMonth());
     await recordPorchVisit(testEnv, "corpus", { referrer: "https://www.x402scan.com/resources/123?q=1" });
     await recordPorchVisit(testEnv, "corpus", { referrer: "https://scvd.store/menu" });
     await recordPorchVisit(testEnv, "corpus", { referrer: "not a url" });
     const census = await readReferrerCensus(testEnv, metricsMonth());
-    expect(census["www.x402scan.com"]).toBeGreaterThanOrEqual(1);
+    expect(census).toEqual(before);
     expect(Object.keys(census).some((host) => host.includes("scvd.store"))).toBe(false);
     // The host, never the path: the query string is not ours to keep.
     expect(JSON.stringify(census)).not.toContain("resources");

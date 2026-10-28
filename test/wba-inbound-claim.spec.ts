@@ -1,19 +1,13 @@
-import { SELF, env } from "cloudflare:test";
+import worker from "@/index";
+import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { recordPorchVisit, type MetricEvent } from "@/lib/metrics";
+import { recordChallengeIssued, type MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
 
-/**
- * THE INBOUND HALF OF WEB BOT AUTH, claim-only (2026-08-11): a
- * visitor presenting a Signature-Agent header gets it recorded on the
- * porch event VERBATIM AND AS A CLAIM — the store fetches no
- * directory and verifies no signature, and the field name says so.
- * The census question this answers is "are signers showing up at this
- * door at all," which is the number that decides whether verifying
- * machinery ever gets built.
- */
+/** Signature claims remain representable on retained quote evidence. Free-visit
+ * claim collection retired with the optional raw visit history on 2026-10-23. */
 
 /**
  * Rows are matched on the bare hostname, not the full claim: the
@@ -33,11 +27,11 @@ async function eventsWithClaim(bareHost: string): Promise<MetricEvent[]> {
   return events;
 }
 
-describe("the Signature-Agent claim on porch events", () => {
+describe("Signature-Agent claims after the free-visit cost cut", () => {
   it("records the header verbatim, under a name that says claim", async () => {
     const host = `claim-check-${Date.now()}.example`;
     const claim = `"https://${host}"`;
-    await recordPorchVisit(testEnv, "storefront", {
+    await recordChallengeIssued(testEnv, "/api/buy/hello", {
       userAgent: "wba-claim-check/1.0",
       signatureAgent: claim,
     });
@@ -48,7 +42,7 @@ describe("the Signature-Agent claim on porch events", () => {
   });
 
   it("writes nothing when no header was sent", async () => {
-    await recordPorchVisit(testEnv, "storefront", {
+    await recordChallengeIssued(testEnv, "/api/buy/hello", {
       userAgent: "wba-claim-check/2.0",
     });
     const listed = await testEnv.COUNTERS.list({ prefix: "evt:" });
@@ -60,26 +54,14 @@ describe("the Signature-Agent claim on porch events", () => {
     }
   });
 
-  it("is wired at the door: a real request's header reaches the event row", async () => {
-    const host = `door-check-${Date.now()}.example`;
-    const claim = `"https://${host}"`;
-    const response = await SELF.fetch("https://scvd.store/llms.txt", {
-      headers: { "Signature-Agent": claim },
-    });
+  it("does not retain signature claims from a free page request", async () => {
+    const host = "free-claim-check.example";
+    const ctx = createExecutionContext();
+    const response = await worker.fetch!(new Request("https://scvd.store/llms.txt", {
+      headers: { "Signature-Agent": `"https://${host}"` },
+    }), testEnv, ctx);
+    await waitOnExecutionContext(ctx);
     expect(response.status).toBe(200);
-    /*
-     * The middleware hands the write to waitUntil, so the row can
-     * land after the response resolves (venue-register.spec.ts wrote
-     * the race down). Polled rather than raced.
-     */
-    let events: MetricEvent[] = [];
-    for (let attempt = 0; attempt < 20 && events.length === 0; attempt += 1) {
-      events = await eventsWithClaim(host);
-      if (events.length === 0) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      }
-    }
-    expect(events.length).toBe(1);
-    expect(events[0]?.signature_agent_claim).toBe(claim);
+    expect(await eventsWithClaim(host)).toEqual([]);
   });
 });

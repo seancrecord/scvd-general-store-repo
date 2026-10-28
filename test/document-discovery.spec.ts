@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { describe, expect, it } from "vitest";
 import { ROOMS } from "@/store/rooms";
 import { API_CATALOG_PATH } from "@/lib/api-catalog";
@@ -15,7 +16,7 @@ describe("discovery from a document instead of the homepage", () => {
     for (const { path, machineFormat } of ROOMS) {
       const type = machineFormat === "json" ? "application/json" : "text/markdown";
       const target = machineFormat === "json" ? path : `${path}.md`;
-      const response = await SELF.fetch(`${BASE}${target}`, {
+      const response = await fetchWithPublicStatistics(`${BASE}${target}`, {
         headers: { Accept: type },
       });
       if (!response.ok || !response.headers.get("Content-Type")?.includes(type)) {
@@ -29,7 +30,7 @@ describe("discovery from a document instead of the homepage", () => {
   it("every registered room advertises the catalog and its machine representation", async () => {
     const failures: string[] = [];
     for (const { path, machineFormat } of ROOMS) {
-      const response = await SELF.fetch(`${BASE}${path}`, { headers: { Accept: "text/html" } });
+      const response = await fetchWithPublicStatistics(`${BASE}${path}`, { headers: { Accept: "text/html" } });
       const links = response.headers.get("Link") ?? "";
       if (!links.includes(catalogLink)) failures.push(`${path}: no catalog`);
       const type = machineFormat === "json" ? "application/json" : "text/markdown";

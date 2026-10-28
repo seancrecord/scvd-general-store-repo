@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { EXTERNAL_MONITOR_URL } from "@/services/pulse";
@@ -21,7 +22,7 @@ import { EXTERNAL_MONITOR_URL } from "@/services/pulse";
  */
 describe("the reading that owes us no favours is one click away", () => {
   it("serves the monitor link inside the latency block it narrates", async () => {
-    const response = await SELF.fetch("https://scvd.store/pulse.json");
+    const response = await fetchWithPublicStatistics("https://scvd.store/pulse.json");
     expect(response.status).toBe(200);
     const body = (await response.json()) as {
       latency: { external_monitor?: string; method?: string };

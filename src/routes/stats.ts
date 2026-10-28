@@ -1,8 +1,8 @@
+import { readPublicStatistics, publicStatisticsStatus, publicStatisticsUnavailable } from "@/services/public-statistics";
 import { Hono } from "hono";
 import { settlementNetworkLabels } from "@/lib/payment-networks";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import {
-  computeStatsDiagnosed,
   HOUSE_FLAG_POLICY,
   trackRecordLine,
 } from "@/services/stats";
@@ -11,28 +11,22 @@ import { publishedCountsBlock } from "@/store/published-counts";
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /stats: the books, public, computed live. The claim and the
- * ledger agree because the claim is the ledger.
+ * GET /stats: the books, public, from the hourly saved calculation.
+ * Its source timestamp stays with the figures, including after a failed refresh.
  */
 export const statsRoutes = new Hono<HonoEnv>();
 
 statsRoutes.get("/stats", async (c) => {
   const base = c.env.STORE_BASE_URL;
   // The books with the per-item till beside them (ruling R3, 2026-09-21).
-  const books = await computeStatsDiagnosed(c.env);
+  const summary = await readPublicStatistics(c.env).catch(() => null);
+  if (!summary) return publicStatisticsUnavailable();
+  const books = summary.books;
   const stats = books.stats;
-  /**
-   * The net-by-chain statement rides the same response rather than a
-   * new room: an agent doing diligence is already reading this JSON,
-   * and "our books, checked against the chain" belongs on the page
-   * whose honest limit has always been "our books, not the chain".
-   * Absent on failure rather than a page error — the stats above are
-   * older machinery and should not die of the newer instrument.
-   */
-  const { computeNetStatement } = await import("@/services/net-statement");
-  const netByChain = await computeNetStatement(c.env).catch(() => null);
+  const netByChain = summary.net_by_chain;
   return c.json({
     ...stats,
+    statistics_summary: publicStatisticsStatus(summary),
     // Rule 43 for the numbers: every count above, with what it is out of (store/published-counts.ts).
     published_counts: publishedCountsBlock("/stats"),
     /**
@@ -56,7 +50,7 @@ statsRoutes.get("/stats", async (c) => {
     signing_key: `${base}/.well-known/scvd-signing-key`,
     sample_artifact_id: SAMPLE_ARTIFACT_ID,
     listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
-    note: "Computed from the same counters the keeper reads. No hand edits; the line rewrites itself as the ledger grows.",
+    note: "Calculated hourly from the same counters the keeper reads. No hand edits. computed_at dates the figures; a failed refresh leaves the last saved reading.",
     /**
      * WHERE THE RAIL SPLIT COMES FROM, said here rather than left for
      * somebody to infer, because it is the ONE figure on this page
@@ -97,7 +91,7 @@ statsRoutes.get("/stats", async (c) => {
      * typed it. It does not say anybody outside agreed with it.
      */
     what_these_numbers_are:
-      "OUR BOOKS, NOT THE CHAIN. Every figure here is computed from counters this store writes, so a settlement that landed on Base and never bumped one would not appear as a discrepancy — it would not appear at all, and this page would look clean while a payment went unrecorded. 'Computed live, no hand edits' means nobody typed these numbers; it does not mean anybody outside checked them.",
+      "OUR BOOKS, NOT THE CHAIN. Every figure here is computed from counters this store writes, so a settlement that landed on Base and never bumped one would not appear as a discrepancy — it would not appear at all, and this page would look clean while a payment went unrecorded. 'Calculated hourly, no hand edits' means nobody typed these numbers; it does not mean anybody outside checked them.",
     ...(netByChain ? { net_by_chain: netByChain } : {}),
     how_to_check_it_without_us:
       "An hourly walk compares USDC transfers to our pay-to address against the settlement_tx recorded on every certificate, and a mismatch raises an alert that a person writes up at /corrections. You do not have to take our word for that walk: the pay-to address is public in the 402 terms and at /.well-known/x402.json, every certificate carries its own settlement_tx, and Base is readable by anyone. Walk it yourself and tell us if the two disagree — the mailbox at /api/letter is free.",

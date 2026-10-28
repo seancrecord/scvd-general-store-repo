@@ -5,6 +5,7 @@ interface CompletedContribution {
   task_id: string;
   kind: "bounty" | "field_study" | "contribution";
   reward_state?: "accepted_pending_payment" | "payment_reported" | "authorization_issued";
+  finalized_redemption_observed?: boolean;
   contribution_kind?: string;
   arrival_goal?: string;
   reward_usd: number;
@@ -41,8 +42,8 @@ export function contributionCompletion(base: string, result: CompletedContributi
         kind: result.kind,
         reward_usd: result.reward_usd,
         reward_state: result.reward_state ?? "authorized",
-        redemption_state: "not_observed",
-        reward_note: result.reward_state === "authorization_issued" ? "The keeper issued a reward authorization. Retrieve its original bytes and expiry through private status. Arrange redemption and gas yourself; issuance does not prove receipt or net earnings." : result.kind === "contribution" ? "Acceptance records the keeper’s obligation under the posted brief. A reported transaction is the keeper’s statement, not independently verified settlement. This response sends no money." : "The payout field contains the authorization and redemption instructions. Authorization is not confirmation of redemption or net profit.",
+        redemption_state: result.finalized_redemption_observed ? "finalized_observed" : "not_observed",
+        reward_note: result.finalized_redemption_observed ? "The private status retains a finalized reward transfer observed during funding reconciliation. Check its transaction and read time; this response sends no money and does not establish net earnings." : result.reward_state === "authorization_issued" ? "The keeper issued a reward authorization. Retrieve its original bytes and expiry through private status. Arrange redemption and gas yourself; issuance does not prove receipt or net earnings." : result.kind === "contribution" ? "Acceptance records the keeper’s obligation under the posted brief. A reported transaction is the keeper’s statement, not independently verified settlement. This response sends no money." : "The payout field contains the authorization and redemption instructions. Authorization is not confirmation of redemption or net profit.",
         what_was_verified: result.what_was_verified,
         what_was_not: result.what_was_not,
         for_your_human: forHuman,

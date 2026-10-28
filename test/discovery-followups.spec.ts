@@ -1,3 +1,4 @@
+import { fetchWithPublicStatistics } from "./helpers/public-statistics";
 import { SELF } from "cloudflare:test";
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
@@ -29,7 +30,7 @@ describe("HTML-only readers can discover the same documents", () => {
   it("covers the homepage and every registered room, including custom renderers", async () => {
     const failures: string[] = [];
     for (const path of ["/", ...ROOMS.map((room) => room.path)]) {
-      const response = await SELF.fetch(`${BASE}${path}`, { headers: { Accept: "text/html" } });
+      const response = await fetchWithPublicStatistics(`${BASE}${path}`, { headers: { Accept: "text/html" } });
       expect(response.status, path).toBe(200);
       const header = response.headers.get("Link") ?? "";
       const links = await headLinks(response);

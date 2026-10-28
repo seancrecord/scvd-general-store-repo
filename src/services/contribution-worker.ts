@@ -45,7 +45,8 @@ export function contributionNextSteps(base: string, state: {
   const post = (action: string, note: string, deadline: string | null = null): ContributionStep => ({action, method: "POST", url: `${url}/${action}`, required_fields: action === "submit" ? ["reservation_key", "payout_to", "report"] : ["reservation_key"], deadline_at: deadline, note});
   const browse: ContributionStep = {action: "browse", method: "GET", url: `${base}${CONTRIBUTION_API}`, required_fields: [], deadline_at: null, note: "Read available work and every page cursor. Reading does not reserve a slot. A released or expired key cannot start a new reservation."};
   switch (state.status) {
-    case "available": return [post("reserve", "Generate and retain a new random reservation key locally before the request. Begin only after a successful reservation; retain the same key for retries.")];
+    case "available": return [post("reserve", "Generate and retain a new random reservation key locally before the request. Begin only when reserve returns status reserved; funding_pending is not permission to start. Retain the same key for retries.")];
+    case "funding_pending": return [post("reserve", "Do not begin work. Retry reserve with the SAME reservation key to recover its reward funding; do not create another identity."), post("release", "Cancel this pending reservation if you do not want to wait.")];
     case "reserved": return [
       post("submit", "Submit your own evidence against the posted criteria. The empty report draft is a worksheet, not completed evidence.", state.submit_by ?? null),
       post("release", "Release an unused reservation without a submission."),
@@ -70,7 +71,7 @@ export function contributionWorkPacket(base: string, task: ReturnType<typeof pub
       required_store_spend_usd: 0, reward_usd: task.reward_usd, net_earnings: null,
       worker_costs: "Your model, tools, time and any wallet/network costs are not measured here. Compare those costs with the posted reward before reserving; no profit or acceptance is guaranteed.",
       payment: CONTRIBUTION_MONEY, payment_method: task.payment_method, redemption: task.redemption,
-      funding: "This API does not escrow funds or verify the keeper's funding. Payment is separate from acceptance.",
+      funding: task.reservation_funding === "required_for_new_reservations" ? "New reservations must confirm an internal reward hold before work begins. A listed slot alone is not funded permission to start. Pending funding requires the same-key reserve retry. Holds share a wallet ledger with stated coverage gaps; this is not escrow or received payment. Older reservations may lack a hold." : "This brief does not reserve funds through this API. Payment is separate from acceptance.",
     },
     deadlines: {new_reservations_close_at: task.expires_at, submission: "A successful reservation gives the exact submit_by time.", review_days: task.review_days, payment_days: task.payment_days},
   };
