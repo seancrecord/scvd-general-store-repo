@@ -5533,6 +5533,21 @@ function withRateLimitHeaders(operation: OpenApiObject): OpenApiObject {
 }
 
 /**
+ * The three preflight batteries answer with the same metered verdict,
+ * so their 200 is one component rather than three inlined copies: the
+ * reader budget is shared by every door. Built by the wrapper above, so
+ * it cannot drift from what the wrapper would have inlined.
+ */
+const PREFLIGHT_VERDICT_METERED = (withRateLimitHeaders(
+  returns({ responses: {} }, { $ref: "#/components/schemas/PreflightVerdict" }),
+)["responses"] as OpenApiObject)["200"] as OpenApiObject;
+
+function returnsPreflightVerdict(operation: OpenApiObject): OpenApiObject {
+  const responses = operation["responses"] as OpenApiObject;
+  return { ...operation, responses: { ...responses, "200": { $ref: "#/components/responses/PreflightVerdictMetered" } } };
+}
+
+/**
  * THE 402 BODY, TYPED — the same object payment-gate.ts renders.
  *
  * A paid door's 402 is not an error page here, it is the offer, and
@@ -6339,7 +6354,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         CitedArtifact: { title: "Cited artifact", ...CITED_ARTIFACT_SCHEMA },
         ...UCP_RECOVERY_SCHEMAS,
       },
-      responses: { ...SHARED_RESPONSES, ...CONTRIBUTION_RESPONSES, ...PAID_DOOR_RESPONSES, PaymentRequired: PAYMENT_REQUIRED_RESPONSE },
+      responses: { ...SHARED_RESPONSES, ...CONTRIBUTION_RESPONSES, ...PAID_DOOR_RESPONSES, PaymentRequired: PAYMENT_REQUIRED_RESPONSE, PreflightVerdictMetered: PREFLIGHT_VERDICT_METERED },
       headers: { ...RATE_LIMIT_HEADER_SPEC, ...PAYMENT_CHALLENGE_HEADERS },
       parameters: { AgentName: AGENT_NAME_PARAMETER, PurchasePurpose: PURCHASE_PURPOSE_PARAMETER, IdempotencyKey: IDEMPOTENCY_PARAMETER, IfNoneMatch: IF_NONE_MATCH_PARAMETER, ...NEGOTIATED_ACCEPT_PARAMETERS },
     },
@@ -7676,7 +7691,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               ),
               { $ref: "#/components/schemas/PreflightDocument" },
             ),
-            post: withRateLimitHeaders(returns(postOp(
+            post: returnsPreflightVerdict(withRateLimitHeaders(returns(postOp(
               `Check an x402 endpoint's payment challenge shape (${battery})`,
               `One probe, one moment: 402 status, parseable PAYMENT-REQUIRED header, signable accepts, testnet networks flagged. A shape check, never an uptime claim. Free, and metered — the RFC RateLimit fields ride every answer. ${
                 battery === PREFLIGHT_VERSION_NEXT
@@ -7685,7 +7700,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               }`,
               "The x402 door to walk.",
               { $ref: "#/components/schemas/ProbeUrlInput" },
-            ), { $ref: "#/components/schemas/PreflightVerdict" })),
+            ), { $ref: "#/components/schemas/PreflightVerdict" }))),
           },
         ]),
       ),

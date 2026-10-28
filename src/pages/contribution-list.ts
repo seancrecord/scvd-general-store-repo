@@ -1,12 +1,13 @@
 import { escapeHtml as esc } from "@/lib/sanitize";
-import type { ContributionBoard } from "@/services/contribution-board";
+import { contributionFreeNextSteps, type ContributionBoard, type ContributionDiscoveryStep } from "@/services/contribution-board";
 import { CONTRIBUTION_API, CONTRIBUTION_PROPOSITION, CONTRIBUTION_FREE, CONTRIBUTION_MONEY } from "@/store/contribution-tasks";
 
 export const CONTRIBUTION_LIST_UNAVAILABLE = "Contribution listings could not be read. Availability is unknown; check the task list before starting work.";
-export function contributionListHtml(board: ContributionBoard | null) {
+export function contributionListHtml(board: ContributionBoard | null, base: string) {
   let body = `<section id="contribution-work"><h2>Contribution work — no store purchase required</h2><p class="menu-desc">${esc(CONTRIBUTION_PROPOSITION)}</p><p class="menu-desc">${esc(CONTRIBUTION_FREE)} ${esc(CONTRIBUTION_MONEY)}</p>`;
-  if (!board) return `${body}<p class="menu-desc">${CONTRIBUTION_LIST_UNAVAILABLE}</p><p><a href="${CONTRIBUTION_API}">Check the contribution task list</a></p></section>`;
+  if (!board) return `${body}<p class="menu-desc">${CONTRIBUTION_LIST_UNAVAILABLE}</p><p><a href="${CONTRIBUTION_API}">Check the contribution task list</a></p>${freeTasksHtml(contributionFreeNextSteps(base))}</section>`;
   body += `<p class="menu-meta">${esc(board.indexing_note)}</p>`;
+  body += `<p class="menu-desc"><strong>${board.availability.available_slots ? `${board.availability.available_slots} slot${board.availability.available_slots === 1 ? "" : "s"} listed on this page` : "No available contribution slots on this page"}.</strong> ${esc(board.availability.note)}</p>`;
   if (!board.tasks.length) body += `<p class="menu-desc">No contribution briefs are listed on this page. Templates are examples for the keeper, not work you can start or rewards you can claim.</p>`;
   const reasons: Record<string, string> = {closed: "Closed to new reservations", expired: "Expired", slots_full: "All slots held", attempt_limit: "Reservation attempt limit reached"};
   for (const task of board.tasks) {
@@ -17,5 +18,9 @@ export function contributionListHtml(board: ContributionBoard | null) {
       <p><a href="${esc(task.task_url)}">${available ? "Read brief and reserve" : "Read the brief and its status"}</a></p></article>`;
   }
   if (board.truncated) body += `<p class="menu-desc">This is a partial list.${board.cursor ? ` <a href="/bounties?contribution_cursor=${encodeURIComponent(board.cursor)}#contribution-work">Next contribution briefs</a>` : ""}</p>`;
-  return `${body}<p><a href="${CONTRIBUTION_API}">Task list and exact request shapes</a></p></section>`;
+  return `${body}${freeTasksHtml(board.next_steps.filter(step => step.action === "free_task"))}<p><a href="${CONTRIBUTION_API}">Task list and exact request shapes</a></p></section>`;
+}
+
+function freeTasksHtml(steps: ContributionDiscoveryStep[]) {
+  return steps.length ? `<h3>Free tools for another task</h3><p class="menu-desc">Optional tools for your own work; these are not paid contribution briefs.</p><ul>${steps.map(step => `<li><a href="${esc(step.url)}">${esc(step.label)}</a> — ${esc(step.note)}</li>`).join("")}</ul>` : "";
 }

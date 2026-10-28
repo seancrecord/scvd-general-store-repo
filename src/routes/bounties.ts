@@ -295,7 +295,7 @@ function boardHtml(
       <p class="menu-desc"><strong>Two kinds of posted work.</strong> Contribute evidence about this store's tools and information without a store purchase, or mystery-shop another x402 door with your own wallet. Read each path's terms before starting.</p>
       <p class="menu-desc">${escapeHtml(BOARD_WHAT_THIS_IS)}</p>
     </section>
-    ${contributionListHtml(contributions)}
+    ${contributionListHtml(contributions, base)}
     <section>
       <h2>Open bounties</h2>
       ${

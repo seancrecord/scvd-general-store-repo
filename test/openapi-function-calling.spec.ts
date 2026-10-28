@@ -306,7 +306,12 @@ describe("the error model, typed", () => {
 
     for (const entry of operations(document)) {
       const responses = entry.op["responses"] as Record<string, Operation>;
-      const ok = responses["200"] as Operation | undefined;
+      const raw = responses["200"] as Operation | undefined;
+      // A shared 200 lives in components (the preflight batteries' does); read what it names.
+      const okRef = raw?.["$ref"];
+      const ok = typeof okRef === "string"
+        ? ((document["components"] as Record<string, Record<string, Operation>>)["responses"]![okRef.slice("#/components/responses/".length)])
+        : raw;
       const headers = (ok?.["headers"] ?? {}) as Record<string, unknown>;
       const metered = limited.includes(entry.path) && entry.method === "post";
       if (metered) {

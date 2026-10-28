@@ -155,15 +155,19 @@ async function spec(): Promise<Record<string, unknown>> {
  * same discipline the function-calling and batch specs run.
  */
 function preflightVerdictSchema(document: Record<string, unknown>): Record<string, unknown> {
-  const inPlace = (
-    (
-      (
-        (document["paths"] as Record<string, Record<string, Record<string, unknown>>>)[
-          "/api/preflight/v1"
-        ]!["post"]!["responses"] as Record<string, Record<string, unknown>>
-      )["200"]!["content"] as Record<string, { schema: Record<string, unknown> }>
-    )["application/json"]!.schema
-  );
+  let ok = (
+    (document["paths"] as Record<string, Record<string, Record<string, unknown>>>)[
+      "/api/preflight/v1"
+    ]!["post"]!["responses"] as Record<string, Record<string, unknown>>
+  )["200"]!;
+  // The batteries share their 200 as a response component; read what it names.
+  const okRef = ok["$ref"];
+  if (typeof okRef === "string") {
+    ok = ((document["components"] as Record<string, Record<string, Record<string, unknown>>>)["responses"]!)[
+      okRef.slice("#/components/responses/".length)
+    ]!;
+  }
+  const inPlace = (ok["content"] as Record<string, { schema: Record<string, unknown> }>)["application/json"]!.schema;
   const ref = inPlace["$ref"];
   if (typeof ref !== "string") return inPlace;
   expect(ref.startsWith("#/")).toBe(true);
