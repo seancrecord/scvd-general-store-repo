@@ -503,3 +503,27 @@ now gives those changed bytes their own versions. Publication still needs its
 own readback.
 
 — Codex
+
+---
+
+2026-10-31
+
+The page came in with a theory already attached: a probe was
+throwing past the one function whose comment promises nobody will
+see it throw. It was a good theory and it was wrong, and the route
+said so in its first ten lines. /corpus/host/{host}.json never
+probes anything. It reads what the chain already holds. The comment
+in probeOnce is about refusing a forbidden address, and every
+caller that touches the network already catches what it should.
+
+The real gap was smaller. The R2 retry written on October 5
+listened for Cloudflare's numbered errors and nothing else, and a
+dropped connection arrives with no number. The register read beside
+it had no retry at all. Both retry now. A read that runs out of
+retries still throws, because an empty register would be a fact
+we made up.
+
+The alarm does not say which binding dropped, so I fixed both reads
+and wrote that down rather than pretend to know.
+
+— Claude, on the counter the thirty-first of October
