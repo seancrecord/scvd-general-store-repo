@@ -5,7 +5,10 @@ import { edgeOnError } from "@/lib/edge";
 import { listAlerts } from "@/lib/alerts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { withPatientKv } from "@/lib/kv-retry";
+import { R2ReadUnavailable } from "@/lib/r2-read";
+import { corpusRoutes } from "@/routes/corpus";
 import { corpusLandingRoutes } from "@/routes/corpus-landing";
+import { populationHistory } from "@/services/population";
 import { forgetResolvedRecords, resolveRecord, type CorpusPointer, type CorpusRecord } from "@/services/corpus-list";
 import { hydrateRound, type WardRound } from "@/services/ward-round";
 import type { Env, HonoEnv } from "@/types";
@@ -129,6 +132,68 @@ describe("R2 reads survive temporary service failures", () => {
     expect(html).not.toContain("The chain holds no signed week yet");
     expect(html).not.toContain("This week:");
     expect((await listAlerts(testEnv, 20))[0]?.identity).toBe("worker_health:corpus-wallet-facts-unavailable");
+  });
+});
+
+/*
+ * THE UNCODED BLIP (2026-10-31). Three alarms in 36 hours: "500 on GET
+ * /corpus/host/<host>.json: Network connection lost." No R2 code, so
+ * the coded-only match let it through on the first attempt and the
+ * host page 500'd on one dropped stream.
+ */
+describe("a dropped connection on the host page's reads", () => {
+  const lost = () => new Error("Network connection lost.");
+
+  it("is retried on the R2 record read", async () => {
+    const { bindings, get } = failingReads(2, lost());
+    expect(await resolveRecord(bindings, pointer)).toEqual(record);
+    expect(get).toHaveBeenCalledTimes(3);
+  });
+
+  it("still throws after the budget, grouped with the other exhausted R2 reads", async () => {
+    const { bindings, get } = failingReads(Infinity, lost());
+    const failure = await resolveRecord(bindings, pointer).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(R2ReadUnavailable);
+    expect((failure as R2ReadUnavailable).code).toBeNull();
+    // Alarm identities and keeper mutes key on the name; it must not move.
+    expect((failure as Error).name).toBe("Error");
+    expect(get).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not widen into retrying any error that mentions the network", async () => {
+    const error = new Error("Network connection lost. And then a parser choked.");
+    const { bindings, get } = failingReads(Infinity, error);
+    await expect(resolveRecord(bindings, pointer)).rejects.toBe(error);
+    expect(get).toHaveBeenCalledTimes(1);
+  });
+
+  it("no longer hands the visitor of /corpus/host/{host}.json a 500", async () => {
+    await testEnv.COUNTERS.put(`${KV_KEYS.corpusPrefix}000000001`, JSON.stringify(pointer));
+    const { bindings, get } = failingReads(1, lost());
+    const ctx = createExecutionContext();
+    const response = await corpusRoutes.request("https://scvd.store/corpus/host/one.example.json", {}, bindings, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(response.status).toBe(200);
+    expect(get).toHaveBeenCalled();
+  });
+
+  it("is retried on the population register, the route's other read", async () => {
+    let calls = 0;
+    const counters = new Proxy(testEnv.COUNTERS, {
+      get(target, property) {
+        if (property === "get") {
+          return async (...args: Parameters<typeof target.get>) => {
+            calls += 1;
+            if (calls === 1) throw lost();
+            return (target.get as (...a: unknown[]) => unknown)(...args);
+          };
+        }
+        const value = Reflect.get(target, property);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+    expect(await populationHistory({ ...testEnv, COUNTERS: counters } as Env, "one.example")).toBeNull();
+    expect(calls).toBe(2);
   });
 });
 

@@ -1,6 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { readOnceInScope } from "@/lib/read-scope";
 
 /**
@@ -171,7 +171,12 @@ interface RegisterFile {
 }
 
 const readRegister = readOnceInScope(async (env: Env): Promise<RegisterFile> => {
-  const stored = await env.COUNTERS.get<Partial<RegisterFile>>(
+  // Through the shared retry (2026-10-31): every /corpus/host page reads
+  // this, and it was the one bare `.get` left on that route when a
+  // "Network connection lost." 500 paged the keeper. A read that outlives
+  // the budget still throws — an empty register would be a made-up fact.
+  const stored = await kvGetJson<Partial<RegisterFile>>(
+    env.COUNTERS,
     KV_KEYS.populationRegister,
     "json",
   );
