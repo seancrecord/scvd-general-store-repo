@@ -30,6 +30,18 @@ const GOOD_BUYER_PRICE_USDC = CLIENT_CAP_READABLE
   : 0.99;
 
 /**
+ * THE TWO PRICES THE OPENING DAY IS MEASURED AGAINST. Its copy says
+ * what the parts cost bought apart, and that sentence said "ten" for
+ * as long as both parts were five; on 2026-11-14 the conformance watch
+ * moved to a cent (keeper's call) and "ten" became false without
+ * anyone touching the bundle. So the parts' prices live here once, the
+ * two items read them, and the bundle's sentence is arithmetic.
+ */
+const LAUNCH_CHECK_PRICE_USDC = 5;
+const CONFORMANCE_WATCH_PRICE_USDC = 0.01;
+const OPENING_DAY_APART_USDC = Math.round((LAUNCH_CHECK_PRICE_USDC + CONFORMANCE_WATCH_PRICE_USDC) * 1e6) / 1e6;
+
+/**
  * The utility aisle (aisle three), added in v0.3: things an agent can
  * actually use. Anchors are signed and stored by services/anchors.ts;
  * passes by services/patronage.ts; the witness rides the standard
@@ -172,7 +184,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     listed_week: "2026-W32",
     name: "The Once-Over",
     subtitle: "one signed check of your x402 endpoint, at a permanent URL",
-    price_usdc: 5,
+    /* $5 -> $0.01 on 2026-11-14, keeper's call: the working tier. */
+    price_usdc: 0.01,
     pricing: "fixed",
     cadence: "one_off",
     reads: "subject_fetch",
@@ -181,8 +194,9 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "Name an x402 endpoint (the url query parameter) and the store probes it, runs the published preflight battery with additional rail and cross-surface reads, and signs the whole readout: the current verdict this series cites (the same battery the weekly census applies), the same probe scored under the frozen v1 battery beside it (the two can disagree, and the report says when they do), every check, every advisory, dated. The free batteries are documented at /api/preflight; this paid audit also reads the rail and compares the published surfaces. What this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One bounded audit, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
     /* #31: the free specimen, so nobody buys a document sight unseen. */
     sample_url: "/samples/once-over.json",
-    note_402:
-      "Five dollars. The looking is free and always will be — what costs money is the part where somebody else has to believe you.",
+    get note_402(): string {
+      return `$${this.price_usdc}. The looking is free and always will be — what costs money is the part where somebody else has to believe you.`;
+    },
     constraints: [
       "Give the endpoint in the url query parameter: https, default port, on the public internet, the URL a buyer would GET expecting a 402",
       "A bounded endpoint probe with rail and cross-surface reads, signed; never a monitor — the week-long look is The Night Watch",
@@ -208,7 +222,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Conformance Watch",
     subtitle: "seven days of signed daily checks on your x402 endpoint",
     sample_url: "/samples/conformance-watch.json",
-    price_usdc: 5,
+    /* $5 -> $0.01 on 2026-11-14, keeper's call: the working tier. */
+    price_usdc: CONFORMANCE_WATCH_PRICE_USDC,
     pricing: "fixed",
     cadence: "term",
     reads: "subject_fetch",
@@ -216,8 +231,9 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     description:
       "Name your x402 endpoint (the url query parameter) and once a day for seven days the store runs the published preflight battery (v1, the frozen structural series — the battery each signed pass names inside its own bytes) against it — the 402 shape, the header, the accepts fields, the structural check on any signed offers in either placement — and signs that day's readout on its own: verdict, every failed check, every advisory, dated. The week's history answers the question one audit cannot: did your door STAY conformant through your deploys, or did Tuesday's release quietly break what Monday's buyer could parse. Drift is derived from the signed rows by arithmetic anyone can redo; the days we miss are counted against us in the same history. Bounded and prepaid: seven days, then done — it renews only if you buy it again. Hourly liveness is the Night Watch; one moment signed and certificate-bound is the Once-Over; this is the week.",
-    note_402:
-      "Five dollars for the week — seventy-one cents a day, near enough. One look each day, signed. Deploy something on a Tuesday that quietly breaks your challenge, and this is the page that knows. Our own missed days are on it too.",
+    get note_402(): string {
+      return `$${this.price_usdc} for the week. One look each day, signed. Deploy something on a Tuesday that quietly breaks your challenge, and this is the page that knows. Our own missed days are on it too.`;
+    },
     constraints: [
       "The url query parameter (https, default port, on the public internet, the URL a buyer would GET expecting a 402)",
       "One pass per day for seven days, each signed alone; first pass on the store's next hourly rounds",
@@ -320,7 +336,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Launch Check",
     subtitle: "a real paid purchase against your endpoint, signed, before you announce it",
     sample_url: "/samples/launch-check.json",
-    price_usdc: 5,
+    /* Stays at $5: test/field-spend-invariant.spec.ts — it pays out. */
+    price_usdc: LAUNCH_CHECK_PRICE_USDC,
     pricing: "fixed",
     cadence: "one_off",
     reads: "subject_purchase",
@@ -358,7 +375,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * launch check, then seven days of conformance watch on the same
    * door, then the passport page — three things this store already
    * sells, under one certificate and one URL a merchant can hand to a
-   * directory. Bought apart they are $10 and a receipt each. No second
+   * directory. Bought apart they cost the sum of the two prices above,
+   * a receipt each (derived; it was $10 until 2026-11-14). No second
    * battery, no new primitive: the launch walk is performLaunchCheck,
    * the week is startConformanceWatch, the passport is the census's.
    */
@@ -373,13 +391,15 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     term_days: 7,
     reads: "subject_purchase",
     fulfillment: "instant",
-    description:
-      "Name your x402 endpoint (the url query parameter) and three things happen under one certificate. First, the Launch Check: this store walks your door the way a paying stranger does — one real EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, every stage signed. Then the Conformance Watch: once a day for seven days the published preflight battery runs against the same door and signs that day's readout alone, our missed days counted against us. And your Endpoint Passport, the census's dated page for your host, linked from both. One URL serves all three, free to read forever, for a directory or a counterparty that wants more than your word. Bought apart these cost ten dollars and come as a receipt each. Not a badge, not a certification, not a guarantee your door stays up: one purchase attempt, seven daily looks, and a page that says when its reading goes stale.",
+    get description(): string {
+      return `Name your x402 endpoint (the url query parameter) and three things happen under one certificate. First, the Launch Check: this store walks your door the way a paying stranger does — one real EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, every stage signed. Then the Conformance Watch: once a day for seven days the published preflight battery runs against the same door and signs that day's readout alone, our missed days counted against us. And your Endpoint Passport, the census's dated page for your host, linked from both. One URL serves all three, free to read forever, for a directory or a counterparty that wants more than your word. Bought apart these cost $${OPENING_DAY_APART_USDC} and come as a receipt each. Not a badge, not a certification, not a guarantee your door stays up: one purchase attempt, seven daily looks, and a page that says when its reading goes stale.`;
+    },
     /* The launch-check component; the watch and passport are separate. */
     sample_url: "/samples/launch-check.json",
     sample_kind: "shared_component",
-    note_402:
-      "Nine dollars for opening day: we buy from your till once, watch the door for a week, and put the passport beside both. Bought apart it is ten, and a receipt each.",
+    get note_402(): string {
+      return `Nine dollars for opening day: we buy from your till once, watch the door for a week, and put the passport beside both. Bought apart it is $${OPENING_DAY_APART_USDC}, and a receipt each.`;
+    },
     constraints: [
       "Give your x402 endpoint in the url query parameter: https, default port, on the public internet",
       "The launch check is one real purchase attempt from the declared field wallet, once — never a retry loop",
@@ -404,15 +424,17 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     listed_week: "2026-W36",
     name: "The Company an Address Keeps",
     subtitle: "which doors advertised this receiving address, and when — signed, from the public chain",
-    price_usdc: 5,
+    /* $5 -> $0.01 on 2026-11-14, keeper's call: the working tier. */
+    price_usdc: 0.01,
     pricing: "fixed",
     cadence: "one_off",
     reads: "our_books",
     fulfillment: "instant",
     description:
       "Which doors have advertised this receiving address, and when: the hosts, the signed weeks, each week's verdict, drift in the door's own terms, and the snapshot digest behind every line. Rebuild it from the public chain without our word. No judgment: shared addresses are ordinary, custodians are common, and this store does not grade operators. Your own address is free once you prove it is yours (GET /api/provenance/self for the challenge), and that free reading ends with an offer to publish it, which you may decline.",
-    note_402:
-      "Five dollars for somebody else's address. Nothing for your own, once you have proved it is your own.",
+    get note_402(): string {
+      return `$${this.price_usdc} for somebody else's address. Nothing for your own, once you have proved it is your own.`;
+    },
     constraints: [
       "Give the receiving address in the address query parameter: an EVM address (0x + 40 hex) or a Solana pubkey (base58)",
       "Reads the signed chain and nothing else — no request is made to any door, and nothing private feeds it",

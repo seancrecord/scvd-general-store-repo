@@ -78,7 +78,7 @@ function pageHtml(base: string, artifact: Awaited<ReturnType<typeof sampleOnceOv
     </section>
     <section>
       <h2>Buying the real one</h2>
-      <p class="menu-desc"><strong>${escapeHtml(item?.name ?? "The Once-Over")}</strong> &mdash; ${escapeHtml(item ? priceLine(item) : "$5 fixed")}. Same battery, your endpoint, signed and dated, verifiable offline forever at <code>/api/verify/{id}</code>: <a href="/menu/service_audit">what it is</a>, or <code>GET ${base}/api/buy/service_audit?url=&hellip;</code> over x402.</p>
+      <p class="menu-desc"><strong>${escapeHtml(item?.name ?? "The Once-Over")}</strong> &mdash; ${escapeHtml(item ? priceLine(item) : "priced at /menu.json")}. Same battery, your endpoint, signed and dated, verifiable offline forever at <code>/api/verify/{id}</code>: <a href="/menu/service_audit">what it is</a>, or <code>GET ${base}/api/buy/service_audit?url=&hellip;</code> over x402.</p>
       <p class="menu-desc"><strong>Or check your own door for nothing first.</strong> The same battery runs free at <a href="/conformance">/conformance</a> and at <a href="/api/preflight/v1"><code>/api/preflight/v1</code></a>. What the $5 adds is the signature, the date and the artifact &mdash; not the checking. If the free run tells you what you needed, that is the honest outcome and you owe us nothing.</p>
       <p class="menu-desc"><strong>Or hand it to your agent:</strong> <em>&ldquo;Read ${base}/samples/once-over.json to see the shape, run ${base}/api/preflight/v1 against my endpoint free, and if I need a signed dated copy buy ${base}/api/buy/service_audit?url=&hellip; over x402.&rdquo;</em></p>
     </section>`;
@@ -129,7 +129,7 @@ samplesRoutes.get("/samples", async (c) => {
       base,
       path: "/samples",
       title: "What a purchase hands back",
-      description: "A free, unsigned sample of the Once-Over — the $5 signed audit of one x402 endpoint. Every field a buyer gets, run against a door that fails on purpose so the sample shows the instrument working.",
+      description: "A free, unsigned sample of the Once-Over — the signed audit of one x402 endpoint. Every field a buyer gets, run against a door that fails on purpose so the sample shows the instrument working.",
       document: pagePayload as unknown as Record<string, unknown>,
     });
   }
@@ -138,7 +138,7 @@ samplesRoutes.get("/samples", async (c) => {
       renderSimplePage({
         title: "What a purchase hands back",
         description:
-          "A free, unsigned sample of the Once-Over — the $5 signed audit of one x402 endpoint. Every field a buyer gets, run against a door that fails on purpose so the sample shows the instrument working.",
+          "A free, unsigned sample of the Once-Over — the signed audit of one x402 endpoint. Every field a buyer gets, run against a door that fails on purpose so the sample shows the instrument working.",
         path: "/samples",
         bodyHtml: pageHtml(base, artifact),
       }),

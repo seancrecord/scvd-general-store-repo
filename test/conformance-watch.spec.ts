@@ -76,9 +76,9 @@ function answerTarget(answer: () => Response): void {
  * arithmetic, and the gaps counted against us.
  */
 describe("the conformance watch", () => {
-  it("sits on the shelf at $5 with url as its one required input", () => {
+  it("sits on the shelf at $0.01 with url as its one required input", () => {
     const item = MENU_ITEMS.find((entry) => entry.id === "conformance_watch");
-    expect(item?.price_usdc).toBe(5);
+    expect(item?.price_usdc).toBe(0.01);
     expect(item?.fulfillment).toBe("instant");
     // Bounded and prepaid, said on the listing (the 23a carve-out).
     expect(item?.description).toContain("seven days");
@@ -87,29 +87,21 @@ describe("the conformance watch", () => {
     expect(schema.required).toContain("url");
   });
 
-  it("keeps the per-day price in the 402 note true to the arithmetic", () => {
+  it("quotes the shelf price in the 402 note, derived, and no per-day figure", () => {
     const item = MENU_ITEMS.find((entry) => entry.id === "conformance_watch")!;
     /**
-     * The note spells the per-day cost in words, which makes an
-     * agent's cost-benefit trivial and makes the copy a claim that
-     * can go stale. This is the tripwire: move the price or the
-     * duration and the number below changes, this fails, and the
-     * words have to be rewritten with it. Nothing derives prose
-     * automatically — it just cannot drift quietly.
+     * The note used to spell the per-day cost in words ("seventy-one
+     * cents a day, near enough"), guarded by arithmetic here. On
+     * 2026-11-14 the week moved from $5 to a cent (keeper's call) and
+     * a cent over seven days is a fraction no buyer needs spelled, so
+     * the per-day sentence went and the note now reads the price off
+     * the item itself. The tripwire is the same idea, one step
+     * earlier: the note must carry the shelf's number exactly, and
+     * must not grow back a per-day claim nothing derives.
      */
-    const centsPerDay =
-      (item.price_usdc * 100) / CONFORMANCE_WATCH_DURATION_DAYS;
-    expect(
-      Math.floor(centsPerDay),
-      "the 402 note says 'seventy-one cents a day' — that number moved, so the copy is now false",
-    ).toBe(71);
-    expect(item.note_402).toContain("seventy-one cents a day");
-    // The hedge is load-bearing, not filler: 71.43 stated flat as 71
-    // would price the week in our own favour — three cents across
-    // seven days — and this store does not round toward itself in
-    // its own sales copy.
-    expect(item.note_402).toMatch(/near enough|about/);
-    expect(centsPerDay).toBeGreaterThan(71);
+    expect(item.note_402).toContain(`$${item.price_usdc} for the week`);
+    expect(item.note_402).not.toMatch(/cents a day/);
+    expect(CONFORMANCE_WATCH_DURATION_DAYS).toBe(7);
   });
 
   const buying = { "PAYMENT-SIGNATURE": "not-a-real-signature" };

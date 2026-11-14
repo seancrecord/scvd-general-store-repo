@@ -135,7 +135,7 @@ export interface SampleArtifact {
 }
 
 const WHAT_THIS_IS =
-  "A free, unsigned sample of the Once-Over — the $5 signed audit of one x402 endpoint at one moment. Every field below is the field a buyer gets, produced by the same check battery the paid artifact runs, against a constructed door that fails on purpose so the sample shows the instrument finding something rather than a column of ticks.";
+  "A free, unsigned sample of the Once-Over — the signed audit of one x402 endpoint at one moment. Every field below is the field a buyer gets, produced by the same check battery the paid artifact runs, against a constructed door that fails on purpose so the sample shows the instrument finding something rather than a column of ticks.";
 
 /**
  * Build the specimen. Takes `env` only because the check battery does;

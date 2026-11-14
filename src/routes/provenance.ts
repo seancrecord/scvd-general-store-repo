@@ -10,6 +10,8 @@ import {
   verifySelfAudit,
 } from "@/services/provenance-check";
 import type { HonoEnv } from "@/types";
+import { getMenuItem } from "@/store/menu";
+import { priceLabel } from "@/lib/price-label";
 
 /**
  * THE COMPANY AN ADDRESS KEEPS — the doors around the paid item
@@ -82,7 +84,7 @@ provenanceRoutes.get("/api/provenance/self", (c) => {
         }),
     what_we_keep:
       "One integer per week: how many self-audits were run. No address, no wallet, no timestamp finer than the week.",
-    paid_door: "/api/buy/provenance_check?address=... — for an address that is not yours, five dollars, signed and certificate-bound.",
+    paid_door: `/api/buy/provenance_check?address=... — for an address that is not yours, ${priceLabel(getMenuItem("provenance_check")!)}, signed and certificate-bound.`,
   });
 });
 

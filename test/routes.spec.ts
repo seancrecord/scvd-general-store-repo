@@ -105,6 +105,14 @@ describe("the storefront", () => {
       "the_confession",
       "batch_spot_check",
       "research_comparison",
+      // The penny inspections (2026-11-14, keeper's call: $5 -> $0.01).
+      // They tie the working tier above and hold LADDER order: utility
+      // shelf file order, the audit, the watch, then the provenance
+      // check. launch_check did NOT come with them — it pays out, and
+      // its comment below says why it cannot.
+      "service_audit",
+      "conformance_watch",
+      "provenance_check",
       "attestation_bundle",
       // A dime: the mandate rides the cheap-door region on purpose —
       // the thing you buy BEFORE anything goes wrong should be among
@@ -158,15 +166,12 @@ describe("the storefront", () => {
       "passport_refresh",
       "graffiti_on_a_train",
       "a2a_repair_kit",
+      // The Night Watch stayed at $5 when its three shelf-mates moved
+      // to a penny on 2026-11-14: ongoing monitoring, not a one-off.
       "standing_watch",
-      // $5 ties hold LADDER order too: the audit and the conformance
-      // watch are listed right after the Night Watch on the utility
-      // shelf — same ladder, adjacent rungs.
-      "service_audit",
-      "conformance_watch",
-      // The on-page battery: two of its old shelf-mates (the card and
-      // the statement) moved to the $0.99 block above, so it now
-      // follows the conformance watch directly.
+      // The on-page battery: its old shelf-mates moved to the $0.99
+      // block and the penny tier above, so it now follows the Night
+      // Watch directly.
       "onpage_audit",
       /*
        * THE LAUNCH CHECK STAYED AT $5, and the reason is an economic
@@ -185,9 +190,6 @@ describe("the storefront", () => {
       // The Opening Day rides right behind the walk it bundles — $9,
       // listed after it on the utility shelf, same stable ladder.
       "opening_day",
-      // The provenance check: $5, listed behind the bundle on the
-      // utility shelf — same stable ladder.
-      "provenance_check",
       "recurring_patronage",
       // The hosted profile's $19 slots between the patronages by
       // price — the ladder's stable sort, nothing hand-picked.

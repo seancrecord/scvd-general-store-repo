@@ -1243,8 +1243,12 @@ const BASE = "https://scvd.store";
 // 2026-10-22: shared credit cash-out/recovery discovery copy and eligible-purchase
 // wording. Restoring only llms.ts to 0170528b reproduced both prior pins (14/14);
 // the updated guide failed both fingerprints before this re-pin.
+// 2026-11-14: service_audit, conformance_watch and provenance_check moved
+// $5 -> $0.01 (keeper's call); the menu's prices and the Once-Over specimen
+// line (now derived) changed the guide. With src/ stashed, both prior pins
+// reproduced (14/14); the new guide failed both before this re-pin.
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6f2c75be9cee61d7f21c855dff378820221bd81e12d93cdc661f47f2ee8fed3f";
+  "5e7a4ddbb6e97f6fb8f4a2e7dfc55e9aaa4be324f1c0a8a1fbf724d661ccac83";
 
 /** The existing local reader budget, independent of client-specific limits. */
 const INDEX_CHARACTER_BUDGET = LLMS_INDEX_CHARACTER_BUDGET;
@@ -1347,7 +1351,8 @@ describe("nothing was rewritten", () => {
       // main's own 09-30 re-pin: with the same file restored, main's
       // 9a58296b reproduced, and this copy is the merged guide.
       // 2026-10-06: source 0.22.0 package label, verified above.
-      "0dc073065ca84c9bf11c8b037fec5b12a3221c1d6fdb48c6273e10e00fe07b18",
+      // 2026-11-14: the penny inspections, verified above.
+      "9bef2530815e0151d4f897b97d3acb51492642832941bb158df46b57b28d6dfd",
     );
   });
 

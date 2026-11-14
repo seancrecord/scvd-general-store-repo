@@ -244,21 +244,21 @@ launched.** No probe can tell you what a real paying buyer meets at
 your till — so we walk it: one unpaid GET, your challenge read the way
 a buyer reads it, a genuine EIP-3009 authorization from our declared
 field wallet presented at your door, and every stage written down and
-signed, settled or refused. $5, and we spend our own nickel at your
+signed, settled or refused. ${shelfPrice("launch_check")}, and we spend our own nickel at your
 till: \`GET ${base}/api/buy/launch_check?url=https://your-shop.example/api/buy/thing&src=skill\`
 
 **You are opening a door and want the whole opening day in one
 purchase.** The launch check above, then seven daily signed
 conformance passes on the same door, then your passport page linked
-from both — one certificate, one URL a directory can read. $9, against
-$10 and a receipt each bought apart; it never renews itself:
+from both — one certificate, one URL a directory can read. ${shelfPrice("opening_day")}, against
+${shelfPrice("launch_check")} plus ${shelfPrice("conformance_watch")} and a receipt each bought apart; it never renews itself:
 \`GET ${base}/api/buy/opening_day?url=https://your-shop.example/api/buy/thing&src=skill\`
 
 **You are about to route real money at a door and want to know what
 company its receiving address keeps.** Which doors have advertised
 that address, in which signed weeks, with what verdicts and drift —
 the named join the free surfaces count but never name, delivered to
-you in a signed artifact and never published. $5; your own address is
+you in a signed artifact and never published. ${shelfPrice("provenance_check")}; your own address is
 free once proved (\`GET ${base}/api/provenance/self?address=0x...\` for
 the challenge): \`GET ${base}/api/buy/provenance_check?address=0x...&src=skill\`
 — the record is then served to you at \`${base}/api/provenance-check/{id}\`.

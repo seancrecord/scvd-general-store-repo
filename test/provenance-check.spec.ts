@@ -90,10 +90,10 @@ beforeAll(() => {
  * offer. These tests hold the rules the ruling carries.
  */
 describe("the item on the shelf", () => {
-  it("is five dollars, reads the books, address required, and says what it is not", () => {
+  it("is a cent, reads the books, address required, and says what it is not", () => {
     const item = getMenuItem("provenance_check")!;
     expect(item.name).toBe("The Company an Address Keeps");
-    expect(item.price_usdc).toBe(5);
+    expect(item.price_usdc).toBe(0.01);
     expect(item.reads).toBe("our_books");
     expect(item.cadence).toBe("one_off");
     expect(item.description).toContain("does not grade operators");

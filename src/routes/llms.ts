@@ -58,6 +58,7 @@ import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
 import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
 import { priceTiersUsdc } from "@/lib/payments";
+import { priceLabel } from "@/lib/price-label";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
 import { askedForBlock, writingDiscoveryText, WRITING_HEADING, WRITING_DISCLOSURE, WRITTEN_ABOUT, writerRecognitionText } from "@/store/copy/asked-for";
@@ -1247,7 +1248,7 @@ beside the observation on every surface that shows it. Beside, never
 instead: no note alters an observation, and no observation silences a
 note.
 
-${base}/samples/once-over.json is a free, unsigned specimen of the $5
+${base}/samples/once-over.json is a free, unsigned specimen of the ${priceLabel(MENU_ITEMS.find((item) => item.id === "service_audit")!)}
 Once-Over: every field a buyer receives, run by the same battery, over
 a constructed door that passes the frozen v1 core and fails v2's
 atomic-amount check \u2014 one probe, two verdicts, disagreeing. It is

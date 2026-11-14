@@ -37,7 +37,7 @@ prove.
   wallet, no charge, no signature. The paid audit reuses the readiness
   battery; additional discovery-surface observations have their own scope
   and gaps.
-- **`service_audit`** ($5) — a signed, dated, point-in-time verdict on
+- **`service_audit`** ($0.01) — a signed, dated, point-in-time verdict on
   one endpoint: `ready` / `not_ready` / `unreachable`, with the failing
   checks NAMED rather than collapsed into a score. Carries an
   `evidence_hash` bound into the purchase certificate, so
@@ -56,7 +56,7 @@ prove.
   signed: rounds, verdicts as recorded, coverage, gaps with reasons.
   No request is made to the host. A host we have never met returns
   `not_observed`, and that is the answer rather than an error.
-- **`conformance_watch`** ($5) — the same battery on a schedule, with
+- **`conformance_watch`** ($0.01) — the same battery on a schedule, with
   `drift_detected` computed as set arithmetic over sorted failed-check
   sets, so a reader can recompute the verdict rather than trust it.
 - **`launch_check`** ($5) — the one observation no probe can
@@ -66,9 +66,9 @@ prove.
 - **`opening_day`** ($9) — the merchant's opening day in one purchase:
   the launch check's real walk of your till, then seven daily signed
   conformance passes on the same door, then your passport page, under
-  one certificate at one URL. Bought apart, $10 and a receipt each. It
+  one certificate at one URL. Bought apart, $5.01 and a receipt each. It
   ends after the week and never renews itself.
-- **`provenance_check`** ($5) — The Company an Address Keeps: which
+- **`provenance_check`** ($0.01) — The Company an Address Keeps: which
   doors advertised a receiving address, in which signed weeks, with
   verdicts and drift, the snapshot digest behind every line. Delivered
   to you, never published, never a score. Your own address is free
