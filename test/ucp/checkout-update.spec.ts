@@ -132,7 +132,7 @@ describe("Update Checkout is a full replacement", () => {
 
     const restored = await update(created.id, AUDIT);
     expect(restored.body.status).toBe("ready_for_complete");
-    expect(handlerOf(restored.body).config.amount_atomic).toBe("5000000");
+    expect(handlerOf(restored.body).config.amount_atomic).toBe("10000");
   });
 
   it("refuses an item this deployment has not opened for UCP, without changing anything", async () => {

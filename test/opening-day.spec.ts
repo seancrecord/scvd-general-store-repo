@@ -81,9 +81,9 @@ function fakeSeller(): typeof fetch {
  * battery, no new primitive, and it never renews itself.
  */
 describe("The Opening Day on the shelf", () => {
-  it("is nine dollars, a seven-day term, url required, priced under the two apart", () => {
+  it("is five dollars, a seven-day term, url required, priced under the two apart", () => {
     const item = getMenuItem("opening_day")!;
-    expect(item.price_usdc).toBe(9);
+    expect(item.price_usdc).toBe(5);
     expect(item.cadence).toBe("term");
     expect(item.term_days).toBe(7);
     expect(item.reads).toBe("subject_purchase");
@@ -159,7 +159,7 @@ describe("The Opening Day, delivered", () => {
     const required = JSON.parse(atob(challenge.headers.get(headerName)!)) as {
       accepts: Array<Record<string, unknown>>;
     };
-    expect(required.accepts[0]!["amount"]).toBe("9000000");
+    expect(required.accepts[0]!["amount"]).toBe("5000000");
     const paid = await SELF.fetch(`${BASE}/api/buy/opening_day?url=${target}`, {
       headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(required.accepts[0] as never) },
     });

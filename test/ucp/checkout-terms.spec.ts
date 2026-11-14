@@ -128,8 +128,8 @@ describe("the terms snapshot totals in both representations at once", () => {
       lines: [line],
       expiresAt: "2026-09-16T12:00:00.000Z",
     });
-    expect(terms.total).toEqual({ amount: 1500, currency: "USD" });
-    expect(terms.total_amount_atomic).toBe("15000000");
+    expect(terms.total).toEqual({ amount: 3, currency: "USD" });
+    expect(terms.total_amount_atomic).toBe("30000");
     expect(Number(terms.total_amount_atomic)).toBe(terms.total.amount * 10_000);
     expect(terms.currency).toBe("USD");
   });

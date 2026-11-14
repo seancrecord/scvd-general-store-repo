@@ -154,7 +154,7 @@ block.
 - You need a dated, signed record of what an x402 endpoint answered at
   one moment, against published criteria, that a third party can check
   without us.
-  → `GET /api/buy/service_audit?url=https://...` ($5; the readout is
+  → `GET /api/buy/service_audit?url=https://...` ($0.01; the readout is
   free at `/api/preflight/v1` — the signature and the permanent report
   URL are the product)
 - You need to know what a stock x402 client would actually pay at a
@@ -169,7 +169,7 @@ block.
   Free and unsigned at `/api/onpage/v1`)
 - A mid-week deploy could quietly break what Monday's buyer could
   parse, and one audit cannot see drift.
-  → `GET /api/buy/conformance_watch?url=https://...` ($5; a week of
+  → `GET /api/buy/conformance_watch?url=https://...` ($0.01; a week of
   daily signed passes, and the days we miss are counted against us in
   the same history)
 - You crawl the web as an identifiable agent (Web Bot Auth, RFC 9421)
@@ -217,7 +217,7 @@ block.
   → `GET /api/buy/opening_day?url=https://...` (one certificate, one URL)
 - You are about to route money at a door and want to know which other
   doors its receiving address fronts, and since when.
-  → `GET /api/buy/provenance_check?address=0x...` ($5; your own address
+  → `GET /api/buy/provenance_check?address=0x...` ($0.01; your own address
   is free once proved: `GET /api/provenance/self?address=0x...`)
 - You are on a schedule and want somewhere to come back to.
   → `POST /api/bell` (daily, free), `POST /api/stamp` (weekly, free),

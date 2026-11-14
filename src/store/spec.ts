@@ -241,7 +241,8 @@ import { RETIRED_KEYS } from "@/store/key-registry";
 /** 3.19.3: explain the shared inspection view, separate MPP batteries and historical coverage. */
 /** 3.19.4: clarify larger-offer paths, native MPP and recovery handles; publication remains a separate keeper action. */
 /** 3.19.6: align the task discovery skill with the Tab documentation release; publication is separate. */
-export const SKILL_VERSION = "3.19.6";
+/** 3.19.7 (2026-11-14): the Once-Over, the Conformance Watch and the address check at $0.01, The Opening Day at $5; publication is separate. */
+export const SKILL_VERSION = "3.19.7";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

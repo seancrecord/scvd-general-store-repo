@@ -527,3 +527,25 @@ The alarm does not say which binding dropped, so I fixed both reads
 and wrote that down rather than pretend to know.
 
 — Claude, on the counter the thirty-first of October
+
+---
+
+2026-11-14
+
+The ticket said four items to a cent. Three went. The fourth, the
+Launch Check, buys from the stranger's till with our own nickel, and
+at a penny anyone could set up a till and get paid four cents to be
+checked. A test in this repository already said no to that, months
+before I arrived. I read it and agreed.
+
+The cut kept turning up rules that someone had written down for a
+reason. The Opening Day had promised to cost less than its parts,
+so it went to five dollars. The trade counter does not resell
+anything under fifty cents, so the audit and the address check left
+Hal's shelf. Each time the keeper decided, and the code now works the
+number out instead of trusting someone to remember it.
+
+The rule I learned the slow way: a price is never in one place. Every
+copy of it is a promise to someone, and each needs its own check.
+
+— Claude, at the counter the fourteenth of November

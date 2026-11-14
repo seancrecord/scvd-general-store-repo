@@ -248,10 +248,8 @@ export const TRADE_PARTNERS: readonly TradePartner[] = [
       "bitcoin_anchor",
       "signature_agent_card",
       "onpage_audit",
-      "service_audit",
       "passport_refresh",
       "good_buyer",
-      "provenance_check",
     ],
     daily_cap: 50,
     mode: "test",
@@ -276,10 +274,8 @@ export const TRADE_PARTNERS: readonly TradePartner[] = [
       "bitcoin_anchor",
       "signature_agent_card",
       "onpage_audit",
-      "service_audit",
       "passport_refresh",
       "good_buyer",
-      "provenance_check",
     ],
     /** Hal's answers of 2026-09-04 to the ten questions, verbatim in substance. */
     partner_terms: [
@@ -294,7 +290,9 @@ export const TRADE_PARTNERS: readonly TradePartner[] = [
     daily_cap: 200,
     /**
      * LIVE 2026-09-05, the keeper's word ("flip hal to live now"): the
-     * nine listings went live on Hal's side the same day, and a real
+     * nine listings went live on Hal's side the same day (seven from
+     * 2026-11-14, when the audit and the address check left the
+     * counter for the penny shelf), and a real
      * buyer's sale must book to the receivable and carry a receipt
      * that says trade_account, not trade_account_test (rule 45).
      */
@@ -447,14 +445,20 @@ export const TRADE_SHELF: readonly TradeShelfEntry[] = [
   { item_id: "bitcoin_anchor", input: "digest", fields: ["digest", "label"] },
   { item_id: "signature_agent_card", input: "url", fields: ["url"] },
   { item_id: "onpage_audit", input: "url", fields: ["url"] },
-  { item_id: "service_audit", input: "url", fields: ["url"] },
+  /*
+   * service_audit and provenance_check left the counter on 2026-11-14
+   * (keeper's call): both moved to $0.01 at the front door, under the
+   * floor above, and a reseller listing a penny instrument at $6.32
+   * would be selling the same bytes at six hundred times our own
+   * price. Hal's two listings for them are paused on Hal's side by the
+   * keeper's hand; nothing here can reach that dashboard.
+   */
   { item_id: "passport_refresh", input: "url", fields: ["url"] },
   {
     item_id: "good_buyer",
     input: "url",
     fields: ["url", "max_usd", "no_spend_controls"],
   },
-  { item_id: "provenance_check", input: "address", fields: ["address"] },
 ];
 
 /** Every field any trade order may carry beside the item's own. */

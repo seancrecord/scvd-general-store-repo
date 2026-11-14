@@ -46,9 +46,9 @@ function wellFormed402(): Response {
  * unreachable verdict.
  */
 describe("the once-over", () => {
-  it("sits on the shelf at $5 with url as its one required input", () => {
+  it("sits on the shelf at $0.01 with url as its one required input", () => {
     const item = MENU_ITEMS.find((entry) => entry.id === "service_audit");
-    expect(item?.price_usdc).toBe(5);
+    expect(item?.price_usdc).toBe(0.01);
     expect(item?.fulfillment).toBe("instant");
     // The listing never claims more than the moment: no endorsement,
     // no uptime, and the free door is named rather than hidden.
