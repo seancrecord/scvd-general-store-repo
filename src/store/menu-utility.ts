@@ -40,6 +40,13 @@ const GOOD_BUYER_PRICE_USDC = CLIENT_CAP_READABLE
 const LAUNCH_CHECK_PRICE_USDC = 5;
 const CONFORMANCE_WATCH_PRICE_USDC = 0.01;
 const OPENING_DAY_APART_USDC = Math.round((LAUNCH_CHECK_PRICE_USDC + CONFORMANCE_WATCH_PRICE_USDC) * 1e6) / 1e6;
+/**
+ * And the bundle itself, one cent under the parts (keeper's call,
+ * 2026-11-14: it was $9 against $10 apart). test/opening-day.spec.ts
+ * holds the bundle under the parts; deriving it means a part that
+ * moves cannot strand the bundle above them again.
+ */
+const OPENING_DAY_PRICE_USDC = Math.round((OPENING_DAY_APART_USDC - 0.01) * 1e6) / 1e6;
 
 /**
  * The utility aisle (aisle three), added in v0.3: things an agent can
@@ -385,7 +392,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     listed_week: "2026-W36",
     name: "The Opening Day",
     subtitle: "one launch check, seven days of conformance watch, and your passport page, at one URL",
-    price_usdc: 9,
+    price_usdc: OPENING_DAY_PRICE_USDC,
     pricing: "fixed",
     cadence: "term",
     term_days: 7,
@@ -398,7 +405,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     sample_url: "/samples/launch-check.json",
     sample_kind: "shared_component",
     get note_402(): string {
-      return `Nine dollars for opening day: we buy from your till once, watch the door for a week, and put the passport beside both. Bought apart it is $${OPENING_DAY_APART_USDC}, and a receipt each.`;
+      return `$${this.price_usdc.toFixed(2)} for opening day: we buy from your till once, watch the door for a week, and put the passport beside both. Bought apart it is $${OPENING_DAY_APART_USDC}, and a receipt each.`;
     },
     constraints: [
       "Give your x402 endpoint in the url query parameter: https, default port, on the public internet",

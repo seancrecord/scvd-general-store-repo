@@ -63,7 +63,7 @@ prove.
   substitute: a real EIP-3009 authorization from the store's declared
   field wallet, presented at your till, settled or refused, the whole
   walk signed stage by stage. We pay at most $0.05 at your door.
-- **`opening_day`** ($9) — the merchant's opening day in one purchase:
+- **`opening_day`** ($5) — the merchant's opening day in one purchase:
   the launch check's real walk of your till, then seven daily signed
   conformance passes on the same door, then your passport page, under
   one certificate at one URL. Bought apart, $5.01 and a receipt each. It
