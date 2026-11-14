@@ -193,6 +193,12 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // held — and to say which of the two numbers it actually saw.
   "settlement_reconciliation",
   "research_comparison",
+  // The penny inspections (2026-11-14, keeper's call: $5 -> $0.01).
+  // A practice buyer can now afford the signed version of the very
+  // check the free preflight runs, so the cheap door names them.
+  "service_audit",
+  "conformance_watch",
+  "provenance_check",
   "attestation_bundle",
   // The dime bought BEFORE the spending: an agent at this counter is
   // about to make its first real purchases, which is exactly the
