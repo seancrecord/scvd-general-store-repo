@@ -79,7 +79,7 @@ describe("/ucp/v1 catalog", () => {
     expect(product.id).toBe("gid://scvd.store/Product/service_audit");
     expect(product.variants[0].id).toBe("gid://scvd.store/Variant/service_audit");
     expect(product.variants[0].sku).toBe("SCVD-SERVICE-AUDIT");
-    expect(product.variants[0].price).toEqual({ amount: 500, currency: "USD" });
+    expect(product.variants[0].price).toEqual({ amount: 1, currency: "USD" });
     // The store's own shelves, named as the store's own taxonomy.
     expect(product.categories[0].taxonomy).toBe("merchant");
   });

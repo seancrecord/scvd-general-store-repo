@@ -31,12 +31,12 @@ describe("creating a checkout", () => {
     expect(body.status).toBe("ready_for_complete");
     expect(body.currency).toBe("USD");
     expect(body.line_items[0].item.id).toBe(variantGid("service_audit"));
-    expect(body.line_items[0].item.price).toBe(500);
-    expect(body.totals.find((t: any) => t.type === "total").amount).toBe(500);
+    expect(body.line_items[0].item.price).toBe(1);
+    expect(body.totals.find((t: any) => t.type === "total").amount).toBe(1);
 
     // The exact transfer that settles THIS checkout, on the handler.
     const handler = body.ucp.payment_handlers["store.scvd.payment.usdc"][0];
-    expect(handler.config.amount_atomic).toBe("5000000");
+    expect(handler.config.amount_atomic).toBe("10000");
     expect(handler.config.checkout_id).toBe(body.id);
     expect(handler.config.checkout_version).toBe(1);
     expect(handler.config.terms_digest).toMatch(/^[0-9a-f]{64}$/);
@@ -132,7 +132,7 @@ describe("the checkout stores the requirements it will be paid against", () => {
       await SELF.fetch(`${BASE}/ucp/v1/checkout-sessions/${created.id}`)
     ).json()) as Record<string, any>;
     const terms = read["store.scvd"].payment_terms;
-    expect(terms.amount_atomic).toBe("5000000");
+    expect(terms.amount_atomic).toBe("10000");
     expect(terms.checkout_id).toBe(created.id);
     expect(terms.checkout_version).toBe(1);
     expect(terms.terms_digest).toMatch(/^[0-9a-f]{64}$/);

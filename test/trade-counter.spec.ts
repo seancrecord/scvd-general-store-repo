@@ -278,15 +278,19 @@ describe("every refusal, by name, delivered:false and billed:false", () => {
       "unknown_account",
     );
     await expectRefusal(await order("hello", {}), 404, "not_at_the_counter");
+    // The penny inspections left the counter on 2026-11-14 (keeper's call):
+    // under the floor at the front door, so refused here by name.
+    await expectRefusal(await order("service_audit", { url: "https://example.test/pay" }), 404, "not_at_the_counter");
+    await expectRefusal(await order("provenance_check", { address: `0x${"1".repeat(40)}` }), 404, "not_at_the_counter");
     await expectRefusal(await order("context_anchor", {}), 400, "bad_request");
     await expectRefusal(await order("context_anchor", "not json"), 400, "bad_request");
     await expectRefusal(
-      await order("service_audit", { url: "https://scvd.store/api/buy/hello" }),
+      await order("onpage_audit", { url: "https://scvd.store/api/buy/hello" }),
       400,
       "target_refused",
     );
     await expectRefusal(
-      await order("service_audit", { url: "https://127.0.0.1/door" }),
+      await order("onpage_audit", { url: "https://127.0.0.1/door" }),
       400,
       "target_refused",
     );
@@ -333,7 +337,7 @@ describe("the nonce store is one writer, and answers the same twice", () => {
 describe("the books, on a live account", () => {
   it("bills the trade price, nets the share, and the receivable falls as payouts are recorded", async () => {
     const live = { ...HAL, id: "spec_live", name: "Spec Live", mode: "live" as const };
-    const item = getMenuItem("service_audit")!;
+    const item = getMenuItem("onpage_audit")!;
     const settlement = tradeSettlementFor(live, item, "a".repeat(64), "o-1");
     expect(settlement.mode).toBe("live");
     await recordTradeDelivery(testEnv, live, item, settlement, "cert_spec_1", {});
@@ -888,8 +892,10 @@ describe("the catalog feed", () => {
 
 describe("the credit ceiling and the books", () => {
   it("a live account at its ceiling is refused by name; a payout reopens it; the sweep agrees with the rows", async () => {
-    const live = { ...HAL, id: "spec_ceiling", name: "Spec Ceiling", mode: "live" as const, credit_ceiling_usd: 10 };
-    const item = getMenuItem("service_audit")!;
+    // $5: one $3 delivery's net (~$3.60) stays under it, two reach it.
+    // It was $10 against the $5 audit until that left the counter.
+    const live = { ...HAL, id: "spec_ceiling", name: "Spec Ceiling", mode: "live" as const, credit_ceiling_usd: 5 };
+    const item = getMenuItem("onpage_audit")!;
     const settlement = tradeSettlementFor(live, item, "b".repeat(64));
     await testEnv.COUNTERS.delete(KV_KEYS.tradeAccount(live.id));
     await recordTradeDelivery(testEnv, live, item, settlement, "cert_c1", {});
@@ -916,7 +922,7 @@ describe("the credit ceiling and the books", () => {
     expect(aged).toEqual([]);
     // And the summary's oldest_unpaid_at is the row the payouts do not reach.
     const live = { ...HAL, id: "spec_aging", name: "Spec Aging", mode: "live" as const };
-    const item = getMenuItem("service_audit")!;
+    const item = getMenuItem("onpage_audit")!;
     const settlement = tradeSettlementFor(live, item, "c".repeat(64));
     const old = new Date(Date.now() - (TRADE_STATEMENT_DAYS + 5) * 86_400_000);
     await recordTradeDelivery(testEnv, live, item, settlement, "cert_a1", {}, old);
@@ -945,9 +951,9 @@ describe("the surfaces, round two", () => {
       const page = await (await SELF.fetch(`${BASE}${path}`, { headers: { Accept: "text/html" } })).text();
       expect(page, path).toContain('href="/trade"');
     }
-    const item = await (await SELF.fetch(`${BASE}/menu/service_audit`, { headers: { Accept: "text/html" } })).text();
+    const item = await (await SELF.fetch(`${BASE}/menu/onpage_audit`, { headers: { Accept: "text/html" } })).text();
     expect(item).toContain("the trade counter");
-    const itemJson = await json(await SELF.fetch(`${BASE}/menu/service_audit`));
+    const itemJson = await json(await SELF.fetch(`${BASE}/menu/onpage_audit`));
     expect(isRecord(itemJson["trade_account"])).toBe(true);
     const penny = await json(await SELF.fetch(`${BASE}/menu/small_blessing`));
     expect(penny["trade_account"]).toBeUndefined();
@@ -1088,7 +1094,7 @@ describe("pass five: recovery by order_ref, the share ladder, the worked example
     expect(effectiveShareBps(laddered, 1000)).toBe(800);
     expect(effectiveShareBps(laddered, 25_000)).toBe(1200);
     expect(effectiveShareBps(HAL, 25_000)).toBe(HAL.partner_share_bps);
-    const item = getMenuItem("service_audit")!;
+    const item = getMenuItem("onpage_audit")!;
     const netAt = (share: number) => tradeNetUsd(tradePriceUsd(item, share), share);
     for (const tier of STANDARD_SHARE_LADDER) {
       expect(netAt(tier.partner_share_bps)).toBeGreaterThanOrEqual(Math.round(item.price_usdc * 1.2 * 100) / 100 - 0.005);
