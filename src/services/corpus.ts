@@ -5,11 +5,11 @@ import type { SubmitOptions } from "@/services/anchor-submit";
 import { latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { chainFingerprintOf, latestCorpusEntry, listCorpus, resolveRecord } from "@/services/corpus-list";
+import { chainFingerprintOf, latestCorpusEntry, latestCorpusStored, listCorpus, resolveRecord } from "@/services/corpus-list";
 import type { CorpusPointer, CorpusRecord } from "@/services/corpus-list";
 export { listCorpus, weeklyCorpus } from "@/services/corpus-list";
 export type { CorpusRecord } from "@/services/corpus-list";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut, waitForKvWriteWindow } from "@/lib/kv-retry";
 import { detachEvidence } from "@/services/corpus-evidence";
 import { payToDigest } from "@/lib/pay-to-digest";
 
@@ -126,6 +126,7 @@ export async function putCorpusRecord(env: Env, record: CorpusRecord): Promise<v
       pointer: true,
       sequence,
       week: record.snapshot.week,
+      round_at: record.snapshot.round.at,
       digest: record.digest,
       signature: record.signature,
       public_key: record.public_key,
@@ -281,9 +282,12 @@ async function appendRound(
     public_key: publicKey,
   };
   await putCorpusRecord(env, record);
-  // The stamp is a courtesy that can fail; the entry above cannot be
-  // taken back by a calendar outage.
+  const publishedAt = Date.now();
+  // Publish before asking a calendar, so its outage cannot lose a seal.
+  // The stamp updates the same KV pointer; fast calendars must not turn
+  // the second publication into a same-key 429.
   record.ots = await submitDigestToOts(digest, options);
+  await waitForKvWriteWindow(publishedAt);
   await putCorpusRecord(env, record);
   return { taken: true, record };
 }
@@ -306,11 +310,26 @@ async function appendRound(
 export async function unsealedStoredWeeks(env: Env): Promise<string[]> {
   const [{ listRoundWeeks }, previous] = await Promise.all([
     import("@/services/source-liveness"),
-    latestCorpusEntry(env),
+    latestCorpusStored(env),
   ]);
-  const { weeks } = await listRoundWeeks(env);
-  const head = previous?.snapshot.week;
-  return weeks.filter((week) => head === undefined || week > head);
+  const { weeks, truncated } = await listRoundWeeks(env);
+  if (truncated) throw new Error("Stored ward week index is incomplete");
+  if (!previous) return weeks;
+  const head = "pointer" in previous ? previous.week : previous.snapshot.week;
+  const pending = weeks.filter((week) => week > head);
+  if (weeks.includes(head)) {
+    const round = await kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRound(head));
+    // A weekday hand-run must not take Sunday's slot. New pointers carry
+    // the round identity; old pointers require the original signed record.
+    const sealedAt = "pointer" in previous
+      ? previous.round_at ?? (await latestCorpusEntry(env))?.snapshot.round.at
+      : previous.snapshot.round.at;
+    if (!round || round.week !== head || !Number.isFinite(Date.parse(round.at)) || !sealedAt || !Number.isFinite(Date.parse(sealedAt))) {
+      throw new Error(`Stored or sealed round identity could not be read for ${head}`);
+    }
+    if (Date.parse(round.at) > Date.parse(sealedAt)) pending.unshift(head);
+  }
+  return pending;
 }
 
 export async function sealStoredWeek(
@@ -338,7 +357,11 @@ export async function sealStoredWeek(
   if (!round || round.week !== week) {
     return { taken: false, reason: `the stored round for ${week} could not be read whole` };
   }
-  return appendRound(env, round, await latestCorpusEntry(env), options);
+  const previous = await latestCorpusEntry(env);
+  if (previous?.snapshot.week === week && Date.parse(round.at) <= Date.parse(previous.snapshot.round.at)) {
+    return { taken: false, reason: `round ${round.at} for ${week} is already sealed or older than the chain's head` };
+  }
+  return appendRound(env, round, previous, options);
 }
 
 /**

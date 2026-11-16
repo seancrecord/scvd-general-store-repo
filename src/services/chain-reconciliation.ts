@@ -14,7 +14,7 @@ import {
 import type { EvmChain } from "@/lib/base-rpc";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
-import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut, waitForKvWriteWindow } from "@/lib/kv-retry";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import { listPayers, metricsMonth } from "@/lib/metrics";
@@ -1097,16 +1097,22 @@ export async function runChainReconciliation(
     merged.cert_scan_truncated ?? false,
   );
   let last = merged;
+  let committedAt = Date.now();
   for (
     let pass = 1;
     pass < reconciliationPasses(chain) && readFullSpan(last, chain);
     pass += 1
   ) {
+    // Every span persists the same cursor, and any inflow meter keys,
+    // before moving on. Keep that recovery boundary without bursting
+    // writes faster than KV's per-key limit during catch-up.
+    await waitForKvWriteWindow(committedAt);
     const result = await reconcileAgainstChain(env, {
       ...options,
       known,
       chain,
     });
+    committedAt = Date.now();
     if (!result.ran) {
       // A later pass failing ends the catch-up without erasing what
       // the earlier passes committed; next hour resumes right here.

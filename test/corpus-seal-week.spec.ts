@@ -1,5 +1,5 @@
 import { env } from "cloudflare:test";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   sealStoredWeek,
@@ -117,5 +117,35 @@ describe("sealing the weeks the Sunday press missed", () => {
     expect(published.ok).toBe(true);
     if (published.ok) expect(published.entry.observed_at).toBe("2026-11-01T11:01:00.000Z");
     expect((await readRegistryPulse(testEnv)).weeks.map((row) => row.week)).toContain("2026-W44");
+  });
+});
+
+
+describe("snapshot publication observes the KV write limit", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it("publishes before timestamping and never bursts the same pointer", async () => {
+    await store("2026-W46", "2026-11-15T11:01:00.000Z", true);
+    const times: number[] = [];
+    let throttled = 0;
+    const original = testEnv.COUNTERS.put.bind(testEnv.COUNTERS);
+    vi.spyOn(testEnv.COUNTERS, "put").mockImplementation(async (key, value, options) => {
+      if (key.startsWith(KV_KEYS.corpusPrefix)) {
+        const at = Date.now();
+        if (times.length && at - times.at(-1)! < 1000) {
+          throttled++;
+          throw new Error("KV PUT failed: 429 Too Many Requests");
+        }
+        times.push(at);
+      }
+      return original(key, value, options);
+    });
+    let publishedBeforeCalendar = false;
+    await takeCorpusSnapshot(testEnv, { ...calendar, fetch: (async () => {
+      publishedBeforeCalendar = times.length === 1;
+      return new Response(new Uint8Array([1,2,3]));
+    }) as typeof fetch });
+    expect(publishedBeforeCalendar).toBe(true);
+    expect(times).toHaveLength(2);
+    expect(throttled, "retries must not conceal a same-key burst").toBe(0);
   });
 });

@@ -142,7 +142,16 @@ corpusRoutes.get("/corpus.json", async (c) => {
   const last = records[records.length - 1]?.snapshot.taken_at ?? null;
   // Derived from the chain's own week keys, never from a parallel count.
   const chainWeeks = records.map((record) => record.snapshot.week);
-  const chainGaps = missingWeeks(chainWeeks);
+  const { listRoundWeeks } = await import("@/services/source-liveness");
+  const stored = await listRoundWeeks(c.env);
+  if (stored.truncated) throw new Error("Stored ward week index is incomplete");
+  const newestStored = stored.weeks.at(-1);
+  // The upper bound is observed storage, never this request's wall clock.
+  // missingWeeks excludes its endpoints, so explicitly include the newest
+  // stored week itself when the chain has not reached it.
+  const chainGaps = newestStored && chainWeeks.length > 0 && newestStored > [...chainWeeks].sort().at(-1)!
+    ? [...missingWeeks([...chainWeeks, newestStored]), newestStored]
+    : missingWeeks(chainWeeks);
   return c.json({
     /**
      * THE CORPUS DECLARES ITSELF A DATASET, and the reason is
@@ -265,8 +274,8 @@ corpusRoutes.get("/corpus.json", async (c) => {
      * per-week rooms have always 404'd honestly and listed the weeks
      * held; nothing on the index said a week was absent.
      *
-     * `weeks_missing` is derived from the chain's own week keys, so
-     * it cannot disagree with the entries below it. Empty is the
+     * `weeks_missing` compares the chain's week keys with the newest
+     * stored round, so a stopped sealer cannot hide trailing gaps. Empty is the
      * good answer and it is still published as a field rather than
      * omitted — a key that vanishes when the news is good teaches a
      * reader to read silence as continuity.
@@ -275,7 +284,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
       weeks_held: chainWeeks.length,
       weeks_missing: chainGaps,
       what_a_gap_means:
-        "A week between our first and newest entry that holds no snapshot at all: the round did not run, or ran and could not be sealed. It is a gap in OUR record, not a quiet week in the ecosystem, and the two are indistinguishable from the outside unless we say which this was.",
+        "A week from our first entry through the newest stored round that holds no snapshot at all: the round did not run, or ran and could not be sealed. It is a gap in OUR record, not a quiet week in the ecosystem, and the two are indistinguishable from the outside unless we say which this was.",
     },
     chain,
     how_to_verify: [

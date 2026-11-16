@@ -1,5 +1,22 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-11-16 — scheduled corpus sealing and KV write limits
+
+Read [Workers limits](https://developers.cloudflare.com/workers/platform/limits/),
+[Wrangler limits](https://developers.cloudflare.com/workers/wrangler/configuration/#limits),
+[KV writes](https://developers.cloudflare.com/kv/api/write-key-value-pairs/#limits-to-kv-writes-to-the-same-key),
+and [the February subrequest change](https://developers.cloudflare.com/changelog/post/2026-02-11-subrequests-limit/).
+The installed Wrangler 4.152.0 schema exposes `limits.cpu_ms` per invocation,
+with no per-cron override. KV permits one write per second to a key; pace
+known repeated commits as well as retrying transient failures. The paid
+subrequest default is 10000, so the ward's old hard-1000 comment is stale;
+its conservative probe cap is unchanged. These pages were reachable.
+The November 15 production cron ended `exceededCpu` at 3000 ms; the
+November 16 07:30 cron ended `exceededMemory`. Earlier Sunday logs are
+outside retention, and the KV 429's key is absent from the retained event.
+[Evidence, exact scope and limits](../research/corpus-cron-2026-11-16/README.md).
+
+
 ## 2026-10-23 — hourly public statistics summary
 
 Read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
