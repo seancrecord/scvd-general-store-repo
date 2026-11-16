@@ -1759,13 +1759,49 @@ export function getPaymentStack(env: Env): PaymentStack {
     });
     const routes = buildRoutesConfig(env);
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
-    cachedStack = { facilitator, httpServer, initialized: httpServer.initialize() };
-    // A failed first sync shouldn't poison the isolate forever.
-    cachedStack.initialized.catch(() => {
-      cachedStack = undefined;
-    });
+    /*
+     * Assignable on purpose: test/buyer-expired-recovery-faults.spec.ts
+     * replaces it with a rejected promise to stage a failed startup sync,
+     * then puts the read value back. Nothing in src/ assigns it.
+     */
+    let substituted: Promise<void> | undefined;
+    cachedStack = {
+      facilitator,
+      httpServer,
+      get initialized() {
+        return substituted ?? syncedOnce(httpServer);
+      },
+      set initialized(promise: Promise<void>) {
+        substituted = promise;
+      },
+    };
   }
   return cachedStack;
+}
+
+/**
+ * THE ISOLATE REMEMBERS THAT THE SYNC FINISHED, NEVER THE PROMISE
+ * (2026-11-16). The stack used to cache `httpServer.initialize()`
+ * itself, so the first request to build the stack owned the promise
+ * every later paid request awaited. When that first request ended
+ * before the facilitator answered — an unpaid look that only needed
+ * the routes — the runtime dropped the settlement
+ * (handle_cross_request_promise_resolution) and the next buyer of
+ * /open-for-business/2026-W44 got "This promise was created by a
+ * request that has since ended, so it can never settle": a 500, and
+ * a settlement_failure page for a payment nobody had settled.
+ *
+ * So the flag is the only thing shared. Until it is set, each request
+ * runs its own sync and awaits only that; once one succeeds, every
+ * later request skips it. A failed sync leaves the flag unset and the
+ * next request tries again, which is what the old reset was for.
+ */
+let stackSynced = false;
+function syncedOnce(httpServer: x402HTTPResourceServer): Promise<void> {
+  if (stackSynced) return Promise.resolve();
+  return httpServer.initialize().then(() => {
+    stackSynced = true;
+  });
 }
 
 /**
