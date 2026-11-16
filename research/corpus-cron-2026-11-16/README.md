@@ -123,3 +123,9 @@ With the final queue change, seven sweep tests pass, including both legacy
 and current pointers. Final typecheck and both Worker bundle checks pass with
 the locked build tools. Full-suite outcomes and release status belong to
 [PR #1081](https://github.com/seancrecord/scvd-general-store-repo/pull/1081).
+
+The World backlog fixture's thirty real write windows reproduced a 30000 ms
+local test timeout after pacing was added. Its clock now advances through
+those windows deterministically, preserving every range/cursor assertion and
+the original timeout. All sixteen tests across World, additional rails,
+Polygon and checkout-rail reconciliation pass; typecheck passes afterward.
