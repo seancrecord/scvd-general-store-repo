@@ -241,6 +241,20 @@ export async function takeCorpusSnapshot(
       reason: `round ${round.at} (week ${round.week}) is already in the corpus (sequence ${previous.snapshot.sequence})`,
     };
   }
+  return appendRound(env, round, previous, options);
+}
+
+/**
+ * The append both presses share: the latest-round press above and the
+ * stored-week press below sign the same shape, so a backfilled entry
+ * and a Sunday entry are the same kind of record.
+ */
+async function appendRound(
+  env: Env,
+  round: WardRound,
+  previous: CorpusRecord | null,
+  options: SubmitOptions,
+): Promise<CorpusPass> {
   // The sequence is decided before the seal, because the evidence
   // shards are addressed by it; an idempotent re-fire returned above
   // and wrote nothing.
@@ -272,6 +286,59 @@ export async function takeCorpusSnapshot(
   record.ots = await submitDigestToOts(digest, options);
   await putCorpusRecord(env, record);
   return { taken: true, record };
+}
+
+/**
+ * SEALING A WEEK THE SUNDAY PRESS MISSED (2026-11-16). W44, W45 and
+ * W46 each ran their round and wrote it under `ward:<week>`, and none
+ * reached the chain. The latest-round press can only ever reach the
+ * newest of them, so pressing it would sign W46 as sequence 15 and
+ * leave W44 and W45 outside a chain that only appends — the same
+ * permanent-hole shape the W36 registry press had.
+ *
+ * So this press reads a NAMED stored week, and only the OLDEST one the
+ * chain does not yet reach. Anything later is refused by name: sealing
+ * W45 first would put W44 behind the chain's head forever. Nothing is
+ * re-walked or recomputed — the round is the one stored the Sunday it
+ * ran, so the entry's `round.at` says when it was WALKED and its
+ * `taken_at` says, truthfully, when it was sealed.
+ */
+export async function unsealedStoredWeeks(env: Env): Promise<string[]> {
+  const [{ listRoundWeeks }, previous] = await Promise.all([
+    import("@/services/source-liveness"),
+    latestCorpusEntry(env),
+  ]);
+  const { weeks } = await listRoundWeeks(env);
+  const head = previous?.snapshot.week;
+  return weeks.filter((week) => head === undefined || week > head);
+}
+
+export async function sealStoredWeek(
+  env: Env,
+  week: string,
+  options: SubmitOptions = {},
+): Promise<CorpusPass> {
+  if (!/^\d{4}-W\d{2}$/.test(week)) {
+    return { taken: false, reason: `${week} is not an ISO week like 2026-W44` };
+  }
+  const pending = await unsealedStoredWeeks(env);
+  if (pending[0] !== week) {
+    return {
+      taken: false,
+      reason: pending.length === 0
+        ? `no stored round is waiting to be sealed; the chain already reaches every stored week`
+        : `${week} is not next: the oldest stored week the chain does not hold is ${pending[0]}, and the chain only appends, so it goes first`,
+    };
+  }
+  const { hydrateRound } = await import("@/services/ward-round");
+  const round = await hydrateRound(
+    env,
+    await kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRound(week), "json"),
+  );
+  if (!round || round.week !== week) {
+    return { taken: false, reason: `the stored round for ${week} could not be read whole` };
+  }
+  return appendRound(env, round, await latestCorpusEntry(env), options);
 }
 
 /**

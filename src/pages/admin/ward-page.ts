@@ -97,8 +97,24 @@ export function renderWardPage(
   delta: WardDelta | null,
   register: SourceRegister | null = null,
   beat: Heartbeat | null = null,
+  unsealed: readonly string[] | null = [],
 ): string {
-  const runButton = `<form method="post" action="/admin/ward/run" style="margin:0.5em 0">
+  /*
+   * Stored rounds the chain does not reach, oldest first, and ONE
+   * button: the oldest. Sealing a later week first would strand the
+   * earlier one behind an append-only chain. Null is "could not list",
+   * never "none waiting".
+   */
+  const sealButton = unsealed === null
+    ? `<p style="opacity:0.7">Could not list the stored rounds the corpus does not yet hold.</p>`
+    : unsealed.length > 1 || (unsealed.length === 1 && unsealed[0] !== round?.week)
+      ? `<form method="post" action="/admin/corpus/seal-week" style="margin:0.5em 0">
+    <input type="hidden" name="week" value="${escapeHtml(unsealed[0]!)}">
+    <button type="submit">Seal ${escapeHtml(unsealed[0]!)} into the corpus</button>
+    <span style="opacity:0.7"> — stored rounds the chain does not hold, oldest first: ${unsealed.map(escapeHtml).join(", ")}. The chain only appends, so they go in this order, one press each. Do not press the freeze button below until this list is down to the latest round.</span>
+  </form>`
+      : "";
+  const runButton = `${sealButton}<form method="post" action="/admin/ward/run" style="margin:0.5em 0">
     <button type="submit">Walk the ward now</button>
     <span style="opacity:0.7"> — unpaid probes of the listed doors; the page reloads with the fresh round, and a hand-run round mints its corpus entry too. Since 2026-09-18 that entry does not take the week's slot: the Sunday round appends its own entry after it and becomes the week's record. Before that, a weekday hand-run kept the Sunday round out of the chain.</span>
   </form>

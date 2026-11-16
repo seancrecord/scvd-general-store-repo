@@ -1337,9 +1337,11 @@ adminRoutes.get("/admin/ward", async (c) => {
    * cannot be allowed to look alike on a page about whether the
    * instrument is running.
    */
-  const [register, beat] = await Promise.all([
+  const { unsealedStoredWeeks } = await import("@/services/corpus");
+  const [register, beat, unsealed] = await Promise.all([
     sourceRegister(c.env).catch(() => null),
     readHeartbeat(c.env).catch(() => null),
+    unsealedStoredWeeks(c.env).catch(() => null),
   ]);
   return c.html(
     renderWardPage(
@@ -1348,6 +1350,7 @@ adminRoutes.get("/admin/ward", async (c) => {
       round ? wardDelta(round, previous) : null,
       register,
       beat,
+      unsealed,
     ),
   );
 });
@@ -1727,6 +1730,26 @@ adminRoutes.post("/admin/corpus/freeze", async (c) => {
     renderAdminShell(
       "ward",
       `<h2>The corpus, pressed by hand</h2>${body}<p><a href="/admin/ward">Back to the ward</a> · <a href="/corpus.json">/corpus.json</a></p>`,
+    ),
+  );
+});
+
+/**
+ * SEALING A MISSED WEEK (2026-11-16): the oldest stored round the
+ * chain does not hold, by name. corpus.ts says why only the oldest.
+ */
+adminRoutes.post("/admin/corpus/seal-week", async (c) => {
+  const { sealStoredWeek } = await import("@/services/corpus");
+  const body = (await c.req.parseBody()) as Record<string, unknown>;
+  const week = String(body["week"] ?? "").trim();
+  const pass = await sealStoredWeek(c.env, week);
+  const result = pass.taken
+    ? `<p><strong>Sealed.</strong> Sequence ${pass.record.snapshot.sequence}, week ${escapeHtml(pass.record.snapshot.week)}, round of ${escapeHtml(pass.record.snapshot.round.at)}. Timestamp: ${escapeHtml(pass.record.ots?.status ?? "not submitted")}. If the running tally is missing this week, publish it from the corpus on /admin/market.</p>`
+    : `<p><strong>Nothing sealed.</strong> ${escapeHtml(pass.reason)}.</p>`;
+  return c.html(
+    renderAdminShell(
+      "ward",
+      `<h2>A missed week, sealed by hand</h2>${result}<p><a href="/admin/ward">Back to the ward</a> · <a href="/corpus.json">/corpus.json</a></p>`,
     ),
   );
 });
