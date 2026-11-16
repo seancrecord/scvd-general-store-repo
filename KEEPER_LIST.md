@@ -26,6 +26,15 @@ build, it is on the roadmap.
 
 ## TRUE TODAY
 
+- **Corpus W44 recovery — underway November 16, keeper-confirmed.** The
+  corpus still ended at sequence 14 / W43 during investigation. Direct
+  reads found W45/W46 but neither `ward:2026-W44` nor its expected R2 host
+  object. Recovery is already being handled by the keeper; do not freeze
+  the latest round or seal W45 ahead of it. The hourly repair in PR #1081
+  blocks a missing earlier week and pages by week. Read the chain after
+  recovery before declaring the backlog closed.
+  [Evidence and limits](research/corpus-cron-2026-11-16/README.md).
+
 - **Field Study eligibility — approved October 14.** One paid study per
   operator per week across their agents, sessions, scenarios and payout
   wallets; Monday 00:00 UTC reset. The wall directs questions to the mailbox.

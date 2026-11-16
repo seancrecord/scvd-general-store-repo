@@ -105,3 +105,21 @@ and required checks finish. Full CI remains the merge gate.
   newer Sunday round after a weekday hand-run seal. It failed before extending
   the queue; the repaired queue appends the newer round and remains idempotent.
   Both current and legacy pointers are covered; no signed snapshot schema changes.
+
+### Follow-through while checks run
+
+The keeper confirmed W44 recovery is underway. This task leaves that work
+with the keeper and will re-read the chain rather than creating a new seal.
+The expected R2 host object was separately absent on readback, so the initial
+prompt's earlier inventory is not treated as current evidence.
+
+A GraphQL fallback was also tested: schema access worked, but narrow queries
+for all three Sundays returned empty rows. Its recent-event control also
+returned empty for cron invocations independently present in Workers Logs.
+That reader cannot establish absence or recover the older outcomes; only the
+November 15 CPU outcome and November 16 memory outcome are confirmed here.
+
+With the final queue change, seven sweep tests pass, including both legacy
+and current pointers. Final typecheck and both Worker bundle checks pass with
+the locked build tools. Full-suite outcomes and release status belong to
+[PR #1081](https://github.com/seancrecord/scvd-general-store-repo/pull/1081).
