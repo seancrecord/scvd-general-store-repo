@@ -592,6 +592,17 @@ const worker: ExportedHandler<Env> = {
       }));
       return;
     }
+    // Seal before starting the other hourly jobs: their archive readers
+    // share this invocation's memory and CPU, even across waitUntil calls.
+    if (event.cron === "30 * * * *") {
+      await import("@/services/corpus-sweep").then(({ sweepCorpusSnapshots }) =>
+        sweepCorpusSnapshots(env, { now: new Date(event.scheduledTime) }),
+      ).catch((error: unknown) => sendAlert(env, {
+        condition: "worker_health",
+        key: "corpus-sweep",
+        detail: `Corpus sealing sweep failed: ${String(error)}. Stored rounds remain waiting for the next hourly sweep.`,
+      }));
+    }
     /*
      * THE DAY SEED'S COMMIT (the Paywall, 2026-09-12): written within
      * the half hour after every UTC midnight, so the commit's
@@ -677,34 +688,7 @@ const worker: ExportedHandler<Env> = {
         import("@/services/ward-round").then(({ runWardRound }) =>
           runWardRound(env)
             .then(
-              /**
-               * THE CORPUS SNAPSHOT rides the round that produced it:
-               * the week's observations frozen into the signed,
-               * hash-chained, OTS-stamped record the moment they
-               * exist, so the corpus can never lag the instrument it
-               * keeps. Idempotent per round — a re-fired cron re-takes
-               * nothing. A pass that takes nothing after a round that
-               * just ran is news, not a no-op (2026-09-18: four Sunday
-               * rounds were refused in silence under the old per-week
-               * rule), so a declined pass alerts with its reason.
-               */
-              () =>
-                import("@/services/corpus").then(({ takeCorpusSnapshot }) =>
-                  takeCorpusSnapshot(env).then(
-                    (pass) =>
-                      pass.taken
-                        ? undefined
-                        : sendAlert(env, {
-                            condition: "worker_health",
-                            detail: `Corpus snapshot not taken after the Sunday round: ${pass.reason}. The round ran; the chain did not grow. Check /admin/ward and press "Freeze the latest round into the corpus" once the cause is understood.`,
-                          }),
-                    (error) =>
-                      sendAlert(env, {
-                        condition: "worker_health",
-                        detail: `Corpus snapshot failed: ${String(error)}. The round itself succeeded; the week's observations are in KV and the snapshot can be re-taken next pass.`,
-                      }),
-                  ),
-                ),
+              () => undefined,
               (error) =>
                 sendAlert(env, {
                   condition: "worker_health",

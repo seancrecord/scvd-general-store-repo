@@ -38,6 +38,8 @@ export interface CorpusPointer {
   pointer: true;
   sequence: number;
   week: string;
+  /** The sealed round's identity, for idle sweeps without an R2 body read. */
+  round_at?: string;
   digest: string;
   signature: string;
   public_key: string;
@@ -276,6 +278,19 @@ export function chainFingerprintOf(records: readonly CorpusRecord[]): string {
 function sequenceOf(stored: CorpusRecord | CorpusPointer | null): number {
   if (!stored) return -1;
   return isPointer(stored) ? stored.sequence : stored.snapshot.sequence;
+}
+
+/** Read the head without loading a multi-megabyte archive on every idle sweep. */
+export async function latestCorpusStored(env: Env): Promise<CorpusRecord | CorpusPointer | null> {
+  const pointers = await listPointers(env);
+  if (pointers.truncated) throw new Error("Corpus head index is incomplete");
+  let newest: CorpusRecord | CorpusPointer | null = null;
+  for (const name of pointers.names) {
+    const stored = pointers.values.get(name);
+    if (!stored) throw new Error("Corpus head index entry could not be read");
+    if (sequenceOf(stored) > sequenceOf(newest)) newest = stored;
+  }
+  return newest;
 }
 
 /**

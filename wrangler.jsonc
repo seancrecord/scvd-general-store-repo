@@ -41,7 +41,18 @@
    * old 100 ms; the ceiling only says what the one path is allowed.
    * ⚑ The keeper's number: lower it, and the PNG face goes to ?w=600.
    */
-  "limits": { "cpu_ms": 1000 },
+  /**
+   * RAISED 1000 → 10000 (2026-11-16): the November 15 Sunday
+   * invocation was killed as exceededCpu (3000 ms observed). Sealing
+   * the ~10 MB corpus now runs first on the hourly tick, apart from
+   * the ward's work and before other archive readers allocate memory.
+   * Wrangler has no per-cron CPU override: this ceiling also applies
+   * to HTTP requests. It is headroom, not reserved or billed compute;
+   * the doors Worker's separate 100 ms ceiling is unchanged.
+   * The keeper's dial still lives here. Re-read scheduled CPU after
+   * release; increasing it does not cure the separate memory failures.
+   */
+  "limits": { "cpu_ms": 10000 },
   /**
    * MINIFIED, FOR THE COLD ISOLATE (2026-09-03, the x402-list p95
    * read). The unminified script uploaded at 5.25 MiB, most of it the

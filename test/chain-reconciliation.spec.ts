@@ -575,31 +575,47 @@ describe("the catch-up loop (problem ledger #24)", () => {
   });
 
   it("a clamp-distance backlog records its hole once and clears within a bounded number of runs", async () => {
-    /**
-     * The clamp moved from ~11h to ~55h of Base on 2026-08-12 (the
-     * fifth hole in a week), so the worst permitted backlog no longer
-     * clears inside one run — it clears inside a NUMBER OF RUNS
-     * derived from the constants, each run committing its progress.
-     * The hole is still recorded exactly once, on the run that
-     * finds it.
-     */
-    await testEnv.COUNTERS.put(
-      KV_KEYS.reconcileCursor,
-      String(HEAD - RECONCILE_MAX_SPAN - 5000),
-    );
-    const runsToClear = Math.ceil(
-      RECONCILE_MAX_SPAN / (RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN),
-    );
-    for (let run = 0; run < runsToClear; run += 1) {
-      const result = await runChainReconciliation(
-        envWith(rpcFetch({ logs: [] })),
-      );
-      expect(result.ran).toBe(true);
-    }
-    expect((await readSkippedRanges(testEnv)).total_ranges).toBe(1);
-    expect(Number(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor))).toBe(
-      HEAD,
-    );
+    const realSetTimeout = globalThis.setTimeout;
+    vi.useFakeTimers();
+    try {
+      const work = async () => {
+        /**
+         * The clamp moved from ~11h to ~55h of Base on 2026-08-12 (the
+         * fifth hole in a week), so the worst permitted backlog no longer
+         * clears inside one run — it clears inside a NUMBER OF RUNS
+         * derived from the constants, each run committing its progress.
+         * The hole is still recorded exactly once, on the run that
+         * finds it.
+         */
+        await testEnv.COUNTERS.put(
+          KV_KEYS.reconcileCursor,
+          String(HEAD - RECONCILE_MAX_SPAN - 5000),
+        );
+        const runsToClear = Math.ceil(
+          RECONCILE_MAX_SPAN / (RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN),
+        );
+        for (let run = 0; run < runsToClear; run += 1) {
+          const result = await runChainReconciliation(
+            envWith(rpcFetch({ logs: [] })),
+          );
+          expect(result.ran).toBe(true);
+        }
+        expect((await readSkippedRanges(testEnv)).total_ranges).toBe(1);
+        expect(Number(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor))).toBe(
+          HEAD,
+        );
+      };
+      const pending = work();
+      // KV I/O resolves outside the fake timer queue. Advance in bounded
+      // increments until the walk, including all committed spans, finishes.
+      let finished = false;
+      const result = pending.finally(() => { finished = true; });
+      while (!finished) {
+        await vi.advanceTimersByTimeAsync(1000);
+        await new Promise(resolve => realSetTimeout(resolve, 1));
+      }
+      await result;
+    } finally { vi.useRealTimers(); }
   });
 
   it("a failure mid-catch-up keeps every span already committed", async () => {
@@ -930,5 +946,33 @@ describe("the till alert says who and when (the 2026-08-20 $50 scare)", () => {
     expect(detail).toContain("address-poisoning");
     expect(detail).toContain("DO NOT copy");
     expect(detail).not.toContain("compromised");
+  });
+});
+
+
+describe("catch-up write pacing", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it("keeps every cursor commit without generating same-key throttles", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 4000));
+    const original = testEnv.COUNTERS.put.bind(testEnv.COUNTERS);
+    let previous: number | undefined;
+    let throttled = 0;
+    let commits = 0;
+    vi.spyOn(testEnv.COUNTERS, "put").mockImplementation(async (key, value, options) => {
+      if (key === KV_KEYS.reconcileCursor) {
+        const at = Date.now();
+        if (previous !== undefined && at - previous < 1000) {
+          throttled++;
+          throw new Error("KV PUT failed: 429 Too Many Requests");
+        }
+        previous = at;
+        commits++;
+      }
+      return original(key, value, options);
+    });
+    const result = await runChainReconciliation(envWith(rpcFetch({ logs: [] })));
+    expect(result.to_block).toBe(HEAD);
+    expect(commits).toBe(2);
+    expect(throttled, "backoff must not hide a preventable write burst").toBe(0);
   });
 });

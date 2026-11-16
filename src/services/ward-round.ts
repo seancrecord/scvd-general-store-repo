@@ -119,10 +119,12 @@ const SEARCH_PATH = "/platform/v2/x402/discovery/search";
  * Hosts per round. 200 → 750, keeper's ruling 2026-08-19, the day the
  * repaired feed read 6,000 declared resources and the old cap bound
  * for the first time. 750 is the honest ONE-INVOCATION maximum, set
- * by the Workers subrequest budget (1,000 per invocation, hard):
+ * against the then-current Workers subrequest budget:
  * ~60 discovery pages + up to 750 probes + the census's directory
- * reads + RPC leaves ~10% headroom. Anything past this is not a
- * bigger number, it is a different architecture — the long walk
+ * reads + RPC left ~10% headroom in that budget. The platform raised
+ * its paid default to 10,000 in February 2026 (re-read 2026-11-16);
+ * this remains a conservative allocation, not a current hard limit.
+ * Anything past this rides the existing long walk
  * (hourly batches on a cursor, R2-stored snapshots), greenlit as its
  * own build. The round still says when this cap binds.
  */

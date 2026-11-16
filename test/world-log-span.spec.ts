@@ -4,7 +4,7 @@ import { WORLD_EVM } from "@/lib/base-rpc";
 import { evmReconciliationKeys, RECONCILE_CATCHUP_PASSES, runChainReconciliation } from "@/services/chain-reconciliation";
 import type { Env } from "@/types";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 it("recovers the World backlog through providers that accept only 100-block log reads", async () => {
   // Measured 2026-10-08: Alchemy rejected 500 blocks and named a
@@ -35,7 +35,19 @@ it("recovers the World backlog through providers that accept only 100-block log 
     return Response.json({ jsonrpc: "2.0", id: 1, result: [] });
   }));
 
-  const result = await runChainReconciliation(bindings, { chain: WORLD_EVM });
+  // Thirty committed spans require thirty KV write windows. Simulate
+  // those windows; wall time must not decide whether the walk is correct.
+  const realSetTimeout = globalThis.setTimeout;
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-11-16T12:30:00Z"));
+  let finished = false;
+  const pending = runChainReconciliation(bindings, { chain: WORLD_EVM })
+    .finally(() => { finished = true; });
+  while (!finished) {
+    await vi.advanceTimersByTimeAsync(1000);
+    await new Promise(resolve => realSetTimeout(resolve, 1));
+  }
+  const result = await pending;
   expect(result.ran).toBe(true);
   expect(await bindings.COUNTERS.get(keys.cursor)).toBe(String(head));
   expect(incoming.length).toBeGreaterThan(RECONCILE_CATCHUP_PASSES);

@@ -25,6 +25,13 @@ import type { Env } from "@/types";
 
 type Namespace = Env["ORDERS"];
 
+/** KV permits one write per second per key. Retry is recovery, not pacing. */
+export const KV_WRITE_INTERVAL_MS = 1000;
+export async function waitForKvWriteWindow(previousWriteAt: number): Promise<void> {
+  const remaining = KV_WRITE_INTERVAL_MS - (Date.now() - previousWriteAt);
+  if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
+}
+
 /**
  * TWO BUDGETS, ONE POLICY FILE (the keeper's ruling, 2026-09-02:
  * "fine upping the budget there").
@@ -120,7 +127,9 @@ export function kvPut(
   value: string,
   options?: Parameters<Namespace["put"]>[2],
 ): Promise<void> {
-  return withKvRetry(() => kv.put(key, value, options));
+  return withKvRetry(() => kv.put(key, value, options)).catch((error: unknown) => {
+    throw new Error(`KV PUT failed for key ${key}: ${String(error)}`, { cause: error });
+  });
 }
 
 /**
@@ -161,7 +170,9 @@ export function kvPutBytes(
   value: ArrayBuffer,
   options?: Parameters<Namespace["put"]>[2],
 ): Promise<void> {
-  return withKvRetry(() => kv.put(key, value, options));
+  return withKvRetry(() => kv.put(key, value, options)).catch((error: unknown) => {
+    throw new Error(`KV PUT failed for key ${key}: ${String(error)}`, { cause: error });
+  });
 }
 
 /**
