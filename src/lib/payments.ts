@@ -1759,11 +1759,20 @@ export function getPaymentStack(env: Env): PaymentStack {
     });
     const routes = buildRoutesConfig(env);
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
+    /*
+     * Assignable on purpose: test/buyer-expired-recovery-faults.spec.ts
+     * replaces it with a rejected promise to stage a failed startup sync,
+     * then puts the read value back. Nothing in src/ assigns it.
+     */
+    let substituted: Promise<void> | undefined;
     cachedStack = {
       facilitator,
       httpServer,
       get initialized() {
-        return syncedOnce(httpServer);
+        return substituted ?? syncedOnce(httpServer);
+      },
+      set initialized(promise: Promise<void>) {
+        substituted = promise;
       },
     };
   }
