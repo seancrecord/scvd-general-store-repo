@@ -8,7 +8,7 @@ describe("corpus schedule and compute headroom", () => {
     const sunday = source.indexOf('if (event.cron === "0 11 * * SUN")');
     expect(sweep).toBeGreaterThan(0);
     expect(source.slice(sweep, sunday)).toContain('await import("@/services/corpus-sweep")');
-    expect(source.indexOf('ctx.waitUntil(', sweep)).toBeGreaterThan(sunday);
+    expect(source.indexOf('jobs.add(', sweep)).toBeGreaterThan(sunday);
     expect(source.slice(sunday, source.indexOf('THE TRADE RECEIVABLE', sunday))).not.toContain('takeCorpusSnapshot');
   });
 

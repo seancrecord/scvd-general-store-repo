@@ -1,3 +1,4 @@
+import { ScheduledJobs } from "@/lib/scheduled-jobs";
 import { scheduleTrafficCorrections } from "@/services/traffic-maintenance";
 import { PUBLIC_STATISTICS_CRON } from "@/services/public-statistics";
 import { contributionRoutes } from "@/routes/contribution-tasks";
@@ -580,7 +581,7 @@ const worker: ExportedHandler<Env> = {
   // Every KV call under a cron tick takes the patient retry budget
   // (kv-retry.ts): nobody is waiting on a walk, so it can sit out the
   // kind of blip that has now killed three of them.
-  scheduled: (event, env, ctx) => withPatientKv(async () => {
+  scheduled: (event, env, _ctx) => withPatientKv(async () => {
     // A dedicated hourly invocation keeps reporting out of the other sweeps'
     // work budget. Return here: this trigger must never rerun paid obligations.
     if (event.cron === PUBLIC_STATISTICS_CRON) {
@@ -611,6 +612,11 @@ const worker: ExportedHandler<Env> = {
      * throws into the round that follows.
      */
     await publishSeedRecord(env, utcDate()).catch(() => undefined);
+    const jobs = new ScheduledJobs((name, error) => sendAlert(env, {
+      condition: "worker_health",
+      key: `scheduled-job:${name}`,
+      detail: `Scheduled job ${name} failed: ${String(error)}. The other jobs continue; inspect the named job before the next firing.`,
+    }));
     if (event.cron === "0 11 * * SUN") {
       /**
        * THE STORE'S OWN MONTH, SEALED (2026-09-22). It rides the
@@ -627,13 +633,11 @@ const worker: ExportedHandler<Env> = {
        * than sealed empty, and the refusal is not an alert: it is the
        * designed end of a trailing window.
        */
-      ctx.waitUntil(
-        import("@/services/store-month").then(async ({ sealStoreMonth, unsealedMonths }) => {
+      jobs.add("store-month", () => import("@/services/store-month").then(async ({ sealStoreMonth, unsealedMonths }) => {
           for (const month of await unsealedMonths(env)) {
             await sealStoreMonth(env, month);
           }
-        }),
-      );
+        }));
       /**
        * THE COLD EXPORT rides the same press as the ward round
        * (roadmap 0.11). Every signature, digest and OpenTimestamps
@@ -648,8 +652,7 @@ const worker: ExportedHandler<Env> = {
        * than passing quietly — a backup nobody noticed stopping is the
        * shape every backup story ends in.
        */
-      ctx.waitUntil(
-        import("@/services/cold-export").then(({ runColdExport }) =>
+      jobs.add("cold-export", () => import("@/services/cold-export").then(({ runColdExport }) =>
           runColdExport(env)
             .then((report) => {
               const short = report.bundles.filter((b) => b.truncated);
@@ -675,8 +678,7 @@ const worker: ExportedHandler<Env> = {
                 }),
               ),
             ),
-        ),
-      );
+        ));
       /**
        * THE WARD ROUND rides the Sunday press: the weekly ecosystem
        * census (services/ward-round.ts) that keeps the outreach data
@@ -684,8 +686,7 @@ const worker: ExportedHandler<Env> = {
        * alerts rather than skipping silently — a stale round reads
        * exactly like a healthy ecosystem.
        */
-      ctx.waitUntil(
-        import("@/services/ward-round").then(({ runWardRound }) =>
+      jobs.add("ward-round", () => import("@/services/ward-round").then(({ runWardRound }) =>
           runWardRound(env)
             .then(
               () => undefined,
@@ -695,8 +696,7 @@ const worker: ExportedHandler<Env> = {
                   detail: `Ward round failed: ${String(error)}`,
                 }),
             ),
-        ),
-      );
+        ));
       /**
        * THE TRADE RECEIVABLE'S AGING WATCH rides the Sunday press too
        * (rule 41's other side, 2026-09-03): a live trade account whose
@@ -705,8 +705,7 @@ const worker: ExportedHandler<Env> = {
        * receivable nobody is chasing is a liability with the sign
        * flipped, and it rots the same way.
        */
-      ctx.waitUntil(
-        import("@/services/trade-counter").then(({ tradeReceivableWatch }) =>
+      jobs.add("trade-counter", () => import("@/services/trade-counter").then(({ tradeReceivableWatch }) =>
           tradeReceivableWatch(env).then(
             () => undefined,
             (error) =>
@@ -715,8 +714,7 @@ const worker: ExportedHandler<Env> = {
                 detail: `Trade receivable watch failed: ${String(error)}`,
               }),
           ),
-        ),
-      );
+        ));
       /**
        * THE CITATION WATCH rides the Sunday press (2026-09-04): does
        * every system /scorers names still cite the corpus, and has
@@ -725,8 +723,7 @@ const worker: ExportedHandler<Env> = {
        * Failure alerts rather than passing quietly — a watch that
        * stopped reads exactly like a world that never cited us.
        */
-      ctx.waitUntil(
-        import("@/services/citation-watch").then(({ runCitationWatch }) =>
+      jobs.add("citation-watch", () => import("@/services/citation-watch").then(({ runCitationWatch }) =>
           runCitationWatch(env).then(
             () => undefined,
             (error) =>
@@ -735,11 +732,10 @@ const worker: ExportedHandler<Env> = {
                 detail: `Citation watch failed: ${String(error)}. The register and the prospects were not read this week; /admin/outreach shows the previous report, dated.`,
               }),
           ),
-        ),
-      );
+        ));
       // The signal store keeps six months; the Sunday walk is when the older ones go (services/signal-store.ts).
-      ctx.waitUntil(Promise.resolve(signalStore(env)?.reap()).catch(() => undefined));
-      ctx.waitUntil(compileDigest(env));
+      jobs.add("signal-reap", () => Promise.resolve(signalStore(env)?.reap()).catch(() => undefined));
+      jobs.add("compileDigest", () => compileDigest(env));
       // Weekly Gazette self-drafting retired 2026-08-05 (keeper's
       // ruling: duplicative of the Almanac, standing maintenance the
       // rack never earned). The machinery stays; nothing schedules it.
@@ -750,8 +746,7 @@ const worker: ExportedHandler<Env> = {
      * a walk that quietly stops reads exactly like a finished one,
      * and Sunday would assemble a short week without knowing it.
      */
-    ctx.waitUntil(
-      import("@/services/long-walk").then(({ longWalkPass }) =>
+    jobs.add("long-walk", () => import("@/services/long-walk").then(({ longWalkPass }) =>
         longWalkPass(env).then(
           () => undefined,
           (error) =>
@@ -760,8 +755,7 @@ const worker: ExportedHandler<Env> = {
               detail: `Long walk pass failed: ${String(error)}. The week's walk resumes on the next hourly firing; a repeat means the roster read or the state write is broken.`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * THE GROWTH LOG rides the hourly press (2026-09-11): the first
      * firing after a month closes freezes that month's reading, and
@@ -769,8 +763,7 @@ const worker: ExportedHandler<Env> = {
      * than passing quietly — a month that never got logged would read
      * exactly like one that had not closed yet.
      */
-    ctx.waitUntil(
-      import("@/services/growth").then(({ logClosedMonth }) =>
+    jobs.add("growth", () => import("@/services/growth").then(({ logClosedMonth }) =>
         logClosedMonth(env).then(
           () => undefined,
           (error) =>
@@ -779,8 +772,7 @@ const worker: ExportedHandler<Env> = {
               detail: `Growth log pass failed: ${String(error)}. The closed month is re-tried on the next hourly firing; a repeat means the counter scan or the log write is broken.`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * THE PEER SHELF rides the hourly press too (2026-09-11): the first
      * firing of each ISO week reads the directory category this store
@@ -788,8 +780,7 @@ const worker: ExportedHandler<Env> = {
      * frozen. A failure alerts, because a week with no reading would
      * read exactly like a directory that went quiet.
      */
-    ctx.waitUntil(
-      import("@/services/peer-shelf").then(({ ensureWeekPeerShelf }) =>
+    jobs.add("peer-shelf", () => import("@/services/peer-shelf").then(({ ensureWeekPeerShelf }) =>
         ensureWeekPeerShelf(env).then(
           () => undefined,
           (error) =>
@@ -798,8 +789,7 @@ const worker: ExportedHandler<Env> = {
               detail: `Peer shelf pass failed: ${String(error)}. The week is re-tried on the next hourly firing; a repeat means the directory read or the shelf write is broken.`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * OPEN FOR BUSINESS rides the hourly press (2026-09-18, the
      * keeper's ruling): the first firing after an ISO week closes
@@ -808,8 +798,7 @@ const worker: ExportedHandler<Env> = {
      * failure alerts, because a week that never went up would read
      * exactly like a shelf nobody restocks.
      */
-    ctx.waitUntil(
-      import("@/services/open-for-business").then(({ publishClosedWeek }) =>
+    jobs.add("open-for-business", () => import("@/services/open-for-business").then(({ publishClosedWeek }) =>
         publishClosedWeek(env).then(
           (press) =>
             press.outcome === "refused"
@@ -825,8 +814,7 @@ const worker: ExportedHandler<Env> = {
               detail: `Open for Business press failed: ${String(error)}. The closed week is re-tried on the next hourly firing; a repeat means a reader or the shelf write is broken.`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * MACHINE 1's resolver rides the same hourly firing (#56): every
      * open settlement_unknown row gets the chain asked where a chain
@@ -834,8 +822,7 @@ const worker: ExportedHandler<Env> = {
      * keeps rows open rather than answering, and the age-out inside
      * the service is the only clock that closes an unanswerable row.
      */
-    ctx.waitUntil(
-      import("@/services/settlement-unknown").then(
+    jobs.add("settlement-unknown", () => import("@/services/settlement-unknown").then(
         ({ resolveSettlementUnknowns }) =>
           resolveSettlementUnknowns(env).then(
             () => undefined,
@@ -845,8 +832,7 @@ const worker: ExportedHandler<Env> = {
                 detail: `settlement_unknown resolver pass failed: ${String(error)}. Open rows stay open; a repeat means the row list or the RPC path is broken.`,
               }),
           ),
-      ),
-    );
+      ));
     /**
      * THE RE-READ OF EVERY DOOR WE WROTE TO, ON A CLOCK (2026-09-06).
      *
@@ -869,8 +855,7 @@ const worker: ExportedHandler<Env> = {
      * every watch here does: a sweep that stopped reads exactly like
      * a desk with no wrong notes in it.
      */
-    ctx.waitUntil(
-      import("@/services/outreach").then(({ auditSweep }) =>
+    jobs.add("outreach", () => import("@/services/outreach").then(({ auditSweep }) =>
         auditSweep(env).then(
           () => undefined,
           (error) =>
@@ -880,8 +865,7 @@ const worker: ExportedHandler<Env> = {
               detail: `The re-read of doors we wrote to failed: ${String(error)}. Notes already sent are not being checked against their doors; press "Re-read" on /admin/outreach#audit by hand until this clears.`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * THE STANDING ORDER FOR THE BOARD (2026-09-10, the keeper: "can
      * we automate a few weeks of them?").
@@ -914,8 +898,7 @@ const worker: ExportedHandler<Env> = {
      * reserves against open listings as well as spent ones and stops
      * early. A quiet week is the guard working.
      */
-    ctx.waitUntil(
-      import("@/services/bounty-plan").then(({ bountyPlanPass }) =>
+    jobs.add("bounty-plan", () => import("@/services/bounty-plan").then(({ bountyPlanPass }) =>
         bountyPlanPass(env).then(
           () => undefined,
           (error) =>
@@ -925,18 +908,15 @@ const worker: ExportedHandler<Env> = {
               detail: `The standing bounty order failed to run: ${String(error)}. The board is not posting itself; post by hand on /admin/market until this clears.`,
             }),
         ),
-      ),
-    );
+      ));
     // Optional contact scouting is manual again (keeper's cost cut, 2026-10-23).
     // The existing Scout contacts action remains; sent-note audits still run.
-    ctx.waitUntil(
-      sweepPhantomChecks(env).catch((error) =>
+    jobs.add("sweepPhantomChecks", () => sweepPhantomChecks(env).catch((error) =>
         sendAlert(env, {
           condition: "worker_health",
           detail: `Phantom sweep failed: ${String(error)}`,
         }),
-      ),
-    );
+      ));
     /**
      * THE STANDING WATCH ROUNDS. Same walk as the phantom sweep, once
      * an hour; a failed sweep alerts rather than silently skipping,
@@ -960,41 +940,35 @@ const worker: ExportedHandler<Env> = {
       const gap = watchSweepGaps(kind, report);
       return gap ? sendAlert(env, { condition: "worker_health", ...gap }).catch(() => undefined) : undefined;
     };
-    ctx.waitUntil(
-      sweepConformanceWatches(env).then(
+    jobs.add("sweepConformanceWatches", () => sweepConformanceWatches(env).then(
         reportGaps("conformance watch"),
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Conformance watch sweep failed: ${String(error)}`,
           }),
-      ),
-    );
-    ctx.waitUntil(
-      sweepStandingWatches(env).then(
+      ));
+    jobs.add("sweepStandingWatches", () => sweepStandingWatches(env).then(
         reportGaps("standing watch"),
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Standing watch sweep failed: ${String(error)}`,
           }),
-      ),
-    );
+      ));
     /**
      * THE OPERATOR'S STATEMENT (S10): every open month whose last pass
      * is six hours old takes one bounded chain read, within the
      * tick's named budget, on the shared sweep the watches use.
      */
-    ctx.waitUntil(
-      sweepOperatorStatements(env).then(
+    jobs.add("sweepOperatorStatements", () => sweepOperatorStatements(env).then(
         reportGaps("operator statement"),
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Operator statement sweep failed: ${String(error)}`,
           }),
-      ),
-    );
+      ));
     /**
      * THE WARD'S HEARTBEAT rides the HOURLY press, deliberately not
      * the Sunday one: a watchdog on the same schedule as the thing it
@@ -1006,8 +980,7 @@ const worker: ExportedHandler<Env> = {
      * Both are now checked here, deduped by condition so a standing
      * fault is one notice rather than one an hour.
      */
-    ctx.waitUntil(
-      import("@/services/ward-heartbeat").then(({ wardHeartbeatWatch }) =>
+    jobs.add("ward-heartbeat", () => import("@/services/ward-heartbeat").then(({ wardHeartbeatWatch }) =>
         wardHeartbeatWatch(env).then(
           () => undefined,
           (error) =>
@@ -1017,8 +990,7 @@ const worker: ExportedHandler<Env> = {
               detail: `The ward heartbeat itself failed: ${String(error)}. The watchdog is down, which says nothing about the round — check /sources and /admin/ward by hand until this clears.`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * THE MCP WARD'S WALK rides the hourly press for the same reason
      * the x402 long walk does: the registry is 909 pages and 90,845
@@ -1028,8 +1000,7 @@ const worker: ExportedHandler<Env> = {
      * tick keeps its cursor and resumes next hour — a slow registry
      * must not cost a pass that is most of the way done.
      */
-    ctx.waitUntil(
-      import("@/services/mcp-ward").then(({ walkMcpRegistry }) =>
+    jobs.add("mcp-ward", () => import("@/services/mcp-ward").then(({ walkMcpRegistry }) =>
         walkMcpRegistry(env).then(
           () => undefined,
           (error) =>
@@ -1039,8 +1010,7 @@ const worker: ExportedHandler<Env> = {
               detail: `The MCP ward's registry walk failed: ${String(error)}. The x402 ward is unaffected — the two share no state — and the walk resumes from its stored cursor on the next firing.`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * THE DIRECTORY WALKS ride the hourly press beside the MCP walk
      * (2026-09-04): 402index at 104,106 rows, free, and x402scan at a
@@ -1050,8 +1020,7 @@ const worker: ExportedHandler<Env> = {
      * round reads each one's last completed pass and never the
      * directory. A failed tick keeps its cursor and resumes next hour.
      */
-    ctx.waitUntil(
-      import("@/services/directory-walk").then(({ walkAllDirectories }) =>
+    jobs.add("directory-walk", () => import("@/services/directory-walk").then(({ walkAllDirectories }) =>
         walkAllDirectories(env).then(
           () => undefined,
           (error) =>
@@ -1061,9 +1030,8 @@ const worker: ExportedHandler<Env> = {
               detail: `A directory walk failed: ${String(error)}. Each walk resumes from its stored cursor on the next firing; the Sunday round reads the last completed pass and is unaffected.`,
             }),
         ),
-      ),
-    );
-    ctx.waitUntil(runHealthChecks(env));
+      ));
+    jobs.add("runHealthChecks", () => runHealthChecks(env));
     /**
      * THE GLANCE, WRITTEN WHERE THE WALKS ARE ALREADY PAID FOR. The
      * keeper's desk used to recompute seventeen loads on every open,
@@ -1071,7 +1039,7 @@ const worker: ExportedHandler<Env> = {
      * the five he actually opens it for are read once an hour here
      * and stored as one blob; /admin reads one key and paints.
      *
-     * Never blocks and never pages: a glance that fails to write
+     * Never pages: a glance that fails to write
      * leaves the previous one standing with its own `computed_at`
      * visible, and the desk says how old it is. A stale reading that
      * announces its age is honest; the failure mode worth alerting on
@@ -1085,15 +1053,13 @@ const worker: ExportedHandler<Env> = {
      * storefront had already closed. Sequenced, the glance never sees
      * a number the raise is about to move.
      */
-    ctx.waitUntil(
-      import("@/services/counter-raise")
+    jobs.add("counter-raise", () => import("@/services/counter-raise")
         .then(({ raiseCountersToRecords }) => raiseCountersToRecords(env).catch(() => undefined))
         .then(() =>
           import("@/services/glance").then(({ writeGlance }) =>
             writeGlance(env).catch(() => undefined),
           ),
-        ),
-    );
+        ));
     /**
      * THE RAISE rides the same hourly press (2026-09-11). The tallies
      * were the only lossy witness to a sale and the storefront read
@@ -1124,42 +1090,36 @@ const worker: ExportedHandler<Env> = {
      * Base and Polygon, and buying that 2,000-key scan twice an hour
      * is a real line on a real invoice for one fact.
      */
-    ctx.waitUntil(
-      runEvmReconciliations(env).then(
+    jobs.add("runEvmReconciliations", () => runEvmReconciliations(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Chain reconciliation failed: ${String(error)}`,
           }),
-      ),
-    );
+      ));
     /**
      * THE SAME QUESTION, ASKED OF THE SECOND RAIL. Skips itself with a
      * stated reason while SOLANA_PAY_TO is unset; once money can
      * arrive on Solana, this is the walk that retires the
      * unreconciled cap (PAYMENT_RAILS.md ruling, 2026-08-04).
      */
-    ctx.waitUntil(
-      runSolanaReconciliation(env).then(
+    jobs.add("runSolanaReconciliation", () => runSolanaReconciliation(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Solana reconciliation failed: ${String(error)}`,
           }),
-      ),
-    );
-    ctx.waitUntil(
-      runDeliveryAudit(env).then(
+      ));
+    jobs.add("runDeliveryAudit", () => runDeliveryAudit(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Delivery audit failed: ${String(error)}`,
           }),
-      ),
-    );
+      ));
     /*
      * The delivery audit above catches money-taken-no-goods within
      * minutes. This one catches the slower class it cannot see: a
@@ -1168,16 +1128,14 @@ const worker: ExportedHandler<Env> = {
      * will not have to argue for it — and until now the only thing
      * enforcing that was the keeper remembering.
      */
-    ctx.waitUntil(
-      runRefundWindowAudit(env).then(
+    jobs.add("runRefundWindowAudit", () => runRefundWindowAudit(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Refund-window audit failed: ${String(error)}`,
           }),
-      ),
-    );
+      ));
     /**
      * THE BENCH INDEX REBUILD. The bench counts open labor off an
      * index so it never has to walk every order the store has ever
@@ -1190,16 +1148,14 @@ const worker: ExportedHandler<Env> = {
      * It also sets the marker that switches the bench off its fallback
      * walk, so a fresh deploy converges without anybody doing anything.
      */
-    ctx.waitUntil(
-      rebuildOpenLaborIndex(env).then(
+    jobs.add("rebuildOpenLaborIndex", () => rebuildOpenLaborIndex(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Open-labor index rebuild failed: ${String(error)}. The bench may undercount promised work until this succeeds.`,
           }),
-      ),
-    );
+      ));
     /**
      * THE ANCHOR PASS. Appends at most one entry a day (the interval
      * is read off the log itself, not a second cron trigger) and tries
@@ -1210,19 +1166,16 @@ const worker: ExportedHandler<Env> = {
      * is for the unexpected kind.
      */
     // Corpus snapshots are submitted weekly; their proofs finish hourly.
-    ctx.waitUntil(
-      import("@/services/corpus-anchors").then(({ sweepCorpusAnchors }) =>
+    jobs.add("corpus-anchors", () => import("@/services/corpus-anchors").then(({ sweepCorpusAnchors }) =>
         sweepCorpusAnchors(env).then(
           (summary) => console.log(JSON.stringify({ event: "corpus_anchor_sweep", ...summary })),
           () => sendAlert(env, { condition: "worker_health", detail: "Corpus anchor sweep failed." }),
         ),
-      ),
-    );
+      ));
     // The patron anchors' sweep rides the same hour: resubmit what a
     // down calendar refused, upgrade what Bitcoin has since confirmed.
     // Bounded per pass; completing delivery, not monitoring (rule 23a).
-    ctx.waitUntil(
-      import("@/services/patron-anchors").then(({ sweepPatronAnchors }) =>
+    jobs.add("patron-anchors", () => import("@/services/patron-anchors").then(({ sweepPatronAnchors }) =>
         sweepPatronAnchors(env).then(
           () => undefined,
           (error) =>
@@ -1231,14 +1184,12 @@ const worker: ExportedHandler<Env> = {
               detail: `Patron anchor sweep failed: ${String(error)}`,
             }),
         ),
-      ),
-    );
+      ));
     // The certificates' existed-by anchors ride the same hour (2026-09-05):
     // new receipts forward from the head cursor, old ones on the
     // backfill, then upgrade what Bitcoin has since confirmed. Never on
     // the money path; the mint writes nothing for this.
-    ctx.waitUntil(
-      import("@/services/certificate-anchors").then(
+    jobs.add("certificate-anchors", () => import("@/services/certificate-anchors").then(
         ({ sweepCertificateAnchors }) =>
           sweepCertificateAnchors(env).then(
             (summary) => console.log(JSON.stringify({ event: "certificate_anchor_sweep", ...summary })),
@@ -1248,14 +1199,12 @@ const worker: ExportedHandler<Env> = {
                 detail: `Certificate anchor sweep failed: ${String(error)}`,
               }),
           ),
-      ),
-    );
+      ));
     // The ecosystem reports' anchors ride the same hour, same shape:
     // submit any report body not yet stamped, upgrade what Bitcoin has
     // since confirmed. Bounded by the shelf — the report list is
     // compiled in, so this can never grow into a scan.
-    ctx.waitUntil(
-      import("@/services/report-anchors").then(({ sweepReportAnchors }) =>
+    jobs.add("report-anchors", () => import("@/services/report-anchors").then(({ sweepReportAnchors }) =>
         sweepReportAnchors(env).then(
           () => undefined,
           (error) =>
@@ -1264,10 +1213,8 @@ const worker: ExportedHandler<Env> = {
               detail: `Report anchor sweep failed: ${String(error)}`,
             }),
         ),
-      ),
-    );
-    ctx.waitUntil(
-      listAnchors(env)
+      ));
+    jobs.add("anchor-log", () => listAnchors(env)
         .then((records) =>
           runAnchorCron(env, records, () => appendAnchor(env)),
         )
@@ -1278,8 +1225,7 @@ const worker: ExportedHandler<Env> = {
               condition: "worker_health",
               detail: `Anchor pass failed: ${String(error)}`,
             }),
-        ),
-    );
+        ));
     /**
      * THE STANDING CORRECTION, on the clock rather than in a page load.
      * /admin/recount has to stop at a cap because a page that times out
@@ -1294,7 +1240,11 @@ const worker: ExportedHandler<Env> = {
      */
     // Retrospective traffic classification is reporting, not payment recovery.
     // Four passes/day preserve the existing complete-publication rule and date.
-    scheduleTrafficCorrections(event, env, ctx);
+    jobs.add("traffic-corrections", async () => {
+      const pending: Promise<unknown>[] = [];
+      scheduleTrafficCorrections(event, env, { waitUntil: promise => { pending.push(promise); } });
+      await Promise.all(pending);
+    });
 
     /**
      * THE RAIL SPLIT, walked here so the storefront never walks it.
@@ -1305,8 +1255,7 @@ const worker: ExportedHandler<Env> = {
      * leaves the last snapshot standing and the storefront prints the
      * count without the split — stale-then-absent, never invented.
      */
-    ctx.waitUntil(
-      import("@/services/rails").then(({ refreshRailSplit }) =>
+    jobs.add("rails", () => import("@/services/rails").then(({ refreshRailSplit }) =>
         refreshRailSplit(env).then(
           () => undefined,
           (error) =>
@@ -1315,8 +1264,7 @@ const worker: ExportedHandler<Env> = {
               detail: `Rail split refresh failed: ${String(error)}`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * THE BOOKS INVARIANT SWEEP: the published identities, re-checked
      * against the production counters every hour. Every books defect
@@ -1326,8 +1274,7 @@ const worker: ExportedHandler<Env> = {
      * page — an invariant checker that fails silently is a smoke
      * detector with the battery out.
      */
-    ctx.waitUntil(
-      import("@/services/books-invariants").then(({ sweepBooksInvariants }) =>
+    jobs.add("books-invariants", () => import("@/services/books-invariants").then(({ sweepBooksInvariants }) =>
         sweepBooksInvariants(env).then(
           () => undefined,
           (error) =>
@@ -1336,8 +1283,7 @@ const worker: ExportedHandler<Env> = {
               detail: `Books invariant sweep failed to run: ${String(error)}`,
             }),
         ),
-      ),
-    );
+      ));
     /**
      * THE PAYING WALLET'S COVER rides the same hourly press
      * (2026-09-04): the balance off the chain against what the store
@@ -1345,8 +1291,7 @@ const worker: ExportedHandler<Env> = {
      * so whether or not anybody opens it. Its own failure is a
      * worker_health line, never a shortfall.
      */
-    ctx.waitUntil(
-      import("@/services/field-wallet").then(({ sweepFieldWallet }) =>
+    jobs.add("field-wallet", () => import("@/services/field-wallet").then(({ sweepFieldWallet }) =>
         sweepFieldWallet(env).then(
           () => undefined,
           (error) =>
@@ -1355,8 +1300,9 @@ const worker: ExportedHandler<Env> = {
               detail: `Field wallet cover check failed to run: ${String(error)}`,
             }),
         ),
-      ),
-    );
+      ));
+    // Deferred jobs keep archive and ledger working sets from overlapping.
+    await jobs.run();
   }),
 };
 

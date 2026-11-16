@@ -1,5 +1,16 @@
 # Spec reads — the store's positions on adjacent protocols
 
+## 2026-11-16 — hourly memory follow-up
+
+Re-read [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
+and [Workers limits](https://developers.cloudflare.com/workers/platform/limits/).
+`waitUntil` keeps a promise alive; it does not give that promise a separate
+memory budget. Scheduled work now starts through deferred jobs one at a time,
+with named start/completion logs, and the ward age check reads metadata only.
+The post-deploy 15:30 UTC invocation still exceeded memory; this follow-up is
+separate from the CPU repair. [Evidence and limits](../research/worker-failures-2026-11-16/README.md).
+
+
 ## 2026-11-16 — scheduled corpus sealing and KV write limits
 
 Read [Workers limits](https://developers.cloudflare.com/workers/platform/limits/),

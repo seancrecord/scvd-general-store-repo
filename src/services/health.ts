@@ -14,7 +14,9 @@ import { getCertificate } from "@/services/certificates";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { listOrders } from "@/services/orders";
 import type { Env } from "@/types";
-import { kvGet, kvPut } from "@/lib/kv-retry";
+import { KV_KEYS } from "@/lib/kv-keys";
+import type { WardRound } from "@/services/ward-round";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * The hourly rounds. Two of the four P1 conditions live here: the
@@ -256,8 +258,9 @@ async function registrarsRound(env: Env): Promise<void> {
 const WARD_STALE_MS = 8 * 24 * 3600_000;
 
 export async function wardDeadMan(env: Env): Promise<void> {
-  const { latestWardRound } = await import("@/services/ward-round");
-  const round = await latestWardRound(env).catch(() => null);
+  // The date lives on the KV pointer. Loading thousands of host rows
+  // here competed with the hourly archive and reconciliation sweeps.
+  const round = await kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json").catch(() => null);
   if (!round) {
     return;
   }
