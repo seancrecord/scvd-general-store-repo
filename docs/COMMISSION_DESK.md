@@ -234,9 +234,12 @@ under debts rather than features.
 ## 7. Interim risk, stated plainly
 
 Until this is built, standing SLA exposure is capped by three things
-that all now exist: the 48-hour presence window, the bench's open-queue
+that all now exist: the keeper's shutter lever, the bench's open-queue
 ceiling (#88), and the refund-window detector (#81) that finds a missed
-promise and names what is owed.
+promise and names what is owed. (Until 2026-11-22 the first was a
+48-hour presence window that closed the shelf by itself; the keeper
+retired the timer, so the shelf now closes only when he throws the
+lever before going away.)
 
 That is detection plus a ceiling, not prevention. **The uncapped
 failure the desk removes is pricing bespoke work at a fixed number

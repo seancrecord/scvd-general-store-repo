@@ -74,15 +74,9 @@ function shutterCondition(state: ShutterState | null): string {
       "on",
     );
   }
-  const why =
-    state.cause === "lever"
-      ? "you closed it by hand"
-      : state.keeper_last_seen
-        ? `the presence window lapsed — last seen ${escapeHtml(state.keeper_last_seen.slice(0, 16).replace("T", " "))} UTC`
-        : "no visit is on record yet";
   return condition(
     true,
-    `CLOSED — human-labor purchases are being refused, because ${why}.`,
+    `CLOSED — human-labor purchases are being refused, because you closed it by hand. Open it below when you're back.`,
     "off",
   );
 }
@@ -195,7 +189,7 @@ export function renderToolsPage(data: ToolsPageData): string {
   <section>
     <h2>The shutter (human-labor shelf)</h2>
     ${shutterCondition(data.shutter)}
-    <p>The shelf runs on a PRESENCE WINDOW: it's only open within 48 hours of you being seen at the counter, and it's closed by default — no visit on record, no sale, so an order can never sit on money you'd have to hunt down and refund. Opening the counter (or this lever) restarts the window; machine shelves and stocked shelves never close. Closed = human-labor purchases are refused before any money moves.</p>
+    <p>Only this lever closes the shelf: nothing closes it on a timer any more (since 2026-11-22). Close it before you go away, so an order can never sit on money you'd have to hunt down and refund, and open it when you're back. Machine shelves and stocked shelves never close. Closed = human-labor purchases are refused before any money moves.</p>
     <form method="POST" action="/admin/shutter" style="display:inline">
       <input type="hidden" name="state" value="closed">
       <button type="submit">Close the shutter (going away)</button>

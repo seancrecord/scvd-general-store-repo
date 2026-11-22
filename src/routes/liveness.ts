@@ -83,7 +83,7 @@ livenessRoutes.get("/.well-known/liveness.json", async (c) => {
 
   const payload = {
     statement:
-      "This store's signing infrastructure produced and signed this document at issued_at. That proves the Worker runs and the key signs — infrastructure liveness, nothing more. The keeper fields carry a separate fact, one this store already acts on: his last provable visit to the counter, against the same presence window the shutter uses to refuse human-labor purchases when nobody is provably there.",
+      "This store's signing infrastructure produced and signed this document at issued_at. That proves the Worker runs and the key signs — infrastructure liveness, nothing more. The keeper fields carry a separate fact, his last provable visit to the counter, and whether it falls inside the stated presence window. The human-labor shelf is opened and closed by the keeper's own lever, not by this window; whether it is open now is on /menu.json.",
     issued_at: new Date().toISOString(),
     client_nonce: clientNonce,
     keeper_last_seen: lastSeen,
@@ -107,7 +107,7 @@ livenessRoutes.get("/.well-known/liveness.json", async (c) => {
      * gets read optimistically, which defeats it.
      */
     how_to_fail_closed:
-      "Fetch this document fresh; never cache it as evidence. It is computed and signed per request, so three signals carry all the meaning: (1) the fetch FAILS — treat the issuer as unreachable and fail closed; (2) keeper_within_presence_window is FALSE — the human half of this store is not provably present, which is exactly when the store itself refuses human-labor purchases, so weight human-dependent promises accordingly; (3) the signature does not verify against the key at /.well-known/scvd-signing-key — treat everything as compromised. A missing beacon is a signal; an old copy of one is not evidence of anything.",
+      "Fetch this document fresh; never cache it as evidence. It is computed and signed per request, so three signals carry all the meaning: (1) the fetch FAILS — treat the issuer as unreachable and fail closed; (2) keeper_within_presence_window is FALSE — the human half of this store has not provably stood at the counter inside the window, so weight human-dependent promises accordingly (the store refuses human-labor purchases only when the keeper has closed that shelf, which /menu.json says); (3) the signature does not verify against the key at /.well-known/scvd-signing-key — treat everything as compromised. A missing beacon is a signal; an old copy of one is not evidence of anything.",
     anti_replay:
       "If you need proof this beacon was minted for YOUR request and not replayed from an earlier one, fetch with ?nonce=<a random value you just generated> and check that client_nonce in the signed payload equals what you sent. A signature covering your fresh nonce could not have been produced before you chose it, which defeats a captured-and-replayed beacon during an outage. Without a nonce this document is a cacheable statement and should not be treated as proof of this-instant liveness.",
     what_this_does_not_prove:

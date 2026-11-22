@@ -4,15 +4,21 @@ import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * The shutter: the store never promises labor nobody is there to do.
- * Since the keeper's ruling 2026-07-25 it works as a PRESENCE WINDOW,
- * not a dead-man switch: the human-labor shelf is only open within
- * PRESENT_WINDOW_HOURS of the keeper being seen at the counter, and
- * it is CLOSED by default — no visit on record means no sale, so a
- * missed order can never sit on money. Two ways to close it early:
- *   1. The keeper throws the lever (vacation, day job, life).
- *   2. Time: the window simply runs out.
- * Opening the counter (or the lever) restarts the window. The machine
- * shelves and the stocked shelves never close.
+ *
+ * THE LEVER ALONE CLOSES IT (keeper's ruling 2026-11-22: "turn off
+ * the shutter closers automation"). From 2026-07-25 it was a PRESENCE
+ * WINDOW that closed the human-labor shelf 48h after the keeper was
+ * last seen at /admin/counter. That window closed The Aura Walk and
+ * The Collab on 2026-11-20 while the keeper was working in other back
+ * rooms (only /admin/counter counted as a visit), each door answered
+ * 503, and x402-list graded the store degraded for two failing
+ * endpoints. The keeper closes the shelf by hand before going away;
+ * nothing closes it on a timer.
+ *
+ * Visits are still recorded (markKeeperSeen) and PRESENT_WINDOW_HOURS
+ * still prices the public liveness beacon's presence fact; neither
+ * gates a sale any more. The machine shelves and the stocked shelves
+ * never close.
  */
 
 export const PRESENT_WINDOW_HOURS = 48;
@@ -26,15 +32,15 @@ export async function setShutter(env: Env, closed: boolean): Promise<void> {
     await kvPut(env.COUNTERS, KV_KEYS.shutterOverride, "closed");
   } else {
     await env.COUNTERS.delete(KV_KEYS.shutterOverride);
-    // Opening is proof of presence; the window restarts.
+    // Opening by hand is a visit too; it is recorded, not required.
     await markKeeperSeen(env);
   }
 }
 
 export interface ShutterState {
   closed: boolean;
-  /** "lever" or "away" (window expired or never started); absent when open. */
-  cause?: "lever" | "away";
+  /** Only the keeper's lever closes the shelf; absent when open. */
+  cause?: "lever";
   keeper_last_seen?: string;
 }
 
@@ -50,16 +56,7 @@ export async function shutterState(env: Env): Promise<ShutterState> {
       ...(lastSeen ? { keeper_last_seen: lastSeen } : {}),
     };
   }
-  // Closed by default: no visit on record means nobody is provably
-  // at the counter, and this store does not take money on a maybe.
-  if (!lastSeen) {
-    return { closed: true, cause: "away" };
-  }
-  const ageMs = Date.now() - new Date(lastSeen).getTime();
-  if (ageMs > PRESENT_WINDOW_HOURS * 3600 * 1000) {
-    return { closed: true, cause: "away", keeper_last_seen: lastSeen };
-  }
-  return { closed: false, keeper_last_seen: lastSeen };
+  return { closed: false, ...(lastSeen ? { keeper_last_seen: lastSeen } : {}) };
 }
 
 /**

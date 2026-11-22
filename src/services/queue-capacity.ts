@@ -13,7 +13,7 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  *
  * The shutter's stated law is "the store never promises labor nobody
  * is there to do", and it enforces that by PRESENCE: the human shelf
- * opens only within 48 hours of the keeper being seen. That answers
+ * opens only while the keeper's lever leaves it open. That answers
  * "is somebody there." It has never answered "how much have we already
  * promised them", and those are different questions — a keeper seen an
  * hour ago can still be sold ten weeks of work in an afternoon.
