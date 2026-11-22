@@ -8,11 +8,12 @@ import {
 import type { Env } from "@/types";
 
 /**
- * The shutter as a presence window (keeper's ruling 2026-07-25): the
- * human-labor shelf only sells within 48h of the keeper being seen at
- * the counter, and it starts CLOSED — no visit on record, no sale.
- * The lever still closes it early; machine shelves, stocked shelves,
- * and the preset lucky draw never close.
+ * The shutter is the keeper's lever and nothing else (keeper's ruling
+ * 2026-11-22). From 2026-07-25 it was a 48h presence window that also
+ * closed itself, which on 2026-11-20 shut two doors while the keeper
+ * was working elsewhere in the back room. Now only the lever closes
+ * the human-labor shelf; machine shelves, stocked shelves, and the
+ * preset lucky draw never close.
  */
 
 const BASE = "https://scvd.store";
@@ -51,13 +52,11 @@ async function buyPaid(url: string): Promise<Response> {
 }
 
 describe("the shutter", () => {
-  it("starts closed: no visit on record means no human-labor sale", async () => {
-    // Fresh KV, nobody seen at the counter yet.
+  it("stays open with no visit on record: no timer closes it", async () => {
     await testEnv.COUNTERS.delete("keeper_last_seen");
     await testEnv.COUNTERS.delete("shutter_override");
-    const refused = await SELF.fetch(`${BASE}/api/buy/the_collab`);
-    expect(refused.status).toBe(503);
-    expect(String((await json(refused))["error"])).toContain("keeper is away");
+    const open = await SELF.fetch(`${BASE}/api/buy/the_collab`);
+    expect(open.status).toBe(402);
   });
 
   it("refuses human labor before money moves; machine shelves never close", async () => {
@@ -94,20 +93,17 @@ describe("the shutter", () => {
     await throwShutter("open");
   });
 
-  it("presence window: the shelf closes 48h after the last visit; a visit reopens", async () => {
-    // Wind the clock: last seen 3 days ago, well past the 48h window.
-    const staleDate = new Date(Date.now() - 3 * 86400 * 1000).toISOString();
+  it("stays open long after the last visit; only the lever closes it", async () => {
+    await testEnv.COUNTERS.delete("shutter_override");
+    // Last seen thirty days ago: the old 48h window would have shut.
+    const staleDate = new Date(Date.now() - 30 * 86400 * 1000).toISOString();
     await testEnv.COUNTERS.put("keeper_last_seen", staleDate);
+    expect((await SELF.fetch(`${BASE}/api/buy/the_collab`)).status).toBe(402);
+    expect((await SELF.fetch(`${BASE}/api/buy/aura_walk`)).status).toBe(402);
 
-    const refused = await SELF.fetch(`${BASE}/api/buy/the_collab`);
-    expect(refused.status).toBe(503);
-
-    // Opening the counter is proof of presence; the window restarts.
-    const counter = await SELF.fetch(`${BASE}/admin/counter`, {
-      headers: { Authorization: adminAuth.Authorization },
-    });
-    expect(counter.status).toBe(200);
-    const reopened = await SELF.fetch(`${BASE}/api/buy/the_collab`);
-    expect(reopened.status).toBe(402);
+    await throwShutter("closed");
+    expect((await SELF.fetch(`${BASE}/api/buy/the_collab`)).status).toBe(503);
+    await throwShutter("open");
+    expect((await SELF.fetch(`${BASE}/api/buy/the_collab`)).status).toBe(402);
   });
 });

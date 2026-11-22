@@ -50,12 +50,13 @@ describe("every lever on the back shelf states its condition", () => {
     expect(open).toContain("Last seen at the counter");
   });
 
-  it("distinguishes closed-by-lever from closed-by-absence", async () => {
-    // Same word on the storefront, different thing to do about it: one
-    // is undone by a button, the other by showing up.
-    const away = await tools();
-    expect(away).toContain("CLOSED");
-    expect(away).toContain("no visit is on record yet");
+  it("never reads closed-by-absence: only the lever closes the shelf", async () => {
+    // Until 2026-11-22 a lapsed 48h window closed the shelf with no
+    // hand on the lever. Absence is no longer a closed state, so a
+    // fresh office with no visit on record reads OPEN.
+    const fresh = await tools();
+    expect(fresh).toContain("OPEN — human-labor shelves are selling.");
+    expect(fresh).not.toContain("no visit is on record yet");
   });
 
   it("says whether this month's patronage note is already inked", async () => {

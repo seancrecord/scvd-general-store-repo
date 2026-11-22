@@ -605,7 +605,9 @@ serves fresh or the fetch fails, and a failed fetch is the fail-closed
 signal. It carries two facts kept deliberately separate: the
 infrastructure signs (provable), and the keeper's last provable
 counter visit against the shutter's existing 48h presence window (the
-same fact the store already acts on when it refuses human-labor money).
+same fact the store already acts on when it refuses human-labor money;
+since 2026-11-22 the shelf closes only by the keeper's lever, and the
+beacon reports the window as a fact without gating anything).
 It claims nothing an automated signature cannot know, and says so on
 the document. Exit recorded: solved.
 
